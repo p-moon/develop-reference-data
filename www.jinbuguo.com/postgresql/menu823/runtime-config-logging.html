@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>错误报告和日志</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="runtime-config-query.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime-config.html">快退</a></td><td width="60%" align="center" valign="bottom">章17. 服务器配置</td><td width="10%" align="right" valign="top"><a href="runtime-config.html">快进</a></td><td width="10%" align="right" valign="top"><a href="runtime-config-statistics.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="RUNTIME-CONFIG-LOGGING">17.7. 错误报告和日志</a></h1><a name="AEN20777"></a>
+<div class="SECT2"><h2 class="SECT2"><a name="RUNTIME-CONFIG-LOGGING-WHERE">17.7.1. 在哪里记录日志</a></h2><a name="AEN20781"></a>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-LOG-DESTINATION"></a><tt class="VARNAME">log_destination</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>PostgreSQL 支持多种记录服务器日志的方法，包括 <span class="SYSTEMITEM">stderr</span> 和 <span class="SYSTEMITEM">syslog</span> 。在 Windows 里，还支持 <span class="SYSTEMITEM">eventlog</span> 作为日志系统。把这个选项设置为一个逗号分隔的日志目标的列表。缺省是只记录到 <span class="SYSTEMITEM">stderr</span> 。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-REDIRECT-STDERR"></a><tt class="VARNAME">redirect_stderr</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>这个选项允许把那些发送到 <span class="APPLICATION">stderr</span> 的消息捕获下来，然后把它们重定向到日志文件里。这个选项通常比记录到 <span class="APPLICATION">syslog</span> 更有用，因为有些消息类型不出现在 <span class="APPLICATION">syslog</span> 输出中(一个常见的例子是动态连接失败的消息)。这个值只能在服务器启动的时候设置。</p></dd>
+<dt><a name="GUC-LOG-DIRECTORY"></a><tt class="VARNAME">log_directory</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>在打开了 <tt class="VARNAME">redirect_stderr</tt> 的时候，这个选项判断日志文件在哪个目录里创建。它可以声明成绝对路径，或者是与集群的数据目录相对的路径。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-LOG-FILENAME"></a><tt class="VARNAME">log_filename</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>在打开了 <tt class="VARNAME">redirect_stderr</tt> 的时候，这个选项设置所创建的日志文件的文件名。这个数值将被当作 <span class="SYSTEMITEM">strftime</span> 模式看待。因此可以用 <tt class="LITERAL">%</tt> 逃逸声明随时间而变的文件名。如果没有出现 <tt class="LITERAL">%</tt> 逃逸，PostgreSQL 将自动附加日志文件打开的时间戳。比如，如果 <tt class="VARNAME">log_filename</tt> 设置为 <tt class="LITERAL">server_log</tt> ，那么开始于 Sun Aug 29 19:02:33 2004 MST 的日志文件的名称将是 <tt class="LITERAL">server_log.1093827753</tt> 。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-LOG-ROTATION-AGE"></a><tt class="VARNAME">log_rotation_age</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>在打开了 <tt class="VARNAME">redirect_stderr</tt> 的时候，这个选项设置一个独立日志文件的最大生存期。在数值指定的分钟过去之后，将创建一个新的日志文件。设置为零可以关闭以时间为基础的新日志文件的创建。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-LOG-ROTATION-SIZE"></a><tt class="VARNAME">log_rotation_size</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>在打开了 <tt class="VARNAME">redirect_stderr</tt> 的时候，这个选项设置一个独立的日志文件的最大尺寸。在数值指定的千字节写入日志文件之后，将会创建一个新的日志文件。设置为零可以关闭以尺寸为基础的新日志文件的创建。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-LOG-TRUNCATE-ON-ROTATION"></a><tt class="VARNAME">log_truncate_on_rotation</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>在打开了 <tt class="VARNAME">redirect_stderr</tt> 的时候，这个选项将导致 PostgreSQL 覆盖而不是附加到任何同名的现有日志文件上。不过，覆盖只是发生在基于时间滚动而创建的新文件上，而不是在服务器启动的时候或者以尺寸为基础的滚动上。如果为 off ，将始终向已存在的文件结尾追加。比如，使用这个选项和类似 <tt class="LITERAL">postgresql-%H.log</tt> 这样的 <tt class="VARNAME">log_filename</tt> 设置将导致生成 24 个按小时生成的日志文件然后在这些文件上循环。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p>
+<p>例子：保留 7 天的日志，每天一个日志文件，叫做 <tt class="LITERAL">server_log.Mon</tt>, <tt class="LITERAL">server_log.Tue</tt> 等等，并且上周的日志会自动被这周的日志覆盖。把 <tt class="VARNAME">log_filename</tt> 设置为 <tt class="LITERAL">server_log.%a</tt> 、把 <tt class="VARNAME">log_truncate_on_rotation</tt> 设置为 <tt class="LITERAL">on</tt> 、把 <tt class="VARNAME">log_rotation_age</tt> 设置为 <tt class="LITERAL">1440</tt> 。</p>
+<p>例子：保留 24 小时的日志，每小时一个日志，但是如果日志文件尺寸大于 1GB 也旋转日志。把 <tt class="VARNAME">log_filename</tt> 设置为 <tt class="LITERAL">server_log.%H%M</tt> 、把 <tt class="VARNAME">log_truncate_on_rotation</tt> 设置为 <tt class="LITERAL">on</tt> 、把 <tt class="VARNAME">log_rotation_age</tt> to <tt class="LITERAL">60</tt> 、把 <tt class="VARNAME">log_rotation_size</tt> 设置为 <tt class="LITERAL">1000000</tt> 。在 <tt class="VARNAME">log_filename</tt> 里包含 <tt class="LITERAL">%M</tt> 允许任何尺寸驱动的旋转选取一个和开始的文件名同小时数但是名字不同的文件。</p></dd>
+<dt><a name="GUC-SYSLOG-FACILITY"></a><tt class="VARNAME">syslog_facility</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>如果向 <span class="APPLICATION">syslog</span> 进行记录，那么这个选项判断要使用的 <span class="APPLICATION">syslog</span> "设施"。你可以从 <tt class="LITERAL">LOCAL0</tt>(默认), <tt class="LITERAL">LOCAL1</tt>, <tt class="LITERAL">LOCAL2</tt>, <tt class="LITERAL">LOCAL3</tt>, <tt class="LITERAL">LOCAL4</tt>, <tt class="LITERAL">LOCAL5</tt>, <tt class="LITERAL">LOCAL6</tt>, <tt class="LITERAL">LOCAL7</tt> 中选择。又见你的系统的 <span class="APPLICATION">syslog</span> 守护进程文档。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-SYSLOG-IDENT"></a><tt class="VARNAME">syslog_ident</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>如果向 <span class="APPLICATION">syslog</span> 进行记录，这个选项决定用于在 <span class="APPLICATION">syslog</span> 日志中标识 PostgreSQL 的程序名。缺省是 <tt class="LITERAL">postgres</tt> 。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+</dl>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="RUNTIME-CONFIG-LOGGING-WHEN">17.7.2. 什么时候记录日志</a></h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-CLIENT-MIN-MESSAGES"></a><tt class="VARNAME">client_min_messages</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>这个选项控制哪些信息发送到客户端。有效的数值是 <tt class="LITERAL">DEBUG5</tt>, <tt class="LITERAL">DEBUG4</tt>, <tt class="LITERAL">DEBUG3</tt>, <tt class="LITERAL">DEBUG2</tt>, <tt class="LITERAL">DEBUG1</tt>, <tt class="LITERAL">LOG</tt>, <tt class="LITERAL">NOTICE</tt>, <tt class="LITERAL">WARNING</tt>, <tt class="LITERAL">ERROR</tt>, <tt class="LITERAL">FATAL</tt>, <tt class="LITERAL">PANIC</tt> 。每个级别包含所有它后面的级别，级别越靠后，发送的信息越少。缺省是 <tt class="LITERAL">NOTICE</tt> 。需要注意的是这里的 <tt class="LITERAL">LOG</tt> 和 <tt class="VARNAME">log_min_messages</tt> 里的级别不同。</p></dd>
+<dt><a name="GUC-LOG-MIN-MESSAGES"></a><tt class="VARNAME">log_min_messages</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>控制写到服务器日志里的信息的详细程度。有效值是 <tt class="LITERAL">DEBUG5</tt>, <tt class="LITERAL">DEBUG4</tt>, <tt class="LITERAL">DEBUG3</tt>, <tt class="LITERAL">DEBUG2</tt>, <tt class="LITERAL">DEBUG1</tt>, <tt class="LITERAL">INFO</tt>, <tt class="LITERAL">NOTICE</tt>, <tt class="LITERAL">WARNING</tt>, <tt class="LITERAL">ERROR</tt>, <tt class="LITERAL">LOG</tt>, <tt class="LITERAL">FATAL</tt>, <tt class="LITERAL">PANIC</tt> 。每个级别都包含它后面的级别。越靠后的数值发往服务器日志的信息越少。缺省是 <tt class="LITERAL">NOTICE</tt> 。需要注意的是这里的 <tt class="LITERAL">LOG</tt> 和 <tt class="VARNAME">client_min_messages</tt> 里的级别不同。只有超级用户可以修改这个设置。</p></dd>
+<dt><a name="GUC-LOG-ERROR-VERBOSITY"></a><tt class="VARNAME">log_error_verbosity</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>控制记录的每条信息写到服务器日志里的详细程度。有效的值是 <tt class="LITERAL">TERSE</tt>, <tt class="LITERAL">DEFAULT</tt>, <tt class="LITERAL">VERBOSE</tt> ，逐个向显示的信息里增加更多的字段。只有超级用户可以改变这个设置。</p></dd>
+<dt><a name="GUC-LOG-MIN-ERROR-STATEMENT"></a><tt class="VARNAME">log_min_error_statement</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>控制是否在服务器日志里输出那些导致错误条件的 SQL 语句。所有导致一个特定级别(或者更高级别)错误的 SQL 语句都要被记录。有效的值有 <tt class="LITERAL">DEBUG5</tt>, <tt class="LITERAL">DEBUG4</tt>, <tt class="LITERAL">DEBUG3</tt>, <tt class="LITERAL">DEBUG2</tt>, <tt class="LITERAL">DEBUG1</tt>, <tt class="LITERAL">INFO</tt>, <tt class="LITERAL">NOTICE</tt>, <tt class="LITERAL">WARNING</tt>, <tt class="LITERAL">ERROR</tt>, <tt class="LITERAL">FATAL</tt>, <tt class="LITERAL">PANIC</tt> 。缺省是 <tt class="LITERAL">ERROR</tt> ，表示所有导致错误、致命错误、恐慌的 SQL 语句都将被记录。设置为 <tt class="LITERAL">PANIC</tt> 表示把这个特性关闭。只有超级用户可以改变这个设置。</p></dd>
+<dt><a name="GUC-LOG-MIN-DURATION-STATEMENT"></a><tt class="VARNAME">log_min_duration_statement</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>如果某个语句的持续时间大于或者等于这个毫秒数，那么在日志行上记录该语句及其持续时间。设置为零将打印所有查询和他们的持续时间。设置为-1(缺省值)关闭这个功能。比如，如果你把它设置为 <tt class="LITERAL">250ms</tt> ，那么所有运行时间等于或者超过 250ms 的 SQL 语句都会被记录。打开这个选项可以很方便地跟踪需要优化的查询。只有超级用户可以改变这个设置。</p>
+<p>对于使用扩展查询协议的客户端，语法分析、邦定、执行每一步所花时间都分别记录。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>当此选项与 <a href="runtime-config-logging.html#GUC-LOG-STATEMENT">log_statement</a> 同时使用时，已经被 <tt class="VARNAME">log_statement</tt> 记录的语句文本不会被重复记录。如果没有使用 <span class="APPLICATION">syslog</span> 的话，推荐使用 <a href="runtime-config-logging.html#GUC-LOG-LINE-PREFIX">log_line_prefix</a> 记录 PID 或会话 ID ，这样就可以使用它们将语句消息连接耗时消息。</p>
+</blockquote>
+</div></dd>
+<dt><a name="GUC-SILENT-MODE"></a><tt class="VARNAME">silent_mode</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>安静的运行服务器。如果设置了这个选项，服务器将自动在后台运行并且与控制终端脱开。服务器的标准输出和标准错误将重定向到 <tt class="LITERAL">/dev/null</tt> ，因此，发送的任何信息都将丢失。除非打开了 <span class="APPLICATION">syslog</span> 日志或者 <tt class="VARNAME">redirect_stderr</tt> ，否则我们不建议使用这个选项，因为它让我们很难看到错误信息。这个值只能在服务器启动的时候设置。</p></dd>
+</dl>
+</div>
+<p>这里是这个设置里用到各种信息严重程度类型的一个列表：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">DEBUG[1-5]</tt></dt>
+<dd><p>提供开发人员使用的信息。</p></dd>
+<dt><tt class="LITERAL">INFO</tt></dt>
+<dd><p>提供用户隐含要求的信息，比如在 <tt class="COMMAND">VACUUM VERBOSE</tt> 过程中的信息。</p></dd>
+<dt><tt class="LITERAL">NOTICE</tt></dt>
+<dd><p>提供可能对用户有帮助的信息，比如，长标识符的截断，作为主键一部分创建的索引。</p></dd>
+<dt><tt class="LITERAL">WARNING</tt></dt>
+<dd><p>提供给用户的警告，比如在事务块范围之外的 <tt class="COMMAND">COMMIT</tt> 。</p></dd>
+<dt><tt class="LITERAL">ERROR</tt></dt>
+<dd><p>报告导致当前命令退出的错误。</p></dd>
+<dt><tt class="LITERAL">LOG</tt></dt>
+<dd><p>报告一些管理员感兴趣的信息，比如，检查点活跃性。</p></dd>
+<dt><tt class="LITERAL">FATAL</tt></dt>
+<dd><p>报告导致当前会话终止的原因。</p></dd>
+<dt><tt class="LITERAL">PANIC</tt></dt>
+<dd><p>报告导致所有会话退出的原因。</p></dd>
+</dl>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="RUNTIME-CONFIG-LOGGING-WHAT">17.7.3. 记录什么</a></h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="VARNAME">debug_print_parse</tt> (<tt class="TYPE">boolean</tt>)<br><tt class="VARNAME">debug_print_rewritten</tt> (<tt class="TYPE">boolean</tt>)<br><tt class="VARNAME">debug_print_plan</tt> (<tt class="TYPE">boolean</tt>)<br><tt class="VARNAME">debug_pretty_print</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>这些选项打开各种调试输出。对于执行的每个查询，它们打印生成的分析树、查询重写或者执行规划。<tt class="VARNAME">debug_pretty_print</tt> 把这些输出进行缩进，会生成易读但是长一些的输出格式。<tt class="VARNAME">client_min_messages</tt> 或 <tt class="VARNAME">log_min_messages</tt> 必须是 <tt class="LITERAL">DEBUG1</tt> 或者更低才把输出实际发往客户端或者服务器日志。这些选项缺省都是关闭的。</p></dd>
+<dt><a name="GUC-LOG-CONNECTIONS"></a><tt class="VARNAME">log_connections</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>在每次成功连接的时候都向服务器日志里打印一行详细信息。缺省时是关闭的，尽管它可能很有用。有些客户端程序，比如 <span class="APPLICATION">psql</span> ，在判断是否需要口令的时候试图连接两次，因此，重复的"connection receive"(收到连接请求)并不意味着一定是问题。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-LOG-DISCONNECTIONS"></a><tt class="VARNAME">log_disconnections</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>这个选项类似 <tt class="VARNAME">log_connections</tt> ，但是在会话结束的时候在服务器日志里输出一行。缺省是关闭的。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-LOG-DURATION"></a><tt class="VARNAME">log_duration</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>记录每个已完成语句的持续时间。默认值是 <tt class="LITERAL">off</tt> 。只有超级用户可以改变这个设置。</p>
+<p>对于使用扩展查询协议的客户端，语法分析、邦定、执行每一步所花时间都分别记录。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>设置为 0 时该选项与 <a href="runtime-config-logging.html#GUC-LOG-MIN-DURATION-STATEMENT">log_min_duration_statement</a> 的不同之处在于 <tt class="VARNAME">log_min_duration_statement</tt> 强制记录查询文本。因此，如果 <tt class="VARNAME">log_duration</tt> 为 <tt class="LITERAL">on</tt> 并且 <tt class="VARNAME">log_min_duration_statement</tt> 大于零将记录所有持续时间，但是仅记录那些超过阈值的语句。这可以用于在高负载情况下搜集统计信息。</p>
+</blockquote>
+</div></dd>
+<dt><a name="GUC-LOG-LINE-PREFIX"></a><tt class="VARNAME">log_line_prefix</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>这是一个 <code class="FUNCTION">printf</code> 风格的字符串，在日志的每行开头输出。缺省是空字符串。下面列出每个可识别的逃逸，任何其它看起来像逃逸的都会被忽略。其它字符都直接拷贝到日志行中。有些逃逸只被会话进程识别，不能应用于后端进程，比如主服务器进程。<span class="APPLICATION">Syslog</span> 生成自己的时间戳和进程 ID 信息，因此，如果你使用了 <span class="APPLICATION">syslog</span> ，可能没必要使用那些逃逸。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。
+<div class="INFORMALTABLE"><a name="AEN21179"></a>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>逃逸</th><th>效果</th><th>仅用于会话</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">%u</tt></td><td>用户名</td><td>是</td></tr>
+<tr><td><tt class="LITERAL">%d</tt></td><td>数据库名</td><td>是</td></tr>
+<tr><td><tt class="LITERAL">%r</tt></td><td>远程主机名或者 IP 地址以及远端端口</td><td>是</td></tr>
+<tr><td><tt class="LITERAL">%h</tt></td><td>远程主机名或者 IP 地址</td><td>是</td></tr>
+<tr><td><tt class="LITERAL">%p</tt></td><td>进程 ID</td><td>否</td></tr>
+<tr><td><tt class="LITERAL">%t</tt></td><td>时间戳(没有毫秒，Windows 上没有时区)</td><td>否</td></tr>
+<tr><td><tt class="LITERAL">%m</tt></td><td>带毫秒的时间戳</td><td>否</td></tr>
+<tr><td><tt class="LITERAL">%i</tt></td><td>命令标签。这是生成日志行的命令。</td><td>是</td></tr>
+<tr><td><tt class="LITERAL">%c</tt></td><td>会话 ID 。每个会话的唯一标识符。它是两个 4 字节的十六进制数字(没有前导零)，用句点分开。数字是会话开始时间和进程 ID ，因此也可以用做一种打印这些项目的节约空间的方法。</td><td>是</td></tr>
+<tr><td><tt class="LITERAL">%l</tt></td><td>每个进程的日志行编号，从 1 开始。</td><td>否</td></tr>
+<tr><td><tt class="LITERAL">%s</tt></td><td>会话开始的时间戳</td><td>是</td></tr>
+<tr><td><tt class="LITERAL">%x</tt></td><td>事务 ID</td><td>是</td></tr>
+<tr><td><tt class="LITERAL">%q</tt></td><td>不生成任何输出，但是告诉非会话进程在字符串的这个位置停止。被会话进程忽略。</td><td>否</td></tr>
+<tr><td><tt class="LITERAL">%%</tt></td><td><tt class="LITERAL">%</tt> 文本</td><td>否</td></tr>
+</tbody>
+</table>
+</div></P></dd>
+<dt><a name="GUC-LOG-STATEMENT"></a><tt class="VARNAME">log_statement</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>控制记录哪些 SQL 语句。有效的值是 <tt class="LITERAL">none</tt>, <tt class="LITERAL">ddl</tt>, <tt class="LITERAL">mod</tt>, <tt class="LITERAL">all</tt> 。<tt class="LITERAL">ddl</tt> 记录所有数据定义命令，比如 <tt class="COMMAND">CREATE</tt>, <tt class="COMMAND">ALTER</tt>, <tt class="COMMAND">DROP</tt> 语句。<tt class="LITERAL">mod</tt> 记录所有 <tt class="LITERAL">ddl</tt> 语句，加上数据修改语句 <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">TRUNCATE</tt>, <tt class="COMMAND">COPY FROM</tt> 。如果所包含的命令类型吻合，那么 <tt class="COMMAND">PREPARE</tt>, <tt class="COMMAND">EXECUTE</tt>, <tt class="COMMAND">EXPLAIN ANALYZE</tt> 语句也同样被记录。对于使用扩展查询协议的客户端，记录发生在接受到扩展信息并包含邦定参数(内置单引号要双写)的时候。</p>
+<p>缺省是 <tt class="LITERAL">none</tt> 。只有超级用户可以改变这个设置。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>即使设置了 <tt class="VARNAME">log_statement</tt> = <tt class="LITERAL">all</tt>  ，包含简单语法错误的语句也不会被记录。因为仅在完成基本的语法分析并确定了语句类型之后才记录日志。在使用扩展查询协议的情况下，在执行阶段之前(语法分析或规划阶段)同样不会记录。将 <tt class="VARNAME">log_min_error_statement</tt> 设为 <tt class="LITERAL">ERROR</tt> 或更低才能记录这些语句。</p>
+</blockquote>
+</div></dd>
+<dt><a name="GUC-LOG-HOSTNAME"></a><tt class="VARNAME">log_hostname</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>缺省时，连接日志只记录所连接主机的 IP 地址。打开这个选项导致同时记录主机名。请注意，这样有可能带来一些不可忽略的性能损失(取决于你的名字解析的设置)。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+</dl>
+</div>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="runtime-config-query.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="runtime-config-statistics.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">查询规划</td><td width="34%" align="center" valign="top"><a href="runtime-config.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">运行时统计</td></tr>
+</table>
+</div>
+</body></html>

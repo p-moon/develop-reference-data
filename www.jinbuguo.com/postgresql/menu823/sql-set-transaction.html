@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SET TRANSACTION</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-set-session-authorization.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-set-session-authorization.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-show.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-show.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-SET-TRANSACTION"></a>SET TRANSACTION</h1>
+<div class="REFNAMEDIV"><a name="AEN54627"></a><h2>名称</h2>SET TRANSACTION&nbsp;--&nbsp;设置当前事务的特性</div>
+<a name="AEN54630"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN54632"></a><h2>语法</h2>
+<pre class="SYNOPSIS">SET TRANSACTION <tt class="REPLACEABLE"><i>transaction_mode</i></tt> [, ...]
+SET SESSION CHARACTERISTICS AS TRANSACTION <tt class="REPLACEABLE"><i>transaction_mode</i></tt> [, ...]
+
+这里的 <tt class="REPLACEABLE"><i>transaction_mode</i></tt> 是下列之一：
+
+    ISOLATION LEVEL { SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED }
+    READ WRITE | READ ONLY</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54637"></a><h2>描述</h2>
+<p><tt class="COMMAND">SET TRANSACTION</tt> 命令为当前事务设置特性。它对后面的事务没有影响。<tt class="COMMAND">SET SESSION CHARACTERISTICS</tt> 为一个会话中随后的每个事务设置缺省的隔离级别。这些缺省可以被 <tt class="COMMAND">SET TRANSACTION</tt> 为一个独立的事务覆盖。</p>
+<p>可用的事务特性是事务隔离级别和事务访问模式(读/写或者只读)。</p>
+<p>事务的隔离级别决定一个事务在同时存在其它并发运行的事务时它能够看到什么数据：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">READ COMMITTED</tt></dt>
+<dd><p>一条语句只能看到在它开始之前的数据。这是缺省。</p></dd>
+<dt><tt class="LITERAL">SERIALIZABLE</tt></dt>
+<dd><p>当前事务中的所有语句只能看到在这次事务第一条查询或者修改数据的语句执行之前的数据。</p></dd>
+</dl>
+</div>
+<p>SQL 标准还定义了另外两个级别，<tt class="LITERAL">READ UNCOMMITTED</tt> 和 <tt class="LITERAL">REPEATABLE READ</tt> 。在 PostgreSQL 里 <tt class="LITERAL">READ UNCOMMITTED</tt> 被当作 <tt class="LITERAL">READ COMMITTED</tt> ，<tt class="LITERAL">REPEATABLE READ</tt> 被当作 <tt class="LITERAL">SERIALIZABLE</tt></p>
+<p>事务隔离级别在事务中第一个数据修改语句(<tt class="COMMAND">SELECT</tt>, <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">FETCH</tt>, <tt class="COMMAND">COPY</tt>)执行之后就不能再次设置。参阅<a href="mvcc.html">章12</a>获取有关事务隔离级别和并发性控制的更多信息。</p>
+<p>事务访问模式决定事务是读/写还是只读。读/写是缺省。如果一个事务是只读，而且写入的表不是临时表，那么下面的 SQL 命令是不允许的：<tt class="LITERAL">INSERT</tt>, <tt class="LITERAL">UPDATE</tt>, <tt class="LITERAL">DELETE</tt>, <tt class="LITERAL">COPY FROM</tt> ；而所有的 <tt class="LITERAL">CREATE</tt>, <tt class="LITERAL">ALTER</tt>, <tt class="LITERAL">DROP</tt>, <tt class="LITERAL">COMMENT</tt>, <tt class="LITERAL">GRANT</tt>, <tt class="LITERAL">REVOKE</tt>, <tt class="LITERAL">TRUNCATE</tt>, <tt class="LITERAL">EXPLAIN ANALYZE</tt>, <tt class="LITERAL">EXECUTE</tt> 都不允许。这是一个高层次的只读概念，它并不阻止所有对磁盘的写入。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54685"></a><h2>注意</h2>
+<p>如果执行 <tt class="COMMAND">SET TRANSACTION</tt> 之前没有执行 <tt class="COMMAND">START TRANSACTION</tt> 或 <tt class="COMMAND">BEGIN</tt> ，那么它会显得没有效果一样，因为事务将立即结束。</p>
+<p>可以用在 <tt class="COMMAND">BEGIN</tt> 或 <tt class="COMMAND">START TRANSACTION</tt> 里面声明所需要的 <tt class="REPLACEABLE"><i>transaction_modes</i></tt> 的方法来避免使用 <tt class="COMMAND">SET TRANSACTION</tt> 。</p>
+<p>会话的缺省事务隔离级别也可以通过设置配置参数 <a href="runtime-config-client.html#GUC-DEFAULT-TRANSACTION-ISOLATION">default_transaction_isolation</a> 和 <a href="runtime-config-client.html#GUC-DEFAULT-TRANSACTION-READ-ONLY">default_transaction_read_only</a> 的方法来设置(实际上 <tt class="COMMAND">SET SESSION CHARACTERISTICS</tt> 只是一个用 <tt class="COMMAND">SET</tt> 来设置这些参数的冗长等效物)。这就意味着缺省值可以通过 <tt class="COMMAND">ALTER DATABASE</tt> 或在配置文件里等方法设置。参考<a href="runtime-config.html">章17</a>获取更多信息。</p>
+</div>
+<div class="REFSECT1"><a name="R1-SQL-SET-TRANSACTION-3"></a><h2>兼容性</h2>
+<p>两个命令都在 SQL 标准里定义了。SQL 里的缺省事务隔离级别是 <tt class="LITERAL">SERIALIZABLE</tt> ；但在 PostgreSQL 里，缺省隔离级别是 <tt class="LITERAL">READ COMMITTED</tt> ，但是你可以用上面描述的方法修改它。因为缺少谓词锁定 <tt class="LITERAL">SERIALIZABLE</tt> 级别并非真正的可串行化。参阅<a href="mvcc.html">章12</a>获取细节。</p>
+<p>在 SQL 标准里还有另外一种事务特性可以用这些命令设置：诊断范围的大小。这个概念只用于嵌入式 SQL ，因此没有在 PostgreSQL 服务器里实现。</p>
+<p>SQL 标准要求在相连的 <tt class="REPLACEABLE"><i>transaction_modes</i></tt> 之间使用逗号，但是因为历史原因，PostgreSQL 允许省略这个逗号。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-set-session-authorization.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-show.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SET SESSION AUTHORIZATION</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SHOW</td></tr>
+</table>
+</div>
+</body></html>

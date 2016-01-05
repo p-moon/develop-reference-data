@@ -1,0 +1,69 @@
+## config.layout -- 预定义的安装路径布局
+## 简要说明:
+## 1) 使用"--enable-layout=LAYOUT"指令启用指定的布局
+## 2) 只使用"--enable-layout", 而不指定LAYOUT, 相当于"--enable-layout=Apache"
+
+# 默认布局
+<Layout Apache>
+
+    prefix:        /usr/local/apache2
+#体系无关文件的顶级安装目录，也就Apache的安装目录。
+
+    exec_prefix:   ${prefix}
+#体系相关文件的顶级安装目录，把体系相关的文件安装到不同的位置可以比较方便地在不同主机之间共享体系相关的文件。
+
+    bindir:        ${exec_prefix}/bin
+#用户可执行目录，用于存放对网站管理员很有帮助的 htpasswd, dbmmanage 之类的支持程序
+
+    sbindir:       ${exec_prefix}/bin
+#系统管理员可执行目录，用于存放运行HTTP服务器所必须的 httpd, apachectl, suexec 之类的服务程序(通常需要管理员权限)
+
+    libdir:        ${exec_prefix}/lib
+#对象代码库目录
+
+    libexecdir:    ${exec_prefix}/modules
+#程序可执行目录，也就是动态加载模块目录
+
+    mandir:        ${prefix}/man
+#手册文档目录
+
+    sysconfdir:    ${prefix}/conf
+#只读的单一机器数据目录，用于存放 httpd.conf, mime.types 之类的服务器配置文件
+
+    datadir:       ${prefix}
+#Web服务器只读的体系无关数据目录
+
+    installbuilddir: ${datadir}/build
+#编译系统文件目录
+
+    errordir:      ${datadir}/error
+#默认错误文档目录
+
+    iconsdir:      ${datadir}/icons
+#只读图标文件目录
+
+    htdocsdir:     ${datadir}/htdocs
+#Web页面的默认位置
+
+    manualdir:     ${datadir}/manual
+#在线手册文档目录
+
+    cgidir:        ${datadir}/cgi-bin
+#默认CGI脚本目录
+
+    includedir:    ${prefix}/include
+#Apache的C头文件目录
+
+    localstatedir: ${prefix}
+#可写的单一机器数据目录
+
+    runtimedir:    ${localstatedir}/logs
+#运行时数据目录
+
+    logfiledir:    ${localstatedir}/logs
+#日志文件目录
+
+    proxycachedir: ${localstatedir}/proxy
+#代理缓存文件目录
+
+</Layout>

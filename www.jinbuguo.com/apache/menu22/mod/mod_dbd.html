@@ -1,0 +1,196 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_dbd － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_dbd</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>管理SQL数据库连接，为需要数据库功能的模块提供支持</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>dbd_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_dbd.c</td></tr>
+<tr><th><a href="module-dict.html#Compatibility">兼容性</a></th><td>Version 2.1 及以后的版本中可用</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p><code class="module"><a href="../mod/mod_dbd.html">mod_dbd</a></code>使用<a href="http://people.apache.org/~niq/dbd.html">apr_dbd</a>管理管理SQL数据库连接。它为需要数据库功能的模块提供了数据库连接支持，并且负责管理数据库，从而为线程和非线程型的MPM提供了最佳的性能和可伸缩性。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="pooling" id="pooling">连接池</a></h2>
+    <p>这个模块根据不同的平台以优化的方式管理数据库连接。在非线程平台上，它使用经典的LAMP(Linux, Apache, Mysql, Perl/PHP/Python)方式提供持久连接。在线程化的平台上，它提供了更具伸缩性和更加有效的<em>连接池</em>，在<a href="http://www.apachetutor.org/dev/reslist">一篇ApacheTutor文章</a>中有相关描述。<code class="module"><a href="../mod/mod_dbd.html">mod_dbd</a></code>取代了那篇文章中的模块。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="API" id="API">Apache DBD API</a></h2>
+    <p><code class="module"><a href="../mod/mod_dbd.html">mod_dbd</a></code>提供了5个函数供其它模块使用。具体的API如下：</p>
+
+    <div class="example"><pre><code>typedef struct {
+    apr_dbd_t *handle;
+    apr_dbd_driver_t *driver;
+    apr_hash_t *prepared;
+} ap_dbd_t;
+
+/* Export functions to access the database */
+
+/* acquire a connection that MUST be explicitly closed.
+ * Returns NULL on error
+ */
+AP_DECLARE(ap_dbd_t*) ap_dbd_open(apr_pool_t*, server_rec*);
+
+/* release a connection acquired with ap_dbd_open */
+AP_DECLARE(void) ap_dbd_close(server_rec*, ap_dbd_t*);
+
+/* acquire a connection that will have the lifetime of a request
+ * and MUST NOT be explicitly closed.  Return NULL on error.
+ * This is the preferred function for most applications.
+ */
+AP_DECLARE(ap_dbd_t*) ap_dbd_acquire(request_rec*);
+
+/* acquire a connection that will have the lifetime of a connection
+ * and MUST NOT be explicitly closed.  Return NULL on error.
+ */
+AP_DECLARE(ap_dbd_t*) ap_dbd_cacquire(request_rec*);
+
+/* Prepare a statement for use by a client module */
+AP_DECLARE(void) ap_dbd_prepare(server_rec*, const char*, const char*);
+
+/* Also export them as optional functions for modules that prefer it */
+APR_DECLARE_OPTIONAL_FN(ap_dbd_t*, ap_dbd_open, (apr_pool_t*, server_rec*));
+APR_DECLARE_OPTIONAL_FN(void, ap_dbd_close, (server_rec*, ap_dbd_t*));
+APR_DECLARE_OPTIONAL_FN(ap_dbd_t*, ap_dbd_acquire, (request_rec*));
+APR_DECLARE_OPTIONAL_FN(ap_dbd_t*, ap_dbd_cacquire, (conn_rec*));
+APR_DECLARE_OPTIONAL_FN(void, ap_dbd_prepare, (server_rec*, const char*, const char*));
+</code></pre></div>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="prepared" id="prepared">SQL预处理语句</a></h2>
+    <p><code class="module"><a href="../mod/mod_dbd.html">mod_dbd</a></code>支持SQL预处理语句(prepared statement)，某些模块可能希望使用它。必须为每一个预处理语句分配一个名字(label)，它们将以hash方式存储：<code>ap_dbd_t</code>的<code>prepared</code>字段。Hash项为<code>apr_dbd_prepared_t</code>类型，并可以被用于任何apr_dbd预处理语句(SQL查询或select命令)。</p>
+    <p>dbd的用户模块可以决定是否使用预处理语句以及在httpd.conf中能够使用什么样的语句，或者使用<code>ap_dbd_prepare</code>提供它们自己的指令。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DBDExptime" id="DBDExptime">DBDExptime</a> <a name="dbdexptime" id="dbdexptime">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>空闲连接的持续时间</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DBDExptime <var>time-in-seconds</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dbd</td></tr>
+</table>
+    <p>设置在超出DBDKeep指定的连接数时空闲连接允许的持续时间(仅用于线程化平台)。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DBDKeep" id="DBDKeep">DBDKeep</a> <a name="dbdkeep" id="dbdkeep">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>每个进程持有的连接数</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DBDKeep <var>number</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dbd</td></tr>
+</table>
+    <p>设置每个进程持有的连接数，不同于为了处理最高负荷的DBDMax指令(仅用于线程化平台)。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DBDMax" id="DBDMax">DBDMax</a> <a name="dbdmax" id="dbdmax">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>每个进程允许持有的最大连接数硬限制</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DBDMax <var>number</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dbd</td></tr>
+</table>
+    <p>设置每个进程允许持有的最大连接数硬限制(仅用于线程化平台)。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DBDMin" id="DBDMin">DBDMin</a> <a name="dbdmin" id="dbdmin">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>每个进程必须持有的最小连接数</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DBDMin <var>number</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dbd</td></tr>
+</table>
+    <p>设置每个进程必须持有的最小连接数(仅用于线程化平台)。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DBDParams" id="DBDParams">DBDParams</a> <a name="dbdparams" id="dbdparams">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>数据库的连接参数</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DBDParams <var>param1</var>=<var>value1</var>[,<var>param2</var>=<var>value2</var>]</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dbd</td></tr>
+</table>
+    <p>设置底层驱动程序所必须的连接参数。通常这些参数都是无法在连接时使用默认值的参数，比如：用户名、密码、数据库名、主机名、端口号。</p>
+    <p>当前的驱动程序所需要的连接字符串参数包括：</p>
+    <dl>
+    <dt>MySQL</dt>
+    <dd>host, port, user, pass, dbname, sock</dd> 
+    <dt>Oracle</dt>
+    <dd>user, pass, dbname, server</dd> 
+    <dt>PostgreSQL</dt>
+    <dd>直接通过<code>PQconnectdb</code>传递</dd>
+    <dt>SQLite2</dt>
+    <dd>使用分号分割，<code>part1:part2</code>将作为<code>sqlite_open(part1, atoi(part2), NULL)</code>使用。</dd>
+    <dt>SQLite3</dt>
+    <dd>直接通过<code>sqlite3_open</code>传递</dd>
+    </dl>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DBDPersist" id="DBDPersist">DBDPersist</a> <a name="dbdpersist" id="dbdpersist">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>是否使用持久连接</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DBDPersist 0|1</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dbd</td></tr>
+</table>
+    <p>设为0表示禁用持久连接和连接池。当客户端请求时建立新连接，完成请求后立即关闭连接。通常仅在调试或负载很低的情况下使用。</p>
+
+    <p>1(默认)表示启用一个持久链接池(或者在非线程型平台上使用一个单独的LAMP风格的持久连接)。应当在绝大多数情况下使用。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DBDPrepareSQL" id="DBDPrepareSQL">DBDPrepareSQL</a> <a name="dbdpreparesql" id="dbdpreparesql">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>定义一个SQL预处理语句</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DBDPrepareSQL <var>"SQL statement"</var> <var>label</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dbd</td></tr>
+</table>
+    <p>对于认证之类反复使用同一个SQL语句的模块，通过在启动时预处理指定的SQL语句而不是在每次使用时处理可以获得的最佳性能。该指令可以定义一个SQL预处理语句并为其分配一个标签(label)。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DBDriver" id="DBDriver">DBDriver</a> <a name="dbdriver" id="dbdriver">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>指定一个数据库驱动程序</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DBDriver <var>name</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dbd</td></tr>
+</table>
+    <p>通过名字选择一个apr_dbd驱动程序。该驱动程序必须已经安装在你的系统上了(在Unix上是一个共享对象，在Windows上是一个动态连接库)。比如：<code>DBDriver mysql</code>表示选择apr_dbd_mysql.so中的MySQL驱动程序，而<code>DBDriver pgsql</code>则表示选择apr_dbd_pgsql.so中的PostgreSQL驱动程序。</p>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

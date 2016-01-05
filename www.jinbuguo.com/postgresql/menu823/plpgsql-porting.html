@@ -1,0 +1,433 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>从 Oracle PL/SQL 进行移植</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plpgsql-trigger.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plpgsql.html">快退</a></td><td width="60%" align="center" valign="bottom">章37. PL/pgSQL - SQL 过程语言</td><td width="10%" align="right" valign="top"><a href="plpgsql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="pltcl.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLPGSQL-PORTING">37.11. 从 Oracle PL/SQL 进行移植</a></h1><a name="AEN40656"></a><a name="AEN40659"></a>
+<p>本节解释了 Oracle 的 PL/SQL 和 PostgreSQL 的 PL/pgSQL 语言之间的差别，希望能对那些从 Oracle 向 PostgreSQL 移植应用的人有所帮助。</p>
+<p>PL/pgSQL 与 PL/SQL 在许多方面都非常类似。它是一种块结构的，祈使语气(命令性)的语言并且必须声明所有变量。赋值、循环、条件等都很类似。在从 Oracle 向 PostgreSQL 移植的时候必须记住一些事情：</p>
+<ul>
+<li><p>在 PostgreSQL 中参数没有缺省值。</p></li>
+<li><p>你可以在 PostgreSQL 里重载函数。这个特性常用于绕开缺乏缺省参数的问题。</p></li>
+<li><p>不能使用已被函数引用的列同名的参数名。如果把参数名用 <tt class="LITERAL">function_name.parameter_name</tt> 限定的话，Oracle 允许你这样做。在 PL/pgSQL 中，你应该避免与列名或表名冲突。</p></li>
+<li><p>在PL/pgSQL里不需要游标，只要把命令放在 <tt class="LITERAL">FOR</tt> 语句里就可以了(见<a href="plpgsql-porting.html#PLPGSQL-PORTING-EX2">例37-6</a>)。</p></li>
+<li><p>在 PostgreSQL 里，函数体必须写成字符串文本，因此你需要使用美元符界定或者逃逸函数体里面的单引号(见<a href="plpgsql-development-tips.html#PLPGSQL-QUOTE-TIPS">节37.2.1</a>)。</p></li>
+<li><p>应该用模式把函数组织成不同的组，而不是用包。</p></li>
+<li><p>因为没有包，所以也没有包级别的变量。这一点有时候挺讨厌。你可以在临时表里保存会话级别的状态。</p></li>
+</ul>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN40696">37.11.1. 移植样例</a></h2>
+<p><a href="plpgsql-porting.html#PGSQL-PORTING-EX1">例37-5</a> 演示了如何从 PL/SQL 向 PL/pgSQL 移植一个简单的函数。</p>
+<div class="EXAMPLE"><a name="PGSQL-PORTING-EX1"></a>
+<p><b>例37-5. 从 PL/SQL 向 PL/pgSQL 移植一个简单的函数</b></p>
+<p>下面是一个 Oracle PL/SQL 函数：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION cs_fmt_browser_version(v_name varchar,
+                                                  v_version varchar)
+RETURN varchar IS
+BEGIN
+    IF v_version IS NULL THEN
+        RETURN v_name;
+    END IF;
+    RETURN v_name || '/' || v_version;
+END;
+/
+show errors;</pre>
+<p>让我们读一遍这个函数然后看看 PL/pgSQL 与之的不同：</p>
+<ul>
+<li><p>在函数原型里的 <tt class="LITERAL">RETURN</tt>(不是函数体里的)关键字到了 PostgreSQL 里就是 <tt class="LITERAL">RETURNS</tt> 。还有，<tt class="LITERAL">IS</tt> 变成 <tt class="LITERAL">AS</tt> ，并且你还需要增加一个 <tt class="LITERAL">LANGUAGE</tt> 子句，因为 PL/pgSQL 并非唯一可用的函数语言。</p></li>
+<li><p>在 PostgreSQL 里，函数体被认为是一个字符串文本，所以你需要使用单引号或者美元符界定它，这个包围符代替了 Oracle 最后的那个 <tt class="LITERAL">/</tt> </p></li>
+<li><p>在 PostgreSQL 里没有 <tt class="LITERAL">show errors</tt> 命令，不需要这个命令是因为错误是自动报告的。</p></li>
+</ul>
+<p>下面是这个函数移植到 PostgreSQL 之后的样子：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION cs_fmt_browser_version(v_name varchar,
+                                                  v_version varchar)
+RETURNS varchar AS $$
+BEGIN
+    IF v_version IS NULL THEN
+        RETURN v_name;
+    END IF;
+    RETURN v_name || '/' || v_version;
+END;
+$$ LANGUAGE plpgsql;</pre>
+</div>
+<p><a href="plpgsql-porting.html#PLPGSQL-PORTING-EX2">例37-6</a>演示了如何移植一个创建另外一个函数的函数的方法，以及演示了如何处理引号逃逸的问题。</p>
+<div class="EXAMPLE"><a name="PLPGSQL-PORTING-EX2"></a>
+<p><b>例37-6. 从 PL/SQL 向 PL/pgSQL 移植一个创建其它函数的函数</b></p>
+<p>下面的过程从一个 <tt class="COMMAND">SELECT</tt> 语句中抓取若干行，然后为了提高效率，又用 <tt class="LITERAL">IF</tt> 语句中的结果制作了一个巨大的函数。请特别注意在游标和 <tt class="LITERAL">FOR</tt> 循环里面的不同。</p>
+<p>这是 Oracle 的版本：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE PROCEDURE cs_update_referrer_type_proc IS
+    CURSOR referrer_keys IS 
+        SELECT * FROM cs_referrer_keys 
+        ORDER BY try_order;
+
+    func_cmd VARCHAR(4000); 
+BEGIN 
+    func_cmd := 'CREATE OR REPLACE FUNCTION cs_find_referrer_type(v_host IN VARCHAR,
+                 v_domain IN VARCHAR, v_url IN VARCHAR) RETURN VARCHAR IS BEGIN'; 
+
+    FOR referrer_key IN referrer_keys LOOP 
+        func_cmd := func_cmd ||
+          ' IF v_' || referrer_key.kind
+          || ' LIKE ''' || referrer_key.key_string
+          || ''' THEN RETURN ''' || referrer_key.referrer_type
+          || '''; END IF;'; 
+    END LOOP; 
+
+    func_cmd := func_cmd || ' RETURN NULL; END;'; 
+
+    EXECUTE IMMEDIATE func_cmd; 
+END; 
+/ 
+show errors;</pre>
+<p>面是这个函数在 PostgreSQL 里面的样子：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION cs_update_referrer_type_proc() RETURNS void AS $func$
+DECLARE
+    referrer_key RECORD;  -- 声明一个在 FOR 里用的通用的记录
+    func_body text;
+    func_cmd text;
+BEGIN 
+    func_body := 'BEGIN';
+
+    -- 请注意是如何在一个 FOR 循环中使用 FOR &lt;record&gt; 构造扫描各条结果的
+
+    FOR referrer_key IN SELECT * FROM cs_referrer_keys ORDER BY try_order LOOP
+        func_body := func_body ||
+          ' IF v_' || referrer_key.kind
+          || ' LIKE ' || quote_literal(referrer_key.key_string)
+          || ' THEN RETURN ' || quote_literal(referrer_key.referrer_type)
+          || '; END IF;' ;
+    END LOOP; 
+
+    func_body := func_body || ' RETURN NULL; END;';
+
+    func_cmd :=
+      'CREATE OR REPLACE FUNCTION cs_find_referrer_type(v_host varchar,
+                                                        v_domain varchar,
+                                                        v_url varchar) 
+        RETURNS varchar AS '
+      || quote_literal(func_body)
+      || ' LANGUAGE plpgsql;' ;
+
+    EXECUTE func_cmd;
+END;
+$func$ LANGUAGE plpgsql;</pre>
+<p>请注意函数体是如何独立制作并且传递给 <tt class="LITERAL">quote_literal</tt> ，对其中的单引号复制双份的。需要这个技巧是因为无法使用美元符界定定义新函数：没法保证 <tt class="STRUCTFIELD">referrer_key.key_string</tt> 字段过来的字符串会解析成什么样子。可以假设 <tt class="STRUCTFIELD">referrer_key.kind</tt> 是只有 <tt class="LITERAL">host</tt>, <tt class="LITERAL">domain</tt>, <tt class="LITERAL">url</tt> ，但是 <tt class="STRUCTFIELD">referrer_key.key_string</tt>可能是任何东西，特别是它可能包含美元符。这个函数实际上是对原来 Oracle 版本的一个改进，因为如果在 <tt class="STRUCTFIELD">referrer_key.key_string</tt> 或 <tt class="STRUCTFIELD">referrer_key.referrer_type</tt> 包含单引号的时候，它不会生成有毛病的代码。</p>
+</div>
+<p><a href="plpgsql-porting.html#PLPGSQL-PORTING-EX3">例37-7</a>演示了如何移植一个带有 <tt class="LITERAL">OUT</tt> 参数和字符串处理的函数。PostgreSQL 里面没有内置 <code class="FUNCTION">instr</code> 函数，但是你可以用其它函数的组合来绕开它。在<a href="plpgsql-porting.html#PLPGSQL-PORTING-APPENDIX">节37.11.3</a>里有一个 PL/pgSQL 的 <code class="FUNCTION">instr</code> 实现，你可以用它让你的移植变得更简单些。</p>
+<div class="EXAMPLE"><a name="PLPGSQL-PORTING-EX3"></a>
+<p><b>例37-7. 从 PL/SQL 向 PL/pgSQL 移植一个字符串操作和 <tt class="LITERAL">OUT</tt> 参数的过程</b></p>
+<p>下面的 Oracle PL/SQL 过程用于分析一个 URL 并且返回若干个元素(主机、路径、命令)。</p>
+<p>下面是 Oracle 的版本：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE PROCEDURE cs_parse_url(
+    v_url IN VARCHAR,
+    v_host OUT VARCHAR,  -- 这个变量是要传回的
+    v_path OUT VARCHAR,  -- 这个也是
+    v_query OUT VARCHAR) -- 还有这个
+IS
+    a_pos1 INTEGER;
+    a_pos2 INTEGER;
+BEGIN
+    v_host := NULL;
+    v_path := NULL;
+    v_query := NULL;
+    a_pos1 := instr(v_url, '//');
+
+    IF a_pos1 = 0 THEN
+        RETURN;
+    END IF;
+    a_pos2 := instr(v_url, '/', a_pos1 + 2);
+    IF a_pos2 = 0 THEN
+        v_host := substr(v_url, a_pos1 + 2);
+        v_path := '/';
+        RETURN;
+    END IF;
+
+    v_host := substr(v_url, a_pos1 + 2, a_pos2 - a_pos1 - 2);
+    a_pos1 := instr(v_url, '?', a_pos2 + 1);
+
+    IF a_pos1 = 0 THEN
+        v_path := substr(v_url, a_pos2);
+        RETURN;
+    END IF;
+
+    v_path := substr(v_url, a_pos2, a_pos1 - a_pos2);
+    v_query := substr(v_url, a_pos1 + 1);
+END;
+/
+show errors;</pre>
+<p>下面就是把这个过程翻译成 PL/pgSQL 可能的样子：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION cs_parse_url(
+    v_url IN VARCHAR,
+    v_host OUT VARCHAR,  -- 这个将被传回
+    v_path OUT VARCHAR,  -- 这个也传回
+    v_query OUT VARCHAR) -- 还有这个
+AS $$
+DECLARE
+    a_pos1 INTEGER;
+    a_pos2 INTEGER;
+BEGIN
+    v_host := NULL;
+    v_path := NULL;
+    v_query := NULL;
+    a_pos1 := instr(v_url, '//');
+
+    IF a_pos1 = 0 THEN
+        RETURN;
+    END IF;
+    a_pos2 := instr(v_url, '/', a_pos1 + 2);
+    IF a_pos2 = 0 THEN
+        v_host := substr(v_url, a_pos1 + 2);
+        v_path := '/';
+        RETURN;
+    END IF;
+
+    v_host := substr(v_url, a_pos1 + 2, a_pos2 - a_pos1 - 2);
+    a_pos1 := instr(v_url, '?', a_pos2 + 1);
+
+    IF a_pos1 = 0 THEN
+        v_path := substr(v_url, a_pos2);
+        RETURN;
+    END IF;
+
+    v_path := substr(v_url, a_pos2, a_pos1 - a_pos2);
+    v_query := substr(v_url, a_pos1 + 1);
+END;
+$$ LANGUAGE plpgsql;</pre>
+<p>这个函数可以这么用：</p>
+<pre class="PROGRAMLISTING">SELECT * FROM cs_parse_url('http://foobar.com/query.cgi?baz');</pre>
+</div>
+<p><a href="plpgsql-porting.html#PLPGSQL-PORTING-EX4">例37-8</a>演示了如何一个使用各种 Oracle 专有特性的过程。</p>
+<div class="EXAMPLE"><a name="PLPGSQL-PORTING-EX4"></a>
+<p><b>例37-8. 从 PL/SQL 向 PL/pgSQL 移植一个过程</b></p>
+<p>Oracle 版本：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE PROCEDURE cs_create_job(v_job_id IN INTEGER) IS
+    a_running_job_count INTEGER;
+    PRAGMA AUTONOMOUS_TRANSACTION;<a name="CO.PLPGSQL-PORTING-PRAGMA"><b>(1)</b></a>
+BEGIN
+    LOCK TABLE cs_jobs IN EXCLUSIVE MODE;<a name="CO.PLPGSQL-PORTING-LOCKTABLE"><b>(2)</b></a>
+
+    SELECT count(*) INTO a_running_job_count FROM cs_jobs WHERE end_stamp IS NULL;
+
+    IF a_running_job_count &gt; 0 THEN
+        COMMIT; -- free lock<a name="CO.PLPGSQL-PORTING-COMMIT"><b>(3)</b></a>
+        raise_application_error(-20000, 'Unable to create a new job: a job is currently running.');
+    END IF;
+
+    DELETE FROM cs_active_job;
+    INSERT INTO cs_active_job(job_id) VALUES (v_job_id);
+
+    BEGIN
+        INSERT INTO cs_jobs (job_id, start_stamp) VALUES (v_job_id, sysdate);
+    EXCEPTION
+        WHEN dup_val_on_index THEN NULL; -- 如果已经存在，别担心
+    END;
+    COMMIT;
+END;
+/
+show errors</pre>
+<p>像这样的过程可以很容易用返回 <tt class="TYPE">void</tt> 的函数移植到 PostgreSQL 里。对这个过程特别感兴趣是因为它可以教一些东西：
+<div class="CALLOUTLIST">
+<dl compact="COMPACT">
+<dt><a href="plpgsql-porting.html#CO.PLPGSQL-PORTING-PRAGMA"><b>(1)</b></a></dt>
+<dd>在 PostgreSQL 里没有 <tt class="LITERAL">PRAGMA</tt> 语句。</dd>
+<dt><a href="plpgsql-porting.html#CO.PLPGSQL-PORTING-LOCKTABLE"><b>(2)</b></a></dt>
+<dd>如果你在 PL/pgSQL 里做一个 <tt class="COMMAND">LOCK TABLE</tt> ，那么这个锁在调用该命令的事务完成之前将不会释放。</dd>
+<dt><a href="plpgsql-porting.html#CO.PLPGSQL-PORTING-COMMIT"><b>(3)</b></a></dt>
+<dd>你不能在 PL/pgSQL 函数里发出 <tt class="COMMAND">COMMIT</tt> 。函数是在外层的事务里运行的，因此 <tt class="COMMAND">COMMIT</tt> 蕴涵着结束函数的执行。不过，在这个特殊场合下，这是不必要的了，因为 <tt class="COMMAND">LOCK TABLE</tt> 获取的锁将在抛出错误的时候释放。</dd>
+</dl>
+</div></P>
+<p>下面是把这个过程移植到 PL/pgSQL 里的一种方法：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION cs_create_job(v_job_id integer) RETURNS void AS $$
+DECLARE
+    a_running_job_count integer;
+BEGIN
+    LOCK TABLE cs_jobs IN EXCLUSIVE MODE;
+
+    SELECT count(*) INTO a_running_job_count FROM cs_jobs WHERE end_stamp IS NULL;
+
+    IF a_running_job_count &gt; 0 THEN
+        RAISE EXCEPTION 'Unable to create a new job: a job is currently running';<a name="CO.PLPGSQL-PORTING-RAISE"><b>(1)</b></a>
+    END IF;
+
+    DELETE FROM cs_active_job;
+    INSERT INTO cs_active_job(job_id) VALUES (v_job_id);
+
+    BEGIN
+        INSERT INTO cs_jobs (job_id, start_stamp) VALUES (v_job_id, now());
+    EXCEPTION
+        WHEN unique_violation THEN <a name="CO.PLPGSQL-PORTING-EXCEPTION"><b>(2)</b></a>
+            -- 如果已经存在，别担心
+    END;
+END;
+$$ LANGUAGE plpgsql;</pre>
+<p><div class="CALLOUTLIST">
+<dl compact="COMPACT">
+<dt><a href="plpgsql-porting.html#CO.PLPGSQL-PORTING-RAISE"><b>(1)</b></a></dt>
+<dd><tt class="LITERAL">RAISE</tt> 的语法和Oracle的类似语句差别相当明显。</dd>
+<dt><a href="plpgsql-porting.html#CO.PLPGSQL-PORTING-EXCEPTION"><b>(2)</b></a></dt>
+<dd>PL/pgSQL 里支持的异常的名字和 Oracle 的不同。 PL/pgSQL 内置的异常名要大的多(参阅<a href="errcodes-appendix.html">附录A</a>)。目前还不能声明用户定义的异常名。</dd>
+</dl>
+</div>
+整个过程和 Oracle 的等效的主要的功能型差别是，在 <tt class="LITERAL">cs_jobs</tt> 上持有的排他锁将保持到调用的事务结束。同样，如果调用者后来退出(比如说因为错误)，这个过程的效果将被回滚掉。</p>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="PLPGSQL-PORTING-OTHER">37.11.2. 其它注意事项</a></h2>
+<p>本节解释几个从 Oracle PL/SQL 函数向 PostgreSQL 移植的几个其它方面的事情。</p>
+<div class="SECT3"><h3 class="SECT3"><a name="PLPGSQL-PORTING-EXCEPTIONS">37.11.2.1. 异常后的隐含回滚</a></h3>
+<p>在 PL/pgSQL 里，如果一个异常被 <tt class="LITERAL">EXCEPTION</tt> 子句捕获，那么所有自这个块的 <tt class="LITERAL">BEGIN</tt> 以来的数据库改变都会被自动回滚。也就是说，这个行为等于你在 Oracle 里的</p>
+<pre class="PROGRAMLISTING">    BEGIN
+        SAVEPOINT s1;
+        ... code here ...
+    EXCEPTION
+        WHEN ... THEN
+            ROLLBACK TO s1;
+            ... code here ...
+        WHEN ... THEN
+            ROLLBACK TO s1;
+            ... code here ...
+    END;</pre>
+<p>如果你在把这么使用 <tt class="COMMAND">SAVEPOINT</tt> 和 <tt class="COMMAND">ROLLBACK TO</tt> 的 Oracle 过程翻译过来，那么你的活儿很好干：只要省略 <tt class="COMMAND">SAVEPOINT</tt> 和 <tt class="COMMAND">ROLLBACK TO</tt> 即可。如果你要翻译的过程使用了不同的 <tt class="COMMAND">SAVEPOINT</tt> 和 <tt class="COMMAND">ROLLBACK TO</tt> ，那么就需要想想了。</p>
+</div>
+<div class="SECT3"><h3 class="SECT3"><a name="AEN40841">37.11.2.2. <tt class="COMMAND">EXECUTE</tt></a></h3>
+<p>PostgreSQL 版本的 <tt class="COMMAND">EXECUTE</tt> 运转得类似 PL/SQL 不果你必须记住要像<a href="plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN">节37.6.5</a>里描述的那样用 <code class="FUNCTION">quote_literal</code> 和 <code class="FUNCTION">quote_ident</code> 。如果你不用这些函数，那么像 <tt class="LITERAL">EXECUTE 'SELECT * FROM $1';</tt> 这样的构造是不会运转的。</p>
+</div>
+<div class="SECT3"><h3 class="SECT3"><a name="PLPGSQL-PORTING-OPTIMIZATION">37.11.2.3. Optimizing PL/pgSQL Functions</a></h3>
+<p>PostgreSQL 给你两个创建函数的修饰词用来优化执行："volatility"(易变的，在给出的参数相同时，函数总是返回相同结果)和"strictness"(严格的，如果任何参数是 NULL ，那么函数返回 NULL)。参考 <a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a> 的手册获取细节。</p>
+<p>如果要使用这些优化属性，那么你的 <tt class="COMMAND">CREATE FUNCTION</tt> 语句可能看起来像这样：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION foo(...) RETURNS integer AS $$
+...
+$$ LANGUAGE plpgsql STRICT IMMUTABLE;</pre>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="PLPGSQL-PORTING-APPENDIX">37.11.3. 附录</a></h2>
+<p>本节包含 Oracle 兼容的 <code class="FUNCTION">instr</code> 函数，你可以用它简化你的移植过程。</p>
+<pre class="PROGRAMLISTING">--
+-- 模拟 Oracle 概念的 instr 函数
+-- 语法: instr(string1, string2, [n], [m])   这里的 [] 表示可选参数
+-- 
+-- 从 string1 的第 n 个字符开始寻找 string2 的第 m 个出现。
+-- 如果 n 是负数，则从后向前着。如果没有传递 m ，假定为 1(从第一个字符开始找)。
+--
+
+CREATE FUNCTION instr(varchar, varchar) RETURNS integer AS $$
+DECLARE
+    pos integer;
+BEGIN
+    pos:= instr($1, $2, 1);
+    RETURN pos;
+END;
+$$ LANGUAGE plpgsql STRICT IMMUTABLE;
+
+
+CREATE FUNCTION instr(string varchar, string_to_search varchar, beg_index integer)
+RETURNS integer AS $$
+DECLARE
+    pos integer NOT NULL DEFAULT 0;
+    temp_str varchar;
+    beg integer;
+    length integer;
+    ss_length integer;
+BEGIN
+    IF beg_index &gt; 0 THEN
+        temp_str := substring(string FROM beg_index);
+        pos := position(string_to_search IN temp_str);
+
+        IF pos = 0 THEN
+            RETURN 0;
+        ELSE
+            RETURN pos + beg_index - 1;
+        END IF;
+    ELSE
+        ss_length := char_length(string_to_search);
+        length := char_length(string);
+        beg := length + beg_index - ss_length + 2;
+
+        WHILE beg &gt; 0 LOOP
+            temp_str := substring(string FROM beg FOR ss_length);
+            pos := position(string_to_search IN temp_str);
+
+            IF pos &gt; 0 THEN
+                RETURN beg;
+            END IF;
+
+            beg := beg - 1;
+        END LOOP;
+
+        RETURN 0;
+    END IF;
+END;
+$$ LANGUAGE plpgsql STRICT IMMUTABLE;
+
+
+CREATE FUNCTION instr(string varchar, string_to_search varchar,
+                      beg_index integer, occur_index integer)
+RETURNS integer AS $$
+DECLARE
+    pos integer NOT NULL DEFAULT 0;
+    occur_number integer NOT NULL DEFAULT 0;
+    temp_str varchar;
+    beg integer;
+    i integer;
+    length integer;
+    ss_length integer;
+BEGIN
+    IF beg_index &gt; 0 THEN
+        beg := beg_index;
+        temp_str := substring(string FROM beg_index);
+
+        FOR i IN 1..occur_index LOOP
+            pos := position(string_to_search IN temp_str);
+
+            IF i = 1 THEN
+                beg := beg + pos - 1;
+            ELSE
+                beg := beg + pos;
+            END IF;
+
+            temp_str := substring(string FROM beg + 1);
+        END LOOP;
+
+        IF pos = 0 THEN
+            RETURN 0;
+        ELSE
+            RETURN beg;
+        END IF;
+    ELSE
+        ss_length := char_length(string_to_search);
+        length := char_length(string);
+        beg := length + beg_index - ss_length + 2;
+
+        WHILE beg &gt; 0 LOOP
+            temp_str := substring(string FROM beg FOR ss_length);
+            pos := position(string_to_search IN temp_str);
+
+            IF pos &gt; 0 THEN
+                occur_number := occur_number + 1;
+
+                IF occur_number = occur_index THEN
+                    RETURN beg;
+                END IF;
+            END IF;
+
+            beg := beg - 1;
+        END LOOP;
+
+        RETURN 0;
+    END IF;
+END;
+$$ LANGUAGE plpgsql STRICT IMMUTABLE;</pre>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plpgsql-trigger.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="pltcl.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">触发器过程</td><td width="34%" align="center" valign="top"><a href="plpgsql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PL/Tcl - Tcl 过程语言</td></tr>
+</table>
+</div>
+</body></html>

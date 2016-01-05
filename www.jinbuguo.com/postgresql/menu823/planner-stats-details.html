@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>规划器如何使用统计信息</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="bki-example.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="bki.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="appendixes.html">快进</a></td><td width="10%" align="right" valign="top"><a href="row-estimation-examples.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="PLANNER-STATS-DETAILS"></a>章54. 规划器如何使用统计信息</h1>
+<p>本章建筑在<a href="using-explain.html">节13.1</a>和<a href="planner-stats.html">节13.2</a>里面讨论的材料上，显示了规划器如何使用系统统计信息来预计一个查询运行的各个阶段可能碰到的行数。这是规划/优化过程中的一个重要的部分，因为它提供了开销计算中的大部分原始材料。</p>
+<p>本章的目的不是给代码写文档(代码本身就是文档)，而是给出一个规划器如何使用统计信息的概述。这样可能可以降低那些想以后阅读这部份代码的人的学习难度。因此，采用的方法是分析一系列逐渐变得复杂的例子。</p>
+<p>下面显示的输出和算法是从版本 8.0 里拿出来的。更早的版本(或者以后的版本)的行为可能会有所变化。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="bki-example.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="row-estimation-examples.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">例子</td><td width="34%" align="center" valign="top"><a href="internals.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">行预期的例子</td></tr>
+</table>
+</div>
+</body></html>

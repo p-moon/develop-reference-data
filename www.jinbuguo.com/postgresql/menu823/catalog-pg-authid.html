@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_authid</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-attribute.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-auth-members.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-AUTHID">43.8. <tt class="STRUCTNAME">pg_authid</tt></a></h1><a name="AEN62432"></a>
+<p><tt class="STRUCTNAME">pg_authid</tt> 包含有关数据库认证标识符(角色)的信息。一个角色体现"用户"和"组"的概念。一个用户实际上只是一个设置了 <tt class="STRUCTFIELD">rolcanlogin</tt> 标志的角色。任何角色(不管设置了 <tt class="STRUCTFIELD">rolcanlogin</tt>)标志)都可以有其它角色做为成员；参阅 <a href="catalog-pg-auth-members.html"><tt class="STRUCTNAME">pg_auth_members</tt></a></p>
+<p>因为这个系统表包含口令，所以它不是公共可读的。<a href="view-pg-roles.html"><tt class="STRUCTNAME">pg_roles</tt></a> 是一个在 <tt class="STRUCTNAME">pg_authid</tt> 上的视图，只是把口令域填成了空白。</p>
+<p><a href="user-manag.html">章18</a> 包含用户和权限管理的详细信息。</p>
+<p>因为用户标识是集群范围的，<tt class="STRUCTNAME">pg_authid</tt> 在一个集群里所有的数据库之间是共享的：每个集群只有一个 <tt class="STRUCTNAME">pg_authid</tt> 拷贝，而不是每个数据库一个。</p>
+<div class="TABLE"><a name="AEN62451"></a>
+<p><b>表43-8. <tt class="STRUCTNAME">pg_authid</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>描述</th><td>&nbsp;</td></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">rolname</tt></td><td><tt class="TYPE">name</tt></td><td>角色名称</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolsuper</tt></td><td><tt class="TYPE">bool</tt></td><td>角色拥有超级用户权限</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolinherit</tt></td><td><tt class="TYPE">bool</tt></td><td>角色自动继承其所属角色的权限</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolcreaterole</tt></td><td><tt class="TYPE">bool</tt></td><td>角色可以创建更多角色</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolcreatedb</tt></td><td><tt class="TYPE">bool</tt></td><td>角色可以创建数据库</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolcatupdate</tt></td><td><tt class="TYPE">bool</tt></td><td>角色可以直接更新系统表。如果没有设置这个字段为真，即使超级用户也不能这么做。</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolcanlogin</tt></td><td><tt class="TYPE">bool</tt></td><td>角色可以登录，也就是说，这个角色可以给予会话认证标识符。</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolconnlimit</tt></td><td><tt class="TYPE">int4</tt></td><td>对于可以登录的角色，限制其最大并发连接数量。-1 表示没有限制。</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolpassword</tt></td><td><tt class="TYPE">text</tt></td><td>口令(可能是加密的)；如果没有则为 NULL</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolvaliduntil</tt></td><td><tt class="TYPE">timestamptz</tt></td><td>口令失效时间(只用于口令认证)；如果没有失效期，则为 NULL</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">rolconfig</tt></td><td><tt class="TYPE">text[]</tt></td><td>运行时配置变量的会话缺省</td><td>&nbsp;</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-attribute.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-auth-members.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_attribute</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_auth_members</tt></td></tr>
+</table>
+</div>
+</body></html>

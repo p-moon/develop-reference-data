@@ -1,0 +1,177 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>与Apache相关的标准 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">杂项文档</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>与Apache相关的标准</h1>
+
+
+    <p>本页列出了所有Apache遵守的相关标准，并伴有简要描述。</p>
+
+    <p>除了下面列出的参考信息，下列资源也值得看看：</p>
+
+    <ul>
+      <li>
+        <a href="http://purl.org/NET/http-errata">
+        http://purl.org/NET/http-errata</a> - HTTP/1.1 勘误表
+      </li>
+      <li>
+        <a href="http://www.rfc-editor.org/errata.html">
+        http://www.rfc-editor.org/errata.html</a> - RFC 勘误表
+      </li>
+      <li>
+        <a href="http://ftp.ics.uci.edu/pub/ietf/http/#RFC">
+        http://ftp.ics.uci.edu/pub/ietf/http/#RFC</a> - 一个与HTTP相关的RFC列表
+      </li>
+    </ul>
+
+    <div class="warning"><h3>注意</h3>
+    <p>本文档尚未全部完成</p>
+    </div>
+
+  </div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="http_recommendations" id="http_recommendations">HTTP 推荐标准</a></h2>
+
+    <p>不管使用了什么模块，Apache作为一个基本的web服务器都遵守以下IETF推荐标准：</p>
+
+    <dl>
+      <dt><a href="http://www.rfc-editor.org/rfc/rfc1945.txt">RFC 1945</a>
+      (Informational)</dt>
+
+      <dd>The Hypertext Transfer Protocol (HTTP) is an application-level
+      protocol with the lightness and speed necessary for distributed,
+      collaborative, hypermedia information systems.  This documents
+      HTTP/1.0.</dd>
+
+      <dt><a href="http://www.rfc-editor.org/rfc/rfc2616.txt">RFC 2616</a>
+      (Standards Track)</dt>
+
+      <dd>The Hypertext Transfer Protocol (HTTP) is an
+      application-level protocol for distributed, collaborative,
+      hypermedia information systems.  This documents HTTP/1.1.</dd>
+
+      <dt><a href="http://www.rfc-editor.org/rfc/rfc2396.txt">RFC 2396</a>
+      (Standards Track)</dt>
+
+      <dd>A Uniform Resource Identifier (URI) is a compact string of
+      characters for identifying an abstract or physical resource.</dd>
+    </dl>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="html_recommendations" id="html_recommendations">HTML 推荐标准</a></h2>
+
+    <p>对于超文本标记语言(HTML)，Apache遵守以下IETF和W3C推荐标准：</p>
+
+    <dl>
+      <dt><a href="http://www.rfc-editor.org/rfc/rfc2854.txt">RFC 2854</a>
+      (Informational)</dt>
+
+      <dd>This document summarizes the history of HTML development,
+      and defines the "text/html" MIME type by pointing to the relevant
+      W3C recommendations.</dd>
+
+      <dt><a href="http://www.w3.org/TR/html401">HTML 4.01 Specification</a>
+      (<a href="http://www.w3.org/MarkUp/html4-updates/errata">Errata</a>)
+      </dt>
+
+      <dd>This specification defines the HyperText Markup Language (HTML),
+      the publishing language of the World Wide Web. This specification
+      defines HTML 4.01, which is a subversion of HTML 4.</dd>
+
+      <dt><a href="http://www.w3.org/TR/REC-html32">HTML 3.2 Reference
+      Specification</a></dt>
+
+      <dd>The HyperText Markup Language (HTML) is a simple markup language
+      used to create hypertext documents that are portable from one
+      platform to another. HTML documents are SGML documents.</dd>
+
+      <dt><a href="http://www.w3.org/TR/xhtml11/">XHTML 1.1 - Module-based XHTML</a>
+      (<a href="http://www.w3.org/2001/04/REC-xhtml-modularization-20010410-errata">Errata</a>)
+      </dt>
+
+      <dd>This Recommendation defines a new XHTML document type
+      that is based upon the module framework and modules defined in
+      Modularization of XHTML.</dd>
+
+      <dt><a href="http://www.w3.org/TR/xhtml1">XHTML 1.0 The Extensible HyperText Markup Language (Second Edition)</a>
+      (<a href="http://www.w3.org/2002/08/REC-xhtml1-20020801-errata">Errata</a>)
+      </dt>
+
+      <dd>This specification defines the Second Edition of XHTML 1.0,
+      a reformulation of HTML 4 as an XML 1.0 application, and three
+      DTDs corresponding to the ones defined by HTML 4.</dd>
+    </dl>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="authentication" id="authentication">认证</a></h2>
+
+    <p>对于不同的认证方法，Apache遵守以下IETF推荐标准：</p>
+
+    <dl>
+      <dt><a href="http://www.rfc-editor.org/rfc/rfc2617.txt">RFC 2617</a>
+      (Draft standard)</dt>
+
+      <dd>"HTTP/1.0", includes the specification for a Basic
+      Access Authentication scheme.</dd>
+
+    </dl>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="language_country_codes" id="language_country_codes">语言/国家代码</a></h2>
+
+    <p>以下链接记录了ISO和其他语言/国家代码信息：</p>
+
+    <dl>
+      <dt><a href="http://www.loc.gov/standards/iso639-2/">ISO 639-2</a></dt>
+
+      <dd>ISO 639 provides two sets of language codes, one as a two-letter
+      code set (639-1) and another as a three-letter code set (this part
+      of ISO 639) for the representation of names of languages.</dd>
+
+      <dt><a href="http://www.iso.ch/iso/en/prods-services/iso3166ma/02iso-3166-code-lists/index.html">
+      ISO 3166-1</a></dt>
+
+      <dd>These pages document the country names (official short names
+      in English) in alphabetical order as given in ISO 3166-1 and the
+      corresponding ISO 3166-1-alpha-2 code elements.</dd>
+
+      <dt><a href="http://www.rfc-editor.org/rfc/bcp/bcp47.txt">BCP 47</a>
+      (Best Current Practice),
+      <a href="http://www.rfc-editor.org/rfc/rfc3066.txt">RFC 3066</a></dt>
+
+      <dd>This document describes a language tag for use in cases where
+      it is desired to indicate the language used in an information
+      object, how to register values for use in this language tag,
+      and a construct for matching such language tags.</dd>
+
+      <dt><a href="http://www.rfc-editor.org/rfc/rfc3282.txt">RFC 3282</a>
+      (Standards Track)</dt>
+
+      <dd>This document defines a "Content-language:" header, for use in
+      cases where one desires to indicate the language of something that
+      has RFC 822-like headers, like MIME body parts or Web documents,
+      and an "Accept-Language:" header for use in cases where one wishes
+      to indicate one's preferences with regard to language.</dd>
+    </dl>
+
+  </div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

@@ -1,0 +1,198 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>htdbm - 操作DBM密码数据库 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">支持程序</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>htdbm - 操作DBM密码数据库</h1>
+
+
+    <p><code>htdbm</code>用于操作由<code class="module"><a href="../mod/mod_authn_dbm.html">mod_authn_dbm</a></code>提供的HTTP基本认证所使用的保存用户名和密码的DBM数据库文件。参见<code class="program"><a href="../programs/dbmmanage.html">dbmmanage</a></code>文档以获得这些DBM文件的更多信息。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="synopsis" id="synopsis">语法</a></h2>
+    <p><code><strong>htdbm</strong>
+    [ -<strong>T</strong><var>DBTYPE</var> ]
+    [ -<strong>c</strong> ]
+    [ -<strong>m</strong> |
+      -<strong>d</strong> |
+      -<strong>p</strong> |
+      -<strong>s</strong> ]
+    [ -<strong>t</strong> ]
+    [ -<strong>v</strong> ]
+    [ -<strong>x</strong> ]
+    <var>filename</var> <var>username</var></code></p>
+
+    <p><code><strong>htdbm</strong> -<strong>b</strong>
+    [ -<strong>T</strong><var>DBTYPE</var> ]
+    [ -<strong>c</strong> ]
+    [ -<strong>m</strong> |
+      -<strong>d</strong> |
+      -<strong>p</strong> |
+      -<strong>s</strong> ]
+    [ -<strong>t</strong> ]
+    [ -<strong>v</strong> ]
+    <var>filename</var> <var>username</var> <var>password</var></code></p>
+
+    <p><code><strong>htdbm</strong> -<strong>n</strong>
+    [ -<strong>c</strong> ]
+    [ -<strong>m</strong> |
+      -<strong>d</strong> |
+      -<strong>p</strong> |
+      -<strong>s</strong> ]
+    [ -<strong>t</strong> ]
+    [ -<strong>v</strong> ]
+    <var>username</var></code></p>
+
+    <p><code><strong>htdbm</strong> -<strong>nb</strong>
+    [ -<strong>c</strong> ]
+    [ -<strong>m</strong> |
+      -<strong>d</strong> |
+      -<strong>p</strong> |
+      -<strong>s</strong> ]
+    [ -<strong>t</strong> ]
+    [ -<strong>v</strong> ]
+    <var>username</var> <var>password</var></code></p>
+
+    <p><code><strong>htdbm</strong> -<strong>v</strong>
+    [ -<strong>T</strong><var>DBTYPE</var> ]
+    [ -<strong>c</strong> ]
+    [ -<strong>m</strong> |
+      -<strong>d</strong> |
+      -<strong>p</strong> |
+      -<strong>s</strong> ]
+    [ -<strong>t</strong> ]
+    [ -<strong>v</strong> ]
+    <var>filename</var> <var>username</var></code></p>
+
+    <p><code><strong>htdbm</strong> -<strong>vb</strong>
+    [ -<strong>T</strong><var>DBTYPE</var> ]
+    [ -<strong>c</strong> ]
+    [ -<strong>m</strong> |
+      -<strong>d</strong> |
+      -<strong>p</strong> |
+      -<strong>s</strong> ]
+    [ -<strong>t</strong> ]
+    [ -<strong>v</strong> ]
+    <var>filename</var> <var>username</var> <var>password</var></code></p>
+
+    <p><code><strong>htdbm</strong> -<strong>x</strong>
+    [ -<strong>T</strong><var>DBTYPE</var> ]
+    [ -<strong>m</strong> |
+      -<strong>d</strong> |
+      -<strong>p</strong> |
+      -<strong>s</strong> ]
+    <var>filename</var> <var>username</var></code></p>
+
+    <p><code><strong>htdbm</strong> -<strong>l</strong>
+    [ -<strong>T</strong><var>DBTYPE</var> ]
+    </code></p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="options" id="options">选项</a></h2>
+    <dl>
+    <dt><code>-b</code></dt>
+    <dd>使用批处理方式。也就是直接从命令行获取密码而不进行提醒。使用这个选项需要特别注意，因为命令行中的密码是<strong>清晰可见</strong>的。</dd>
+
+    <dt><code>-c</code></dt>
+    <dd>创建<var>passwdfile</var>文件。如果<var>passwdfile</var>已经存在，那么将被清空并改写。该选项不能和 <code>-n</code> 同时使用。</dd>
+
+    <dt><code>-n</code></dt>
+    <dd>在标准输出上显示结果而不是更新数据库。这个选项改变了命令行语法，因为<var>passwdfile</var>参数(通常是第一个)被忽略了。该选项不能和 <code>-c</code> 同时使用。</dd>
+
+    <dt><code>-m</code></dt>
+    <dd>使用MD5加密密码。在Windows, Netware, TPF上这是默认方法。</dd>
+
+    <dt><code>-d</code></dt>
+    <dd>使用<code>crypt()</code>对密码进行加密。在Windows, Netware, TPF以外的平台上这是默认方法。虽然有可能在所有的平台上被<code>htdbm</code>支持，但是在Windows, Netware, TPF上，该方法不能被<code class="program"><a href="../programs/httpd.html">httpd</a></code>所支持。</dd>
+
+    <dt><code>-s</code></dt>
+    <dd>使用 SHA 对密码进行加密。这种方法易于通过LDAP目录交换格式和Netscape server进行交换。</dd>
+
+    <dt><code>-p</code></dt>
+    <dd>使用明文密码(不加密)。虽然<code>htdbm</code>在所有平台上都支持这种方法，但是<code class="program"><a href="../programs/httpd.html">httpd</a></code>只能在Windows, Netware, TPF上支持这种方法。</dd>
+
+    <dt><code>-l</code></dt>
+    <dd>在标准输出上显示每一个用户名以及对应的注释。</dd>
+
+    <dt><code>-t</code></dt>
+    <dd>将最后一个参数解释为注释。指定这个选项可以在命令行中添加一个额外的字符串，这个字符串可以被存储在数据库中对应用户名的"Comment"字段中。</dd>
+
+    <dt><code>-v</code></dt>
+    <dd>校验用户名和密码。程序将会显示一个密码是否正确的信息。如果密码不正确程序退出时的错误代码将是"3"。</dd>
+
+    <dt><code>-x</code></dt>
+    <dd>删除用户。如果指定的用户名存在与数据库中，则删除该用户。</dd>
+
+    <dt><code><var>filename</var></code></dt>
+    <dd>DBM文件的文件名。通常不包含 <code>.db</code>, <code>.pag</code>, <code>.dir</code> 后缀。如果同时使用了 <code>-c</code> 选项，若DBM文件已存在则更新它，若不存在则创建它。</dd>
+
+    <dt><code><var>username</var></code></dt>
+    <dd>在<var>passwdfile</var>中添加或更新记录。若<var>username</var>不存在则添加一条记录，若存在则更新其密码。</dd>
+
+    <dt><code><var>password</var></code></dt>
+    <dd>将要被加密存储的明文密码。仅与 <code>-b</code> 一同使用。</dd>
+
+    <dt><code>-T<var>DBTYPE</var></code></dt>
+    <dd>DBM文件的类型(SDBM, GDBM, DB, "default")。</dd>
+    </dl>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="bugs" id="bugs">Bugs</a></h2>
+    <p>实际上存在有许多不同的DBM文件格式，你的系统中也可能存在不止一种的支持库，常见的有SDBM, NDBM, GNU GDBM, Berkeley/Sleepycat DB 2/3/4 。麻烦的是，所有这些库都使用了不同的文件格式，因而你必须确保<var>filename</var>所采用的格式能够为<code>htdbm</code>所接受。目前，<code>htdbm</code>无法自己确定所查找的文件的DBM类型。如果使用了错误的格式，则简单返回nothing ，或者建立一个不同名称的不同的DBM文件，而最坏的情况是，在试图写入这个文件时，可能会破坏该DBM文件。</p>
+
+    <p>在大多数Unix系统中，都可以用<code>file</code>程序来查看DBM文件的格式。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="exit" id="exit">返回值</a></h2>
+    <p><code>htdbm</code>仅在用户名和密码被成功存入数据库或成功更新的情况下返回"<code>0</code>"。若访问文件发生错误则返回"<code>1</code>"；若命令行语法错误则返回"<code>2</code>"；若密码验证失败则返回"<code>3</code>"；若正在进行中的操作被打断则返回"<code>4</code>"；若值(username, filename, password, 计算结果)长度超标则返回"<code>5</code>"；若用户名包含非法字符(参见<a href="#restrictions">限制</a>)则返回"<code>6</code>"；若指定的文件不能被正确识别则返回"<code>7</code>"。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="examples" id="examples">示例</a></h2>
+    <div class="example"><p><code>
+      htdbm /usr/local/etc/apache/.htdbm-users jsmith
+    </code></p></div>
+
+    <p>添加或修改用户<code>jsmith</code>的密码。密码将被提示输入。在Windows平台上，密码将使用Apache修改过的MD5算法进行加密；在其它平台上将使用<code>crypt()</code>进行加密。如果指定的文件不存在，<code>htdbm</code>将只返回一个错误代码，而不做其它任何事。</p>
+
+    <div class="example"><p><code>
+      htdbm -c /home/doe/public_html/.htdbm jane
+    </code></p></div>
+
+    <p>创建一个新文件并在其中添加一条用户<code>jane</code>的记录。密码将被提示输入。如果文件存在但是不能被读取或写入，则不会有任何记录被修改，同时<code>htdbm</code>将会显示一个错误信息并返回一个错误代码。</p>
+
+    <div class="example"><p><code>
+      htdbm -mb /usr/web/.htdbm-all jones Pwd4Steve
+    </code></p></div>
+
+    <p>将来自命令行的密码(<code>Pwd4Steve</code>)使用MD5算法加密，并将其存入指定的文件。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="security" id="security">安全方面的考虑</a></h2>
+    <p>Web密码文件(比如由<code>htdbm</code>管理)<em>不应当</em>存在于网络空间中，即不能被客户端有机会访问。</p>
+
+    <p>我们反对使用 <code>-b</code> 选项，因为密码将以明文的形式出现在命令行中。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="restrictions" id="restrictions">限制</a></h2>
+    <p>在Windows和MPE平台上，用<code>htdbm</code>加密的密码最大长度是<code>255</code>字符。超出部分将被截断。</p>
+
+    <p><code>htdbm</code>使用的MD5加密算法已经被Apache修改过了，仅能够被Apache识别，不能被其它Web服务器识别。</p>
+
+    <p>用户最大长度是<code>255</code>字节，并且不能包含冒号(<code>:</code>)。</p>
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

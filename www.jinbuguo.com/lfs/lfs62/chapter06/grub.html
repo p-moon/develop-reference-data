@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.34. GRUB-0.97</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="flex.html" title="Flex-2.5.33">后退</a>
+          <p>Flex-2.5.33</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gawk.html" title="Gawk-3.1.5">前进</a>
+          <p>Gawk-3.1.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.34. GRUB-0.97</h1>
+      </div>
+      <div class="package">
+        <p>GRUB 程序包包含 GRand 统一引导装载程序。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.2 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">10.2 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.34.1. 安装 GRUB</h2>
+        </div>
+        <p>如果你把这个包缺省的优化参数(包括 <em class="parameter"><tt>-march</tt></em> 和 <em class="parameter"><tt>-mcpu</tt></em> 参数)改变的话，它会有些不正常的表现。因此，如果你定义了任何优化参数的话，比如 CFLAGS 和 CXXFLAGS ，我们劝你在编译时 unset 或修改它们。</p>
+        <p>开始先打一个补丁来达到更好的硬件侦测、修复 <span class="application">GCC 4.x</span> 的一些问题以及为一些磁盘控制器提供更好的 SATA 支持：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../grub-0.97-disk_geometry-1.patch</kbd></pre>
+        <p>为编译 GRUB 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make check</tt></strong> 。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install
+mkdir -v /boot/grub
+cp -v /usr/lib/grub/i386-pc/stage{1,2} /boot/grub</kbd></pre>
+        <p>把 i386-pc 换成适合你的平台的路径。</p>
+        <p>i386-pc 目录还包含一些 *stage1_5 文件，是为不同的文件系统准备的。看看有哪些文件，并把你所需要的拷贝到 /boot/grub 目录下。多数人需要 e2fs_stage1_5 和/或 reiserfs_stage1_5 文件。</p>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-gRUB" name="contents-gRUB"></a>
+          <h2 class="sect2">6.34.2. GRUB 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">grub, grub-install,
+              grub-md5-crypt, grub-set-default, grub-terminfo, mbchk</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3686872" name="id3686872"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="grub" name="grub"></a><span class="term"><span><strong class="command">grub</strong></span></span></td>
+                <td><p>GRUB 的命令解释 shell</p></td>
+              </tr>
+              <tr>
+                <td><a id="grub-install" name="grub-install"></a><span class="term"><span><strong class="command">grub-install</strong></span></span></td>
+                <td><p>在指定设备上安装 GRUB</p></td>
+              </tr>
+              <tr>
+                <td><a id="grub-md5-crypt" name="grub-md5-crypt"></a><span class="term"><span><strong class="command">grub-md5-crypt</strong></span></span></td>
+                <td><p>以 MD5 加密一个密码</p></td>
+              </tr>
+              <tr>
+                <td><a id="grub-set-default" name="grub-set-default"></a><span class="term"><span><strong class="command">grub-set-default</strong></span></span></td>
+                <td><p>为 Grub 设置默认启动入口</p></td>
+              </tr>
+              <tr>
+                <td><a id="grub-terminfo" name="grub-terminfo"></a><span class="term"><span><strong class="command">grub-terminfo</strong></span></span></td>
+                <td><p>从 terminfo 名称产生 terminfo 命令。如果你在一个不常见的终端时，可以使用这个命令。</p></td>
+              </tr>
+              <tr>
+                <td><a id="mbchk" name="mbchk"></a><span class="term"><span><strong class="command">mbchk</strong></span></span></td>
+                <td><p>检查多重启动内核的格式</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="flex.html" title="Flex-2.5.33">后退</a>
+          <p>Flex-2.5.33</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gawk.html" title="Gawk-3.1.5">前进</a>
+          <p>Gawk-3.1.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

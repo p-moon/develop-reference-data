@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>接口函数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="spi.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="spi.html">快退</a></td><td width="60%" align="center" valign="bottom">章41. 服务器编程接口</td><td width="10%" align="right" valign="top"><a href="spi.html">快进</a></td><td width="10%" align="right" valign="top"><a href="spi-spi-connect.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="SPI-INTERFACE">41.1. 接口函数</a></h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt><a href="spi-spi-connect.html">SPI_connect</a>&nbsp;--&nbsp;把一个过程与 SPI 管理器连接起来</dt>
+<dt><a href="spi-spi-finish.html">SPI_finish</a>&nbsp;--&nbsp;把一个过程与 SPI 管理器断开</dt>
+<dt><a href="spi-spi-push.html">SPI_push</a>&nbsp;--&nbsp;对 SPI 堆栈进行压栈操作以允许递归的 SPI 使用</dt>
+<dt><a href="spi-spi-pop.html">SPI_pop</a>&nbsp;--&nbsp;弹出 SPI 堆栈以允许递归的 SPI 使用</dt>
+<dt><a href="spi-spi-execute.html">SPI_execute</a>&nbsp;--&nbsp;执行一条命令</dt>
+<dt><a href="spi-spi-exec.html">SPI_exec</a>&nbsp;--&nbsp;执行一个读/写命令</dt>
+<dt><a href="spi-spi-prepare.html">SPI_prepare</a>&nbsp;--&nbsp;为一个命令准备一个规划但不立即执行它</dt>
+<dt><a href="spi-spi-getargcount.html">SPI_getargcount</a>&nbsp;--&nbsp;返回一个 <code class="FUNCTION">SPI_prepare</code> 准备的已准备好规划需要的参数个数</dt>
+<dt><a href="spi-spi-getargtypeid.html">SPI_getargtypeid</a>&nbsp;--&nbsp;返回 <code class="FUNCTION">SPI_prepare</code> 准备的已准备好规划的指定参数的 typeid</dt>
+<dt><a href="spi-spi-is-cursor-plan.html">SPI_is_cursor_plan</a>&nbsp;--&nbsp;如果一个 <code class="FUNCTION">SPI_prepare</code> 准备的规划可以和 <code class="FUNCTION">SPI_cursor_open</code> 一起使用，则返回 <tt class="SYMBOL">true</tt></dt>
+<dt><a href="spi-spi-execute-plan.html">SPI_execute_plan</a>&nbsp;--&nbsp;执行一个 <code class="FUNCTION">SPI_prepare</code> 准备的查询规划</dt>
+<dt><a href="spi-spi-execp.html">SPI_execp</a>&nbsp;--&nbsp;以读/写模式执行一个准备的查询规划</dt>
+<dt><a href="spi-spi-cursor-open.html">SPI_cursor_open</a>&nbsp;--&nbsp;用 <code class="FUNCTION">SPI_prepare</code> 创建的规划设置一个游标</dt>
+<dt><a href="spi-spi-cursor-find.html">SPI_cursor_find</a>&nbsp;--&nbsp;用名字寻找并执行一个现存的游标</dt>
+<dt><a href="spi-spi-cursor-fetch.html">SPI_cursor_fetch</a>&nbsp;--&nbsp;从一个游标里抓取一些行</dt>
+<dt><a href="spi-spi-cursor-move.html">SPI_cursor_move</a>&nbsp;--&nbsp;移动一个游标</dt>
+<dt><a href="spi-spi-cursor-close.html">SPI_cursor_close</a>&nbsp;--&nbsp;关闭一个游标</dt>
+<dt><a href="spi-spi-saveplan.html">SPI_saveplan</a>&nbsp;--&nbsp;保存一个规划</dt>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="spi.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="spi-spi-connect.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">服务器编程接口</td><td width="34%" align="center" valign="top"><a href="spi.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SPI_connect</td></tr>
+</table>
+</div>
+</body></html>

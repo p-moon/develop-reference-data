@@ -1,0 +1,807 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>emerge 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>emerge 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+EMERGE(1)                                            Portage                                            EMERGE(1)
+
+
+
+名称
+       emerge - Portage 系统的命令行界面
+
+语法
+       emerge [选项] [动作] [ebuild | tbz2file | file | @set | atom] ...
+
+       emerge &lt; --sync | --metadata | --version &gt;
+
+       emerge --info [atom]
+
+       emerge --search somestring
+
+       emerge --resume [ --pretend | --ask | --skipfirst ]
+
+       emerge --help
+
+描述
+       emerge是Portage系统的命令行接口，主要用于软件包的安装、升级、卸载。
+       emerge可以自动处理依赖关系、更新portage树、更新已安装的软件包。
+       emerge既可以处理源代码包也可以处理二进制包，还可以将编译好的二进制文件打包，以利于再次分发。
+
+EBUILD, TBZ2, SET, ATOM
+       emerge主要用于安装软件包。你可以使用下列几种安装方式之一：
+
+       ebuild "ebuild"必须是一个有效的Portage包目录名(可以不带类别与版本信息)，比如："portage"或"python"，
+              当然也可以带上类别与版本信息，例如："sys-apps/portage"或"=python-2.2.1-r2"。
+              尾斜杠将被忽略，所以可以使用shell的文件名自动完成功能。
+              "ebuild"还可以是一个实际的文件名，例如：/usr/portage/app-admin/python/python-2.2.1-r2.ebuild
+              警告：对"emerge /path/to/ebuild"实现目前尚有缺陷，所以切勿使用！
+
+       tbz2file
+              "tbz2file"必须是一个由下列命令之一创建的 .tbz2 文件：
+                  ebuild &lt;package&gt;-&lt;version&gt;.ebuild package
+                  emerge --buildpkg [category/]&lt;package&gt;
+                  quickpkg /var/db/pkg/&lt;category&gt;/&lt;package&gt;
+
+       file   "file"必须是一个被某个/某些软件包安装了的文件或目录。如果未使用绝对路径，则必须明确使用"./"或"../"开头。
+              如果该目录被多个软件包安装，那么这些软件包都将被选中。
+              可以使用portageq(1)命令查询文件或目录属于哪个/哪些软件包。
+
+       set    "set"是一组特定软件包集合的代称。目前有三个set总是可用：selected, system, world 。
+              selected 包含用户手动安装的软件包集合(/var/lib/portage/world)及其依赖的软件包集合(/var/lib/portage/world_sets)。
+              system 表示系统正常运行所必须的一组软件包(基本系统/最小系统)。
+              world 表示 selected 与 system 的合集[参见尾部的"文件"小节]。
+              其他可用的set取决于系统的配置，默认的配置位于 /usr/share/portage/config/sets 目录中。
+              用户自定义的set文件可以存放在 /etc/portage/sets/ 目录中(参见 portage(5))。
+              提示：set经常和 --update 动作一起使用。若要用于安装动作，则必须明确使用"@"作为前缀，以示区别。
+              使用 --list-sets 动作可以列出所有可用的set名称。
+
+       atom   "atom"定义了你想要安装的软件包的版本范围。atom 的详细语法请参见portage(5)手册页。例如：
+                  &gt;=dev-lang/python-2.2.1-r2  表示大于等于 2.2.1-r2 的Python最新可用版本；
+                  &lt;dev-lang/python-2.0  表示小于 2.0 的Python最新可用版本；
+              需要注意的是，很多shell里的'&lt;'与'='之类的符号需要转义，所以你应该在atom两边使用引号以避免麻烦。
+              你还可以通过在结尾附加一个冒号(:)来指定 SLOT ，例如：x11-libs/qt:3
+
+动作
+       无动作
+              如果没有指定任何动作，那么就表示将软件包的最新可用版本合并(安装或升级)到系统中，并满足相应的依赖关系。
+              参数可以是： atoms, sets, files, ebuilds, tbz2s 。[注意]对于 tbz2 需要同时使用 --usepkg 选项。
+              Note that you need to use the --usepkg option if you want to install  a  tbz2.  
+              被合并的软件包将被添加到world文件中(/var/lib/portage/world)，也就意味着在未来升级的时候将会被处理。
+
+       --check-news
+              扫描软件仓库中所有未读的 GLEP 42 新闻，并显示出总条数。
+              详见： http://www.gentoo.org/proj/en/glep/glep-0042.html
+
+       --clean
+              通过检查已安装的软件包和移除旧的软件包来清理系统。具体动作如下：
+              检查每一个已安装的软件包，并通过slot分隔已安装的版本；
+              然后仅保留每个slot内最后安装的版本，同时清除所有先前安装的版本。而那些没有被slot分隔的包则不会被清除。
+              注意：最后安装的版本未必是最高版本。
+
+       --config
+              在软件包被安装或更新后，执行所需的额外动作。比如创建必要的配置文件、初始化之类的动作。
+
+       --depclean (-c)
+              通过清除不被任何已明确安装的包所依赖的包来清理系统。
+              该动作从 world 集合开始创建完整的依赖关系树，并与所有已安装的包进行比较，
+              然后删除那些虽然已经安装、但却在依赖关系树之外的包(参见 --with-bdeps 以了解非严格必须的编译时依赖)。
+              所有属于 world 集合的包总会被保留。
+              可以使用"emerge --noreplace &lt;atom&gt;"手动将&lt;atom&gt;添加到world集合。
+              出于安全因素，depclean将仅仅删除那些确实不被任何其它已安装的软件包所依赖的包，
+              所以，通常有必要在depclean前先进行一下"emerge --update --newuse --deep @world"操作。
+              由于 --depclean 可能会破坏连接层的依赖(特别是未使用 --depclean-lib-check 的时候)，
+              因此可能还需要再使用 revdep-rebuild(1) 之类的工具来修复破损的依赖。
+
+              警告: 建议新手同时使用 --pretend 或 --ask 来预览一下究竟有哪些包将被卸载，以避免失误。
+              注意: 那些列在package.provided(参见portage(5))中的包，即使属于 world 集合，也可能会被删除。
+
+              --depclean 可以看作能够自动检查依赖关系的 --unmerge ，
+              当给出一个或多个 atom 时，它将会同时卸载那些不存在任何反向依赖的包。
+              可以同时使用 --depclean 和 --verbose 来查看反向依赖关系。
+
+       --deselect [ y | n ]
+              从world文件中(/var/lib/portage/world)移除指定的一个或多个 atom/set 。
+              --depclean, --prune, --unmerge 隐含了此动作。
+              而 --deselect=n 则表示禁止从world文件中移除指定的一个或多个 atom/set 。
+
+       --help (-h)
+              显示帮助信息。内置的帮助信息比man页更新的更及时，但不如man页详细。
+
+       --info 显示那些将在bug报告中包含的信息(主要是在执行emerge时将被导出(export)到ebuild.sh的portage变量)。
+              目的是帮助开发者了解系统环境以便于查找故障。在提交bug报告时务必包含这些内容。
+              同时使用 --verbose 选项可以显示更详细的信息(所有make.{conf,globals,defaults}中的变量和所有环境变量)。
+
+       --list-sets
+              列出所有可用的软件包集合(set)
+
+       --metadata
+              将软件包的元数据缓存从 ${PORTDIR}/metadata/md5-cache/ 传输到 /var/cache/edb/dep/ 中，以加速软件包信息的查找。
+              这个操作通常在"emerge --sync"动作的最后自动完成。
+              [提示]除非你同时使用了 --regen ，否则 PORTDIR_OVERLAY 中列出的 overlay 的元数据不会被缓存。
+              对于 portage &gt;=2.1.5 版本来说，这个动作完全没有必要，除非你在make.conf(5)中设置了 FEATURES="metadata-transfer"
+
+       --prune (-P)
+              仅保留软件包的最高版本(删除所有低版本)。
+              可以使用 --verbose 来显示反向依赖，或者使用 --nodeps 来忽略所有依赖关系。
+              警告: 该操作可能会删除 /var/lib/portage/world 中的软件包！但可以用 --depclean 替代 --prune 以避免这个问题。
+
+       --regen
+              检查并更新portage树中所有ebuild的依赖关系缓存。这些缓存被用于加速搜索和创建依赖关系树。
+              不推荐rsync用户使用，因为rsync会使用服务器端的缓存来更新本地缓存。
+              如果你不知道'rsync用户'与其他种类的用户有什么差别，那么你就是一个'rsync用户':)
+              rsync用户只要简单的使用"emerge --sync"即可更新本地缓存。
+              在更新portage之后，rsync用户可以方便的使用"emerge --metadata"重建依赖关系缓存。
+              可以使用 --jobs 和 --load-average 选项执行并行 --regen 操作。
+              还可以使用egencache(1)生成可分发给他人使用的依赖关系缓存。
+
+       --resume(-r)
+              使用相同的命令行选项与参数，重复最近一次因为错误而中断的操作(可以添加额外的选项，但不能添加atom/set参数)。
+              需要注意的是，这个操作在出错时仅返回一个错误代码。
+              如果没有任何事情可做，那么portage将仅返回一个成功代码，并输出一条成功的信息。
+              除非被中断的操作完成，或者被另一个中断取代，否则中断记录将一直存在。
+              最多可以保存两条中断记录，当较新的记录完成后，可以再次使用 --resume 来继续完成较旧的记录。
+              中断记录保存在 /var/cache/edb/mtimedb 文件中，且可以通过"emaint --fix cleanresume"命令删除(参见emaint(1))。
+
+       --search (-s)
+              在本地portage树中搜索软件包名称与指定字符串匹配的包。
+              默认进行大小写无关的简单匹配，但是可以通过在字符串前加个百分号(%)进行正则表达式匹配。例如：
+                  emerge --search "office"   列出所有软件包名称中包含"office"字符串的包
+                  emerge --search "%^kde"    列出所有软件包名称以"kde"开始的包
+                  emerge --search "%gcc$"    列出所有软件包名称以"gcc"结尾的包
+              另外，可以通过在字符串前加个'@'符号将分类(category)信息包含进来。例如：
+                  emerge --search  "%@^dev-java.*jdk"   列出所有可用的Java JDK
+
+       --searchdesc (-S)
+              在本地portage树中搜索软件包描述与指定字符串匹配的包。
+              需要注意的是，这种匹配是正则表达式匹配。
+
+       --sync 遵照sync-type与sync-uri属性的指示(/etc/portage/repos.conf)，更新本地Portage树。详见portage(5)手册。
+              PORTAGE_SYNC_STALE 变量用于设置多少天没运行"emerge --sync"就发出警告。
+              警告：除了 distfiles, local, packages 目录，你对本地Portage树的任何更改都将在更新时被撤销。
+              提示：'emerge-webrsync'程序可以下载打包好的Portage快照，并进行更新，这对于首次安装Portage树很有用。
+
+       --unmerge (-C)
+              删除所有匹配的软件包，且不检查依赖关系，因此这个动作可能会删除关键的包！其参数只能使用 atom/ebuild 两种。
+              可以将 --depclean 或 --prune 视为可以检查依赖关系的 --unmerge 版本。
+
+       --version (-V)
+              显示emerge的版本信息。
+
+选项
+       --accept-properties=ACCEPT_PROPERTIES
+              临时追加ACCEPT_PROPERTIES变量的值，也就是这里指定的值将被追加到原有的变量之后。
+              特殊标记"-*"可以完全丢弃现有的值，从头开始设置新值。
+              更多ACCEPT_PROPERTIES的信息请参见下面"被屏蔽的包"小节和make.conf(5)手册页。
+              一个典型的用法是使用 --accept-properties=-interactive 临时屏蔽交互式软件包，
+              对于默认设置来说，这相当于将ACCEPT_PROPERTIES的值设为"* -interactive"
+
+       --accept-restrict=ACCEPT_RESTRICT
+              临时追加ACCEPT_RESTRICT变量的值，也就是这里指定的值将被追加到原有的变量之后。
+              特殊标记"-*"可以完全丢弃现有的值，从头开始设置新值。
+              更多ACCEPT_RESTRICT的信息请参见下面"被屏蔽的包"小节和make.conf(5)手册页。
+              一个典型的用法是使用 --accept-restrict=-bindist 临时屏蔽禁止二进制再分发的软件包，
+              对于默认设置来说，这相当于将ACCEPT_RESTRICT的值设为"* -bindist"
+
+       --alphabetical
+              在显示USE之类标记的时候，同时显示启用和禁用列表，并按照字母顺序排序。
+              比如USE="dar -bar -foo"将被显示为USE="-bar dar -foo"
+
+       --ask (-a)
+              在执行实际操作前，先显示将发生什么事件(但对于 --sync 来说是显示服务器信息)，然后询问是继续还是取消？
+              使用 --ask 比先使用 --pretend 再实际执行相同的命令更有效率，因为依赖关系只被计算一次。
+              警告: 在提示信息后直接敲回车(没有任何其他输入)，表示接受第一个选项。
+              由于输入缓存的存在，如果在下一个提示信息出现前键入了回车，将会在提示信息出现的时候自动接受第一个选项！
+              可以使用 --ask-enter-invalid 选项来将一个单独的回车视为无效输入，从而避免这个问题。
+
+       --ask-enter-invalid
+              与 --ask 选项联用时，将一个单独的回车视为无效输入。从而避免意外的自动接受第一个选项。
+              设置此项主要是为了用于make.conf(5)中的EMERGE_DEFAULT_OPTS变量。
+
+       --autounmask [ y | n ]
+              为了满足必要的依赖关系而自动unmask软件包以及生成package.use设置。此选项默认为开启。
+              如果必须更改配置，那么emerge将会立即退出并在列表结尾显示必须的变更。
+              你可以将必要的变更写进配置文件，或者使用 --autounmask-write 选项。
+              可以使用make.conf(5)中的EMERGE_DEFAULT_OPTS变量来默认关闭此选项。
+
+       --autounmask-unrestricted-atoms [ y | n ]
+              开启 --autounmask 时，对 keyword 和 mask 的变更默认使用"="限制软件包的版本。
+              开启此项后则改为使用"&gt;="限制软件包的版本。
+              提示：对 USE 和 license 的变更默认使用的就是"&gt;="。
+
+       --autounmask-keep-masks [ y | n ]
+              与 --autounmask 联用，表示不对 package.unmask 和 keyword 做任何修改。
+              这样，除非手动修改配置，否则不会自动解决依赖关系。
+
+       --autounmask-write [ y | n ]
+              与 --autounmask 联用，表示将必要的配置变更写进相应的配置文件(需要符合CONFIG_PROTECT和 --ask 选项的要求)。
+              如果被修改的 package.* 是一个文件，变更将被追加到尾部；
+              如果被修改的 package.* 是一个目录，变更将被追加到最末的文件(字典顺序)。
+              这样可以确保变更能够生效(覆盖掉旧有的配置)。
+
+       --backtrack=COUNT
+              指定一个计算依赖关系失败(例如包冲突所致)之后的回溯秒数，默认值是"10"。
+
+       --binpkg-respect-use [ y | n ]
+              在USE标记与当前的配置不一致的情况下，让emerge忽略二进制包(默认值是'n')
+
+       --buildpkg [ y | n ] (-b short option)
+              让emerge在安装软件包的同时再额外创建二进制包(保存在PKGDIR目录中)，详见make.conf(5)手册页
+              这对于Gentoo开发者和维护多套Gentoo系统的管理员很有用处。
+              因为只需要一次编译，就可以将生成的tbz2在其它地方安装(还可以用于灾难恢复)。
+              对于已安装的包，可以使用quickpkg(1)程序从现有系统中创建tbz2文件。
+
+       --buildpkg-exclude ATOMS
+              一个空格分隔的 atom 列表，禁止对列表内的软件包创建二进制包。
+
+       --buildpkgonly (-B)
+              仅创建二进制包而不实际安装它们。警告：所有编译时依赖的包必须已经安装在系统中。
+
+       --changed-use
+              包含哪些在安装之后改变了USE标记的软件包。该选项隐含了 --selective 选项。
+              与 --newuse 不同之处在于，此选项并不重新安装那些原本就未开启的USE标记发生了变化(增加或删除)的软件包。
+              注意：此选项会无视"test"标记的变化，因为专门绑定到了FEATURES="test"(参见make.conf(5)手册页)中。
+
+       --changelog (-l)
+              与 --pretend 一起使用的时候，将会同时显示需要升级的软件包的ChangeLog项。
+
+       --color &lt; y | n &gt;
+              启用/禁用彩色输出。该选项会覆盖NOCOLOR(参见make.conf(5))的设置。
+              如果stdout是一个tty，那么默认开启彩色输出，否则默认默认禁止彩色输出。
+
+       --columns
+              与 --pretend 一起使用可以让软件包的名称、新/旧版本号按照表格对齐显示，以便于复制和粘贴。
+
+       --complete-graph [ y | n ]
+              让emerge能够从world集合内部开始计算所有软件包的完整依赖关系。
+              开启此选项后，如果将要执行的操作将会破坏现有系统的任何依赖关系，emerge将会退出。
+              和 --deep 一样，该选项也会显著增加计算依赖关系所消耗的时间。
+              和 --deep 不同之处在于，开启该选项并不比关闭该选项需要升级更多的包。
+              与 --with-bdeps=y 联用可以将编译时依赖关系也考虑进来，从而让依赖关系树更加完整。
+
+       --complete-graph-if-new-use &lt; y | n &gt;
+              如果一个已安装软件包的 USE 或 IUSE 发生变化，那么就触发 --complete-graph 行为。该选项默认为开启。
+
+       --complete-graph-if-new-ver &lt; y | n &gt;
+              如果一个已安装软件包的版本发生变化，那么就触发 --complete-graph 行为。该选项默认为开启。
+
+       --config-root=DIR
+              设置 PORTAGE_CONFIGROOT 环境变量的值。参见"环境变量"小节关于 PORTAGE_CONFIGROOT 的描述。
+
+       --debug (-d)
+              以调试模式运行。在此模式下，将会带 -x 选项运行bash编译环境，调试信息将会出现在stdout上。
+              此选项可用于发现bash语法错误，也可以用于查看详细的依赖关系信息和编译过程。
+
+       --deep [DEPTH] (-D)
+              计算完整的软件包依赖关系树，而不仅仅是直接依赖关系。DEPTH 可以用于指定依赖深度。
+              比如，更新软件包时连同该包间接依赖的库一同升级，尽管这些库并不被该包直接依赖。
+              参见 --with-bdeps 以了解编译时依赖的行为。
+
+       --depclean-lib-check [ y | n ]
+              在执行 --depclean 和 --prune 动作时，将一并考虑连接库层次的依赖关系。该选项默认为开启。
+              如果在make.conf(5)中设置了 FEATURES="preserve-libs"，并且也未移除指定软件包的"preserve-libs"特性，
+              那么此选项将被忽略，因为任何被连接的库都会被保留。
+
+       --digest
+              禁止显示摘要错误警告。
+              "repoman manifest"命令是生成manifest的首选方法，并且能够进行批量处理(参见repoman(1)手册页)。
+
+       --dynamic-deps &lt; y | n &gt;
+              在计算依赖关系时，将当前系统已安装的软件包替换为Portage树中相应的尚未安装的软件包。
+              这会导致当Portage树被更新后，依赖关系随之发生变化。该选项默认为开启。
+              警告：如果你打算关闭此选项，那么请首选运行 fixpackages(1) 以获得最佳结果。
+              fixpackages(1)命令实际上连续执行了"emaint --fix moveinst"和"emaint --fix  movebin"两个不同的动作。
+
+       --emptytree (-e)
+              在计算依赖关系时，假定系统中没有安装任何软件包。
+              这样在emerge某个软件包时，将会顺着依赖关系从最低层开始，按照新USE标记重新安装或升级每一个包。
+              当和 --pretend 一起使用的时候可以用来查看最完整的依赖关系，并检查将要执行的动作是否是你想要的。
+
+       --exclude ATOMS
+              该选项的参数是一个空格分隔的 atom 列表，表示禁止安装任何与其中的atom匹配的软件包。
+
+       --fail-clean [ y | n ]
+              用于编译失败后清理临时文件。此选项在你将 PORTAGE_TMPDIR 放在 tmpfs 上时特别有用。
+              开启此选项后，你也许应该同时启用PORT_LOGDIR(参见make.conf(5))来保存编译日志。
+
+       --fetchonly (-f)
+              不做任何编译，只是基于USE标记的设置，下载所需的源代码。
+
+       --fetch-all-uri (-F)
+              与 --fetchonly 类似，但不考虑USE标记，因此将会下载所有源代码(即使按照当前的USE标记并不需要)。
+
+       --getbinpkg [ y | n ] (-g)
+              使用PORTAGE_BINHOST(参见make.conf(5))变量定义的服务器和位置，下载每个二进制包信息，并用于创建依赖关系树。
+              该选项隐含了 --usepkg 选项(如果仅用于二进制安装，那么应该使用 -gK )。
+
+       --getbinpkgonly [ y | n ] (-G)
+              与 --getbinpkg 类似，不同之处在于：从远程服务器获得的二进制包信息优先于本地的二进制包信息。
+
+       --ignore-default-opts
+              忽略 EMERGE_DEFAULT_OPTS(参见make.conf(5)) 的设置。
+
+       --ignore-built-slot-operator-deps &lt; y | n &gt;
+              编译时忽略 slot/sub-slot := 操作符部分的依赖关系。此选项仅用于调试目的。
+
+       -j [JOBS], --jobs[=JOBS]
+              指定并行编译的软件包数量。如果开启了此选项，但没有给出JOBS(正整数)，那么emerge将不会限制并行编译的数量。
+              参见 --load-average 选项以获得更多信息。
+              与 --quiet-build 选项类似，开启 --jobs 选项也会导致所有的编译输出都被重定向到编译日志中。
+              注意：交互式安装的包将会自动强制 --jobs=1 ，但是可以通过 --accept-properties=-interactive 临时绕开。
+
+       --keep-going [ y | n ]
+              在遇到错误后并不中断，而是尽可能继续运行，直到实在不能继续为止。
+              也就是在遇到错误后，重新计算剩余包的依赖关系，并将不满足依赖关系的包丢弃。
+              参见相关的 --skipfirst 选项以获得更多信息。
+
+       --load-average [LOAD]
+              当平均负载不少于LOAD(浮点数)且有至少一个软件包正在编译时，不再启动新的编译任务。
+              如果LOAD值未指定，那么将使用前次的设定值。此选项一般和 --jobs 联用，以避免系统过载。
+              参见 make(1) 以了解类似的选项(可以通过make.conf(5)中的MAKEOPTS变量设置)。
+
+       --misspell-suggestions &lt; y | n &gt;
+              对拼写错误进行建议。默认情况下，如果指定的软件包不存在，emerge将会显示一列名称类似的软件包。
+              此选项默认开启。可以使用 EMERGE_DEFAULT_OPTS 变量默认关闭此特性。
+
+       --newuse (-N)
+              包含那些安装之后USE标记又发生了变化的软件包。此选项隐含了 --selective 选项。
+              USE标记的变化包括：添加，删除，开启，关闭。USE标记既受 profile 的影响，也受 package.use 的影响。
+              如果你想跳过处理那些IUSE标记发生变化的软件包，参见 --changed-use 选项。
+              如果你想跳过某些特定的软件包，参见 --exclude 选项。
+              注意：此选项不关心"test"标记的变化，因为它被绑定到了 FEATURES="test"(参见make.conf(5))变量中。
+
+       --noconfmem
+              默认情况下Portage会持续跟踪 CONFIG_PROTECT 目录中的文件，并且不会自动合并同一个文件，
+              但这样做会导致在不慎删除新配置文件后，无法更新原有配置。
+              使用此选项后，Portage将不管 CONFIG_PROTECT 目录中是否存在同名文件，总是自动合并新配置文件。
+
+       --nodeps (-O)
+              合并指定的软件包，但是不包括依赖关系。当依赖关系不能被满足时该操作可能会失败。
+
+       --noreplace (-n)
+              不重新安装系统中已经安装的软件包。如果不使用此选项，所有命令行上的软件包都将被重新安装。
+              注意：Portage默认并不重新安装被依赖的包。
+              此选项可以用于更新 world 文件而无需重新编译已安装的软件包。
+
+       --nospinner
+              即使终端类型是TTY也禁止会话的spinner
+
+       --usepkg-exclude ATOMS
+              一个空格分隔的软件包名字或 slot atom 列表。emerge将会忽略与之匹配的二进制包。
+
+       --rebuild-exclude ATOMS
+              一个空格分隔的软件包名字或 slot atom 列表。
+              列表中的软件包，即使 --rebuild 选项要求其重新编译，emerge也将跳过(不重新编译)。
+
+       --rebuild-ignore ATOMS
+              一个空格分隔的软件包名字或 slot atom 列表。
+              那些依赖于列表中的软件包的软件包，即使 --rebuild 选项要求其重新编译，emerge也将跳过(不重新编译)。
+
+       --oneshot (-1)
+              正常合并指定的包，但是并不将其添加到world文件中。这样，除非被其他包依赖而被动升级，否则不会升级。
+
+       --onlydeps (-o)
+              只合并软件包所依赖的包，而不合并其自身。
+
+       --package-moves [ y | n ]
+              在需要时移动软件包。默认开启。通常会在执行完 --sync 动作之后立即进行软件包的移动。
+              警告：切勿关闭此选项，除非你知道自己在做什么。
+
+       --pkg-format
+              指定将要创建的二进制包的格式，目前仅支持 tar 和 rpm 以及他们的组合。
+
+       --prefix=DIR
+              设置 EPREFIX 环境变量的值。
+
+       --pretend (-p)
+              不执行实际的合并操作，而只显示将发生将发生的动作。推荐在合并新软件包时先用 --pretend 检查一下。
+              输出标记说明：
+              N   新安装(此包目前尚未被安装)
+              S   安装新SLOT版本(与原有版本并行)
+              U   升级(将原有版本升级到一个新版本)
+              D   降级(将原有版本降级到一个更好的旧版本)
+              r   重装(由于某些原因(通常是由于slot/sub-slot)必须重新安装)
+              R   重装(重新编译一个相同的版本)
+              F   限制源码下载(必须手动下载)
+              f   限制源码下载(已经下载)
+              I   交互式安装(需要用户输入)
+              B   被已安装的包屏蔽(冲突尚未解决)
+              b   被已安装的包屏蔽(可以自动解决冲突)
+
+       --quiet [ y | n ] (-q)
+              以安静模式运行，portage的输出会简洁许多。
+
+       --quiet-build [ y | n ]
+              将所有的编译输出重定向到一个单独的日志文件，而不是在stdout上显示出来。
+              如果某个软件包出现编译错误，那么编译日志的内容将会自动在stdout上显示出来(除非使用了 --quiet-fail 选项)。
+              如果连续出现多个软件包编译错误(例如开启了 --keep-going 或 --jobs)，那么将会显示日志文件的路径(而不是内容)。
+              注意：交互式安装的软件包将强制显示所有编译输出，但可以通过 --accept-properties=-interactive 临时屏蔽。
+
+       --quiet-fail [ y | n ]
+              当编译输出由于 --jobs, --quiet, --quiet-build 被隐藏时，不在stdout上显示编译日志。
+              而仅仅显示最终的"die"消息和日志文件的路径。
+
+       --quiet-repo-display
+              不在软件包合并列表中显示 ::repository 输出，而是显示表明其来源的数字。
+
+       --quiet-unmerge-warn
+              禁止显示 --unmerge 动作之前的警告信息。此选项主要是为了用于 EMERGE_DEFAULT_OPTS 变量(参见make.conf(5))。
+
+       --rebuild-if-new-slot [ y | n ]
+              当 slot/sub-slot := 操作符的依赖关系被一个更新的slot满足的时候，自动重新编译和安装软件包。
+              这样，位于同一slot中的旧版本软件包将可以尽快的被 --depclean 动作卸载。
+              该选项仅对那些指定了 slot/sub-slot := 依赖关系的软件包有意义，且仅从 EAPI 5 开始支持此特性。
+              因为此选项需要检查反向依赖，所以它会在安装一个新的slot之后开启 --complete-graph 模式。
+              此选项默认为开启。
+              注意：如果你打算跳过包括slot操作依赖在内的所有重新安装动作，请使用 --ignore-built-slot-operator-deps=y 
+
+       --rebuild-if-new-rev [ y | n ]
+              如果某个软件包编译时所依赖的包需要从源代码安装(所需的精确版本尚未安装在系统中)，那么就重新编译这个软件包。
+              注意：精确版本的含义是主版本和修订版本一起考虑
+
+       --rebuild-if-new-ver [ y | n ]
+              如果某个软件包编译时所依赖的包需要从源代码安装(所需的主版本尚未安装在系统中)，那么就重新编译这个软件包。
+              注意：主版本相同即视为已安装，修订版本会被忽略
+
+       --rebuild-if-unbuilt [ y | n ]
+              如果某个软件包编译时所依赖的包需要从源代码安装(尚未安装在系统中)，那么就重新编译这个软件包。
+              注意：安装了任意版本即视为已安装，主版本和修订版本都会被忽略
+
+       --rebuilt-binaries [ y | n ]
+              用新编译的二进制软件包替换掉系统上对应的已安装的软件包。
+              是否"新"的标准是根据二进制包元数据里的 BUILD_TIME 进行判断的。
+              当对二进制包(--usepkgonly 或 --getbinpkgonly)使用 --update 和 --deep 时，此选项默认开启。
+
+       --rebuilt-binaries-timestamp=TIMESTAMP
+              此选项仅在使用了 --rebuilt-binaries 时才有意义。
+              仅在二进制包的 BUILD_TIME 大于给定的 TIMESTAMP 同时又大于系统中已安装软件包的 BUILD_TIME 时，
+              才会被考虑应用于"rebuilt-binaries"逻辑。
+
+       --reinstall changed-use
+              这是 --changed-use 的别名
+
+       --reinstall-atoms ATOMS
+              一个空格分隔的软件包名字或 slot atom 列表。emerge将会把列表中的软件包视为尚未安装，从而可以重新安装它们。
+
+       --root=DIR
+              设置 ROOT 环境变量的值
+
+       --root-deps[=rdeps]
+              如果未给出参数，那么连同ROOT编译时所依赖的包将被一起安装到ROOT目录(而不是"/")。
+              如果给出了rdeps参数，那么将丢弃ROOT编译时所依赖的包，而只将指定的包自身安装到ROOT目录。
+              此选项仅在与ROOT环境变量或 --root 一起使用时才有意义，否则切勿使用！
+              此选项对支持 HDEPEND 的 EAPI 也没有效果。EAPI 5 使用新特性 HDEPEND 来调整安装到"/" 和 ROOT 的内容。
+
+       --select [ y | n ] (-w)
+              将制定的软件包添加到 world 集合(与 --oneshot 正好相反)。
+              当你在 EMERGE_DEFAULT_OPTS 中设置了 --oneshot 之后，此选项就有了用武之地。
+
+       --selective [ y | n ]
+              此选项与 --noreplace 类似。
+              对于隐含了 --selective 的选项(--changed-use, --newuse, --noreplace, --update)来说，
+              可以使用 --selective=n 来强制禁止 --selective 行为。
+
+       --skipfirst
+              仅在与 --resume 联用时才有意义。表示移除恢复列表中的第一个包，然后重新计算剩余软件包的依赖关系，
+              并自动丢弃所有不满足依赖关系或者被屏蔽的包。另请参见相关的 --keep-going 选项。
+
+       --tree (-t)
+              以缩进方式为给定的目标显示依赖关系树。该选项在和 --emptytree 或 --update 和 --deep 一起使用时才有意义。
+
+       --unordered-display
+              默认情况下，将按照安装顺序排列软件包列表。
+              当此选项和 --tree 一起使用时，此排序规则将被取消，这有助于展示更具可读性的依赖关系列表。
+
+       --update (-u)
+              将软件包升级到最佳的版本。由于最新版本通常位于测试分枝或被屏蔽，所以"最佳的版本"不一定是最高版本。
+              atom参数将被"贪婪匹配"，因此非特定的atom可能会匹配多个slot中的不同版本。
+
+       --use-ebuild-visibility [ y | n ]
+              对于已编译的软件包，使用未编译的ebuild元数据。
+
+       --useoldpkg-atoms ATOMS
+              一个空格分隔的软件包名字或 slot atom 列表。
+              对于列表中的软件包，emerge将会优先选择二进制包，而不是较新的未编译的包。
+
+       --usepkg [ y | n ] (-k)
+              尽可能使用二进制包(来自 $PKGDIR)，这样可以避免那些耗时很长的编译过程。在从CD安装时这个选项很有用处。
+              你可以先将 PKGDIR=/mnt/cdrom/packages 设为全局变量，然后使用此选项从CD上抓取已编译好的包并满足依赖关系。
+
+       --usepkgonly [ y | n ] (-K)
+              仅使用二进制包(来自 $PKGDIR)。这样所有的包(包括依赖关系)都必须能直接获取，否则emerge将会退出。
+              Portage在计算依赖关系时并不使用 $PORTDIR ，所以，所有的屏蔽信息都将被忽略。
+
+       --verbose [ y | n ] (-v)
+              以冗余模式运行，也就是在运行的同时输出info级别的消息，并且在和 --pretend 联用时显示每个包的USE标记。
+              下面的修饰符用于表示相应USE标记状态：
+              修饰符   位置      含义
+              ──────────────────────────────────────────────────────────────
+              -        前缀   已关闭(已禁用或已删除)
+              *        后缀   转换到开启状态/转换自开启状态
+              %        后缀   新添加的标记/新删除的标记
+              ()       包围   强制的, 已屏蔽的, 已删除的
+              {}       包围   由FEATURES变量所决定
+
+       --verbose-conflicts
+              显示更详细的slot冲突信息。注意：开启此项后，在某些情况下可能会导致显示数百个软件包的slot冲突信息。
+
+       --verbose-main-repo-display
+              即使对于主软件库，也显示 ::repository 信息。
+
+       --with-bdeps &lt; y | n &gt;
+              在计算依赖关系时，连同编译时依赖(非严格必须)一起考虑。
+              安装时的默认值是"n"，也就是不安装编译时依赖。而对于 --depclean 的默认值是"y"，也就是不卸载编译时依赖。
+              这个设置可以添加到 EMERGE_DEFAULT_OPTS (参见make.conf(5))变量中，并可以随后在命令行上被改写。
+
+环境变量
+       EPREFIX = [path]
+              EPREFIX 用于指定目标的前缀(安装目录)，可以在make.conf(5)文件中设置。
+              但是其值也可以通过 --prefix 选项进行更改(覆盖make.conf(5)文件中的设置)。
+              默认值是当前portage的安装目录(通常是"/usr")。
+
+       ROOT = [path]
+              ROOT 用于指定目标的根文件系统路径，可以在make.conf(5)文件中设置。
+              但是其值也可以通过 --root 选项进行更改(覆盖make.conf(5)文件中的设置)。
+              默认值是"/"。
+
+       PORTAGE_CONFIGROOT = [path]
+              PORTAGE_CONFIGROOT 用于指定存放各种portage配置文件的根目录(参见"文件"小节以查看配置文件列表)。
+              但是其值也可以通过 --config-root 选项进行更改(覆盖make.conf(5)文件中的设置)。
+              默认值是"/"。
+
+输出
+       当使用 --pretend 和 --verbose 选项时，输出的内容可能会有些难懂，下面就是对这些缩写的解释。
+
+       [blocks B ] app-text/dos2unix ("app-text/dos2unix" is blocking app-text/hd2u-0.8.0)
+              dos2unix 阻止了 hd2u 的安装。如果两个包会互相覆盖对方的文件，那么就将互相阻挡，否则将会损坏系统。
+              互相阻挡的包不应该被同时安装，因为它们通常都提供相同的功能。
+
+       [ebuild N ] app-games/qstat-25c
+              qstat 是一个新软件包，将被新安装到系统中。
+
+       [ebuild NS ] dev-libs/glib-2.4.7
+              系统中已经安装了一个 glibc 版本，但是有一个属于不同SLOT的"新"版本可用。
+
+       [ebuild R ] sys-apps/sed-4.0.5
+              sed 4.0.5 已经安装了，但是portage将会重新安装此软件包。
+
+       [ebuild F ] media-video/realplayer-8-r6
+              需要手动下载 realplayer 的源代码。
+              在下载源代码失败时，portage 将会停止安装并且提示如何下载所需源码。
+
+       [ebuild f ] media-video/realplayer-8-r6
+              realplayer 的源代码已经下载到系统中了。
+
+       [ebuild U ] net-fs/samba-2.2.8_pre1 [2.2.7a]
+              samba 2.2.7a 已经安装在系统中了，但将被升级到 2.2.8_pre1 版本。
+
+       [ebuild UD] media-libs/libgd-1.8.4 [2.0.11]
+              libgd 2.0.11 已经安装在系统中了，但将被降级到 1.8.4 版本。
+              原因之一是，新版本存在缺陷(安全漏洞、导致系统损坏等)，且尚未修复，暂时被屏蔽了。
+              原因之二是，某个你要安装的软件包依赖于旧版本，为了安装成功，必须降级。
+              在本例中，因为 libgd 2.x 与 libgd 1.x 并不兼容，所以必须先降级到 1.8.4 版本才能继续安装。
+
+       [ebuild U ] sys-devel/distcc-2.16 [2.13-r1] USE="ipv6* -gtk -qt%"
+              显示USE标记对编译的影响。在本例中，启用了 ipv6 支持但是禁止了 gtk 和 qt 支持。
+              "ipv6"后的星号(*)表示在上一次安装该软件包时，ipv6支持是被关闭的。
+              "qt"后的百分号(%)表示在上一次安装该软件包时，qt支持是被开启的。
+              注意：对于那些在两次安装中保持不变的USE标记，将只被简单的显示，而不带任何结尾标记。
+              USE标记只在使用了 --pretend 或 --verbose 时才会显示。而使用 --quiet 将会阻止显示上述信息。
+
+       [ebuild r U ] dev-libs/icu-50.1.1:0/50.1.1 [50.1-r2:0/50.1]
+              icu 50.1-r2 已经被安装在系统中了，并且将被升级到 50.1.1 版本。
+              "r"符号表示icu软件包的sub-slot变化(在本例中是从50.1到50.1.1)，
+              将会导致有slot-operator依赖于它的软件包(如下例所示的 libxml2)要被重新编译。
+
+       [ebuild rR ] dev-libs/libxml2-2.9.0-r1:2 USE="icu"
+              libxml2 2.9.0-r1 已经被安装在系统中了，但是为了满足slot-operator依赖，将被重新编译安装。
+              如上例所示，是因为其所依赖的icu软件包的sub-slot发生了变化。
+
+       [ebuild U *] sys-apps/portage-2.2.0_alpha6 [2.1.9.25]
+              portage 2.1.9.25 已经被安装在系统中了，但将被升级到 2.2.0_alpha6 版本。
+              "*"符号的意思是 2.2.0_alpha6 版本由于"missing keyword"的原因而被屏蔽(mask)。
+              如果使用了 --quiet 选项并且没有使用 --verbose 选项，那么此类屏蔽标志将不会显示。
+              此类屏蔽标记的详细说明如下：
+              标记     屏蔽类型
+              ──────────────────────────
+                #      package.mask
+                *      missing keyword
+                ~      unstable keyword
+              注意：当使用 ACCEPT_KEYWORDS 在全局范围接受不稳定分支时，将不会显示波浪号(~)标记。
+
+
+       注意   建议在安装或者升级前先使用 --pretend 选项，看看将会发生什么操作，有哪些包将被阻止而需要调整。
+              特别是在对 system 和 world 集合进行操作时，更需要先用 --pretend 选项，因为可能会牵涉到大量软件包的变动。
+
+       你还应该优先使用 --update ，它会忽略那些已经完成升级的包，而只是升级那些未完成升级的包。
+
+       如果安装时没有在命令行参数中明确列出所依赖的包，那么为满足依赖关系而被安装的包将不会被加入到world文件中。
+       如果你想在升级 world 集合时一并升级那些为满足依赖关系而被安装的包，那么必须在命令行参数中明确列出这些包。
+
+       可以在命令行上使用USE变量来临时更改USE标记。但是命令行上指定的USE变量只是临时性的，不会被长久保存，因此不建议使用。
+       如果你想让USE标记被长久保存，那么应该将其放置到 /etc/portage/package.use 文件中。
+
+       如果 emerge --update @system 或 emerge --update @world 失败了，并且输出一条出错信息，
+       那么可能是某个 ebuild 使用了新版本的 emerge 特性，你必须先使用 emerge --update portage 升级 portage 。
+
+被屏蔽的包
+       注意: 请小心使用开发分支。滥用被屏蔽的包会导致大量的bug和故障，并且会耗尽Gentoo开发者的精力。
+       请确认你有能力自己处理接踵而至的bug和故障。
+
+       portage中的屏蔽(mask)有多种功能：(1)用于软件包正式发布前的测试；(2)在即将撤销软件包前停止使用；
+       (3)屏蔽已知有缺陷或存在安全漏洞的软件包。欲知如何解除屏蔽，请继续阅读下面的内容。
+       另外还要注意的是，如果你给定了一个明确的 ebuild ，那么所有形式的屏蔽都将被忽略，emerge将会尽力安装它。
+
+       backtracking
+              软件包因为 backtracking 而被屏蔽的含义是：为了避免依赖关系冲突和/或满足特定的依赖关系，而被临时屏蔽。
+              这种类型的屏蔽通常伴随一条消息：跳过某些软件包的升级，以避免依赖关系冲突和/或满足特定的依赖关系。
+
+       package.mask
+              /usr/portage/profiles/package.mask 文件主要用于阻止那些已知会导致系统问题和有缺陷的软件包。
+
+       CHOST  使用make.conf(5)中的 ACCEPT_CHOSTS 变量来控制可接受的 CHOST 值。
+
+       EAPI   ebuild(5)文件中的EAPI变量用于屏蔽不能被当前(较低)版本的portage所支持的包。
+              被EAPI屏蔽的包只有在升级portage之后才可以被安装。
+
+       KEYWORDS
+              ebuild 文件中的 KEYWORDS 变量可以用于屏蔽尚处于测试状态的软件包。
+              每个包都有个体系架构特定的关键字，让portage知道此软件包可用于哪些体系架构之上。
+              如果一个软件包可用于某个体系架构，但是尚未经过严谨的测试，不能标记为"稳定"，
+              那么将在相应的体系结构关键字前加上一个波浪号(~)以表明该包在此体系结构上尚处于测试状态。
+              emerge通过检查 ACCEPT_KEYWORDS 变量，以确定允许还是禁止合并被 KEYWORDS 屏蔽的包。
+              要让emerge允许合并这些测试版本的包，可以在 /etc/portage/package.accept_keywords 文件中列出这些测试版本的包。
+              参见portage(5)手册以了解更多信息。
+
+       LICENSE
+              ebuild 文件中的 LICENSE 变量可用于屏蔽受限于许可证的软件包。
+              emerge通过检查 ACCEPT_LICENSE 变量，以确定允许还是禁止合并被 LICENSE 屏蔽的包。
+              参见make.conf(5)手册以了解更多有关 ACCEPT_LICENSE 的信息。
+              参见portage(5)手册以了解更多有关 /etc/portage/package.license 的信息。
+
+       PROPERTIES
+              ebuild 文件中的 PROPERTIES 变量可用于屏蔽特定属性的软件包。
+              emerge通过检查 ACCEPT_PROPERTIES 变量，以确定允许还是禁止合并被 PROPERTIES 屏蔽的包。
+              参见make.conf(5)手册以了解更多有关 ACCEPT_PROPERTIES 的信息。
+              参见portage(5)手册以了解更多有关 /etc/portage/package.properties 的信息。
+              可以使用 --accept-properties 选项临时覆盖 ACCEPT_PROPERTIES 的值。
+
+       RESTRICT
+              ebuild 文件中的 RESTRICT 变量可基于 RESTRICT 标记屏蔽特定的软件包。
+              emerge通过检查 ACCEPT_RESTRICT 变量，以确定允许还是禁止合并被 RESTRICT 屏蔽的包。
+              参见make.conf(5)手册以了解更多有关 ACCEPT_RESTRICT 的信息。
+              参见portage(5)手册以了解更多有关 /etc/portage/package.accept_restrict 的信息。
+              可以使用 --accept-restrict 选项临时覆盖 ACCEPT_RESTRICT 的值。
+
+配置文件
+       Portage有个"配置文件保护"机制。目的在于避免新安装的包覆盖原有已经存在的配置文件。
+       默认情况下，"配置文件保护"机制仅在 /etc 目录和KDE配置目录内生效，将来也可能会再增加更多目录。
+
+       当Portage要向被保护的目录(例如 /etc 目录)安装文件时，任何已经存在的文件都不会被覆盖。
+       如果一个同名的文件'foo'已经存在，即将被安装的新文件将被命名为'._cfg0000_foo'；
+       如果一个同名的文件'._cfg0000_foo'已经存在，即将被安装的新文件将被命名为'._cfg0001_foo'；等等，以此类推。
+       通过这种方法，已经存在的文件就不会被自动覆盖，从而允许系统管理员手动合并新配置文件，以避免意料之外的变化。
+
+       除了避免覆盖已经存在的文件，在卸载软件包的时候，Portage还避免删除被保护目录中的文件。
+       这种做法虽然有点不清爽，但是却可以避免重要的配置文件被不慎删除。
+
+       使用 CONFIG_PROTECT 变量设置被保护的目录(通常在 make.globals 文件中定义)。
+       使用 CONFIG_PROTECT_MASK 变量设置需要从被保护目录中排除的目录。
+       可以使用如下命令查找 /etc 目录中等待更新的文件： find /etc -name '._cfg????_*'
+
+       可以通过在 make.conf(5) 中设置 CONFIG_PROTECT="-*" 来取消这种保护机制，这样Portage就会无情的自动更新所有配置文件。
+       或者，你也可以在开启"配置文件保护"机制的同时，允许Portage自动覆盖/etc目录下某些特定子目录中的文件。
+       例如，你想让Portage在保护 /etc 目录的同时，又自动更新rc脚本和wget配置，可以在 make.conf(5) 中添加如下行：
+
+       CONFIG_PROTECT_MASK="/etc/wget /etc/rc.d"
+
+       dispatch-conf, cfg-update, etc-update 之类的工具可以用于手动合并这些文件。
+       它们可以用于交互式合并，还能够自动合并一些细小的变化。
+
+文件
+       下面列出了一些你可能感兴趣的文件。要想得到完整的列表，请查看 portage(5) 手册页。
+
+       /usr/share/portage/config/sets/
+              该目录包含了默认的软件包集合(set)的定义。
+
+       /var/lib/portage/world
+              包含了用户自定义的软件包列表。
+              你可以安全的编辑这个文件：添加你想在升级world集合时一起升级的软件包，删除那些你想忽略软件包。
+
+       /var/lib/portage/world_sets
+              与world文件类似，但是其中包含的不是软件包(atom)，而是软件包集合(set)，这些集合名称前都必须带有"@"字符作为前缀。
+              你可以使用 /etc/portage/sets/ 目录定义你自己的软件包集合。
+
+       /etc/portage/make.conf
+              包含编译安装过程中需要使用的变量，以覆盖 make.globals 文件中的默认值。
+
+       /etc/portage/color.map
+              包含用于定义颜色的变量。
+
+       /etc/portage/sets/
+              存放用户自定义的软件包集合定义(参见 portage(5) 手册页)
+
+       /etc/dispatch-conf.conf
+              包含用于定义如何进行配置文件的自动更新与备份的变量。
+
+       /etc/portage/make.profile/make.defaults
+              包含profile特定的、用于编译的变量。请勿编辑此文件。
+
+       /usr/portage/profiles/use.desc
+              包含全局USE标记的解释。请勿编辑此文件。
+
+       /etc/portage/make.profile/virtuals
+              包含为了满足虚拟依赖关系而默认安装的软件包列表。请勿编辑此文件。
+
+       /etc/portage/make.profile/packages
+              包含系统的基础(base)软件包列表。system和world集合都基于此列表。请勿编辑此文件。
+
+       /usr/share/portage/config/make.globals
+              包含编译安装过程中需要使用的变量的默认值。请勿编辑此文件。
+
+       /var/log/emerge.log
+              记录所有emerge输出内容的日志文件。该文件总是以追加方式向其中添加内容，你只能手动清空其内容。
+
+       /var/log/emerge-fetch.log
+              记录所有emerge的文件下载日志。该文件总是以追加方式向其中添加内容，你只能手动清空其内容。
+
+       /var/log/portage/elog/summary.log
+              包含所有emerge概要信息。安装 /etc/logrotate/elog-save-summary 文件
+
+参考资料
+       emerge --help, quickpkg(1), ebuild(1), ebuild(5), make.conf(5), color.map(5), portage(5)
+
+       /usr/lib/portage/bin/  目录中有许多有用的帮助程序。
+
+       app-portage/gentoolkit 软件包中有一些有用脚本(例如equery之类)。
+
+
+
+Portage 2.2.7                                      Aug 2013                                           EMERGE(1)
+
+</pre>
+
+
+<hr />
+
+
+</body></html>

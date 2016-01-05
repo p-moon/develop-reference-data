@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ALTER CONVERSION</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-alteraggregate.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-alteraggregate.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-alterdatabase.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-alterdatabase.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ALTERCONVERSION"></a>ALTER CONVERSION</h1>
+<div class="REFNAMEDIV"><a name="AEN43711"></a><h2>名称</h2>ALTER CONVERSION&nbsp;--&nbsp;修改一个编码转换的定义</div>
+<a name="AEN43714"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN43716"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ALTER CONVERSION <tt class="REPLACEABLE"><i>name</i></tt> RENAME TO <tt class="REPLACEABLE"><i>newname</i></tt>
+ALTER CONVERSION <tt class="REPLACEABLE"><i>name</i></tt> OWNER TO <tt class="REPLACEABLE"><i>newowner</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN43722"></a><h2>描述</h2>
+<p><tt class="COMMAND">ALTER CONVERSION</tt> 修改一个编码转换的定义。</p>
+<p>要使用 <tt class="COMMAND">ALTER CONVERSION</tt> ，你必须拥有该编码转换。要修改其所有者，你必须是新的所有角色的直接或者间接成员，并且该角色还必须在该编码转换的模式上有 <tt class="LITERAL">CREATE</tt> 权限。这些限制强制了修改该所有者不会做任何通过删除和重建编码转换不能做的事情。不过，超级用户可以以任何方式修改任意编码转换的所有权。</p>
+</div>
+<div class="REFSECT1"><a name="AEN43729"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>一个现有的编码转换的名字(可以有模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>newname</i></tt></dt>
+<dd><p>编码转换的新名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>newowner</i></tt></dt>
+<dd><p>编码转换的新所有者</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN43747"></a><h2>例子</h2>
+<p>把编码转换 <tt class="LITERAL">iso_8859_1_to_utf8</tt> 重命名为 <tt class="LITERAL">latin1_to_unicode</tt> ：</p>
+<pre class="PROGRAMLISTING">ALTER CONVERSION iso_8859_1_to_utf8 RENAME TO latin1_to_unicode;</pre>
+<p>把编码转换 <tt class="LITERAL">iso_8859_1_to_utf8</tt> 的所有者改变为 <tt class="LITERAL">joe</tt> ：</p>
+<pre class="PROGRAMLISTING">ALTER CONVERSION iso_8859_1_to_utf8 OWNER TO joe;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN43757"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">ALTER CONVERSION</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN43761"></a><h2>又见</h2><a href="sql-createconversion.html"><i>CREATE CONVERSION</i></a>, <a href="sql-dropconversion.html"><i>DROP CONVERSION</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-alteraggregate.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-alterdatabase.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ALTER AGGREGATE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">ALTER DATABASE</td></tr>
+</table>
+</div>
+</body></html>

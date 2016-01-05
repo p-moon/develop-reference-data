@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>数据库分页文件</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="storage-toast.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="storage.html">快退</a></td><td width="60%" align="center" valign="bottom">章52. 数据库物理存储</td><td width="10%" align="right" valign="top"><a href="storage.html">快进</a></td><td width="10%" align="right" valign="top"><a href="bki.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="STORAGE-PAGE-LAYOUT">52.3. 数据库分页文件</a></h1>
+<p>本章提供一个表和索引所使用的页面格式的概述。<a name="AEN69531" href="#FTN.AEN69531"><span class="footnote">[1]</span></a> 序列和 TOAST 的格式与普通表一样。</p>
+<p>在下面解释中，假定一个<i class="FIRSTTERM">字节</i>包含 8 bit；<i class="FIRSTTERM">项</i>指的是存储在一个页面里的独立数据值。在一个表里，一个项是一个行；在一个索引里，一个项是一条索引记录。</p>
+<p>每个表和索引都以固定尺寸(通常是 8K ，但也可以在编译时选择其它尺寸)的<i class="FIRSTTERM">页面</i>数组存储。在表里，所有页面逻辑上都相同，所以一个特定的项(行)可以存储在任何页面里。在索引里，第一个页面通常保留为<i class="FIRSTTERM">元页面</i>，保存着控制信息，并且依索引访问方法的不同，在索引里可能有不同类型的页面。</p>
+<p><a href="storage-page-layout.html#PAGE-TABLE">表52-2</a>显示一个页面的总体布局。每个页面有五个部分。</p>
+<div class="TABLE"><a name="PAGE-TABLE"></a>
+<p><b>表52-2. 总体页面布局</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>项</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td>PageHeaderData</td><td>页头数据。20 字节长。包含关于页面的一般信息，包括自由空间指针。</td></tr>
+<tr><td>ItemPointerData</td><td>项指针数据。(offset,length)对的数组，指向实际项。每个项 4 字节。</td></tr>
+<tr><td>Free space</td><td>未分配的空间。新项指针从这个区域的开头开始分配，新项从结尾开始分配。</td></tr>
+<tr><td>Items</td><td>实际的项自身。</td></tr>
+<tr><td>Special space</td><td>特殊空间。索引访问模式特定的数据。不同的索引方法存放不同的数据。在普通表中为空。</td></tr>
+</tbody>
+</table>
+</div>
+<p>每个页面的头 20 个字节组成页头(PageHeaderData)。它的格式在<a href="storage-page-layout.html#PAGEHEADERDATA-TABLE">表52-3</a>里详细介绍。头两个字节跟踪与此页面相关的最近的 WAL 项。然后跟着三个 2 字节的整数字段(<tt class="STRUCTFIELD">pd_lower</tt>, <tt class="STRUCTFIELD">pd_upper</tt>, <tt class="STRUCTFIELD">pd_special</tt>)。这些字段分别包含页面开始位置与未分配空间开头的字节偏移，与未分配空间结尾的字节偏移，以及与特殊空间开头的字节偏移。页面头的最后 2 字节(<tt class="STRUCTFIELD">pd_pagesize_version</tt>)存储页面尺寸和版本指示器。PostgreSQL 8.1/8.2 版本号是 3 ；PostgreSQL 8.0 为 2 ；PostgreSQL 7.3/7.4 为 1 ；之前的为 0 。基本页面布局和头格式在这些版本里都没有改变，但是堆的行头部布局有所变化。页面大小主要用于交叉检查；目前在一次安装里，还没有支持多于一种页面大小的东西。</p>
+<div class="TABLE"><a name="PAGEHEADERDATA-TABLE"></a>
+<p><b>表52-3. PageHeaderData 布局</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>字段</th><th>类型</th><th>长度</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td>pd_lsn</td><td>XLogRecPtr</td><td>8 字节</td><td>LSN: 最后修改这个页面的 xlog 记录最后一个字节后面第一个字节</td></tr>
+<tr><td>pd_tli</td><td>TimeLineID</td><td>4 字节</td><td>最后修改的 TLI</td></tr>
+<tr><td>pd_lower</td><td>LocationIndex</td><td>2 字节</td><td>到自由空间开头的偏移量</td></tr>
+<tr><td>pd_upper</td><td>LocationIndex</td><td>2 字节</td><td>到自由空间结尾的偏移量</td></tr>
+<tr><td>pd_special</td><td>LocationIndex</td><td>2 字节</td><td>到特殊空间开头的偏移量</td></tr>
+<tr><td>pd_pagesize_version</td><td>uint16</td><td>2 字节</td><td>页面大小和布局版本号信息</td></tr>
+</tbody>
+</table>
+</div>
+<p>所有细节都可以在 <tt class="FILENAME">src/include/storage/bufpage.h</tt> 里找到。</p>
+<p>在页头后面是项标识符(<tt class="TYPE">ItemIdData</tt>)，每个需要四个字节。一个项标识符包含一个到项开头的字节偏移量，它自己以字节计的长度，以及一套属性位，这些属性位影响它的解释。新的项标识符根据需要从未分配空间的开头分配。项标识符的数目可以通过查看 <tt class="STRUCTFIELD">pd_lower</tt> 来判断，在分配新标识符的时候会递增。因为一个项标识符在其释放前绝对不会移动，所以它的索引可以用于长时间地引用一个项，即使该项本身因为压缩自由空间在页面内部进行了移动也如此。实际上，PostgreSQL 创建的每个指向项的指针(<tt class="TYPE">ItemPointer</tt> ，也叫做 <tt class="TYPE">CTID</tt>)都由一个页号和一个项标识符的索引组成。</p>
+<p>项本身存储在从未分配空间末尾开始从后向前分配的空间里。它们的实际结构因表包含的内容不同而不同。表和序列都使用一种叫做 <tt class="TYPE">HeapTupleHeaderData</tt> 的结构，在下面描述。</p>
+<p>最后一段是"特殊段"，它可以包含任何访问方法想存放的东西。比如，b-tree 索引存储指向页面的左右同宗的链接，以及其它一些和索引结构相关的数据。普通表并不使用这个段(通过设置 <tt class="STRUCTFIELD">pd_special</tt> 等于页面大小来表示)。</p>
+<p>所有表行都用同样方法构造。它们有一个定长的头(在大多数机器上占据 27 个字节)，后面跟着一个可选的 null 位图，一个可选的对象 ID 字段，以及用户数据。头在<a href="storage-page-layout.html#HEAPTUPLEHEADERDATA-TABLE">表52-4</a>里详细描述。实际用户数据(行的字段)从 <tt class="STRUCTFIELD">t_hoff</tt> 标识的偏移量开始，它必须是该平台的 MAXALIGN 距离的倍数。null 位图只有在 <tt class="STRUCTFIELD">t_infomask</tt> 里面的 <i class="FIRSTTERM">HEAP_HASNULL</i> 位设置了的时候才出现。如果它出现了，那么它紧跟在定长头后面，占据足够容纳每个数据字段对应一个位的字节数(也就是说，总共 <tt class="STRUCTFIELD">t_natts</tt> 位)。在这个位列里面，为 1 的位表示非空，而为 0 的位表示空。如果没有出现这个位图，那么所有数据字段都假设为非空的。对象 ID 只有在设置了 <tt class="STRUCTFIELD">t_infomask</tt> 里面的 <i class="FIRSTTERM">HEAP_HASOID</i> 位的时候才出现。如果出现，它正好出现在 <tt class="STRUCTFIELD">t_hoff</tt> 范围之前。如果需要补齐 <tt class="STRUCTFIELD">t_hoff</tt> ，使之成为 MAXALIGN 的倍数，那么这些填充将出现在 null 位图和对象 ID 之间。这样也保证了对象 ID 得到恰当的对齐。</p>
+<div class="TABLE"><a name="HEAPTUPLEHEADERDATA-TABLE"></a>
+<p><b>表52-4. HeapTupleHeaderData 布局</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>字段</th><th>类型</th><th>长度</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td>t_xmin</td><td>TransactionId</td><td>4 字节</td><td>插入 XID 戳记</td></tr>
+<tr><td>t_cmin</td><td>CommandId</td><td>4 字节</td><td>插入 CID 戳记</td></tr>
+<tr><td>t_xmax</td><td>TransactionId</td><td>4 字节</td><td>删除 XID 戳记</td></tr>
+<tr><td>t_cmax</td><td>CommandId</td><td>4 字节</td><td>删除 CID 戳记(与 t_xvac 重叠)</td></tr>
+<tr><td>t_xvac</td><td>TransactionId</td><td>4 字节</td><td>用于移动行版本操作的 VACUUM 的 XID</td></tr>
+<tr><td>t_ctid</td><td>ItemPointerData</td><td>6 字节</td><td>这个或者新行的当前 TID</td></tr>
+<tr><td>t_natts</td><td>int16</td><td>2 字节</td><td>字段数目</td></tr>
+<tr><td>t_infomask</td><td>uint16</td><td>2 字节</td><td>各种标志位</td></tr>
+<tr><td>t_hoff</td><td>uint8</td><td>1 字节</td><td>到用户数据的偏移量</td></tr>
+</tbody>
+</table>
+</div>
+<p>所有细节都可以在 <tt class="FILENAME">src/include/access/htup.h</tt> 中找到。</p>
+<p>对具体数据的解释只能在从其它表中获取信息的情况下进行，这些信息大多数在 <tt class="STRUCTNAME">pg_attribute</tt> 里。标识字段位置的关键数值是 <tt class="STRUCTFIELD">attlen</tt> 和 <tt class="STRUCTFIELD">attalign</tt> 。没有办法直接获取某个字段，除非它们是定宽并且没有 NULL 的。所有这些复杂的操作都封装在函数 <i class="FIRSTTERM">heap_getattr</i>, <i class="FIRSTTERM">fastgetattr</i>, <i class="FIRSTTERM">heap_getsysattr</i> 里。</p>
+<p>要读取数据的话，你需要轮流检查每个字段。首先根据 null 位图检查该字段是否为 NULL 。如果是，那么跳到下一个字段。然后保证你的对齐是正确的。如果字段是一个定宽字段，那么所有字节都简单地放在那里。如果它是一个变长字段(attlen = -1)，那么它就会更加复杂一些。所有变长数据类型都使用一个通用的头结构 <tt class="TYPE">varattrib</tt> ，它包含所存储的数据的全长以及一些标志位。根据标志的不同，数据可能是内联的或者是在其它表中(TOAST)，还可能是压缩的(参阅<a href="storage-toast.html">节52.2</a>)。</p>
+</div>
+<h3 class="FOOTNOTES">注意</h3>
+<table border="0" class="FOOTNOTES" width="100%">
+<tr><td align="LEFT" valign="TOP" width="5%"><a name="FTN.AEN69531" href="storage-page-layout.html#AEN69531"><span class="footnote">[1]</span></a></td><td align="LEFT" valign="TOP" width="95%"><p>实际上，索引访问模式并不需要使用这些页面格式。目前，所有索引方法的确都使用这个基本格式，但保留在索引元数据页里的数据通常并不准确地遵循项布局规则。</p></td></tr>
+</table>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="storage-toast.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="bki.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">TOAST</td><td width="34%" align="center" valign="top"><a href="storage.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">BKI 后端接口</td></tr>
+</table>
+</div>
+</body></html>

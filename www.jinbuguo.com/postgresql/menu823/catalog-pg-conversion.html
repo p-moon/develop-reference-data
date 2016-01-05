@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_conversion</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-constraint.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-database.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-CONVERSION">43.14. <tt class="STRUCTNAME">pg_conversion</tt></a></h1><a name="AEN63211"></a>
+<p><tt class="STRUCTNAME">pg_conversion</tt> 描述可用的编码转换信息。参阅 <a href="sql-createconversion.html"><i>CREATE CONVERSION</i></a> 获取更多信息。</p>
+<div class="TABLE"><a name="AEN63216"></a>
+<p><b>表43-14. <tt class="STRUCTNAME">pg_conversion</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">conname</tt></td><td><tt class="TYPE">name</tt></td><td>&nbsp;</td><td>转换名字(在一个名字空间里是唯一的)</td></tr>
+<tr><td><tt class="STRUCTFIELD">connamespace</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-namespace.html"><tt class="STRUCTNAME">pg_namespace</tt></a>.oid</tt></td><td>包含这个转换的名字空间的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">conowner</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-authid.html"><tt class="STRUCTNAME">pg_authid</tt></a>.oid</tt></td><td>编码转换的属主</td></tr>
+<tr><td><tt class="STRUCTFIELD">conforencoding</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>源编码 ID</td></tr>
+<tr><td><tt class="STRUCTFIELD">contoencoding</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>目的编码 ID</td></tr>
+<tr><td><tt class="STRUCTFIELD">conproc</tt></td><td><tt class="TYPE">regproc</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>转换过程</td></tr>
+<tr><td><tt class="STRUCTFIELD">condefault</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>如果这是缺省转换则为真</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-constraint.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-database.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_constraint</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_database</tt></td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>序列操作函数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-net.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="functions-conditional.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-SEQUENCE">9.12. 序列操作函数</a></h1><a name="AEN12882"></a><a name="AEN12884"></a><a name="AEN12886"></a><a name="AEN12888"></a><a name="AEN12890"></a>
+<p>本节描述 PostgreSQL 用于操作<i class="FIRSTTERM">序列对象</i>的函数。序列对象(也叫序列生成器或者就叫序列)都是用 <tt class="COMMAND">CREATE SEQUENCE</tt> 创建的特殊的单行表。一个序列对象通常用于为行或者表生成唯一的标识符。在<a href="functions-sequence.html#FUNCTIONS-SEQUENCE-TABLE">表9-34</a>中列出的序列函数为我们从序列对象中获取后续的序列值提供了简单的、多用户安全的方法。</p>
+<div class="TABLE"><a name="FUNCTIONS-SEQUENCE-TABLE"></a>
+<p><b>表9-34. 序列函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>函数</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">currval</code>(<tt class="TYPE">regclass</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>返回最近一次用 <code class="FUNCTION">nextval</code> 获取的指定序列的数值</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">nextval</code>(<tt class="TYPE">regclass</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>递增序列并返回新值</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">setval</code>(<tt class="TYPE">regclass</tt>, <tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>设置序列的当前数值</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">setval</code>(<tt class="TYPE">regclass</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">boolean</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>设置序列的当前数值以及 <tt class="LITERAL">is_called</tt> 标志</td></tr>
+</tbody>
+</table>
+</div>
+<p>被序列函数操作的序列是用 <tt class="TYPE">regclass</tt> 参数声明的，它只是序列在 <tt class="STRUCTNAME">pg_class</tt> 系统表里面的 OID 。不过，你不需要手工查找 OID ，因为 <tt class="TYPE">regclass</tt> 数据类型的输入转换器会帮你做这件事。只要写出单引号包围的序列名字即可，因此它看上去像文本常量。要达到和处理普通 SQL 名字的兼容性，这个字符串将转换成小写，除非在序列名字周围包含双引号，因此</p>
+<pre class="PROGRAMLISTING">nextval('foo')      <i class="LINEANNOTATION">操作序列号 <tt class="LITERAL">foo</tt></i>
+nextval('FOO')      <i class="LINEANNOTATION">操作序列号 <tt class="LITERAL">foo</tt></i>
+nextval('"Foo"')    <i class="LINEANNOTATION">操作序列号 <tt class="LITERAL">Foo</tt></i></pre>
+<p>必要时序列名可以用模式修饰：</p>
+<pre class="PROGRAMLISTING">nextval('myschema.foo')     <i class="LINEANNOTATION">操作 <tt class="LITERAL">myschema.foo</tt></i>
+nextval('"myschema".foo')   <i class="LINEANNOTATION">同上</i>
+nextval('foo')              <i class="LINEANNOTATION">在搜索路径中查找 <tt class="LITERAL">foo</tt></i></pre>
+<p>参阅<a href="datatype-oid.html">节8.12</a>获取有关 <tt class="TYPE">regclass</tt> 的更多信息。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 PostgreSQL 8.1之前，序列函数的参数类型是 <tt class="TYPE">text</tt> 而不是 <tt class="TYPE">regclass</tt> ，而上面描述的从文本字符串到 OID 值的转换将在每次调用的时候发生。为了向下兼容，这个机制仍然存在，但是在内部实际上是在函数调用前隐含地将 <tt class="TYPE">text</tt> 转换成 <tt class="TYPE">regclass</tt> 实现的。</p>
+<p>如果你把一个序列函数的参数写成一个无修饰的文本字符串，那么它将变成类型为 <tt class="TYPE">regclass</tt> 的常量。因为这只是一个 OID ，它将跟踪最初标识的序列，而不管后面是否改名、模式是否变化等等。这种"提前绑定"的行为通常是字段缺省和视图里面引用序列所需要的。但是有时候你可能想要"推迟绑定"，这个时候序列的引用是在运行时解析的。要获取推迟绑定的行为，我们可以强制存储为 <tt class="TYPE">text</tt> 常量，而不是 <tt class="TYPE">regclass</tt> 常量：</p>
+<pre class="PROGRAMLISTING">nextval('foo'::text)      <i class="LINEANNOTATION"><tt class="LITERAL">foo</tt> 在运行时查找</i></pre>
+<p>请注意，推迟绑定是 PostgreSQL 版本 8.1 之前唯一可用的行为，因此你可能需要在旧的应用里如此使用来保留旧有的语意。</p>
+<p>当然，序列函数的参数也可以是表达式。如果它是一个文本表达式，那么隐含的转换将导致运行时的查找。</p>
+</blockquote>
+</div>
+<p>用的序列函数有：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><code class="FUNCTION">nextval</code></dt>
+<dd><p>递增序列对象到它的下一个数值并且返回该值。这个动作是自动完成的：即使多个会话并发运行 <code class="FUNCTION">nextval</code> ，每个进程也会安全地收到一个唯一的序列值。</p></dd>
+<dt><code class="FUNCTION">currval</code></dt>
+<dd><p>在当前会话中返回最近一次 <code class="FUNCTION">nextval</code> 抓到的该序列的数值。如果在本会话中从未在该序列上调用过 <code class="FUNCTION">nextval</code> ，那么会报告一个错误。请注意，因为此函数返回一个会话范围的数值，它也能给出一个可预计的结果，可以判断其它会话是否执行过 <code class="FUNCTION">nextval</code> 函数。</p></dd>
+<dt><code class="FUNCTION">lastval</code></dt>
+<dd><p>返回当前会话里最近一次 <code class="FUNCTION">nextval</code> 返回的数值。这个函数等效于 <code class="FUNCTION">currval</code> ，只是它不用序列名作为参数，它抓取当前会话里面最近一次 <code class="FUNCTION">nextval</code> 使用的序列。如果当前会话还没有调用过 <code class="FUNCTION">lastval</code> ，那么调用 <code class="FUNCTION">nextval</code> 是会报错的。</p></dd>
+<dt><code class="FUNCTION">setval</code></dt>
+<dd><p>重置序列对象的计数器数值。双参数的形式设置序列的 <tt class="LITERAL">last_value</tt> 字段为声明数值并且将其 <tt class="LITERAL">is_called</tt> 字段设置为 <tt class="LITERAL">true</tt> ，表示下一次 <code class="FUNCTION">nextval</code> 将在返回数值之前递增该序列。在三参数形式里，<tt class="LITERAL">is_called</tt> 可以设置为 <tt class="LITERAL">true</tt> 或 <tt class="LITERAL">false</tt> 。如果你把它设置为 <tt class="LITERAL">false</tt> ，那么下一次 <code class="FUNCTION">nextval</code> 将返回这里声明的数值，而从随后的 <code class="FUNCTION">nextval</code> 才开始递增该序列。比如：</p>
+<pre class="SCREEN">SELECT setval('foo', 42);           <i class="LINEANNOTATION">下次 <code class="FUNCTION">nextval</code> 将返回 43</i>
+SELECT setval('foo', 42, true);     <i class="LINEANNOTATION">和上面一样</i>
+SELECT setval('foo', 42, false);    <i class="LINEANNOTATION">下次 <code class="FUNCTION">nextval</code> 将返回 42</i></pre>
+<p><code class="FUNCTION">setval</code> 返回的结果就是它的第二个参数的数值。</p></dd>
+</dl>
+</div>
+<p>如果一个序列对象是带着缺省参数创建的，那么对它调用 <code class="FUNCTION">nextval</code> 将返回从 1 开始的后续的数值。其它的行为可以通过使用 <a href="sql-createsequence.html"><i>CREATE SEQUENCE</i></a> 命令里的特殊参数获取；参阅其命令参考页获取更多信息。</p>
+<div class="IMPORTANT">
+<blockquote class="IMPORTANT">
+<p><b>【重要】</b>为了避免从同一个序列获取数值的当前事务被阻塞，<code class="FUNCTION">nextval</code> 操作决不会回滚；也就是说，一旦一个数值已经被抓走，那么就认为它已经用过了，即使调用 <code class="FUNCTION">nextval</code> 的事务后面又退出了也一样。这就意味着退出的事务可能在序列赋予的数值中留下"空洞"。<code class="FUNCTION">setval</code> 操作也决不回滚。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-net.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="functions-conditional.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">网络地址函数和操作符</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">条件表达式</td></tr>
+</table>
+</div>
+</body></html>

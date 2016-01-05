@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>daemon 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>daemon 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+daemon(7)                          systemd-228                         daemon(7)
+
+<h3>名称</h3>
+    daemon - 编写与打包系统守护进程
+
+<h3>描述</h3>
+    "守护进程"的意思是在后台运行的服务进程，常用于监督系统的运行或者提供某种功能。
+    在传统的 SysV Unix 系统上，多个守护进程必须严格按照特定的顺序依次启动。
+    在"新型"的 <a href="systemd.html">systemd(1)</a> 系统上，守护进程的启动顺序非常简单且非常强大。
+    本手册页同时解说了上述两种不同的启动方案，并特别推荐了应该包含在 systemd 系统中的守护进程。
+
+<h3>传统的SysV守护进程</h3>
+    传统的SysV守护进程在启动的时候，应该在初始化阶段执行下面的步骤：
+
+    (1)关闭除 STDIN STDOUT STDERR 之外的所有文件描述符
+    (2)重置所有信号处理器
+    (3)重置所有信号掩码
+    (4)清理环境变量(重置一部分，移除一部分)
+    (5)调用 fork() 创建一个后台进程
+    (6)在子进程中调用 setsid() 从终端脱离并创建一个独立的会话
+    (7)在子进程中再一次调用 fork() 以确保守护进程永远无法获取任何终端。
+    (8)第一个子进程主动退出，只有第二个子进程(实际的守护进程)保持运行，并且以 init(PID=1) 为父进程。
+    (9)守护进程(第二个子进程)将 STDIN STDOUT STDERR 连接到 /dev/null 虚拟设备
+    (10)守护进程将 umask 设为 0
+    (11)守护进程将当前目录切换到根目录(/)
+    (12)守护进程将自身的PID记录到诸如 /run/foobar.pid 这样的文件中
+    (13)守护进程丢弃自己不需要的权限(如果可以)
+    (14)守护进程通知最初的父进程：初始化工作已完成
+    (15)最初的父进程自身退出，
+
+    注意，这些步骤对于下文讲述的新型守护进程是不需要的，除非为了刻意兼容传统的SysV系统。
+
+<h3>新型守护进程</h3>
+    Linux 系统上的新型守护进程更容易被监控也更容易实现。
+    守护进程无需实现前文所描述的复杂步骤，即可直接在 systemd 提供的干净的上下文环境中运行：
+    环境变量已经被清理、信号处理器与信号掩码已经被重置、没有遗留的文件描述符、守护进程自动在其专属的会话中执行、
+    STDIN STDOUT STDERR 已被连接到 /dev/null 虚拟设备(除非另有配置)、umask 已经被重置 ... 等等
+
+    新型守护进程只需要实现如下要求：
+
+    (1)收到 SIGTERM 信号后关闭进程并确保干净的退出
+    (2)收到 SIGHUP 信号后重新加载配置文件(若需要)
+    (3)主守护进程在退出时应该按照<a href="http://refspecs.linuxbase.org/LSB_3.1.1/LSB-Core-generic/LSB-Core-generic/iniscrptact.html">LSB规范</a>的要求返回恰当的退出码，以便于 systemd 判断服务的退出状态。
+    (4)若可行，在初始化的最后一步，通过 D-Bus 创建进程的控制接口，并在 D-Bus 上注册一个总线名称。
+    (5)提供一个 .service 单元文件，包含如何启动/停止/维护该服务的配置。详见 <a href="systemd.service.html">systemd.service(5)</a> 手册。
+    (6)尽可能依赖于 systemd 的资源控制(CPU与内存占用/文件访问等等)与权限剥夺功能，而不要自己实现它们。详见 <a href="systemd.exec.html">systemd.exec(5)</a> 手册。
+    (7)若使用了 D-Bus ，则务必使用基于 D-Bus 的激活机制。这样做有许多好处：
+       守护进程可以按需延迟启动；可以和依赖于它的进程并行启动(提升启动速度)；
+       守护进程可以在失败时被自动重启而不丢失D-Bus总线上的请求(详见下文)
+    (8)若守护进程通过套接字提供服务，则务必使用基于套接字的激活机制(详见下文)。这样做有许多好处：
+       守护进程可以按需延迟启动；可以和依赖于它的进程并行启动(提升启动速度)；
+       对于无状态协议(例如 syslog, DNS)，守护进程可以在失败时被自动重启而不丢失套接字上的请求(详见下文)
+    (9)若可能，守护进程应该通过 <a href="http://www.freedesktop.org/software/systemd/man/sd_notify.html">sd_notify(3)</a> 接口通知 systemd "启动已完成"或"状态已更新"这样的消息。
+    (10)不要使用 syslog() 记录日志，只需简单的使用 fprintf() 向 STDERR 打印日志即可。
+        如果必须指明日志等级，则可以在日志的行首加上类似"&lt;4&gt;"这样的前缀即可(这里表示4级"WARNING")。
+        详见 <a href="http://www.freedesktop.org/software/systemd/man/sd-daemon.html">sd-daemon(3)</a> 与 <a href="systemd.exec.html">systemd.exec(5)</a> 手册。
+
+    上述要求与 <a href="https://developer.apple.com/library/mac/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html">Apple MacOS X Daemon Requirements</a> 类似，但并不完全相同。
+
+<h3>激活</h3>
+    systemd 提供了多种激活机制(见下文)，而服务单元也经常同时使用其中的几种。
+    例如 bluetoothd.service 可以在插入蓝牙硬件时被启动，也可以在某进程访问其 D-Bus 接口时被启动。
+    又如打印服务可以在IPP端口有流量接入时被启动，也可以在插入打印机硬件时被启动，还有可以在有文件进入打印机 spool 目录时被启动。
+    甚至对于必须在系统启动时无条件启动的服务，为了尽可能并发启动，也应该使用某些激活机制。
+    如果某守护进程实现了一个 D-Bus 服务或者监听一个套接字，那么使用基于 D-Bus 或基于套接字的激活机制，
+    将允许该进程与其客户端同时并行启动(从而加快启动速度)，因为所有的通信渠道都已事先建立，
+    并且不会丢失任何客户端请求，因为 D-Bus 总线或者内核会将客户端请求排入队列等候，直到完成启动。
+
+<h4>启动时激活</h4>
+    传统的守护进程一般是在系统启动时通过SysV初始化脚本自动启动，systemd 也支持这种激活方式。
+    对于 systemd 来说，如果希望确保某单元在系统启动时自动启动，
+    最佳的做法是在默认启动目标(通常是 multi-user.target 或 graphical.target)的 .wants/ 目录中为该单元建立软链接。
+    参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册以了解 .wants/ 目录，参见 <a href="systemd.special.html">systemd.special(7)</a> 手册以了解上述两个特殊的启动目标。
+
+<h4>基于套接字的激活</h4>
+    为了尽可能提高并行性与健壮性，以及简化配置与开发，对于需要监听套接字的服务，强烈推荐使用基于套接字的激活机制。
+    使用此机制后，守护进程不再需要创建和绑定套接字，而是由 systemd 接管这个工作。systemd 将会根据单元文件的设置，
+    预先创建所需的套接字，并在第一个客户端请求接入的时候启动该服务，以实现服务的按需启动。
+    该机制的好处还在于，预先创建好套接字之后，所有使用此套接字通信的进程可以并发启动(包括客户端和服务端)。
+    此外，重启服务只会导致丢失最低限度的客户端连接，甚至不丢失任何客户端请求(例如对于 DNS 或 syslog 这样的无状态的协议)。
+    因为套接字在服务重启期间始终保持有效并且可访问，同时所有客户端请求也都被排入队列等候处理。
+
+    使用此机制之后，守护进程必须要从 systemd 接收已创建好的套接字，而不能自己创建并绑定套接字。
+    关于如何使用该机制，参见 <a href="http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html">sd_listen_fds(3)</a> 与 <a href="http://www.freedesktop.org/software/systemd/man/sd-daemon.html">sd-daemon(3)</a> 手册页。
+    只需要小小的修改，即可在原有的激活机制基础上添加基于套接字的激活机制，至于如何移植，见后文。
+
+    systemd 通过 .socket 单元实现该机制，详见 <a href="systemd.socket.html">systemd.socket(5)</a> 手册。
+    必须确保所有为支持套接字激活而创建的监听 socket 单元都被包含在了 sockets.target 中。
+    建议在 socket 单元的"[Install]"小节加入 WantedBy=sockets.target 设置，以确保在启用该单元时能够自动添加上述依赖关系。
+    除非 DefaultDependencies=no ，否则会为所有 socket 单元隐含的创建必要的顺序依赖。
+    有关 sockets.target 的解释，详见 <a href="systemd.special.html">systemd.special(7)</a> 手册。
+    如果某 socket 单元将被安装到 sockets.target 中，
+    那么不建议在其中再添加任何额外的依赖关系(例如 multi-user.target 之类)。
+
+<h4>基于 D-Bus 的激活</h4>
+    如果守护进程使用 D-Bus 与客户端通信，那么它应该使用基于 D-Bus 的激活机制，
+    这样当客户端访问其 D-Bus 接口时，该服务将被自动启动。
+    该机制是通过 D-Bus service 文件实现的(不要与普通的单元文件混淆)。
+    为了确保让 D-Bus 使用 systemd 来启动与维护守护进程，必须在这些 D-Bus service 文件中使用 SystemdService= 指明其匹配的服务单元。
+    例如，对于文件名为 org.freedesktop.RealtimeKit.service 的 D-Bus service 来说，
+    为了将其绑定到 rtkit-daemon.service 服务单元，必须确保在该文件中设置了 SystemdService=rtkit-daemon.service 指令。
+    设置 SystemdService= 是必须的，否则当服务单元同时使用多种激活机制时，可能会导致竞争条件的出现。
+
+<h4>基于设备的激活</h4>
+    用于管理特定类型硬件的守护进程，只应该在符合条件的硬件变为可用或者被插入时，才需要启动。
+    为了达到上述目的，可以将服务的启动/停止与硬件的插入/拔出事件绑定。
+    当带有"systemd"标签的设备出现在 sysfs/udev 设备树中时，systemd 将会自动为其创建对应的 device 单元。
+    通过向这些单元中添加对其他单元的 Wants= 依赖，就可以实现当该 device 单元被激活(也就是硬件被插入)时，
+    连带启动其他单元，从而实现基于设备的激活。
+    这可以通过向 udev 规则库中添加 SYSTEMD_WANTS= 属性来实现，详见 <a href="systemd.device.html">systemd.device(5)</a> 手册。
+
+    通常，并不是将 service 单元直接添加到设备的 Wants= 依赖中，而是通过专用的 target 单元间接添加。
+    例如，不是将 bluetoothd.service 添加到各种蓝牙设备的 Wants= 依赖中，
+    而是将 bluetoothd.service 添加到 bluetooth.target 的 Wants= 依赖中，
+    同时再将 bluetooth.target 添加到各种蓝牙设备的 Wants= 依赖中。
+    通过引入 bluetooth.target 这个抽象层，系统管理员无需批量修改 udev 规则库，
+    仅通过修改 bluetooth.target.wants/ 中的软链接(systemctl enable|disable ...)，即可控制 bluetoothd.service 的使用。
+
+<h4>基于路径的激活</h4>
+    对于处理 spool 文件或目录的守护进程(例如打印服务)来说，仅在 spool 文件或目录状态发生变化或者内容非空时，才需要启动。
+    通过 .path 单元实现的、基于路径的激活机制正好可以用于这种场合，详见 <a href="systemd.path.html">systemd.path(5)</a> 手册页。
+
+<h4>基于定时器的激活</h4>
+    对于周期性的操作(例如垃圾文件清理或者网络对时)，可以通过基于定时器的激活机制来实现。
+    这种机制通过 .timer 单元实现，详见 <a href="systemd.timer.html">systemd.timer(5)</a> 手册页。
+
+<h4>其他激活方式</h4>
+    在其他操作系统上还存在着其他的激活机制，不过这些机制都可以被前述的各种机制的组合替代。
+
+<h3>编写 service 单元文件</h3>
+    在编写单元文件时应当考虑下列建议：
+    (1)尽可能不用 Type=forking 。若非用不可，则必须正确设置 PIDFile= 选项。参见 <a href="systemd.service.html">systemd.service(5)</a> 手册页。
+    (2)若守护进程在 D-Bus 上注册了一个名字，则应尽可能使用 Type=dbus 
+    (3)务必设置一个易于理解的 Description=
+    (4)确保 DefaultDependencies=yes ，除非该单元必须在系统启动的早期启动或者必须在系统关闭的末期关闭。
+    (5)通常无需显式的定义依赖关系。不过，如果确实需要显式的定义依赖关系，为了确保单元文件不局限于特定的发行版，
+       仅应该依赖于 <a href="systemd.special.html">systemd.special(7)</a> 中列出的单元以及自身所属软件包中提供的单元。
+    (6)确保在"[Install]"小节中包含完整的安装信息(参见 <a href="systemd.unit.html">systemd.unit(5)</a>)。
+       若希望自动启动，则应该设置 WantedBy=multi-user.target 或 WantedBy=graphical.target 
+       若希望自动激活该单元的套接字，则应该设置 WantedBy=sockets.target
+       通常你还希望在启用该单元时，一起启用对应的套接字单元(假定为 foo.socket)，因此还应该设置 Also=foo.socket
+
+<h3>安装 service 单元文件</h3>
+    当从源代码编译安装(make install)软件包时，其中的单元文件会被默认安装到
+        pkg-config systemd --variable=systemdsystemunitdir (对于系统服务)
+        (系统单元目录，通常是"/usr/lib/systemd/system")
+    或
+        pkg-config systemd --variable=systemduserunitdir (对于用户服务)
+        (用户单元目录，通常是"/usr/lib/systemd/user")
+    返回的目录中。但并不使用"systemctl enable ..."命令启用它们(因此不会在开机后自动启动)。
+
+    当从包管理器安装(rpm -i)二进制软件包时，其中的单元文件应该同样安装到上述位置，
+    但不同之处在于，还应该使用"systemctl enable ..."命令启用它们(因此有可能会在开机后自动启动)。
+
+<h3>移植已有的守护进程</h3>
+    虽然 systemd 兼容传统的 SysV 初始化系统，但是移植旧有的守护进程可以更好的利用 systemd 的先进特性。
+    建议对旧有的 SysV 守护进程做如下改进：...省略...
+
+<h3>放置守护进程的数据</h3>
+    建议遵守 <a href="file-hierarchy.html">file-hierarchy(7)</a> 所建议的通用准则。
+
+<h3>参见</h3>
+    <a href="systemd.html">systemd(1)</a>, <a href="http://www.freedesktop.org/software/systemd/man/sd-daemon.html">sd-daemon(3)</a>, <a href="http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html">sd_listen_fds(3)</a>, <a href="http://www.freedesktop.org/software/systemd/man/sd_notify.html">sd_notify(3)</a>, <a href="systemd.service.html">systemd.service(5)</a>, <a href="file-hierarchy.html">file-hierarchy(7)</a>
+
+
+daemon(7)                          systemd-228                         daemon(7)
+</pre>
+
+
+<hr />
+
+
+</body></html>

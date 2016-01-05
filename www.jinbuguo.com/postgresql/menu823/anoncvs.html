@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>通过匿名 CVS 获取源代码</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="cvs.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="cvs.html">快退</a></td><td width="60%" align="center" valign="bottom">附录F. CVS 仓库</td><td width="10%" align="right" valign="top"><a href="cvs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="cvs-tree.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="ANONCVS">F.1. 通过匿名 CVS 获取源代码</a></h1>
+<p>如果你想经常地跟上目前的代码，你可以从 CVS 服务器上把它们抓下来，然后用 CVS 经常地检索更新。</p>
+<div class="PROCEDURE">
+<p><b>匿名 CVS</b></p>
+<ol type="1">
+<li class="STEP"><p>你需要一个本地 CVS(并发版本控制系统)的拷贝，你可以从 <a href="http://www.nongnu.org/cvs/" target="_top">http://www.nongnu.org/cvs/</a> (官方站点上有最新版本)或者任意 GNU 软件归档站点获得(版本通常有点旧)。目前建议版本是 1.10(在书写这些的时候是最新版)。许多系统缺省安装时已经带有最新的 <span class="APPLICATION">cvs</span> 程序。</p></li>
+<li class="STEP"><p>向 CVS 服务器做一次初始化登录：</p>
+<pre class="PROGRAMLISTING">cvs -d :pserver:anoncvs@anoncvs.postgresql.org:/projects/cvsroot login</pre>
+<p>你将会被提问口令；可以输入任何东西，只要不是空字符串就行。</p>
+<p>这个只要做一次，口令将会被保存在你的家目录下的 <tt class="FILENAME">.cvspass</tt> 文件中。</p></li>
+<li class="STEP"><p>抓取 PostgreSQL 源文件：</p>
+<pre class="PROGRAMLISTING">cvs -z3 -d :pserver:anoncvs@anoncvs.postgresql.org:/projects/cvsroot co -P pgsql</pre>
+<p>这样将把 PostgreSQL 源文件安装到你当前目录的 <tt class="FILENAME">pgsql</tt> 子目录里。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>如果你与互联网的连接速度很快，你可能不需要 <tt class="OPTION">-z3</tt> ，这个开关告诉CVS对待传输数据使用 <tt class="COMMAND">gzip</tt> 压缩。不过对于使用小猫拨号上网的速度，这样做很有好处。</p>
+</blockquote>
+</div>
+<p>这样的初始化检查比简单地下载一个 <tt class="FILENAME">tar.gz</tt> 文件要慢一些，如果你有一个 28.8K 的猫(调制解调器)；这一步大约要花掉你 40 分钟左右。CVS 的先进性只有在你以后需要更新文件时才显示出来。</p></li>
+<li class="STEP"><p>当你想要更新最新的 CVS 源文件时，<tt class="COMMAND">cd</tt> 到 <tt class="FILENAME">pgsql</tt> 子目录，然后使用命令</p>
+<pre class="PROGRAMLISTING">cvs -z3 update -d -P</pre>
+<p>这样将只抓取上次你访问以来的更新。即使在用猫上网的情况下，你也只需要几分钟就可以更新完毕。</p></li>
+<li class="STEP"><p>你可以通过在你的家目录里面的 <tt class="FILENAME">.cvsrc</tt> 加上下面几行来节约几次敲键</p>
+<pre class="PROGRAMLISTING">cvs -z3
+update -d -P</pre>
+<p>这样对所有 <tt class="COMMAND">cvs</tt> 命令应用 <tt class="OPTION">-z3</tt> 选项，以及给 <tt class="COMMAND">cvs update</tt> 附加 <tt class="OPTION">-d</tt> 和 <tt class="OPTION">-P</tt> 选项。然后你只需要执行</p>
+<pre class="PROGRAMLISTING">cvs update</pre>
+<p>就可以更新你的文件了。</p></li>
+</ol>
+</div>
+<p>CVS 还可以做很多其它事情，像抓取以前版本的 PostgreSQL 源码而不是最新版本的源码。更多的信息，请参考 CVS 联机文档，或者检查在 <a href="http://www.nongnu.org/cvs/" target="_top">http://www.nongnu.org/cvs/</a> 的在线文档。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="cvs.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="cvs-tree.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CVS 仓库</td><td width="34%" align="center" valign="top"><a href="cvs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CVS 树的组织</td></tr>
+</table>
+</div>
+</body></html>

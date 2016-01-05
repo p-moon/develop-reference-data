@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>systemd.timer 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>systemd.timer 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+systemd.timer(5)                          systemd-228                         systemd.timer(5)
+
+<h3>名称</h3>
+    systemd.timer - 定时器单元配置
+
+<h3>概览</h3>
+    <i>timer</i>.timer
+
+<h3>描述</h3>
+    以".timer"结尾的单元文件，封装了一个由 systemd 管理的定时器，以支持基于定时器的激活。
+    本手册页列出了所有专用于此类单元的配置选项(位于"[Timer]"小节)。
+    通用于所有单元类型的配置选项参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册页(位于"[Unit]"与"[Install]"小节)。
+
+    每个定时器单元都必须有一个与其匹配的单元，以用于在特定的时间激活。
+    匹配的单元可以通过 Unit= 选项(见下文)明确指定。若未指定，则默认是与该单元名称相同的 .service 单元(不算后缀)。
+    例如 foo.timer 默认匹配 foo.service 单元。
+
+<h3>自动依赖</h3>
+    定时器单元自动获得对匹配单元的 Before= 依赖。
+
+    除非在 timer 单元中明确设置了 DefaultDependencies=no ，否则将会自动获得如下依赖关系：
+    (1) Requires=sysinit.target, After=sysinit.target, Before=timers.target
+    (2) Conflicts=shutdown.target, Before=shutdown.target 以确保在关机前干净的停止。
+    只有那些在系统启动的早期就必须启动的定时器，以及那些必须在关机动作的结尾才能停止的定时器才需要设置 DefaultDependencies=no 。
+
+    如果在 timer 单元中设置了至少一个 OnCalendar= 选项，那么将会自动获得 After=timer-sync.target 依赖，
+    以避免在系统时间尚未正确设置的情况下启动定时器。
+
+<h3>选项</h3>
+    定时器单元文件中必须包含一个"[Timer]"小节，其中包含了该单元所定义的定时器的相关信息。
+    这里只列出仅能用于"[Timer]"小节的选项：
+
+    OnActiveSec=, OnBootSec=, OnStartupSec=, OnUnitActiveSec=, OnUnitInactiveSec=
+        定义相对于发生特定事件的时间点之后一段时间的单调定时器：
+        OnActiveSec= 相对于该单元自身被激活的时间点
+        OnBootSec= 相对于机器被启动的时间点(也就是内核开始运行的时间点)
+        OnStartupSec= 相对于 systemd 被首次启动的时间点(也就是内核启动init进程的时间点)
+        OnUnitActiveSec= 相对于匹配单元最后一次被激活的时间点
+        OnUnitInactiveSec= 相对于匹配单元最后一次被停止的时间点
+
+        可以组合使用这些指令(既可以将某个指令使用多次，也可以将多个指令一起使用)，
+        例如，通过同时使用 OnBootSec= 与 OnUnitActiveSec= 指令，就可以实现在系统启动后的某个时间点激活匹配单元，
+        并且之后每隔一段时间周期性的反复激活匹配单元。
+
+        指令的值是一个时间长度，可以使用下面的时间单位后缀：us(微秒), ms(毫秒), s(秒), m(分), h(时), d(天), w(周)
+        如果省略了时间单位，那么表示使用默认单位"秒"。
+        可以同时使用多个时间单位，例如"OnBootSec=5h30min"表示系统启动之后的5小时30分钟。
+        更多有关表示时间长度的语法，参见 <a href="systemd.time.html">systemd.time(7)</a> 手册。
+
+        如果定时器单元在激活时已经超过了 OnBootSec= 或 OnStartupSec= 指定的时间，那么将会立即激活匹配的单元。
+        但是对于使用其他指令定义的定时器，则超过了就等于错过了，不会尝试去补救。
+
+        这几个指令定义的定时器都是基于单调时间的单调定时器(monotonic timer)，所谓"单调时间"的意思是从开机那一刻(零点)起，
+        只要系统正在运行，该时间就不断的单调均匀递增(但在系统休眠时此时间保持不变)，永远不会往后退，并且与时区也没有关系。
+        即使在系统运行的过程中，用户向前/向后修改系统时间，也不会对"单调时间"产生任何影响。
+
+        如果给某个指令赋予一个空字符串，则表示撤销该指令之前已设置的所有定时器。
+
+        注意，这些指令设置的定时器并不必然在所设置的精准时间点上激活匹配单元，因为它们还受到下文 AccuracySec= 选项的影响。
+
+    OnCalendar=
+        定义基于挂钟时间(wallclock)的日历定时器，值是一个日历事件表达式，这是与传统cron任务类似的定时器。
+        详见 <a href="systemd.time.html">systemd.time(7)</a> 手册以了解日历事件表达式的语法。
+        如果定时器单元在激活时已经超过了该指令设置的某个触发时间，那么错过就错过了，不会尝试去补救，只能等待下一个触发时间。
+        可以多次使用此指令以设置多个定时器，如果被赋予了一个空字符串，则表示撤销该指令之前已设置的所有定时器。
+
+        该指令定义的定时器是基于挂钟时间(wallclock)的，所谓"挂钟时间"是指真实世界中墙上挂钟的时间，
+        在操作系统中实际上就是系统时间，这个时间是操作系统在启动时从主板的时钟芯片中读取的，
+        在系统的运行过程中，时间同步服务会不断的根据NTP时间服务器提供的时间对系统时间进行校准，
+        而系统管理员也可能会手动的向前/向后修改系统时间，所以，这个时间既不一定是单调递增的、也不一定是均匀递增的。
+
+        注意，该指令设置的定时器并不必然在所设置的精准时间点上激活匹配单元，因为它们还受到下文 AccuracySec= 选项的影响。
+
+    AccuracySec=
+        设置定时器的触发精度。默认值是一分钟。定时器并不必然在所设置的精准时间点上激活匹配单元，
+        而是在所设置的精准时间点为起点的一小段时间窗口范围内的某个时间点上激活匹配单元，这个时间窗口的起点由
+        OnCalendar=, OnActiveSec=, OnBootSec=, OnStartupSec=, OnUnitActiveSec=, OnUnitInactiveSec= 决定，
+        而这个时间窗口的长度则由该指令决定。在这个时间窗口内，触发点的具体位置虽然无法在系统开机之前预知，
+        也就是说触发点的具体位置在每次启动之间是随机的，但是一旦开机之后，对于正在运行中的系统而言又是固定的，
+        并且对全系统范围内所有的定时器而言都是固定的。这么做的目的在于避免过多的不必要的CPU唤醒，以节约电力。
+        若想获得最高精度，可以将此选项设为"1us"(一微秒)，但是耗电量就可能明显增加。
+        注意，定时器的精度还受到 <a href="systemd-system.conf.html">systemd-system.conf(5)</a> 中 TimerSlackNSec= 选项的影响(不过一般可以忽略不计)。
+        为了优化耗电量，应该将此指令设为可接收的最大值。
+
+    RandomSec=
+        将此单元的定时器随机延迟一小段时间，这一小段时间的长度介于零到该指令设置的时间长度之间，以均匀概率分布。
+        默认值是零，表示不延迟。
+        定时器单元在每次启动时确定这个随机值的大小，并简单的把它加到下一次激活匹配单元的时间点上，
+        此选项可以将大量的在同一时间点触发的定时器均匀的分摊到一小段时间范围内触发，以避免造成资源争抢。
+        AccuracySec= 允许将一段时间内分散的定时器事件集中到一点，以减少CPU唤醒，
+        而本指令正好相反，允许将集中在一点的定时器事件分散到一小段时间范围内，以避免造成资源争抢。
+        如果同时使用 RandomSec= 与 AccuracySec= 选项，那么首先添加一个随机的时间，
+        然后结果可能进一步被平移，以和系统上其他定时器事件合并。
+        因为默认设置 AccuracySec=1min, RandomSec=0 鼓励将多个定时器事件聚合在一起， 
+        所以如果希望尽可能均匀分散定时器事件，那么应该将 RandomSec= 设为一个较大的值，同时设置 AccuracySec=1us
+
+    Unit=
+        该定时器单元的匹配单元，也就被该定时器激活的单元。参数是一个不以".timer"结尾的单元名。
+        默认值是与此定时器单元同名的服务单元(见上文)。
+        建议将定时器单元的名字与被该定时器激活的匹配单元的名字保持一致(也就是仅单元后缀名不同)。
+
+    Persistent=
+        此选项仅对 OnCalendar= 指令定义的日历定时器有意义。
+        若设为"yes"，则表示将匹配单元的上次触发时间永久保存在磁盘上。
+        这样，当定时器单元再次被激活时，如果匹配单元本应该在定时器单元停止期间至少被激活一次，那么将立即激活匹配单元。
+        这样就不必担心必须执行的任务因为关机的原因而错过。默认值为"no"。
+
+    WakeSystem=
+        若设为"yes"，则表示当某个定时器到达触发时间点时，唤醒正在休眠的系统并阻止系统进入休眠状态。默认值为"no"。
+        注意，此选项仅确保唤醒系统，而不关心任务执行完成之后是否需要再次休眠系统。
+
+    RemainAfterElapse=
+        若设为"yes"(默认值)，则表示保持已过期定时器单元的"loaded"状态，并且依然允许查询其状态。
+        若设为"no"，则表示卸载已过期并且将来也不会被继续触发的定时器单元。
+        对于那些仅需要临时执行一次、随后即被丢弃的定时器单元来说，设为"no"是上佳的选择。
+        但是需要注意，对于那些仅需要触发一次的定时器单元来说，
+        如果 RemainAfterElapse=yes ，那么该定时器将不会被再次触发，也就是可以确保仅被触发一次。
+        如果 RemainAfterLeapse=no ，那么该定时器有可能会被再次触发，也就是有可能被多次触发。
+        所以将此选项设为"no"时应该特别小心谨慎。
+
+<h3>参见</h3>
+    <a href="systemd.html">systemd(1)</a>, <a href="systemctl.html">systemctl(1)</a>, <a href="systemd.unit.html">systemd.unit(5)</a>, <a href="systemd.service.html">systemd.service(5)</a>, <a href="systemd.time.html">systemd.time(7)</a>, <a href="systemd.directives.html">systemd.directives(7)</a>, <a href="systemd-system.conf.html">systemd-system.conf(5)</a>
+
+systemd.timer(5)                          systemd-228                         systemd.timer(5)
+</pre>
+
+
+<hr />
+
+
+</body></html>

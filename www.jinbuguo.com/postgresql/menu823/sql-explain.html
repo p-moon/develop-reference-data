@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>EXPLAIN</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-execute.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-execute.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-fetch.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-fetch.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-EXPLAIN"></a>EXPLAIN</h1>
+<div class="REFNAMEDIV"><a name="AEN51727"></a><h2>名称</h2>EXPLAIN&nbsp;--&nbsp;显示一个语句的执行规划</div>
+<a name="AEN51730"></a><a name="AEN51732"></a><a name="AEN51735"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN51738"></a><h2>语法</h2>
+<pre class="SYNOPSIS">EXPLAIN [ ANALYZE ] [ VERBOSE ] <tt class="REPLACEABLE"><i>statement</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN51741"></a><h2>描述</h2>
+<p>这条命令显示 PostgreSQL 规划器为所提供的语句生成的执行规划。执行规划显示语句引用的表是如何被扫描的(简单的顺序扫描，还是索扫描)，并且如果引用了多个表，采用了什么样的连接算法从每个输入的表中取出所需要的记录。</p>
+<p>显示出来的最关键的部分是预计的语句执行开销，这就是规划器对运行该语句所需时间的估计(以磁盘页面存取为单位计量)。实际上显示了两个数字：返回第一行记录前的启动时间，和返回所有记录的总时间。对于大多数查询而言，关心的是总时间，但是，在某些环境下，比如一个 <tt class="LITERAL">EXISTS</tt> 子查询里，规划器将选择最小启动时间而不是最小总时间(因为执行器在获取一条记录后总是要停下来)。同样，如果你用一条 <tt class="LITERAL">LIMIT</tt> 子句限制返回的记录数，规划器会在最终的开销上做一个合理的插值以计算哪个规划开销最省。</p>
+<p><tt class="LITERAL">ANALYZE</tt> 选项导致查询被实际执行，而不仅仅是规划。它在显示中增加了在每个规划节点内部花掉的总时间(以毫秒计)和它实际返回的行数。这些数据对搜索该规划器的预期是否和现实相近很有帮助。</p>
+<div class="IMPORTANT">
+<blockquote class="IMPORTANT">
+<p><b>【重要】</b>要记住的是查询实际上在使用 <tt class="LITERAL">ANALYZE</tt> 的时候是执行的。尽管 <tt class="COMMAND">EXPLAIN</tt> 会抛弃任何 <tt class="COMMAND">SELECT</tt> 返回的输出，但是其它查询的副作用还是一样会发生的。如果你在 <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">EXECUTE</tt> 语句里使用 <tt class="COMMAND">EXPLAIN ANALYZE</tt> 而且还不想让查询影响数据，可以用下面的方法：</p>
+<pre class="PROGRAMLISTING">BEGIN;
+EXPLAIN ANALYZE ...;
+ROLLBACK;</pre>
+</blockquote>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN51761"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">ANALYZE</tt></dt>
+<dd><p>执行命令并显示实际运行时间</p></dd>
+<dt><tt class="LITERAL">VERBOSE</tt></dt>
+<dd><p>显示规划树完整的内部表现形式，而不仅仅是一个摘要。通常，这个选项只是在特殊的调试过程中有用。<tt class="LITERAL">VERBOSE</tt> 输出可能是也可能不是打印工整的，具体取决于配置参数 <a href="runtime-config-client.html#GUC-EXPLAIN-PRETTY-PRINT">explain_pretty_print</a> 的值。</p></dd>
+<dt><tt class="REPLACEABLE"><i>statement</i></tt></dt>
+<dd><p>你想要查看规划结果的任何 <tt class="COMMAND">SELECT</tt>, <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">VALUES</tt>, <tt class="COMMAND">EXECUTE</tt>, <tt class="COMMAND">DECLARE</tt> 语句之一。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN51788"></a><h2>注意</h2>
+<p>在 PostgreSQL 里只有很少的一些文档介绍有关优化器计算开销的问题。参考<a href="using-explain.html">节13.1</a>获取更多信息。</p>
+<p>为了让 PostgreSQL 查询规划器在优化查询的时候做出合理的判断，需要运行 <tt class="COMMAND">ANALYZE</tt> 语句以记录有关数据在表中的分布的统计信息。如果你没做过这件事情(或者如果自上次 <tt class="COMMAND">ANALYZE</tt> 以来，表中的数据统计分布发生了显著变化)，那么计算出来的开销预计很可能与查询的实际属性并不对应，因此很可能会选取一个比较差劲的查询规划。</p>
+<p>基因查询优化(GEQO)随机的测试执行规划。因此，当表的数目超过了 <tt class="VARNAME">geqo_threshold</tt> 之后将导致使用基因查询优化，执行规划基本上在每次语句被执行的时候都会变化。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51800"></a><h2>例子</h2>
+<p>显示一个对只有一个 <tt class="TYPE">integer</tt> 列和 10000 行表的简单查询的查询规划：</p>
+<pre class="PROGRAMLISTING">EXPLAIN SELECT * FROM foo;
+
+                       QUERY PLAN
+---------------------------------------------------------
+ Seq Scan on foo  (cost=0.00..155.00 rows=10000 width=4)
+(1 row)</pre>
+<p>如果存在一个索引，并且使用一个可应用索引的 <tt class="LITERAL">WHERE</tt> 条件的查询，<tt class="COMMAND">EXPLAIN</tt> 会显示不同的规划：</p>
+<pre class="PROGRAMLISTING">EXPLAIN SELECT * FROM foo WHERE i = 4;
+
+                         QUERY PLAN
+--------------------------------------------------------------
+ Index Scan using fi on foo  (cost=0.00..5.98 rows=1 width=4)
+   Index Cond: (i = 4)
+(2 rows)</pre>
+<p>下面是一个使用了聚集函数的查询的查询规划：</p>
+<pre class="PROGRAMLISTING">EXPLAIN SELECT sum(i) FROM foo WHERE i &lt; 10;
+
+                             QUERY PLAN
+---------------------------------------------------------------------
+ Aggregate  (cost=23.93..23.93 rows=1 width=4)
+   -&gt;  Index Scan using fi on foo  (cost=0.00..23.92 rows=6 width=4)
+         Index Cond: (i &lt; 10)
+(3 rows)</pre>
+<p>下面是一个使用 <tt class="COMMAND">EXPLAIN EXECUTE</tt> 显示一个已预编写的查询规划的例子：</p>
+<pre class="PROGRAMLISTING">PREPARE query(int, int) AS SELECT sum(bar) FROM test
+    WHERE id &gt; $1 AND id &lt; $2
+    GROUP BY foo;
+
+EXPLAIN ANALYZE EXECUTE query(100, 200);
+
+                                                       QUERY PLAN                                                        
+-------------------------------------------------------------------------------------------------------------------------
+ HashAggregate  (cost=39.53..39.53 rows=1 width=8) (actual time=0.661..0.672 rows=7 loops=1)
+   -&gt;  Index Scan using test_pkey on test  (cost=0.00..32.97 rows=1311 width=8) (actual time=0.050..0.395 rows=99 loops=1)
+         Index Cond: ((id &gt; $1) AND (id &lt; $2))
+ Total runtime: 0.851 ms
+(4 rows)</pre>
+<p>注意这里显示的数字，甚至还有选择的查询策略都有可能在各个 PostgreSQL 版本之间不同，因为规划器在不断改进。另外，<tt class="COMMAND">ANALYZE</tt> 命令使用随机的采样来估计数据统计；因此，一次新的 <tt class="COMMAND">ANALYZE</tt> 运行之后开销估计可能会变化，即使数据的实际分布没有改变也这样。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51818"></a><h2>兼容性</h2>
+<p>在 SQL 标准中没有 <tt class="COMMAND">EXPLAIN</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51822"></a><h2>又见</h2><a href="sql-analyze.html"><i>ANALYZE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-execute.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-fetch.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">EXECUTE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">FETCH</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ALTER DATABASE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-alterconversion.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-alterconversion.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-alterdomain.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-alterdomain.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ALTERDATABASE"></a>ALTER DATABASE</h1>
+<div class="REFNAMEDIV"><a name="AEN43772"></a><h2>名称</h2>ALTER DATABASE&nbsp;--&nbsp;修改一个数据库</div>
+<a name="AEN43775"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN43777"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ALTER DATABASE <tt class="REPLACEABLE"><i>name</i></tt> [ [ WITH ] <tt class="REPLACEABLE"><i>option</i></tt> [ ... ] ]
+
+这里的 <tt class="REPLACEABLE"><i>option</i></tt> 可以是：
+
+    CONNECTION LIMIT <tt class="REPLACEABLE"><i>connlimit</i></tt>
+
+ALTER DATABASE <tt class="REPLACEABLE"><i>name</i></tt> SET <tt class="REPLACEABLE"><i>parameter</i></tt> { TO | = } { <tt class="REPLACEABLE"><i>value</i></tt> | DEFAULT }
+ALTER DATABASE <tt class="REPLACEABLE"><i>name</i></tt> RESET <tt class="REPLACEABLE"><i>parameter</i></tt>
+
+ALTER DATABASE <tt class="REPLACEABLE"><i>name</i></tt> RENAME TO <tt class="REPLACEABLE"><i>newname</i></tt>
+
+ALTER DATABASE <tt class="REPLACEABLE"><i>name</i></tt> OWNER TO <tt class="REPLACEABLE"><i>new_owner</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN43792"></a><h2>描述</h2>
+<p><tt class="COMMAND">ALTER DATABASE</tt> 改变一个数据库的属性。</p>
+<p>第一种形式改变某个针对每个数据库设置的东西(见下文获取细节)。只有数据库所有者或者超级用户可以改变这些设置。</p>
+<p>第二和第三种形式为 PostgreSQL 数据库修改缺省的会话运行时配置变量。随后在该数据库上启动新会话的时候将使用此缺省值。数据库相关的缺省值将覆盖任何在 <tt class="FILENAME">postgresql.conf</tt> 里出现或者从 <tt class="COMMAND">postgres</tt> 命令行接收到的设置。只有数据库所有者或者超级用户可以修改会话缺省值。有些变量不能用这种方法设置，或者是只能由超级用户设置。</p>
+<p>第四种形式修改数据库的名称。只有数据库所有者或者超级用户可以重命名一个数据库(非超级用户必须拥有 <tt class="LITERAL">CREATEDB</tt> 权限)。当前数据库不能被重命名。如果你需要这么做，那么请连接另外一个数据库。</p>
+<p>第五种形式改变数据库的所有者。要改变所有者，你必须拥有该数据库并且还是新的所有角色的直接或者间接成员，并且还必须有 <tt class="LITERAL">CREATEDB</tt> 权限。超级用户自动拥有所有这些权限。</p>
+</div>
+<div class="REFSECT1"><a name="AEN43805"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>需要修改属性的数据库的名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>connlimit</i></tt></dt>
+<dd><p>对这个数据库可以做多少个并发连接(-1 表示没有限制)</p></dd>
+<dt><tt class="REPLACEABLE"><i>parameter</i></tt><br><tt class="REPLACEABLE"><i>value</i></tt></dt>
+<dd><p>把指定的数据库配置变量的会话缺省值设置为给出的数值。如果 <tt class="REPLACEABLE"><i>value</i></tt> 是 <tt class="LITERAL">DEFAULT</tt> 或等效的 <tt class="LITERAL">RESET</tt> ，那么与数据库相关的变量设置将被删除，因此在新的会话中将继承系统范围的缺省设置。用 <tt class="LITERAL">RESET ALL</tt> 清除所有设置。</p>
+<p>参见 <a href="sql-set.html"><i>SET</i></a> 和<a href="runtime-config.html">章17</a>获取有关允许的变量名和数值的更多信息。</p></dd>
+<dt><tt class="REPLACEABLE"><i>newname</i></tt></dt>
+<dd><p>数据库的新名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_owner</i></tt></dt>
+<dd><p>数据库的新所有者</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN43842"></a><h2>注意</h2>
+<p>也可以把一个会话缺省绑定到一个特定用户，而不是某个数据库上；参阅 <a href="sql-alteruser.html"><i>ALTER USER</i></a> ，如果存在冲突，那么用户声明的设置覆盖数据库相关的设置。</p>
+</div>
+<div class="REFSECT1"><a name="AEN43846"></a><h2>例子</h2>
+<p>要关闭在数据库 <tt class="LITERAL">test</tt> 上缺省的索引扫描：</p>
+<pre class="PROGRAMLISTING">ALTER DATABASE test SET enable_indexscan TO off;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN43851"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">ALTER DATABASE</tt> 语句是一个 PostgreSQL 扩展。</p>
+</div>
+<div class="REFSECT1"><a name="AEN43856"></a><h2>又见</h2><a href="sql-createdatabase.html"><i>CREATE DATABASE</i></a>, <a href="sql-dropdatabase.html"><i>DROP DATABASE</i></a>, <a href="sql-set.html"><i>SET</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-alterconversion.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-alterdomain.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ALTER CONVERSION</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">ALTER DOMAIN</td></tr>
+</table>
+</div>
+</body></html>

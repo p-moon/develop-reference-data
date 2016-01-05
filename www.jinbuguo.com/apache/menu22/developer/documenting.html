@@ -1,0 +1,78 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>Apache 2.0 文档制作 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">开发者文档</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：&lt;<a href="../translator_announcement.html#join">虚位以待</a>&gt; | 本篇译稿完成时间：?年?月?日</div>
+<div id="page-content"><div id="preamble"><h1>Apache 2.0 文档制作</h1>
+
+
+    <p>Apache 2.0 uses <a href="http://www.doxygen.org/">Doxygen</a> to
+    document the APIs and global variables in the the code. This will explain
+    the basics of how to document using Doxygen.</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="brief" id="brief">Brief Description</a></h2>
+    <p>To start a documentation block, use <code>/**</code><br />
+    To end a documentation block, use <code>*/</code></p>
+
+    <p>In the middle of the block, there are multiple tags we can
+    use:</p>
+
+    <div class="example"><p><code>
+      Description of this functions purpose<br />
+      @param parameter_name description<br />
+      @return description<br />
+      @deffunc signature of the function<br />
+    </code></p></div>
+      
+    <p><code>deffunc</code> is not always necessary. DoxyGen does not
+    have a full parser  in it, so any prototype that use a macro in the
+    return type declaration is too complex for scandoc. Those functions
+    require a <code>deffunc</code>. An example (using &amp;gt; rather
+    than &gt;):</p>
+
+    <div class="example"><p><code>
+      /**<br />
+ &nbsp;* return the final element of the pathname<br />
+ &nbsp;* @param pathname The path to get the final element of<br />
+ &nbsp;* @return the final element of the path<br />
+ &nbsp;* @tip Examples:<br />
+ &nbsp;* &lt;pre&gt;<br />
+ &nbsp;*                 "/foo/bar/gum"   -&amp;gt; "gum"<br />
+ &nbsp;*                 "/foo/bar/gum/"  -&amp;gt; ""<br />
+ &nbsp;*                 "gum"            -&amp;gt; "gum"<br />
+ &nbsp;*                 "wi\\n32\\stuff" -&amp;gt; "stuff"<br />
+ &nbsp;* &lt;/pre&gt;<br />
+ &nbsp;* @deffunc const char * ap_filename_of_pathname(const char *pathname)<br />
+ &nbsp;*/
+    </code></p></div>
+
+    <p>At the top of the header file, always include:</p>
+    <div class="example"><p><code>
+      /**<br />
+ &nbsp;* @package Name of library header<br />
+ &nbsp;*/
+    </code></p></div>
+
+    <p>Doxygen uses a new HTML file for each package. The HTML files are named
+    {Name_of_library_header}.html, so try to be concise with your names.</p>
+
+    <p>For a further discussion of the possibilities please refer to
+    <a href="http://www.doxygen.org/">the Doxygen site</a>.</p>
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

@@ -1,0 +1,261 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_deflate － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_deflate</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>压缩发送给客户端的内容</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>deflate_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_deflate.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p><code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code>模块提供了<code>DEFLATE</code>输出过滤器，允许服务器在将输出内容发送到客户端以前进行压缩，以节约带宽。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="recommended" id="recommended">配置举例</a></h2>
+    <p>这是一个针对心急者的示范配置：</p>
+
+    <div class="example"><h3>仅仅压缩少数几种类型</h3><p><code>
+      AddOutputFilterByType DEFLATE text/html text/plain text/xml
+    </code></p></div>
+
+    <p>以下允许压缩更多内容的配置更加复杂。除非你明白所有的配置细节，否则请不要使用。</p>
+
+    <div class="example"><h3>Compress everything except images</h3><p><code>
+      &lt;Location /&gt;<br />
+      <span class="indent">
+        # 插入过滤器<br />
+        SetOutputFilter DEFLATE<br />
+        <br />
+        # Netscape 4.x 有一些问题...<br />
+        BrowserMatch ^Mozilla/4         gzip-only-text/html<br />
+        <br />
+        # Netscape 4.06-4.08 有更多的问题<br />
+        BrowserMatch ^Mozilla/4\.0[678] no-gzip<br />
+        <br />
+        # MSIE 会伪装成 Netscape ，但是事实上它没有问题<br />
+        BrowserMatch \bMSIE             !no-gzip !gzip-only-text/html<br />
+        # 不压缩图片<br />
+        SetEnvIfNoCase Request_URI \<br />
+        <span class="indent">
+          \.(?:gif|jpe?g|png)$ no-gzip dont-vary<br />
+        </span>
+        <br />
+        # 确保代理不会发送错误的内容<br />
+        Header append Vary User-Agent env=!dont-vary<br />
+      </span>
+      &lt;/Location&gt;
+    </code></p></div>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="enable" id="enable">启用压缩</a></h2>
+
+    <h3><a name="output" id="output">输出压缩</a></h3>
+      <p>压缩是由<code>DEFLATE</code><a href="../filter.html">过滤器</a>实现的。下面的指令会对其所在容器中的文档启用压缩：</p>
+
+      <div class="example"><p><code>
+        SetOutputFilter DEFLATE
+      </code></p></div>
+
+      <p>一些流行的浏览器不能正确处理所有压缩内容，因此你可能需要将<code>gzip-only-text/html</code>标记设为"<code>1</code>"来仅仅允许压缩html文件(见下面)。如果你设置了<em>"<code>1</code>"以外的任何值</em>，都将被忽略。</p>
+      
+      <p>如果你想将压缩限制在几种特定的MIME类型上，可以使用<code class="directive"><a href="../mod/core.html#addoutputfilterbytype">AddOutputFilterByType</a></code>指令。下面的例子仅仅允许对html文档进行压缩：</p>
+
+      <div class="example"><p><code>
+        &lt;Directory "/your-server-root/manual"&gt;<br />
+        <span class="indent">
+          AddOutputFilterByType DEFLATE text/html<br />
+        </span>
+        &lt;/Directory&gt;
+      </code></p></div>
+
+      <p>对于那些不能正确处理所有压缩内容的浏览器，可以使用<code class="directive"><a href="../mod/mod_setenvif.html#browsermatch">BrowserMatch</a></code>指令针对特定的浏览器设置<code>no-gzip</code>标记以取消压缩。为了取得更好的效果，你可以将<code>no-gzip</code>和<code>gzip-only-text/html</code>配合使用。在这种情况下，下面的设置将会覆盖上面的设置。看看从<a href="#recommended">配置示例</a>中摘录的片断：</p>
+
+      <div class="example"><p><code>
+        BrowserMatch ^Mozilla/4         gzip-only-text/html<br />
+        BrowserMatch ^Mozilla/4\.0[678] no-gzip<br />
+        BrowserMatch \bMSIE             !no-gzip !gzip-only-text/html
+      </code></p></div>
+
+      <p>第一条指令表示如果<code>User-Agent</code>字符串表示它是一个Navigator 4.x的浏览器，这种浏览器不能正确处理除<code>text/html</code>之外的所有类型。而4.06, 4.07, 4.08版的Navigator完全不能处理任何压缩内容，因此第二条指令对这些浏览器完全禁用压缩。</p>
+
+      <p>第三个<code class="directive"><a href="../mod/mod_setenvif.html#browsermatch">BrowserMatch</a></code>指令修正了上面两条对浏览器的推测，因为微软的IE也将它自己标识成"Mozilla/4"但是它实际上能够处理所有的压缩内容。因此又在<code>User-Agent</code>头中额外匹配了字符串"MSIE"("<code>\b</code>"表示"单词边界")，并且取消了前面的限制。</p>
+
+      <div class="note"><h3>注意</h3><code>DEFLATE</code>过滤器总是在类似于PHP或SSI之类的资源过滤器之后插入，它永远不会触及到内部请求。</div>
+      <div class="note"><h3>注意</h3>通过<code class="directive"><a href="../mod/core.html#setenv">SetEnv</a></code>设置<code>force-gzip</code>环境变量将会忽略浏览器的"accept-encoding"，始终发送经过压缩的内容。</div>
+
+    
+    <h3><a name="inflate" id="inflate">输出解压</a></h3>
+      <p><code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code>模块还提供了一个解压gzip格式的应答体的功能。为了激活这个特性你必须使用<code class="directive"><a href="../mod/core.html#setoutputfilter">SetOutputFilter</a></code>或<code class="directive"><a href="../mod/mod_mime.html#addoutputfilter">AddOutputFilter</a></code>指令将<code>INFLATE</code>过滤器插入到输入过滤器链：</p>
+
+      <div class="example"><p><code>
+        &lt;Location /dav-area&gt;<br />
+        <span class="indent">
+          ProxyPass http://example.com/<br />
+          SetOutputFilter INFLATE<br />
+        </span>
+        &lt;/Location&gt;
+      </code></p></div>
+
+      <p>这个例子将会解压来自example.com的输出，这样其它过滤器就可以做进一步的处理了。</p>
+      
+    
+    <h3><a name="input" id="input">输入解压</a></h3>
+      <p><code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code>模块还提供了一个解压gzip格式的请求体的功能。为了激活这个特性你必须使用<code class="directive"><a href="../mod/core.html#setinputfilter">SetInputFilter</a></code>或<code class="directive"><a href="../mod/mod_mime.html#addinputfilter">AddInputFilter</a></code>指令将<code>DEFLATE</code>过滤器插入到输入过滤器链。例如：</p>
+
+      <div class="example"><p><code>
+        &lt;Location /dav-area&gt;<br />
+        <span class="indent">
+          SetInputFilter DEFLATE<br />
+        </span>
+        &lt;/Location&gt;
+      </code></p></div>
+      
+      <p>这样，如果包含"<code>Content-Encoding: gzip</code>"头的请求体将会被自动解压。极少有浏览器压缩请求体。然而有些程序的确这么做了，比如一些<a href="http://www.webdav.org">WebDAV</a>客户端程序。</p>
+
+      <div class="warning"><h3>注意 Content-Length</h3>
+        <p>如果你自己处理请求体，请注意<code>Content-Length</code>头仅仅表示客户端输入的数据长度，而<em>不是</em>解压后的实际数据长度。</p>
+      </div>
+    
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="proxies" id="proxies">代理服务器</a></h2>
+
+    <p><code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code>模块发送一个"<code>Vary: Accept-Encoding</code>"HTTP应答头以提醒代理服务器：只对发送了正确"<code>Accept-Encoding</code>"头的客户端发送缓存的应答。这样可以防止不能正确处理压缩内容的浏览器接受到经过压缩的内容。</p>
+
+    <p>如果你按照某些特殊的条件拒绝了某些客户端的访问(比如<code>User-Agent</code>头)，你必须手动配置一个额外的<code>Vary</code>头提醒代理服务器做额外的限制。比如，在一个典型的配置中的某处，如果额外的<code>DEFLATE</code>过滤器是否生效取决于<code>User-Agent</code>头，你应当在此处添加：</p>
+
+    <div class="example"><p><code>
+      Header append Vary User-Agent
+    </code></p></div>
+    
+    <p>如果依照除请求头以外的其他条件决定是否使用压缩(例如：HTTP版本)，你必须设置<code>Vary</code>头的值为"<code>*</code>"来完全阻止代理服务器的缓存。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      Header set Vary *
+    </code></p></div>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DeflateBufferSize" id="DeflateBufferSize">DeflateBufferSize</a> <a name="deflatebuffersize" id="deflatebuffersize">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>用于zlib一次压缩的片断大小(字节)</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DeflateBufferSize <var>value</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>DeflateBufferSize 8096</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_deflate</td></tr>
+</table>
+    <p><code class="directive">DeflateBufferSize</code>指令定义了zlib一次压缩的片断的字节数。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DeflateCompressionLevel" id="DeflateCompressionLevel">DeflateCompressionLevel</a> <a name="deflatecompressionlevel" id="deflatecompressionlevel">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>将输出内容压缩的程度</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DeflateCompressionLevel <var>value</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>Zlib的默认值</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_deflate</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.45 及以后的版本中可用</td></tr>
+</table>
+    <p><code class="directive">DeflateCompressionLevel</code>指令设置压缩程度，越高的压缩程度就会有越好的压缩效果，同时也意味着占用越多的CPU资源。</p>
+    <p>取值范围在 1(最低压缩率) 到 9(最高压缩率)之间。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DeflateFilterNote" id="DeflateFilterNote">DeflateFilterNote</a> <a name="deflatefilternote" id="deflatefilternote">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>在日志中放置压缩率标记</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DeflateFilterNote [<var>type</var>] <var>notename</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_deflate</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td><var>type</var>仅在2.0.45以后版本中可用</td></tr>
+</table>
+    <p><code class="directive">DeflateFilterNote</code>指令指定将一个指示压缩率的标记附加在请求之后。<var>notename</var>就表示这个标记的名字。你可以为了某种统计目的将这个标记的名字添加到<a href="../logs.html#accesslog">访问日志</a>中。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      DeflateFilterNote ratio<br />
+      <br />
+      LogFormat '"%r" %b (%{ratio}n) "%{User-agent}i"' deflate<br />
+      CustomLog logs/deflate_log deflate
+    </code></p></div>
+
+    <p>如果你想从日志中得到更多精确的数据，可以使用<var>type</var>参数指定<var>notename</var>标记所记录的数据类型。<var>type</var>的取值范围如下：</p>
+
+    <dl>
+      <dt><code>Input</code></dt>
+      <dd>在标记中存储过滤器输入流的字节数。</dd>
+
+      <dt><code>Output</code></dt>
+      <dd>在标记中存储过滤器输出流的字节数。</dd>
+
+      <dt><code>Ratio</code></dt>
+      <dd>在标记中存储过滤器的压缩比(<code>输出/输入*100</code>)。这是<var>type</var>的默认值。</dd>
+    </dl>
+
+    <p>于是，就可以这样记录：</p>
+
+    <div class="example"><h3>Accurate Logging</h3><p><code>
+      DeflateFilterNote Input instream<br />
+      DeflateFilterNote Output outstream<br />
+      DeflateFilterNote Ratio ratio<br />
+      <br />
+      LogFormat '"%r" %{outstream}n/%{instream}n (%{ratio}n%%)' deflate<br />
+      CustomLog logs/deflate_log deflate
+    </code></p></div>
+
+<h3>参见</h3>
+<ul>
+<li><code class="module"><a href="../mod/mod_log_config.html">mod_log_config</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DeflateMemLevel" id="DeflateMemLevel">DeflateMemLevel</a> <a name="deflatememlevel" id="deflatememlevel">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>zlib在压缩时最多可以使用多少内存</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DeflateMemLevel <var>value</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>DeflateMemLevel 9</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_deflate</td></tr>
+</table>
+    <p><code class="directive">DeflateMemLevel</code>指令指定zlib在压缩时最多可以使用多少内存(取值范围在1到9之间)。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DeflateWindowSize" id="DeflateWindowSize">DeflateWindowSize</a> <a name="deflatewindowsize" id="deflatewindowsize">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>Zlib压缩窗口(compression window)的大小</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DeflateWindowSize <var>value</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>DeflateWindowSize 15</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_deflate</td></tr>
+</table>
+    <p><code class="directive">DeflateWindowSize</code>指令设定zlib压缩窗口(compression window)的大小(取值范围在1到15之间)。通常窗口越大压缩效果越好。</p>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

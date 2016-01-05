@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>systemd.journal-fields 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>systemd.journal-fields 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+systemd.journal-fields(7)                          systemd-228                         systemd.journal-fields(7)
+
+<h3>名称</h3>
+    systemd.journal-fields - 特殊的日志字段
+
+<h3>描述</h3>
+    每一条日志都像是数据库中的一条记录，并且字段的内容可以是二进制数据。
+    文本字段都统一格式化为UTF-8格式，二进制字段仅在格式化为UTF-8无意义时才使用二进制格式。
+    应用可以自由的定义新字段，但是某些字段名称具有特定的专属含义。所有具有特定专属含义的字段都是可选的。
+    在某些情况下，同一个字段可以在同一条日志记录中出现多次。
+
+<h3>用户字段</h3>
+    用户字段是指那些直接从客户端传递过来的字段，并且会被存储在日志文件中。
+
+    MESSAGE=
+        人类可读的消息字符串。这是显示给用户的主要文本，通常不被转换(个别情况例外)，并且不用于创建该条日志的元数据。
+
+    MESSAGE_ID=
+        一个不含任何标点符号、用小写十六进制字符串表示的128位无符号整数(如果存在的话)，用作消息类型标识符。
+        开发者可以使用 journalctl --new-id128 命令生成一个与UUID兼容的新标识符。
+
+    PRIORITY=
+        消息优先级(也就是日志等级)，是一个 0("emerg") 到 7("debug") 之间的十进制整数。与 <a href="/linux/sysklogd.html">syslog</a> 的消息优先级含义相同。
+
+    CODE_FILE=, CODE_LINE=, CODE_FUNC=
+        产生此消息的程序源代码的具体位置(如果知道的话)：源代码文件名、行号、函数名。
+
+    ERRNO=
+        导致产生此消息的底层Unix错误代码(如果存在的话)，是一个 <a href="http://man7.org/linux/man-pages/man3/errno.3.html">errno(3)</a> 格式的十进制整数。
+
+    SYSLOG_FACILITY=, SYSLOG_IDENTIFIER=, SYSLOG_PID=
+        与 <a href="/linux/sysklogd.html">syslog</a> 兼容的字段：facility(一个十进制数字，表示产生日志的子系统)、标签、客户端PID
+        其中"标签"通常由glibc的 <a href="http://linux.die.net/man/3/program_invocation_short_name">program_invocation_short_name(3)</a> 函数生成。
+
+<h3>可信字段</h3>
+    可信字段是指名称以下划线开头的字段。这些字段由日志守护进程添加，客户端无法掌控这些字段的内容，因此是"可信的"。
+
+    _PID=, _UID=, _GID=
+        产生此日志消息的进程的：PID、UID、GIU ，都是十进制的数字
+
+    _COMM=, _EXE=, _CMDLINE=
+        产生此日志消息的进程的：名称、执行路径、命令行
+
+    _CAP_EFFECTIVE=
+        产生此日志消息的进程的有效 <a href="http://man7.org/linux/man-pages/man7/capabilities.7.html">capabilities(7)</a>
+
+    _AUDIT_SESSION=, _AUDIT_LOGINUID=
+        产生此日志消息的进程的：审计会话、审计登录UID ，这两个信息由内核的审计子系统负责维护。
+
+    _SYSTEMD_CGROUP=, _SYSTEMD_SESSION=, _SYSTEMD_UNIT=, _SYSTEMD_USER_UNIT=, _SYSTEMD_OWNER_UID=, _SYSTEMD_SLICE=
+        产生此日志消息的进程的：systemd cgroup路径、systemd 会话ID(若存在)、systemd 单元名称(若存在)、
+        systemd 用户会话单元名称(若存在)、systemd 会话的属主UID(若存在)、systemd slice 单元
+
+    _SELINUX_CONTEXT=
+        产生此日志消息的进程的 SELinux 安全上下文(label)
+
+    _SOURCE_REALTIME_TIMESTAMP=
+        此日志消息的最早可信时间戳(若可知)，这不同于此消息被接收到的时间。
+        值是一个整数，表示距离1970年1月1日零时(UTC/GMT午夜)的微秒数(比秒更精确)。
+
+    _BOOT_ID=
+        产生此日志消息时所处的"启动ID"，是一个用小写十六进制字符串表示的128位无符号整数。
+
+    _MACHINE_ID=
+        产生此日志消息的主机的"机器ID"(来自于<a href="machine-id.html">machine-id(5)</a>)
+
+    _HOSTNAME=
+        产生此日志消息的主机的主机名。
+
+    _TRANSPORT=
+        此日志消息的来源：
+
+        audit
+            内核审计系统
+        driver
+            由内部生成
+        syslog
+            通过syslog协议从本地syslog套接字文件获取
+        journal
+            通过本地日志协议获取
+        stdout
+            服务的标准输出(STDOUT)与标准错误(STDERR)
+        kernel
+            内核消息
+
+<h3>内核字段</h3>
+    内核字段是指那些来源于内核的消息所特有的字段。
+
+    _KERNEL_DEVICE=
+        内核设备名称。块设备用"b主设备号:次设备号"格式，字符设备用"c主设备号:次设备号"格式，网络设备用"n主设备号:次设备号"格式。
+        对于其他类型的设备，则用"+子系统名称:内核设备名"格式，例如："+platform:rtc_cmos"或"+scsi:host0"
+
+    _KERNEL_SUBSYSTEM=
+        该设备所属的内核子系统名称。例如："platform"或"scsi"
+
+    _UDEV_SYSNAME=
+        该设备在 /sys 中显示的名称。例如："rtc_cmos"或"host0"
+
+    _UDEV_DEVNODE=
+        该设备在 /dev 中的节点路径。例如："/dev/bus/usb/002/001"
+
+    _UDEV_DEVLINK=
+        在 /dev 中指向此设备节点的额外软连接名称。此字段可能有多个。
+
+<h3>代表其他程序记录的字段</h3>
+    这些字段用于表明其中的内容来自于其他程序或单元。
+
+    systemd-coredump 会使用下面的两个字段：
+
+        COREDUMP_UNIT=, COREDUMP_USER_UNIT=
+            用于表明包含内核转储(coredump)的消息来源于哪个单元(可能是系统单元或用户单元)。参见 <a href="coredumpctl.html">coredumpctl(1)</a> 手册。
+
+    特权程序(UID=0)可以添加一个 OBJECT_PID= 字段。这将导致 systemd-journald 根据调用者的行为添加更多的额外字段：
+
+        OBJECT_PID=PID
+            此条日志消息所附属的进程的PID
+
+        OBJECT_UID=, OBJECT_GID=, OBJECT_COMM=, OBJECT_EXE=, OBJECT_CMDLINE=, OBJECT_AUDIT_SESSION=, OBJECT_AUDIT_LOGINUID=,
+        OBJECT_SYSTEMD_CGROUP=, OBJECT_SYSTEMD_SESSION=, OBJECT_SYSTEMD_OWNER_UID=, OBJECT_SYSTEMD_UNIT=, OBJECT_SYSTEMD_USER_UNIT=
+            这些就是 systemd-journald 额外添加的字段，其含义与如下对应的字段相同(见前文)：
+            _UID=, _GID=, _COMM=, _EXE=, _CMDLINE=, _AUDIT_SESSION=, _AUDIT_LOGINUID=,
+            _SYSTEMD_CGROUP=, _SYSTEMD_SESSION=, _SYSTEMD_UNIT=, _SYSTEMD_USER_UNIT=, _SYSTEMD_OWNER_UID= 
+
+<h3>定位字段</h3>
+    在将日志内容转化为外部其他格式(例如 <a href="http://www.freedesktop.org/wiki/Software/systemd/export">Journal Export Format</a> 或 <a href="http://www.freedesktop.org/wiki/Software/systemd/json">Journal JSON Format</a>)的时候，
+    用于对日志消息进行定位的字段将被命名为以双下划线开头的名称。注意，这些字段并不存在于日志数据库中，仅用于导出日志时对每条消息进行定位。
+    在使用诸如 <a href="http://www.freedesktop.org/software/systemd/man/sd_journal_send.html">sd_journal_send(3)</a> 这样的接口存储日志时也禁止使用这些字段名称，同样的，也不可用于 <a href="http://www.freedesktop.org/software/systemd/man/sd_journal_add_match.html">sd_journal_add_match(3)</a> 接口进行匹配。
+
+    __CURSOR=
+        此条日志的游标。游标是一个文本字符串，类似于该条日志的指纹，唯一的确定了此条日志的位置，并且可以跨机器、跨平台、跨日志文件的保持唯一性。
+
+    __REALTIME_TIMESTAMP=
+        日志收集守护进程接收到该条消息时主板硬件时钟的时间戳(CLOCK_REALTIME)。值是一个整数，表示距离1970年1月1日零时(UTC/GMT午夜)的微秒数。
+        注意，该字段与"_SOURCE_REALTIME_TIMESTAMP="字段不同，该字段的值一般略晚于"_SOURCE_REALTIME_TIMESTAMP="字段的值，并且通常是单调递增的。
+
+    __MONOTONIC_TIMESTAMP=
+        日志收集守护进程接收到该条消息时的严格单调递增时间戳(CLOCK_MONOTONIC)。值是一个整数，表示距离此次系统启动以来的微秒数。
+        与"_BOOT_ID="组合使用，可精确的定位此条日志。
+
+<h3>参见</h3>
+    <a href="systemd.html">systemd(1)</a>, <a href="journalctl.html">journalctl(1)</a>, <a href="journald.conf.html">journald.conf(5)</a>, <a href="coredumpctl.html">coredumpctl(1)</a>, <a href="systemd.directives.html">systemd.directives(7)</a>
+
+systemd.journal-fields(7)                          systemd-228                         systemd.journal-fields(7)
+</pre>
+
+
+<hr />
+
+
+</body></html>

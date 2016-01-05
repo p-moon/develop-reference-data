@@ -1,0 +1,160 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_authz_owner － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：&lt;<a href="../translator_announcement.html#join">虚位以待</a>&gt; | 本篇译稿完成时间：?年?月?日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_authz_owner</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>基于文件的所有者进行授权</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>authz_owner_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_authz_owner.c</td></tr>
+<tr><th><a href="module-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.1 及以后的版本中可用</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>This module authorizes access to files by comparing the userid used
+    for HTTP authentication (the web userid) with the file-system owner or
+    group of the requested file. The supplied username and password
+    must be already properly verified by an authentication module,
+    such as <code class="module"><a href="../mod/mod_auth_basic.html">mod_auth_basic</a></code>或<code class="module"><a href="../mod/mod_auth_digest.html">mod_auth_digest</a></code>. <code class="module"><a href="../mod/mod_authz_owner.html">mod_authz_owner</a></code>
+    recognizes two arguments for the <code class="directive"><a href="../mod/core.html#require">Require</a></code> directive, <code>file-owner</code>和<code>file-group</code>, as follows:</p>
+
+    <dl>
+      <dt><code>file-owner</code></dt>
+      <dd>The supplied web-username must match the system's name for the
+      owner of the file being requested. That is, if the operating system
+      says the requested file is owned by <code>jones</code>, then the
+      username used to access it through the web must be <code>jones</code>
+      as well.</dd>
+
+      <dt><code>file-group</code></dt>
+      <dd>The name of the system group that owns the file must be present
+      in a group database, which is provided, for example, by <code class="module"><a href="../mod/mod_authz_groupfile.html">mod_authz_groupfile</a></code>或<code class="module"><a href="../mod/mod_authz_dbm.html">mod_authz_dbm</a></code>,
+      and the web-username must be a member of that group. For example, if
+      the operating system says the requested file is owned by (system)
+      group <code>accounts</code>, the group <code>accounts</code> must
+      appear in the group database and the web-username used in the request
+      must be a member of that group.</dd>
+    </dl>
+
+    <div class="note"><h3>注意</h3>
+      <p>If <code class="module"><a href="../mod/mod_authz_owner.html">mod_authz_owner</a></code> is used in order to authorize
+      a resource that is not actually present in the filesystem
+      (<em>i.e.</em> a virtual resource), it will deny the access.</p>
+
+      <p>Particularly it will never authorize <a href="../content-negotiation.html#multiviews">content negotiated
+      "MultiViews"</a> resources.</p>
+    </div>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="examples" id="examples">Configuration Examples</a></h2>
+
+    <h3><a name="examples.file-owner" id="examples.file-owner">Require file-owner</a></h3>
+      <p>Consider a multi-user system running the Apache Web server, with
+      each user having his or her own files in <code>~/public_html/private</code>. Assuming that there is a single
+      <code class="directive"><a href="../mod/mod_authn_dbm.html#authdbmuserfile">AuthDBMUserFile</a></code> database
+      that lists all of their web-usernames, and that these usernames match
+      the system's usernames that actually own the files on the server, then
+      the following stanza would allow only the user himself access to his
+      own files. User <code>jones</code> would not be allowed to access
+      files in <code>/home/smith/public_html/private</code> unless they
+      were owned by <code>jones</code> instead of <code>smith</code>.</p>
+
+      <div class="example"><p><code>
+        &lt;Directory /home/*/public_html/private&gt;<br />
+        <span class="indent">
+          AuthType Basic<br />
+          AuthName MyPrivateFiles<br />
+          AuthBasicProvider dbm<br />
+          AuthDBMUserFile /usr/local/apache2/etc/.htdbm-all<br />
+          Satisfy All<br />
+          Require file-owner<br />
+        </span>
+        &lt;/Directory&gt;
+      </code></p></div>
+    
+
+    <h3><a name="examples.file-group" id="examples.file-group">Require file-group</a></h3>
+      <p>Consider a system similar to the one described above, but with
+      some users that share their project files in
+      <code>~/public_html/project-foo</code>. The files are owned by the
+      system group <code>foo</code> and there is a single <code class="directive"><a href="../mod/mod_authz_dbm.html#authdbmgroupfile">AuthDBMGroupFile</a></code> database that
+      contains all of the web-usernames and their group membership,
+      <em>i.e.</em> they must be at least member of a group named
+      <code>foo</code>. So if <code>jones</code>和<code>smith</code>
+      are both member of the group <code>foo</code>, then both will be
+      authorized to access the <code>project-foo</code> directories of
+      each other.</p>
+
+      <div class="example"><p><code>
+        &lt;Directory /home/*/public_html/project-foo&gt;<br />
+        <span class="indent">
+          AuthType Basic<br />
+          AuthName "Project Foo Files"<br />
+          AuthBasicProvider dbm<br />
+          <br />
+          # combined user/group database<br />
+          AuthDBMUserFile  /usr/local/apache2/etc/.htdbm-all<br />
+          AuthDBMGroupFile /usr/local/apache2/etc/.htdbm-all<br />
+          <br />
+          Satisfy All<br />
+          Require file-group<br />
+        </span>
+        &lt;/Directory&gt;
+      </code></p></div>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="AuthzOwnerAuthoritative" id="AuthzOwnerAuthoritative">AuthzOwnerAuthoritative</a> <a name="authzownerauthoritative" id="authzownerauthoritative">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>Sets whether authorization will be passed on to lower level
+modules</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>AuthzOwnerAuthoritative On|Off</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>AuthzOwnerAuthoritative On</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>AuthConfig</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_authz_owner</td></tr>
+</table>
+    <p>Setting the <code class="directive">AuthzOwnerAuthoritative</code>
+    directive explicitly to <code>Off</code> allows for
+    user authorization to be passed on to lower level modules (as defined
+    in the <code>modules.c</code> files) if:</p>
+
+    <ul>
+    <li>in the case of <code>file-owner</code> the file-system owner does not
+    match the supplied web-username or could not be determined, or</li>
+
+    <li>in the case of <code>file-group</code> the file-system group does not
+    contain the supplied web-username or could not be determined.</li>
+    </ul>
+
+    <p>Note that setting the value to <code>Off</code> also allows the
+    combination of <code>file-owner</code>和<code>file-group</code>, so
+    access will be allowed if either one or the other (or both) match.</p>
+
+    <p>By default, control is not passed on and an authorization failure
+    will result in an "Authentication Required" reply. Not
+    setting it to <code>Off</code> thus keeps the system secure and forces
+    an NCSA compliant behaviour.</p>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

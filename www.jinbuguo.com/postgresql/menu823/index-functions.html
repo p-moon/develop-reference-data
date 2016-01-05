@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>索引访问方法函数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="index-catalog.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="indexam.html">快退</a></td><td width="60%" align="center" valign="bottom">章49. 索引访问方法接口定义</td><td width="10%" align="right" valign="top"><a href="indexam.html">快进</a></td><td width="10%" align="right" valign="top"><a href="index-scanning.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INDEX-FUNCTIONS">49.2. 索引访问方法函数</a></h1>
+<p>索引访问方法必须提供的索引构造和维护函数有：</p>
+<pre class="PROGRAMLISTING">IndexBuildResult *
+ambuild (Relation heapRelation,
+         Relation indexRelation,
+         IndexInfo *indexInfo);</pre>
+<p>创建一个新索引。索引关系已经物理上创建好了，但是是空的。必须用索引访问方法要求的固定数据填充它，还有就是所有已经在表里的行。通常，<code class="FUNCTION">ambuild</code> 函数会调用 <code class="FUNCTION">IndexBuildHeapScan()</code> 扫描该表以获取现有行并计算需要插入索引的键字。</p>
+<pre class="PROGRAMLISTING">bool
+aminsert (Relation indexRelation,
+          Datum *values,
+          bool *isnull,
+          ItemPointer heap_tid,
+          Relation heapRelation,
+          bool check_uniqueness);</pre>
+<p>向现有索引插入一个新行。<tt class="LITERAL">values</tt> 和 <tt class="LITERAL">isnull</tt> 数组给出需要制作索引的键字值，而 <tt class="LITERAL">heap_tid</tt> 是要被索引的 TID 。如果该访问方法支持唯一索引(它的 <tt class="STRUCTNAME">pg_am</tt>.<tt class="STRUCTFIELD">amcanunique</tt> 标志是真)，那么 <tt class="LITERAL">check_uniqueness</tt> 可以是真，在这种情况下，该索引访问方法必须校验表中不存在冲突的行；通常这是该索引访问方法会需要 <tt class="LITERAL">heapRelation</tt> 参数的唯一的情况。参阅<a href="index-unique-checks.html">节49.5</a>获取细节。如果插入了索引记录，则返回 TRUE ，否则返回 FALSE 。FALSE 结果并不表明发生了错误，只是用于类似一种索引访问方法(AM)拒绝给 NULL 建索引或者类似的场合。</p>
+<pre class="PROGRAMLISTING">IndexBulkDeleteResult *
+ambulkdelete (IndexVacuumInfo *info,
+              IndexBulkDeleteResult *stats,
+              IndexBulkDeleteCallback callback,
+              void *callback_state);</pre>
+<p>从索引中删除行。这是一个"大批删除"的操作，通常都是通过扫描整个索引，检查每条记录，看看它是否需要被删除来实现的。可以调用传递进来的 <tt class="LITERAL">callback</tt> 函数，调用风格是：<tt class="LITERAL">callback(<tt class="REPLACEABLE"><i>TID</i></tt>, callback_state) returns bool</tt> ，其作用是判断某个用其引用的 TID 标识的索引条目是否需要删除。必须返回 NULL 或者是一个 palloc 出来的，包含删除操作之效果的统计的结构。如果不需要向 <code class="FUNCTION">amvacuumcleanup</code> 传递信息，返回 NULL 也是 OK 的。</p>
+<p>由于 <tt class="VARNAME">maintenance_work_mem</tt> 的限制，在删除多行的时候 <code class="FUNCTION">ambulkdelete</code> 可能需要被调用多次，<tt class="LITERAL">stats</tt> 参数是先前在这个索引上的调用结果(在一个 <tt class="COMMAND">VACUUM</tt> 操作内部第一次调用的话则是 NULL)。这将允许 AM 在整个操作过程中积累统计信息。典型的，如果传递的 <tt class="LITERAL">stats</tt> 不是 null 的话，<code class="FUNCTION">ambulkdelete</code> 将会修改并返回相同的结构。</p>
+<pre class="PROGRAMLISTING">IndexBulkDeleteResult *
+amvacuumcleanup (IndexVacuumInfo *info,
+                 IndexBulkDeleteResult *stats);</pre>
+<p>在一个 <tt class="COMMAND">VACUUM</tt> 操作(一个或多个 <code class="FUNCTION">ambulkdelete</code> 调用)之后清理。虽然不必做任何返回索引状态之外的任何其他事情，但是它通常用于批量清理，比如说回收空的索引页面。<tt class="LITERAL">stats</tt> 是最后的 <code class="FUNCTION">ambulkdelete</code> 调用返回的东西或者 NULL(如果因为没有行需要删除而未调用 <code class="FUNCTION">ambulkdelete</code> 的话)。如果结果不是 NULL ，那么它必须是一个 palloc 出来的结构。它包含的统计信息将用于更新 <tt class="STRUCTNAME">pg_class</tt> 并且由 <tt class="COMMAND">VACUUM</tt> 报告(如果给出了 <tt class="LITERAL">VERBOSE</tt>)。如果索引在 <tt class="COMMAND">VACUUM</tt> 操作的过程中根本没有改变，那么返回 NULL 也是 OK 的，否则必须返回当前状态。</p>
+<pre class="PROGRAMLISTING">void
+amcostestimate (PlannerInfo *root,
+                IndexOptInfo *index,
+                List *indexQuals,
+                RelOptInfo *outer_rel,
+                Cost *indexStartupCost,
+                Cost *indexTotalCost,
+                Selectivity *indexSelectivity,
+                double *indexCorrelation);</pre>
+<p>估算一个索引扫描的开销。该函数在下面的<a href="index-cost-estimation.html">节49.6</a>中有详细的讨论。</p>
+<pre class="PROGRAMLISTING">bytea *
+amoptions (ArrayType *reloptions,
+           bool validate);</pre>
+<p>为一个索引分析和验证 reloptions 数组，仅当一个索引存在非空 reloptions 数组时才会被调用。<tt class="PARAMETER">reloptions</tt> 是一个 <tt class="TYPE">text</tt> 数组，包含 <tt class="REPLACEABLE"><i>name</i></tt><tt class="LITERAL">=</tt><tt class="REPLACEABLE"><i>value</i></tt> 格式的项。该函数应当创建一个 <tt class="TYPE">bytea</tt> 值，该值将被拷贝进索引的 relcache 项的 <tt class="STRUCTFIELD">rd_options</tt> 字段。<tt class="TYPE">bytea</tt> 值的数据内容可以由访问方法定义，不过目前所有的标准访问方法都使用 <tt class="STRUCTNAME">StdRdOptions</tt> 结构。当 <tt class="PARAMETER">validate</tt> 为真时，如果任何一个选项不可识别或者含有非法值，该函数都应当报告一个适当的错误信息；当 <tt class="PARAMETER">validate</tt> 为假时，非法项应该被悄悄的忽略。当载入已经存储在 <tt class="STRUCTNAME">pg_catalog</tt> 中的选项时，<tt class="PARAMETER">validate</tt> 为假，仅在访问方法已经改变了选项规则的时候才可能找到非法项，在此情况下可以忽略废弃的项。如果默认行为正是想要的，那么返回 NULL 也 OK 。</p>
+<p>索引的目的当然是支持那些包含一个可以索引的 <tt class="LITERAL">WHERE</tt> 条件的行的扫描，这个条件通常叫<i class="FIRSTTERM">修饰词</i>或<i class="FIRSTTERM">扫描键字</i>。索引扫描的语义在下面的<a href="index-scanning.html">节49.3</a>里面有更完整的描述。一个索引访问方法必须提供的与扫描有关的函数有：</p>
+<pre class="PROGRAMLISTING">IndexScanDesc
+ambeginscan (Relation indexRelation,
+             int nkeys,
+             ScanKey key);</pre>
+<p>开始一个新的扫描。<tt class="LITERAL">key</tt> 数组(长度是 <tt class="LITERAL">nkeys</tt>)为该索引扫描描述索引键字(可能是多个)。结果必须是一个 palloc 出来的结构。由于实现的原因，索引访问方法<span class="emphasis"><i class="EMPHASIS">必须</i></span>通过调用 <code class="FUNCTION">RelationGetIndexScan()</code> 来创建这个结构。在大多数情况下，<code class="FUNCTION">ambeginscan</code> 本身除了调用上面这个函数之外几乎不干别的事情；索引扫描启动时的有趣部分在 <code class="FUNCTION">amrescan</code> 里。</p>
+<pre class="PROGRAMLISTING">boolean
+amgettuple (IndexScanDesc scan,
+            ScanDirection direction);</pre>
+<p>在给出的扫描里抓取下一个行，向给出的方向移动(在索引里向前或者向后)。如果抓取到了行，则返回 TRUE ，如果没有抓到匹配的行，返回 FALSE 。在为 TRUE 的时候，该行的 TID 存储在 <tt class="LITERAL">scan</tt> 结构里。请注意"成功"只是意味着索引包含一个匹配扫描键字的条目，并不是说该行仍然在堆中存在，或者是能够通过调用着的快照检查(译注：MVCC 快照，用于判断事务边界内的行可视性)。</p>
+<pre class="PROGRAMLISTING">boolean
+amgetmulti (IndexScanDesc scan,
+            ItemPointer tids,
+            int32 max_tids,
+            int32 *returned_tids);</pre>
+<p>在给出的扫描里抓取多个行。如果扫描需要继续，则返回 TRUE ，如果没有剩下的匹配行，返回 FALSE 。<tt class="LITERAL">tids</tt> 指向一个调用着提供的 <tt class="LITERAL">max_tids</tt> 条 <tt class="STRUCTNAME">ItemPointerData</tt> 记录的数组，用于填充匹配行的 TID 。<tt class="LITERAL">*returned_tids</tt> 设置为实际返回的 TID 的数目。这个数目可以小于 <tt class="LITERAL">max_tids</tt> 或者甚至是零，即使返回值是 TRUE 也如此。这样的设计就允许访问方法可以选择对其扫描的最高效的停止点，比如，在索引页的边界上。<code class="FUNCTION">amgetmulti</code> 和 <code class="FUNCTION">amgettuple</code> 不能在同义词索引扫描中使用；在使用 <code class="FUNCTION">amgetmulti</code> 的时候还有其它限制，在<a href="index-scanning.html">节49.3</a>里给出解释。</p>
+<pre class="PROGRAMLISTING">void
+amrescan (IndexScanDesc scan,
+          ScanKey key);</pre>
+<p>重启开始给出的扫描，可能使用的是一个新的扫描键字(要想继续使用原来的键字，给 <tt class="LITERAL">key</tt> 传递一个 NULL)。请注意，不可能改变键字的个数。实际上这个重新开始的特性是在一个嵌套循环连接选取了一个新的外层行，因此需要一个新的键字比较值，但扫描键字的结构仍然相同的时候使用的。这个函数也被 <code class="FUNCTION">RelationGetIndexScan()</code> 调用，因此这个函数既用于索引扫描的初始化设置，也用于重复扫描。</p>
+<pre class="PROGRAMLISTING">void
+amendscan (IndexScanDesc scan);</pre>
+<p>结束扫描并释放资源。不应该释放 <tt class="LITERAL">scan</tt> 本身，但访问方法内部使用的任何锁或者销都应该释放。</p>
+<pre class="PROGRAMLISTING">void
+ammarkpos (IndexScanDesc scan);</pre>
+<p>标记当前扫描位置。访问方法只需要支持每次扫描里面有一个被记住的扫描位置。</p>
+<pre class="PROGRAMLISTING">void
+amrestrpos (IndexScanDesc scan);</pre>
+<p>把扫描恢复到最近标记的位置。</p>
+<p>通常，任何索引访问方法函数的 <tt class="LITERAL">pg_proc</tt> 记录都应该显示正确数目的参数，只是把类型都声明为类型 <tt class="TYPE">internal</tt>(因为大多数参数的类型都是 SQL 不识别的类型，并且不希望用户直接调用该函数)。返回类型根据具体情况声明为 <tt class="TYPE">void</tt>, <tt class="TYPE">internal</tt>, <tt class="TYPE">boolean</tt> 。唯一的例外是 <code class="FUNCTION">amoptions</code> ，它应当被声明为接受 <tt class="TYPE">text[]</tt> 和 <tt class="TYPE">bool</tt> 并返回 <tt class="TYPE">bytea</tt> 。这样就允许客户端代码执行 <code class="FUNCTION">amoptions</code> 以选项设置的有效性。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="index-catalog.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="index-scanning.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">索引的系统表记录</td><td width="34%" align="center" valign="top"><a href="indexam.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">索引扫描</td></tr>
+</table>
+</div>
+</body></html>

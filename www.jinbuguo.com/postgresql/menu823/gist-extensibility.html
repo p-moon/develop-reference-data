@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>扩展性</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="gist-intro.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="gist.html">快退</a></td><td width="60%" align="center" valign="bottom">章50. GiST 索引</td><td width="10%" align="right" valign="top"><a href="gist.html">快进</a></td><td width="10%" align="right" valign="top"><a href="gist-implementation.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="GIST-EXTENSIBILITY">50.2. 扩展性</a></h1>
+<p>通常，实现一种新的索引访问方法意味着大量的艰苦工作。必须理解数据库的内部工作机制，比如锁的机制和预写日志。GiST 接口有一个高层的抽像，只要求访问方法的实现者实现被访问的数据类型的语意。GiST 层本身会处理并发，日志和搜索树结构的任务。</p>
+<p>不要把这个扩展性和其它标准搜索树的扩展性混淆在一起，比如它们所能处理的数据等方面。比如，PostgreSQL 支持可以扩展的 B-trees 。这就意味着呢可以用 PostgreSQL 在任意你需要的数据类型上建立 B-tree 。但是 B-trees 只支持范围谓词(<tt class="LITERAL">&lt;</tt>, <tt class="LITERAL">=</tt>, <tt class="LITERAL">&gt;</tt>)，而 hash 仅支持相等查询。</p>
+<p>所以，如果你用PostgreSQL B-tree 索引了一个图像集，那么你就只能发出类似"图像 x 和图像 y 相等吗"、"图像 x 是不是比图像 y 小"、"图像 x 是否大于图像 y"?这样的查询。根据你在这个环境下定义的"等于"、"小于"、"大于"的含义，上面这些查询可能有意义。但是，使用一个基于 GiST 的索引，你可以创建一些方法来发出和域相关的问题，比如"找出所有马的图像"或者"找出所有曝光过头的图像"。</p>
+<p>要让一种 GiST 访问模式跑起来的方法只是实现七个用户定义的方法，这七个方法定义了树里面的键字的行为。当然，为了支持那些怪异的查询，这些方法也会相当怪异，但是对于所有标准的查询(B-trees 等)，他们是相当直接的。简单说，GiST 组合了扩展性和通用性，以及代码复用和一个干净的界面。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="gist-intro.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="gist-implementation.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">介绍</td><td width="34%" align="center" valign="top"><a href="gist.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">实现</td></tr>
+</table>
+</div>
+</body></html>

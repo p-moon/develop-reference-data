@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>聚集函数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-array.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="functions-subquery.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-AGGREGATE">9.15. 聚集函数</a></h1><a name="AEN13407"></a>
+<p><i class="FIRSTTERM">聚集函数</i>从一组输入值里计算一个结果。<a href="functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">表9-37</a>和<a href="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">表9-38</a>显示了内建的聚集函数。聚集函数的特殊语法在<a href="sql-expressions.html#SYNTAX-AGGREGATES">节4.2.7</a>里解释。请参考<a href="tutorial-agg.html">节2.7</a>获取额外的介绍性信息。</p>
+<div class="TABLE"><a name="FUNCTIONS-AGGREGATE-TABLE"></a>
+<p><b>表9-37. 通用聚集函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>函数</th><th>参数类型</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><a name="AEN13428"></a> <code class="FUNCTION">avg(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">real</tt>, <tt class="TYPE">double precision</tt>, <tt class="TYPE">numeric</tt>, <tt class="TYPE">interval</tt></td><td>对于任何整数类型输入，结果都是 <tt class="TYPE">numeric</tt> 类型。对于任何浮点输入，结果都是 <tt class="TYPE">double precision</tt> 类型。否则和输入数据类型相同。</td><td>所有输入值的均值(算术平均)</td></tr>
+<tr><td><a name="AEN13446"></a> <code class="FUNCTION">bit_and(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">bit</tt></td><td>和参数数据类型相同</td><td>所有非 NULL 输入值的按位与(AND)，如果全部输入值皆为 NULL ，那么结果也为 NULL 。</td></tr>
+<tr><td><a name="AEN13459"></a> <code class="FUNCTION">bit_or(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">bit</tt></td><td>和参数数据类型相同</td><td>所有非 NULL 输入值的按位或(OR)，如果全部输入值皆为 NULL ，那么结果也为 NULL 。</td></tr>
+<tr><td><a name="AEN13472"></a> <code class="FUNCTION">bool_and(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">bool</tt></td><td><tt class="TYPE">bool</tt></td><td>如果所有输入值都是真，则为真，否则为假。</td></tr>
+<tr><td><a name="AEN13483"></a> <code class="FUNCTION">bool_or(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">bool</tt></td><td><tt class="TYPE">bool</tt></td><td>如果至少有一个输入值为真，则为真，否则为假。</td></tr>
+<tr><td><code class="FUNCTION">count(*)</code></td><td>&nbsp;</td><td><tt class="TYPE">bigint</tt></td><td>输入行数</td></tr>
+<tr><td><code class="FUNCTION">count(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td>任意</td><td><tt class="TYPE">bigint</tt></td><td>计算所有输入行中满足 <tt class="REPLACEABLE"><i>expression</i></tt> 不为 NULL 的行数。</td></tr>
+<tr><td><a name="AEN13510"></a> <code class="FUNCTION">every(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">bool</tt></td><td><tt class="TYPE">bool</tt></td><td>等效于 <code class="FUNCTION">bool_and</code></td></tr>
+<tr><td><code class="FUNCTION">max(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td>任意数组、数值、字符串、日期/时间类型</td><td>和参数数据类型相同</td><td>所有输入行中 <tt class="REPLACEABLE"><i>expression</i></tt> 的最大值</td></tr>
+<tr><td><code class="FUNCTION">min(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td>任意数组、数值、字符串、日期/时间类型</td><td>和参数数据类型相同</td><td>所有输入行中 <tt class="REPLACEABLE"><i>expression</i></tt> 的最小值</td></tr>
+<tr><td><code class="FUNCTION">sum(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">real</tt>, <tt class="TYPE">double precision</tt>, <tt class="TYPE">numeric</tt>, <tt class="TYPE">interval</tt></td><td>对于 <tt class="TYPE">smallint</tt> 或 <tt class="TYPE">int</tt> 输入，输出类型为 <tt class="TYPE">bigint</tt> 。对于 <tt class="TYPE">bigint</tt> 输入，输出类型为 <tt class="TYPE">numeric</tt> ，对于浮点数输入，输出类型为 <tt class="TYPE">double precision</tt> 。否则和输入数据类型相同。</td><td>所有输入行的 <tt class="REPLACEABLE"><i>expression</i></tt> 总和。</td></tr>
+</tbody>
+</table>
+</div>
+<p>请注意，除了 <code class="FUNCTION">count</code> 以外，这些函数在没有输入行时返回 NULL 。尤其要指出的是 <code class="FUNCTION">sum</code> 函数在没有输入行时返回 NULL ，而不是零。必要时可以用 <code class="FUNCTION">coalesce</code> 把 NULL 替换成零。</p>
+<div class="NOTE">
+<blockquote class="NOTE"><a name="AEN13562"></a><a name="AEN13564"></a>
+<p><b>【注意】</b><code class="FUNCTION">bool_and</code> 和 <code class="FUNCTION">bool_or</code> 布尔聚集对应标准的 SQL 聚集 <code class="FUNCTION">every</code> 和 <code class="FUNCTION">any</code> 或 <code class="FUNCTION">some</code> 。对于 <code class="FUNCTION">any</code> 和 <code class="FUNCTION">some</code> ，标准语法里面似乎有些内置的歧义：</p>
+<pre class="PROGRAMLISTING">SELECT b1 = ANY((SELECT b2 FROM t2 ...)) FROM t1 ...;</pre>
+<p>这里的 <code class="FUNCTION">ANY</code> 既可以被认为是引出一个子查询，也可以被认为是一个聚集(如果查询表达式返回1行的话)。因此标准的名字无法用于这些聚集。</p>
+</blockquote>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>习惯了其它 SQL 数据库管理系统的用户可能被用于全表计算的 <code class="FUNCTION">count</code> 的性能(之慢)惊住了。一个类似下面这样的查询：</p>
+<pre class="PROGRAMLISTING">SELECT count(*) FROM sometable;</pre>
+<p>将会被 PostgreSQL 用全表扫描执行。</p>
+</blockquote>
+</div>
+<p><a href="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">表9-38</a>展示了用于统计分析的聚集函数。单独列出这些函数仅仅是为了避免和那些经常使用的聚集函数混在一起而已。"描述"列中的 <tt class="REPLACEABLE"><i>N</i></tt> 表示所有输入行中使得输入表达式不为 NULL 的行数。总的来说，如果计算本身变得没有意义，那么返回值将是 NULL 。例如当 <tt class="REPLACEABLE"><i>N</i></tt> 为零的时候。</p>
+<a name="AEN13585"></a><a name="AEN13587"></a>
+<div class="TABLE"><a name="FUNCTIONS-AGGREGATE-STATISTICS-TABLE"></a>
+<p><b>表9-38. 统计聚集函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>函数</th><th>参数类型</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><a name="AEN13601"></a> <code class="FUNCTION">corr(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td>相关系数</td></tr>
+<tr><td><a name="AEN13613"></a> <code class="FUNCTION">covar_pop(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td>总体协方差</td></tr>
+<tr><td><a name="AEN13626"></a> <code class="FUNCTION">covar_samp(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td>样本协方差</td></tr>
+<tr><td><code class="FUNCTION">regr_avgx(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td>自变量的平均值(<tt class="LITERAL">sum(<tt class="REPLACEABLE"><i>X</i></tt>)/<tt class="REPLACEABLE"><i>N</i></tt></tt>)</td></tr>
+<tr><td><code class="FUNCTION">regr_avgy(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td>因变量的平均值(<tt class="LITERAL">sum(<tt class="REPLACEABLE"><i>Y</i></tt>)/<tt class="REPLACEABLE"><i>N</i></tt></tt>)</td></tr>
+<tr><td><code class="FUNCTION">regr_count(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">bigint</tt></td><td>	两个表达式都不为 NULL 的输入行数</td></tr>
+<tr><td><a name="AEN13675"></a> <code class="FUNCTION">regr_intercept(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td>根据所有输入的点(<tt class="REPLACEABLE"><i>X</i></tt>, <tt class="REPLACEABLE"><i>Y</i></tt>)按照最小二乘法拟合成一个线性方程，然后返回该直线的 Y 轴截距</td></tr>
+<tr><td><code class="FUNCTION">regr_r2(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td>相关系数的平方</td></tr>
+<tr><td><a name="AEN13699"></a> <code class="FUNCTION">regr_slope(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td>根据所有输入的点(<tt class="REPLACEABLE"><i>X</i></tt>, <tt class="REPLACEABLE"><i>Y</i></tt>)按照最小二乘法拟合成一个线性方程，然后返回该直线的斜率。</td></tr>
+<tr><td><code class="FUNCTION">regr_sxx(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td><tt class="LITERAL">sum(<tt class="REPLACEABLE"><i>X</i></tt>^2) - sum(<tt class="REPLACEABLE"><i>X</i></tt>)^2/<tt class="REPLACEABLE"><i>N</i></tt></tt> ("sum of squares" of the independent variable)</td></tr>
+<tr><td><code class="FUNCTION">regr_sxy(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td><tt class="LITERAL">sum(<tt class="REPLACEABLE"><i>X</i></tt>*<tt class="REPLACEABLE"><i>Y</i></tt>) - sum(<tt class="REPLACEABLE"><i>X</i></tt>) * sum(<tt class="REPLACEABLE"><i>Y</i></tt>)/<tt class="REPLACEABLE"><i>N</i></tt></tt> ("sum of products" of independent times dependent variable)</td></tr>
+<tr><td><code class="FUNCTION">regr_syy(<tt class="REPLACEABLE"><i>Y</i></tt>, <tt class="REPLACEABLE"><i>X</i></tt>)</code></td><td><tt class="TYPE">double precision</tt></td><td><tt class="TYPE">double precision</tt></td><td><tt class="LITERAL">sum(<tt class="REPLACEABLE"><i>Y</i></tt>^2) - sum(<tt class="REPLACEABLE"><i>Y</i></tt>)^2/<tt class="REPLACEABLE"><i>N</i></tt></tt> ("sum of squares" of the dependent variable)</td></tr>
+<tr><td><a name="AEN13760"></a> <code class="FUNCTION">stddev(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">real</tt>, <tt class="TYPE">double precision</tt>, <tt class="TYPE">numeric</tt></td><td>对于浮点类型的输入返回 <tt class="TYPE">double precision</tt> ，其它输入返回 <tt class="TYPE">numeric</tt></td><td><code class="FUNCTION">stddev_samp</code> 的别名(历史原因)</td></tr>
+<tr><td><a name="AEN13778"></a> <code class="FUNCTION">stddev_pop(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">real</tt>, <tt class="TYPE">double precision</tt>, <tt class="TYPE">numeric</tt></td><td>对于浮点类型的输入返回 <tt class="TYPE">double precision</tt> ，其它输入返回 <tt class="TYPE">numeric</tt></td><td>总体标准差</td></tr>
+<tr><td><a name="AEN13796"></a> <code class="FUNCTION">stddev_samp(<tt class="REPLACEABLE"><i>expression</i></tt>)</code></td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">real</tt>, <tt class="TYPE">double precision</tt>, <tt class="TYPE">numeric</tt></td><td>对于浮点类型的输入返回 <tt class="TYPE">double precision</tt> ，其它输入返回 <tt class="TYPE">numeric</tt></td><td>样本标准差</td></tr>
+<tr><td><a name="AEN13814"></a> <code class="FUNCTION">variance</code>(<tt class="REPLACEABLE"><i>expression</i></tt>)</td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">real</tt>, <tt class="TYPE">double precision</tt>, <tt class="TYPE">numeric</tt></td><td>对于浮点类型的输入返回 <tt class="TYPE">double precision</tt> ，其它输入返回 <tt class="TYPE">numeric</tt></td><td><code class="FUNCTION">var_samp</code> 的别名(历史原因)</td></tr>
+<tr><td><a name="AEN13832"></a> <code class="FUNCTION">var_pop</code>(<tt class="REPLACEABLE"><i>expression</i></tt>)</td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">real</tt>, <tt class="TYPE">double precision</tt>, <tt class="TYPE">numeric</tt></td><td>对于浮点类型的输入返回 <tt class="TYPE">double precision</tt> ，其它输入返回 <tt class="TYPE">numeric</tt></td><td>总体方差(总体标准差的平方)</td></tr>
+<tr><td><a name="AEN13850"></a> <code class="FUNCTION">var_samp</code>(<tt class="REPLACEABLE"><i>expression</i></tt>)</td><td><tt class="TYPE">smallint</tt>, <tt class="TYPE">int</tt>, <tt class="TYPE">bigint</tt>, <tt class="TYPE">real</tt>, <tt class="TYPE">double precision</tt>, <tt class="TYPE">numeric</tt></td><td>对于浮点类型的输入返回 <tt class="TYPE">double precision</tt> ，其它输入返回 <tt class="TYPE">numeric</tt></td><td>样本方差(样本标准差的平方)</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-array.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="functions-subquery.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">数组函数和操作符</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">子查询表达式</td></tr>
+</table>
+</div>
+</body></html>

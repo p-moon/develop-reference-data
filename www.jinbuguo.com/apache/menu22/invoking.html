@@ -1,0 +1,66 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="./style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="./style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="./style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>启动Apache － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page">
+<div id="page-header"><p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="./images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="./images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="./index.html">版本2.2</a></div>
+
+<div id="translation-info">　　 <a href="./translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>启动Apache</h1>
+
+
+    <p>在Windows NT/2000/XP/2003操作系统中，Apache一般以服务方式运行，或者在Windows 95/98/ME中以控制台程序方式运行。详情请参见以<a href="platform/windows.html#winsvc">服务方式运行Apache</a>和<a href="platform/windows.html#wincons">以控制台程序方式运行Apache</a>。</p>
+
+    <p>在Unix操作系统中，<code class="program"><a href="./programs/httpd.html">httpd</a></code>程序作为一个守护进程运行，在后台不断处理请求。本文档描述了如何调用<code class="program"><a href="./programs/httpd.html">httpd</a></code> 。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="startup" id="startup">Apache是怎样启动的</a></h2>
+
+    <p>如果配置文件中<code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code>定义的是默认的80端口(或1024以下)，那么启动Apache将需要root权限以将它绑定在特权端口上。一旦服务器开始启动并完成了一些诸如打开日志文件之类的准备操作，它将创建很多<em>子进程</em>来完成一些诸如侦听和回应客户端请求的工作。<code>httpd</code>主进程仍然以root用户的权限运行，而它的子进程将以一个较低权限的用户运行。这将由你选择的<a href="mpm.html">多路处理模块</a>进行控制。</p>
+
+    <p>调用<code class="program"><a href="./programs/httpd.html">httpd</a></code>可执行文件的推荐方法是使用<code class="program"><a href="./programs/apachectl.html">apachectl</a></code>控制脚本。此脚本设置了在某些操作系统中正常运行<code class="program"><a href="./programs/httpd.html">httpd</a></code>所必需的环境变量，然后调用<code class="program"><a href="./programs/httpd.html">httpd</a></code>二进制文件。<code class="program"><a href="./programs/apachectl.html">apachectl</a></code>会传递命令行的所有参数，因此所有用于<code class="program"><a href="./programs/httpd.html">httpd</a></code>的选项多半也可以用于<code class="program"><a href="./programs/apachectl.html">apachectl</a></code> 。你可以直接修改<code class="program"><a href="./programs/apachectl.html">apachectl</a></code>脚本，改变首部的<code>HTTPD</code>变量使之指向<code class="program"><a href="./programs/httpd.html">httpd</a></code>可执行文件的正确位置，也可以设置任意的命令行参数，使之<em>总是</em>有效。</p>
+
+    <p><code>httpd</code>被调用后第一件要做的事情就是找到并读取<a href="configuring.html">配置文件</a><code>httpd.conf</code> 。此文件的位置是在编译时设定的，但也可以象下面这样在运行时用 <code>-f</code> 选项来指定：</p>
+
+	<div class="example"><p><code>/usr/local/apache2/bin/apachectl -f /usr/local/apache2/conf/httpd.conf</code></p></div>
+
+    <p>如果启动过程一切正常，服务器将与终端分离并几乎立即出现命令行提示符。这表示服务器已经启动并开始运行。然后你就可以用你的浏览器去连接你的服务器来查看<code class="directive"><a href="./mod/core.html#documentroot">DocumentRoot</a></code>目录下的测试文档及其页面链接里的其它文档的本地副本。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="errors" id="errors">启动时发生错误</a></h2>
+
+    <p>如果Apache在启动过程中发生了致命错误，它将在退出前把描述这个错误的信息显示在终端上或者写入到<code class="directive"><a href="./mod/core.html#errorlog">ErrorLog</a></code>中。一个最常产生的错误信息是"<code>Unable to bind to Port ...</code>"，这主要由以下原因造成：</p>
+
+    <ul>
+      <li>想由一个特权端口启动服务但没有以root用户运行</li>
+
+      <li>启动服务时已经有另外的Apache实例在运行或其他的web服务器已经绑定了同样的端口</li>
+    </ul>
+
+    <p>更多问题的解决办法，请参见<a href="faq/index.html">常见问题</a>。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="boot" id="boot">随系统启动时启动</a></h2>
+
+    <p>如果你希望你的服务器在系统重启后仍保持运行状态，你应该把<code class="program"><a href="./programs/apachectl.html">apachectl</a></code>的调用加入到你的系统启动文件中(通常为<code>rc.local</code>文件或<code>rc.N</code>目录下的某一文件)。这将会以root权限启动Apache。当然，在此之前，你必须保证你的服务器已经完成了安全和访问权限的设定。</p>
+
+    <p><code class="program"><a href="./programs/apachectl.html">apachectl</a></code>脚本被设计为可以用作SysV初始化脚本，它接受<code>start</code>、<code>restart</code>、<code>stop</code>参数，并把它们翻译为<code class="program"><a href="./programs/httpd.html">httpd</a></code>对应的信号，所以通常都可以将<code class="program"><a href="./programs/apachectl.html">apachectl</a></code>连接到适当的初始目录，但是需要检查你的系统对此的精确要求。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="info" id="info">额外信息</a></h2>
+
+    <p>关于<code class="program"><a href="./programs/httpd.html">httpd</a></code>和<code class="program"><a href="./programs/apachectl.html">apachectl</a></code>以及其他相关支持程序的命令行选项的详细信息请参见<a href="programs/index.html">服务器和支持程序</a>页面。其中还包括所有的随Apache发行包发布的<a href="mod/index.html">模块</a>和它们提供的<a href="mod/directives.html">指令</a>的文档。</p>
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="./translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p></div>
+</body></html>

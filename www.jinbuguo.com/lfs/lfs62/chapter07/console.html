@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8">
+  <title>7.6. 配置 Linux 控制台</title>
+  <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css">
+  <link rel="stylesheet" href="../stylesheets/lfs-print.css"
+ type="text/css" media="print">
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="lfs" class="6.2">
+<div class="navheader">
+<div class="headertitles">
+<h4>Linux From Scratch - 版本 6.2</h4>
+<h3>第七章 配置系统启动脚本</h3>
+</div>
+<ul class="headerlinks">
+  <li class="prev"> <a accesskey="p" href="setclock.html"
+ title="配置 setclock 脚本">后退</a>
+    <p>配置 setclock 脚本</p>
+  </li>
+  <li class="next"> <a accesskey="n" href="sysklogd.html"
+ title="配置 sysklogd 脚本">前进</a>
+    <p>配置 sysklogd 脚本</p>
+  </li>
+  <li class="up"><a accesskey="u" href="chapter07.html"
+ title="第七章 配置系统启动脚本">上一级</a></li>
+  <li class="home"><a accesskey="h" href="../index.html"
+ title="Linux From Scratch - 版本 6.2">首页</a></li>
+</ul>
+</div>
+<div class="sect1">
+<div class="titlepage">
+<h1 class="sect1">7.6. 配置 Linux 控制台</h1>
+</div>
+<p>本节讨论如何配置 <span><strong class="command">console</strong></span>
+初始化脚本来设置键盘映射表和控制台字体。如果您不使用非 ASCII 字符(英镑和欧元符号就是非 ASCII
+字符的例子)，并且是美式键盘，可以跳过这一节，没有配置文件的话，<span><strong class="command">console</strong></span>
+初始化脚本不会做任何事情。 </p>
+<p> <span><strong class="command">console</strong></span> 使用 <tt
+ class="filename">/etc/sysconfig/console</tt>
+作为配置文件以决定使用什么键盘映射表和屏幕字体，各种特定语言的 HOWTO(参见 <a
+ href="http://www.tldp.org/HOWTO/HOWTO-INDEX/other-lang.html"><i>http://www.tldp.org/HOWTO/HOWTO-INDEX/other-lang.html</i></a>)
+能帮助您完成配置。LFS-Bootscripts 软件包安装了一个已为一些国家配置好了的预制的 <tt class="filename">/etc/sysconfig/console</tt>
+文件，如果您所在的国家已经被支持了，您可以去掉相应部分的注释。如果您还有疑问，请在 <tt class="filename">/usr/share/kbd</tt>
+目录下查找正确的键盘映射表和屏幕字体。 阅读 <tt class="filename">loadkeys(1)</tt> 和 <tt
+ class="filename">setfont(8)</tt> 的手册，来确定这些程序的正确参数。<br>
+</p>
+<p><tt class="filename">/etc/sysconfig/console 文件中可能包含这样格式的行：</tt>VARIABLE
+="value"。变量如下： </p>
+<div class="variablelist">
+<dl>
+  <dt> <span class="term">KEYMAP</span> </dt>
+  <dd>
+    <p>这个变量指定 <span><strong class="command">loadkeys</strong></span>
+程序的参数。典型的像键盘映射的名字 "es"。 如果不设定参数，bootscript 就不会运行 <span><strong
+ class="command">loadkeys</strong></span> 程序, 而是使用默认的内核键盘映射。</p>
+  </dd>
+  <dt> <span class="term">KEYMAP_CORRECTIONS</span> </dt>
+  <dd>
+    <p>这个参数很少用到，它可被用来指定再次调用<span><strong class="command">loadkeys</strong></span>
+程序的参数。对于提供的键盘映射不是很领人满意时，做些调整。 例如，我们要把一些正常情况下不会出现的欧洲字符包含到在键盘映射中,
+那我们就需要把这个参数设为 “<span class="quote">euro2</span>”。</p>
+  </dd>
+  <dt> <span class="term">FONT</span> </dt>
+  <dd>
+    <p>这个变量是为 <span><strong class="command">setfont</strong></span>
+程序设定的. 通常情况下它要包括font的名字, “<span class="quote">-m</span>”,
+以及需要载入的application character map名. 比方., 要调用 “<span class="quote">lat1-16</span>”
+font 以及 “<span class="quote">8859-1</span>” application character map ,
+就把这个参数设为 “<span class="quote">lat1-16 -m 8859-1</span>”.
+如果这个变量没有被设定，bootscript会加载默认的 <span><strong class="command">setfont</strong></span>
+程序, 以及默认的一大堆</p>
+  </dd>
+  <dt> <span class="term">UNICODE</span> </dt>
+  <dd>
+    <p> 此参数设成“<span class="quote">1</span>”, “<span class="quote">yes</span>”
+或 “<span class="quote">true</span>” 会把控制台改为UTF-8模式。在 UTF-8 的 locale
+下比较有用，其他情况都是有害的。<br>
+    </p>
+  </dd>
+  <dt> <span class="term">LEGACY_CHARSET</span> </dt>
+  <dd>
+    <p>对于许多的键盘布局，在 Kbd 包中没有提供 Unicode 键盘映射。如果这个变量被设置为一个有效的非 UTF-8
+编码的键盘映射，<span><strong class="command">console</strong></span>
+bootscript 会把它转换成 UTF-8 编码。注意，无效键（例如，键位本身不能产生字符，而是对下一个键产生的字符限制
+;在标准美国键盘中没有无效键）和组合键（例如，为了产生字符按下 Ctrl+. A E）没有相应的内核 patch 在 UTF-8
+模式下是不能工作的。这个变量只用在 UTF-8 模式下。</p>
+  </dd>
+  <dt> <span class="term">BROKEN_COMPOSE</span> </dt>
+  <dd>
+    <p>如果你应用第八章中的内核 patch ，把它设为 "<span class="quote">0</span>"。你不得不在
+"-m" 开关之后，添加需要的字符集到 FONT 变量中。这个变量只用在 UTF-8 模式下。 <span class="term"></span></p>
+  </dd>
+</dl>
+</div>
+<p>对于把键盘映射直接编译进内核的支持，在内核中已经去掉了。因为这样会导致有一些错误的结果。</p>
+<p>一些例子：</p>
+<div class="itemizedlist">
+<ul>
+  <li>
+    <p>对于一个非 Unicode 的安装，只有 KEYMAP 和 FONT 变量是必需的。例如，在波兰语安装中，应当使用：</p>
+    <pre class="userinput"><kbd class="command">cat &gt; /etc/sysconfig/console &lt;&lt; "EOF"<br><tt
+ class="literal"># Begin /etc/sysconfig/console<br><br>KEYMAP="pl2"<br>FONT="lat2a-16 -m 8859-2"<br><br># End /etc/sysconfig/console</tt>
+EOF</kbd></pre>
+  </li>
+  <li>
+    <p>正如上面的方法，有时需要对对提供的键盘映射进行稍微的调整。下面的例子在德国键盘映射中添加欧洲符号：</p>
+    <pre class="userinput"><kbd class="command">cat &gt; /etc/sysconfig/console &lt;&lt; "EOF"<br><tt
+ class="literal"># Begin /etc/sysconfig/console<br><br>KEYMAP="de-latin1"<br>KEYMAP_CORRECTIONS="euro2"<br>FONT="lat0-16 -m 8859-15"<br><br># End /etc/sysconfig/console</tt>
+EOF</kbd></pre>
+  </li>
+  <li>
+    <p>下面是一个保加利亚的 Unicode 例子，存在一个 UTF-8 键盘映射，并且没有定义无效键和组合键规则：</p>
+    <pre class="userinput"><kbd class="command">cat &gt; /etc/sysconfig/console &lt;&lt; "EOF"<br><tt
+ class="literal"># Begin /etc/sysconfig/console<br><br>UNICODE="1"<br>KEYMAP="bg_bds-utf8"<br>FONT="LatArCyrHeb-16"<br><br># End /etc/sysconfig/console</tt>
+EOF</kbd></pre>
+  </li>
+  <li>
+    <p>由于在前面的例子中使用了 512-字符 的 LatArCyrHeb-16 字体，在控制台上不能再显示明亮的颜色，除非使用
+framebuffer。如果你想不利用 framebuffer 来显示明亮的颜色，并使用本语种字符，像下面的说明，通过使用相应语言的
+256-字符 字体，这仍然是可能实现的。</p>
+    <pre class="userinput"><kbd class="command">cat &gt; /etc/sysconfig/console &lt;&lt; "EOF"<br><tt
+ class="literal"># Begin /etc/sysconfig/console<br><br>UNICODE="1"<br>KEYMAP="bg_bds-utf8"<br>FONT="cyr-sun16"<br><br># End /etc/sysconfig/console</tt>
+EOF</kbd></pre>
+  </li>
+  <li>
+    <p>下面的例子解释了键盘映射从 ISO-8859-15 到 UTF-8 的自动转变和在 Unicode 模式下打开无效键：</p>
+    <pre class="userinput"><kbd class="command">cat &gt; /etc/sysconfig/console &lt;&lt; "EOF"<br><tt
+ class="literal"># Begin /etc/sysconfig/console<br><br>UNICODE="1"<br>KEYMAP="de-latin1"<br>KEYMAP_CORRECTIONS="euro2"<br>LEGACY_CHARSET="iso-8859-15"<br>BROKEN_COMPOSE="0"<br>FONT="LatArCyrHeb-16 -m 8859-15"<br><br># End /etc/sysconfig/console</tt>
+EOF</kbd></pre>
+  </li>
+  <li>
+    <p>对于中文、日文、韩文等一些语言，Linux 的控制台不能显示需要的字符。这些语种的用户应当安装 X Window
+系统，包含所需字符集的字体，以及合适的输入法（例如，SCIM 支持很多语言）。</p>
+  </li>
+</ul>
+</div>
+<div class="note">
+<div class="admonhead"> <img alt="[Note]" src="../images/note.png">
+<h3 class="admontitle">注意</h3>
+</div>
+<div class="admonbody">
+<p><tt class="filename">/etc/sysconfig/console</tt> 文件只能控制 Linux 文本控制台。在
+X Windows、SSH 会话以及串口控制台中，设置键盘布局和终端字体是没有用的。</p>
+</div>
+</div>
+</div>
+<div class="navfooter">
+<ul>
+  <li class="prev"> <a accesskey="p" href="setclock.html"
+ title="配置 setclock 脚本">后退</a>
+    <p>配置 setclock 脚本</p>
+  </li>
+  <li class="next"> <a accesskey="n" href="sysklogd.html"
+ title="配置 sysklogd 脚本">前进</a>
+    <p>配置 sysklogd 脚本</p>
+  </li>
+  <li class="up"><a accesskey="u" href="chapter07.html"
+ title="第七章 配置系统启动脚本">上一级</a></li>
+  <li class="home"><a accesskey="h" href="../index.html"
+ title="Linux From Scratch - 版本 6.2">首页</a>. </li>
+</ul>
+</div>
+</body></html>

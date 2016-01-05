@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.12. Binutils-2.16.1 - 第二遍</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="gcc-pass2.html" title="GCC-4.0.3 - 第二遍">后退</a>
+          <p>GCC-4.0.3 - 第二遍</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="ncurses.html" title="Ncurses-5.5">前进</a>
+          <p>Ncurses-5.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.12. Binutils-2.16.1 - 第二遍</h1>
+      </div>
+      <div class="package">
+        <p>Binutils 是一组开发工具，包括连接器、汇编器和其他用于目标文件和档案的工具。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">1.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">154 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.12.1. 重新安装 Binutils</h2>
+        </div>
+        <p>再次为编译创建一个单独目录：</p>
+        <pre class="userinput"><kbd class="command">mkdir -v ../binutils-build
+cd ../binutils-build</kbd></pre>
+        <p>为编译 Binutils 做准备：</p>
+        <pre class="userinput"><kbd class="command">../binutils-2.16.1/configure --prefix=/tools \
+    --disable-nls --with-lib-path=/tools/lib</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>新配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--with-lib-path=/tools/lib</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项指示 configure 脚本在 Binutils 编译过程中将传递给连接器的库搜索路径设为 <tt class="filename">/tools/lib</tt> ，以防止连接器搜索宿主系统的库目录。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>现在编译完成了，早先我们谈到过，本章中的临时工具的测试程序并不是必须运行的，如果您要运行 Binutils 的测试程序，请输入下面的命令：</p>
+        <pre class="userinput"><kbd class="command">make check</kbd></pre>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <p>现在，为下一章的"再次调整工具链"阶段配置连接器：</p>
+        <pre class="userinput"><kbd class="command">make -C ld clean
+make -C ld LIB_PATH=/usr/lib:/lib
+cp -v ld/ld-new /tools/bin</kbd></pre>
+      </div>
+      <div class="content">
+        <p>关于这个软件包的详细资料位于<a href="../chapter06/binutils.html#contents-binutils" title="6.11.2. Binutils 的内容">节 6.11.2, Binutils 的内容</a></p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="gcc-pass2.html" title="GCC-4.0.3 - 第二遍">后退</a>
+          <p>GCC-4.0.3 - 第二遍</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="ncurses.html" title="Ncurses-5.5">前进</a>
+          <p>Ncurses-5.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

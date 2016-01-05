@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_dump</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="app-pgconfig.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="app-pgconfig.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-pg-dumpall.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-pg-dumpall.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-PGDUMP"></a>pg_dump</h1>
+<div class="REFNAMEDIV"><a name="AEN56936"></a><h2>名称</h2>pg_dump&nbsp;--&nbsp;将一个数据库转储到一个脚本文件或者其它归档文件中</div>
+<a name="AEN56940"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN56942"></a><h2>语法</h2>
+<p><tt class="COMMAND">pg_dump</tt> [<tt class="REPLACEABLE"><i>option</i></tt>...] [<tt class="REPLACEABLE"><i>dbname</i></tt>]</p>
+</div>
+<div class="REFSECT1"><a name="PG-DUMP-DESCRIPTION"></a><h2>描述</h2>
+<p><span class="APPLICATION">pg_dump</span> 是一个用于备份数据库的工具。它甚至可以在数据库正在使用的时候进行完整一致的备份。<span class="APPLICATION">pg_dump</span> 并不阻塞其它用户对数据库的访问(读或者写)。</p>
+<p>转储格式可以是一个脚本或者归档文件。脚本转储的格式是纯文本，它包含许多 SQL 命令，这些 SQL 命令可以用于重建该数据库并将之恢复到保存成脚本的时候的状态。使用 <a href="app-psql.html"><span class="APPLICATION">psql</span></a> 从这样的脚本中恢复。它们甚至可以用于在其它机器甚至是其它硬件体系的机器上重建该数据库，通过对脚本进行一些修改，甚至可以在其它 SQL 数据库产品上重建该数据库。</p>
+<p>归档文件格式必须和 <a href="app-pgrestore.html">pg_restore</a> 一起使用重建数据库。它们允许 <span class="APPLICATION">pg_restore</span> 对恢复什么东西进行选择，或者甚至是在恢复之前对需要恢复的条目进行重新排序。归档文件也是设计成可以跨平台移植的。</p>
+<p>如果一种候选文件格式和 <span class="APPLICATION">pg_restore</span> 结合，那么 <span class="APPLICATION">pg_dump</span> 就能提供一种灵活的归档和传输机制。<span class="APPLICATION">pg_dump</span> 可以用于备份整个数据库，然后就可以使用 <span class="APPLICATION">pg_restore</span> 检查这个归档和/或选择要恢复的数据库部分。最灵活的输出文件格式是"custom"(自定义)格式(<tt class="OPTION">-Fc</tt>)。它允许对归档元素进行选取和重新排列，并且缺省时是压缩的。<span class="APPLICATION">tar</span> 格式(<tt class="OPTION">-Ft</tt>)不是压缩的并且在加载的时候不可能重排列，不过它也很灵活；还有，它可以用标准 Unix 工具(比如 <tt class="COMMAND">tar</tt>)进行处理。</p>
+<p>在运行 <span class="APPLICATION">pg_dump</span> 的时候，应该检查输出，看看是否有任何警告存在(在标准错误上打印)，特别是下面列出的限制。</p>
+</div>
+<div class="REFSECT1"><a name="PG-DUMP-OPTIONS"></a><h2>选项</h2>
+<p>下面的命令行参数控制输出的内容和格式。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>dbname</i></tt></dt>
+<dd><p>将要转储的数据库名。如果没有声明这个参数，那么使用环境变量 <tt class="ENVAR">PGDATABASE</tt> 。如果那个环境变量也没声明，那么使用发起连接的用户名。</p></dd>
+<dt><tt class="OPTION">-a</tt><br><tt class="OPTION">--data-only</tt></dt>
+<dd><p>只输出数据，不输出模式(数据定义)。</p>
+<p>这个选项只是对纯文本格式有意义。对于归档格式，可以在调用 <tt class="COMMAND">pg_restore</tt> 的时候声明该选项。</p></dd>
+<dt><tt class="OPTION">-b</tt><br><tt class="OPTION">--blobs</tt></dt>
+<dd><p>在转储中包含大对象。除非指定了 <tt class="OPTION">--schema</tt>, <tt class="OPTION">--table</tt>, <tt class="OPTION">--schema-only</tt> 开关，否则这是默认行为。因此 <tt class="OPTION">-b</tt> 开关仅用于在选择性转储的时候添加大对象。</p></dd>
+<dt><tt class="OPTION">-c</tt><br><tt class="OPTION">--clean</tt></dt>
+<dd><p>输出在创建数据库创建命令之前先清理(drop)该数据库对象的命令。</p>
+<p>这个选项只是对纯文本格式有意义。对于归档格式，可以在调用 <tt class="COMMAND">pg_restore</tt> 的时候声明该选项。</p></dd>
+<dt><tt class="OPTION">-C</tt><br><tt class="OPTION">--create</tt></dt>
+<dd><p>以一条创建该数据库本身并且与这个数据库连接命令开头进行输出。如果是这种形式的脚本，那么你在运行脚本之前和哪个数据库连接就不重要了。</p>
+<p>这个选项只对纯文本格式有意义。对于归档格式，可以在调用 <tt class="COMMAND">pg_restore</tt> 的时候声明该选项。</p></dd>
+<dt><tt class="OPTION">-d</tt><br><tt class="OPTION">--inserts</tt></dt>
+<dd><p>将数据输出为的 <tt class="COMMAND">INSERT</tt> 命令(而不是 <tt class="COMMAND">COPY</tt>)。这样会导致恢复非常缓慢。这个选项主要用于制作那种可以用于其它非 PostgreSQL 数据库的转储。由于这个选项为每条记录都生成一条命令，因此如果其中某一行命令出错，那么将仅有该行数据丢失，而不是整个表的数据丢失。请注意，如果你重新排列了字段顺序，那么恢复可能会完全失败。<tt class="OPTION">-D</tt> 更安全，但是也更慢。</p></dd>
+<dt><tt class="OPTION">-D</tt><br><tt class="OPTION">--column-inserts</tt><br><tt class="OPTION">--attribute-inserts</tt></dt>
+<dd><p>把数据转储为带有明确字段名的 <tt class="COMMAND">INSERT</tt> 命令(<tt class="LITERAL">INSERT INTO <tt class="REPLACEABLE"><i>table</i></tt> (<tt class="REPLACEABLE"><i>column</i></tt>, ...) VALUES ...</tt>)。这样会导致恢复非常缓慢，它主要用于制作那种可以用于其它非 PostgreSQL 数据库的转储。由于这个选项为每条记录都生成一条命令，因此如果其中某一行命令出错，那么将仅有该行数据丢失，而不是整个表的数据丢失。</p></dd>
+<dt><tt class="OPTION">-E <tt class="REPLACEABLE"><i>encoding</i></tt></tt><br><tt class="OPTION">--encoding=<tt class="REPLACEABLE"><i>encoding</i></tt></tt></dt>
+<dd><p>以指定的字符集编码创建转储。缺省时，转储是按照数据库编码创建的。另外一个获取同样结果的方法是将 <tt class="ENVAR">PGCLIENTENCODING</tt> 环境变量设置为期望的转储编码。</p></dd>
+<dt><tt class="OPTION">-f <tt class="REPLACEABLE"><i>file</i></tt></tt><br><tt class="OPTION">--file=<tt class="REPLACEABLE"><i>file</i></tt></tt></dt>
+<dd><p>把输出发往指定的文件。如果忽略，则使用标准输出。</p></dd>
+<dt><tt class="OPTION">-F <tt class="REPLACEABLE"><i>format</i></tt></tt><br><tt class="OPTION">--format=<tt class="REPLACEABLE"><i>format</i></tt></tt></dt>
+<dd><p>选择输出的格式。<tt class="REPLACEABLE"><i>format</i></tt> 可以是下列之一：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">p</tt><br><tt class="LITERAL">plain</tt></dt>
+<dd><p>纯文本 SQL 脚本文件(缺省)</p></dd>
+<dt><tt class="LITERAL">c</tt><br><tt class="LITERAL">custom</tt></dt>
+<dd><p>适合输入到 <span class="APPLICATION">pg_restore</span> 里的自定义归档。这是最灵活的格式，它允许对加载的数据和对象定义进行重新排列。这个格式缺省的时候是压缩的。</p></dd>
+<dt><tt class="LITERAL">t</tt><br><tt class="LITERAL">tar</tt></dt>
+<dd><p>适合输入到 <span class="APPLICATION">pg_restore</span> 里的 <tt class="COMMAND">tar</tt> 归档文件。使用这个归档允许在恢复数据库时重新排序和/或把数据库对象排除在外。同时也可以在恢复的时候限制对哪些数据进行恢复。</p></dd>
+</dl>
+</div></dd>
+<dt><tt class="OPTION">-i</tt><br><tt class="OPTION">--ignore-version</tt></dt>
+<dd><p>忽略在 <span class="APPLICATION">pg_dump</span> 和数据库服务器之间的版本差别。</p>
+<p><span class="APPLICATION">pg_dump</span> 可以处理来自以前版本的 PostgreSQL 数据库转储，但是太老的版本则不被支持了(目前是支持到 7.0)。但是 <span class="APPLICATION">pg_dump</span> 对于来自更新版本的转储则无法处理。仅在你需要跳过版本检查时才使用这个选项(而且如果 <span class="APPLICATION">pg_dump</span> 失效，别说我没警告过你)。</p></dd>
+<dt><tt class="OPTION">-n <tt class="REPLACEABLE"><i>schema</i></tt></tt><br><tt class="OPTION">--schema=<tt class="REPLACEABLE"><i>schema</i></tt></tt></dt>
+<dd><p>只转储匹配 <tt class="REPLACEABLE"><i>schema</i></tt> 的模式内容，包括模式本身以及其中包含的对象。如果没有声明这个选项，所有目标数据库中的非系统模式都会被转储出来。可以使用多个 <tt class="OPTION">-n</tt> 选项指定多个模式。同样，<tt class="REPLACEABLE"><i>schema</i></tt> 参数将按照 <span class="APPLICATION">psql</span> 的 <tt class="LITERAL">\d</tt> 命令的规则(参见<a href="app-psql.html#APP-PSQL-PATTERNS"><i>匹配模式</i></a>)被解释为匹配模式，因此可以使用通配符匹配多个模式。在使用通配符的时候，最好用引号进行界定，以防止 shell 将通配符进行扩展。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>如果指定了 <tt class="OPTION">-n</tt> ，那么 <span class="APPLICATION">pg_dump</span> 将不会转储那些模式所依赖的其他数据库对象。因此，无法保证转储出来的内容一定能够在另一个干净的数据库中恢复成功。</p>
+</blockquote>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>非模式对象(比如大对象)不会在指定 <tt class="OPTION">-n</tt> 的时候被转储出来。你可以使用 <tt class="OPTION">--blobs</tt> 明确要求转储大对象。</p>
+</blockquote>
+</div></dd>
+<dt><tt class="OPTION">-N <tt class="REPLACEABLE"><i>schema</i></tt></tt><br><tt class="OPTION">--exclude-schema=<tt class="REPLACEABLE"><i>schema</i></tt></tt></dt>
+<dd><p>不转储任何匹配 <tt class="REPLACEABLE"><i>schema</i></tt> 的模式内容。模式匹配规则与 <tt class="OPTION">-n</tt> 完全相同。可以指定多个 <tt class="OPTION">-N</tt> 以排除多种匹配的模式。</p>
+<p>如果同时指定了 <tt class="OPTION">-n</tt> 和 <tt class="OPTION">-N</tt> ，那么将只转储匹配 <tt class="OPTION">-n</tt> 但不匹配 <tt class="OPTION">-N</tt> 的模式。如果出现 <tt class="OPTION">-N</tt> 但是不出现 <tt class="OPTION">-n</tt> ，那么匹配 <tt class="OPTION">-N</tt> 的模式将不会被转储。</p></dd>
+<dt><tt class="OPTION">-o</tt><br><tt class="OPTION">--oids</tt></dt>
+<dd><p>作为数据的一部分，为每个表都输出对象标识(OID)。如果你的应用需要 OID 字段的话(比如在外键约束中用到)，那么使用这个选项。否则，不应该使用这个选项。</p></dd>
+<dt><tt class="OPTION">-O</tt><br><tt class="OPTION">--no-owner</tt></dt>
+<dd><p>不把对象的所有权设置为对应源数据库。<span class="APPLICATION">pg_dump</span> 默认发出 <tt class="COMMAND">ALTER OWNER</tt> 或 <tt class="COMMAND">SET SESSION AUTHORIZATION</tt> 语句以设置创建的数据库对象的所有权。如果这些脚本将来没有被超级用户(或者拥有脚本中全部对象的用户)运行的话将会失败。<tt class="OPTION">-O</tt> 选项就是为了让该脚本可以被任何用户恢复并且将脚本中对象的所有权赋予该选项指定的用户。</p>
+<p>这个选项只是对纯文本格式有意义。对于归档格式，在调用 <tt class="COMMAND">pg_restore</tt> 的时候可以声明该选项。</p></dd>
+<dt><tt class="OPTION">-R</tt><br><tt class="OPTION">--no-reconnect</tt></dt>
+<dd><p>这个选项已经过时，但是出于向下兼容的考虑，仍然接受这个选项。</p></dd>
+<dt><tt class="OPTION">-s</tt><br><tt class="OPTION">--schema-only</tt></dt>
+<dd><p>只输出对象定义(模式)，不输出数据。</p></dd>
+<dt><tt class="OPTION">-S <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--superuser=<tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>指定关闭触发器时需要用到的超级用户名。它只有使用了 <tt class="OPTION">--disable-triggers</tt> 的时候才有影响。一般情况下最好不要输入这个参数，而是用超级用户启动生成的脚本。</p></dd>
+<dt><tt class="OPTION">-t <tt class="REPLACEABLE"><i>table</i></tt></tt><br><tt class="OPTION">--table=<tt class="REPLACEABLE"><i>table</i></tt></tt></dt>
+<dd><p>只转储出匹配 <tt class="REPLACEABLE"><i>table</i></tt> 的表、视图、序列。可以使用多个 <tt class="OPTION">-t</tt> 选项匹配多个表。同样，<tt class="REPLACEABLE"><i>table</i></tt> 参数将按照 <span class="APPLICATION">psql</span> 的 <tt class="LITERAL">\d</tt> 命令的规则(参见<a href="app-psql.html#APP-PSQL-PATTERNS"><i>匹配模式</i></a>)被解释为匹配模式，因此可以使用通配符匹配多个模式。在使用通配符的时候，最好用引号进行界定，以防止 shell 将通配符进行扩展。</p>
+<p>使用了 <tt class="OPTION">-t</tt> 之后，<tt class="OPTION">-n</tt> 和 <tt class="OPTION">-N</tt> 选项就失效了。因为被 <tt class="OPTION">-t</tt> 选中的表将无视 <tt class="OPTION">-n</tt> 和 <tt class="OPTION">-N</tt> 选项而被转储，同时除了表之外的其他对象不会被转储。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>如果指定了 <tt class="OPTION">-t</tt> ，那么 <span class="APPLICATION">pg_dump</span> 将不会转储任何选中的表不依赖的其它数据库对象。因此，无法保证转储出来的表能在一个干净的数据库中成功恢复。</p>
+</blockquote>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b><tt class="OPTION">-t</tt> 选项与 PostgreSQL 8.2 之前的版本不兼容。之前的 <tt class="LITERAL">-t tab</tt> 将转储所有名为 <tt class="LITERAL">tab</tt> 的表，但是现在只转储在默认搜索路径中可见的表。写成 <tt class="LITERAL">-t '*.tab'</tt> 将等价于老版本的行为。同样，你必须用 <tt class="LITERAL">-t sch.tab</tt> 而不是老版本的 <tt class="LITERAL">-n sch -t tab</tt> 选择特定模式中的表。</p>
+</blockquote>
+</div></dd>
+<dt><tt class="OPTION">-T <tt class="REPLACEABLE"><i>table</i></tt></tt><br><tt class="OPTION">--exclude-table=<tt class="REPLACEABLE"><i>table</i></tt></tt></dt>
+<dd><p>不要转储任何匹配 <tt class="REPLACEABLE"><i>table</i></tt> 模式的表。模式匹配规则与 <tt class="OPTION">-t</tt> 完全相同。可以指定多个 <tt class="OPTION">-T</tt> 以排除多种匹配的表。</p>
+<p>如果同时指定了 <tt class="OPTION">-t</tt> 和 <tt class="OPTION">-T</tt> ，那么将只转储匹配 <tt class="OPTION">-t</tt> 但不匹配 <tt class="OPTION">-T</tt> 的表。如果出现 <tt class="OPTION">-T</tt> 但是不出现 <tt class="OPTION">-t</tt> ，那么匹配 <tt class="OPTION">-T</tt> 的表将不会被转储。</p></dd>
+<dt><tt class="OPTION">-v</tt><br><tt class="OPTION">--verbose</tt></dt>
+<dd><p>指定冗余模式。这样将令 <span class="APPLICATION">pg_dump</span> 输出详细的对象评注以及转储文件的启停时间和进度信息到标准错误上。</p></dd>
+<dt><tt class="OPTION">-x</tt><br><tt class="OPTION">--no-privileges</tt><br><tt class="OPTION">--no-acl</tt></dt>
+<dd><p>禁止转储访问权限(grant/revoke 命令)</p></dd>
+<dt><tt class="OPTION">--disable-dollar-quoting</tt></dt>
+<dd><p>这个选项关闭使用美元符界定函数体。强制它们用 SQL 标准的字符串语法的引号包围。</p></dd>
+<dt><tt class="OPTION">--disable-triggers</tt></dt>
+<dd><p>这个选项只是和创建仅有数据的转储相关。它告诉 <span class="APPLICATION">pg_dump</span> 包含在恢复数据时临时关闭目标表上触发器的命令。如果在表上有参照完整性检查或者其它触发器，而恢复数据的时候不想重载他们，那么就应该使用这个选项。</p>
+<p>目前，为 <tt class="OPTION">--disable-triggers</tt> 发出的命令必须以超级用户来执行。因此，你应该同时用 <tt class="OPTION">-S</tt> 声明一个超级用户名，或者最好是用一个超级用户的身份来启动这个生成的脚本。</p>
+<p>这个选项只对纯文本格式有意义。对于归档格式，可以在调用 <tt class="COMMAND">pg_restore</tt> 的时候声明这个选项。</p></dd>
+<dt><tt class="OPTION">--use-set-session-authorization</tt></dt>
+<dd><p>输出符合 SQL 标准的 <tt class="COMMAND">SET SESSION AUTHORIZATION</tt> 命令而不是 <tt class="COMMAND">ALTER OWNER</tt> 命令。这样令转储更加符合标准，但是如果转储文件中的对象的历史有些问题，那么可能不能正确恢复。并且，使用 <tt class="COMMAND">SET SESSION AUTHORIZATION</tt> 的转储需要数据库超级用户的权限才能转储成功，而 <tt class="COMMAND">ALTER OWNER</tt> 需要的权限则低得多。</p></dd>
+<dt><tt class="OPTION">-Z <tt class="REPLACEABLE"><i>0..9</i></tt></tt><br><tt class="OPTION">--compress=<tt class="REPLACEABLE"><i>0..9</i></tt></tt></dt>
+<dd><p>声明在那些支持压缩的格式中使用的压缩级别。目前只有自定义格式支持压缩。</p></dd>
+</dl>
+</div>
+<p>下面的命令行参数控制数据库的连接参数。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-h <tt class="REPLACEABLE"><i>host</i></tt></tt><br><tt class="OPTION">--host=<tt class="REPLACEABLE"><i>host</i></tt></tt></dt>
+<dd><p>指定运行服务器的主机名。如果数值以斜杠开头，则被用作到 Unix 域套接字的路径。缺省从 <tt class="ENVAR">PGHOST</tt> 环境变量中获取(如果设置了的话)，否则，尝试一个 Unix 域套接字连接。</p></dd>
+<dt><tt class="OPTION">-p <tt class="REPLACEABLE"><i>port</i></tt></tt><br><tt class="OPTION">--port=<tt class="REPLACEABLE"><i>port</i></tt></tt></dt>
+<dd><p>指定服务器正在侦听的 TCP 端口或本地 Unix 域套接字文件的扩展(描述符)。缺省使用 <tt class="ENVAR">PGPORT</tt> 环境变量(如果设置了的话)，否则，编译时的缺省值。</p></dd>
+<dt><tt class="OPTION">-U <tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>连接的用户名</p></dd>
+<dt><tt class="OPTION">-W</tt></dt>
+<dd><p>强制口令提示。如果服务器需要口令认证，那么这个动作应该自动发生。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN57339"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGDATABASE</tt><br><tt class="ENVAR">PGHOST</tt><br><tt class="ENVAR">PGPORT</tt><br><tt class="ENVAR">PGUSER</tt></dt>
+<dd><p>缺省连接参数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="APP-PGDUMP-DIAGNOSTICS"></a><h2>诊断</h2>
+<p><span class="APPLICATION">pg_dump</span> 在内部使用 <tt class="COMMAND">SELECT</tt> 语句。如果你运行 <span class="APPLICATION">pg_dump</span> 时碰到问题，确认你能够使用像 <a href="app-psql.html"><span class="APPLICATION">psql</span></a> 这样的程序从数据库选取信息。</p>
+</div>
+<div class="REFSECT1"><a name="PG-DUMP-NOTES"></a><h2>注意</h2>
+<p>如果你的数据库给 <tt class="LITERAL">template1</tt> 数据库增加了任何你自己的东西，那么请注意把 <span class="APPLICATION">pg_dump</span> 的输出恢复到一个真正空的数据库中；否则你可能会收到因为重复定义所追加的对象而造成的错误信息。要制作一个没有任何本地附属物的数据库，可以从 <tt class="LITERAL">template0</tt> 而不是 <tt class="LITERAL">template1</tt> 拷贝，比如：</p>
+<pre class="PROGRAMLISTING">CREATE DATABASE foo WITH TEMPLATE template0;</pre>
+<p><span class="APPLICATION">pg_dump</span> 有一些限制：</p>
+<ul>
+<li><p>在进行纯数据转储并且使用了选项 <tt class="OPTION">--disable-triggers</tt> 的时候，<span class="APPLICATION">pg_dump</span> 发出一些查询先关闭用户表上的触发器，然后插入数据，插入完成后再打开触发器。如果恢复动作在中间停止，那么系统表可能就会处于一种错误状态。</p></li>
+</ul>
+<p>tar 归档的成员的大小限制于 8 GB 。这是 tar 文件格式的固有限制。因此这个格式无法用于任何大小超过这个尺寸的表。tar 归档和任何其它输出格式的总大小是不受限制的，只是可能会有操作系统的限制。</p>
+<p><span class="APPLICATION">pg_dump</span> 生成的转储文件并不包含优化器用于查询规划决策的统计信息。因此，恢复完之后，建议在每个已恢复的对象上运行 <tt class="COMMAND">ANALYZE</tt> ，以保证良好的性能。</p>
+<p>因为 <span class="APPLICATION">pg_dump</span> 常用于向新版本的 PostgreSQL 中传递数据，所以 <span class="APPLICATION">pg_dump</span> 的输出可以被导入到新 PostgreSQL 数据库中。同时 <span class="APPLICATION">pg_dump</span> 还能读取旧 PostgreSQL 数据库的内容，但是一般无法读取更新的 PostgreSQL 数据库；同时也不能将新数据库中转储出来的内容恢复到旧版本中(硬要这样做可能需要手动修改转储结果)。</p>
+</div>
+<div class="REFSECT1"><a name="PG-DUMP-EXAMPLES"></a><h2>例子</h2>
+<p>将 <tt class="LITERAL">mydb</tt> 数据库转储到一个 SQL 脚本文件：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dump mydb &gt; db.sql</kbd></pre>
+<p>将上述脚本导入一个(新建的)数据库 <tt class="LITERAL">newdb</tt> ：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">psql -d newdb -f db.sql</kbd></pre>
+<p>将数据库转储为自定义格式的归档文件：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dump -Fc mydb &gt; db.dump</kbd></pre>
+<p>将上述归档文件导入一个(新建的)数据库 <tt class="LITERAL">newdb</tt> ：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_restore -d newdb db.dump</kbd></pre>
+<p>转储一个名为 <tt class="LITERAL">mytab</tt> 的表：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dump -t mytab mydb &gt; db.sql</kbd></pre>
+<p>转储 <tt class="LITERAL">detroit</tt> 模式中所有以 <tt class="LITERAL">emp</tt> 开头的表，但是不包括 <tt class="LITERAL">employee_log</tt> 表：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dump -t 'detroit.emp*' -T detroit.employee_log mydb &gt; db.sql</kbd></pre>
+<p>转储所有以 <tt class="LITERAL">east</tt> 或 <tt class="LITERAL">west</tt> 开头并以 <tt class="LITERAL">gsm</tt> 结尾的模式，但是不包括名字中含有 <tt class="LITERAL">test</tt> 的模式：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dump -n 'east*gsm' -n 'west*gsm' -N '*test*' mydb &gt; db.sql</kbd></pre>
+<p>同上，不过这一次使用正则表达式的方法：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dump -n '(east|west)*gsm' -N '*test*' mydb &gt; db.sql</kbd></pre>
+<p>转储所有数据库对象，但是不包括名字以 <tt class="LITERAL">ts_</tt> 开头的表：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dump -T 'ts_*' mydb &gt; db.sql</kbd></pre>
+<p>在 <tt class="OPTION">-t</tt> 等选项中指定大写字母或大小写混合的名字必须用双引号界定，否则将被自动转换为小写(参见<a href="app-psql.html#APP-PSQL-PATTERNS"><i>模式匹配</i></a>)。但是因为双引号在 shell 中有特殊含义，所以必须将双引号再放进单引号中。这样一来，要转储一个大小写混合的表名，你就需要像下面这样：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dump -t '"MixedCaseName"' mydb &gt; mytab.sql</kbd></pre>
+</div>
+<div class="REFSECT1"><a name="AEN57442"></a><h2>历史</h2>
+<p><span class="APPLICATION">pg_dump</span> 工具最早出现在 <span class="APPLICATION">Postgres95</span> 0.02 版本。非纯文本输出格式在 PostgreSQL 7.1 时引入。</p>
+</div>
+<div class="REFSECT1"><a name="AEN57448"></a><h2>又见</h2><a href="app-pg-dumpall.html"><span class="APPLICATION">pg_dumpall</span></a>, <a href="app-pgrestore.html">pg_restore</a>, <a href="app-psql.html"><span class="APPLICATION">psql</span></a>, 环境变量(<a href="libpq-envars.html">节29.12</a>)</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="app-pgconfig.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-pg-dumpall.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">pg_config</td><td width="34%" align="center" valign="top"><a href="reference-client.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><span class="APPLICATION">pg_dumpall</span></td></tr>
+</table>
+</div>
+</body></html>

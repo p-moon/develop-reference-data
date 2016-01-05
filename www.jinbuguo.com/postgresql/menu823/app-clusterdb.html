@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>clusterdb</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="reference-client.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="reference-client.html#AEN55395">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-createdb.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-createdb.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-CLUSTERDB"></a><span class="APPLICATION">clusterdb</span></h1>
+<div class="REFNAMEDIV"><a name="AEN55404"></a><h2>名称</h2>clusterdb&nbsp;--&nbsp;群集一个数据库</div>
+<a name="AEN55408"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN55410"></a><h2>语法</h2>
+<p><tt class="COMMAND">clusterdb</tt> [<tt class="REPLACEABLE"><i>connection-option</i></tt>...] [--table | -t <tt class="REPLACEABLE"><i>table</i></tt> ] [<tt class="REPLACEABLE"><i>dbname</i></tt>]<br><tt class="COMMAND">clusterdb</tt> [<tt class="REPLACEABLE"><i>connection-option</i></tt>...] [--all | -a]</p>
+</div>
+<div class="REFSECT1"><a name="AEN55426"></a><h2>描述</h2>
+<p><span class="APPLICATION">clusterdb</span> 用于对数据库中的表进行重新群集。它寻找以前群集过的表，然后在上次用过的同一个索引上再次群集。它不会动那些从未群集的表。</p>
+<p><span class="APPLICATION">clusterdb</span> 是对 SQL 命令 <a href="sql-cluster.html"><i>CLUSTER</i></a> 的封装。使用这两种方法对数据库群集实际上没有任何区别。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55434"></a><h2>选项</h2>
+<p><span class="APPLICATION">clusterdb</span> 接受下列命令行参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-a</tt><br><tt class="OPTION">--all</tt></dt>
+<dd><p>对所有数据库进行群集</p></dd>
+<dt><tt class="OPTION">[<span class="OPTIONAL">-d</span>] <tt class="REPLACEABLE"><i>dbname</i></tt></tt><br><tt class="OPTION">[<span class="OPTIONAL">--dbname</span>] <tt class="REPLACEABLE"><i>dbname</i></tt></tt></dt>
+<dd><p>声明要群集的数据库名字。如果没有声明这个并且没有使用 <tt class="OPTION">-a</tt> 或 <tt class="OPTION">--all</tt> ，那么数据库名从环境变量 <tt class="ENVAR">PGDATABASE</tt> 中读取。如果这个环境变量也没有设置，那么使用用于连接的用户名。</p></dd>
+<dt><tt class="OPTION">-e</tt><br><tt class="OPTION">--echo</tt></dt>
+<dd><p>回显 <span class="APPLICATION">clusterdb</span> 生成并发送给服务器的命令</p></dd>
+<dt><tt class="OPTION">-q</tt><br><tt class="OPTION">--quiet</tt></dt>
+<dd><p>不要显示响应(安静模式)</p></dd>
+<dt><tt class="OPTION">-t <tt class="REPLACEABLE"><i>table</i></tt></tt><br><tt class="OPTION">--table <tt class="REPLACEABLE"><i>table</i></tt></tt></dt>
+<dd><p>只对 <tt class="REPLACEABLE"><i>table</i></tt> 表进行群集</p></dd>
+</dl>
+</div>
+<p><span class="APPLICATION">clusterdb</span> 还接受下列命令行参数获取连接参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-h <tt class="REPLACEABLE"><i>host</i></tt></tt><br><tt class="OPTION">--host <tt class="REPLACEABLE"><i>host</i></tt></tt></dt>
+<dd><p>指定服务器所在的主机。如果数值以斜杠开头，那么就用作 Unix 域套接字的目录。</p></dd>
+<dt><tt class="OPTION">-p <tt class="REPLACEABLE"><i>port</i></tt></tt><br><tt class="OPTION">--port <tt class="REPLACEABLE"><i>port</i></tt></tt></dt>
+<dd><p>声明服务器监听的 TCP 端口或者本地 Unix 域套接字文件的扩展。</p></dd>
+<dt><tt class="OPTION">-U <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--username <tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>进行连接的用户名</p></dd>
+<dt><tt class="OPTION">-W</tt><br><tt class="OPTION">--password</tt></dt>
+<dd><p>强制提示口令</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN55522"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGDATABASE</tt><br><tt class="ENVAR">PGHOST</tt><br><tt class="ENVAR">PGPORT</tt><br><tt class="ENVAR">PGUSER</tt></dt>
+<dd><p>缺省连接参数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN55536"></a><h2>诊断</h2>
+<p>出现困难的时候，参阅 <a href="sql-cluster.html"><i>CLUSTER</i></a> 和 <a href="app-psql.html"><span class="APPLICATION">psql</span></a> 获取有关可能的错误和错误信息的讨论。数据库服务器必须在目标主机上运行。同样，任何缺省连接设置和 <span class="APPLICATION">libpq</span> 前端库使用的环境变量都将得以应用。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55542"></a><h2>例子</h2>
+<p>对数据库 <tt class="LITERAL">test</tt> 进行群集：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">clusterdb test</kbd></pre>
+<p>对 <tt class="LITERAL">xyzzy</tt> 数据库里的 <tt class="LITERAL">foo</tt> 表进行群集：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">clusterdb --table foo xyzzy</kbd></pre>
+</div>
+<div class="REFSECT1"><a name="AEN55555"></a><h2>又见</h2><a href="sql-cluster.html"><i>CLUSTER</i></a>, 环境变量(<a href="libpq-envars.html">节29.12</a>)</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="reference-client.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-createdb.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PostgreSQL 客户端应用程序</td><td width="34%" align="center" valign="top"><a href="reference-client.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><span class="APPLICATION">createdb</span></td></tr>
+</table>
+</div>
+</body></html>

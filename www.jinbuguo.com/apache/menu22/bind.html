@@ -1,0 +1,83 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="./style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="./style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="./style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>地址和端口的绑定(Binding) － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page">
+<div id="page-header"><p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="./images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="./images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="./index.html">版本2.2</a></div>
+
+<div id="translation-info">　　 <a href="./translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2008年8月11日</div>
+<div id="page-content"><div id="preamble"><h1>地址和端口的绑定(Binding)</h1>
+    <p>配置Apache监听指定的地址和端口。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="overview" id="overview">概述</a></h2>
+    
+
+    <table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="related">
+<tr><th>相关模块</th><th>相关指令</th></tr>
+<tr><td><ul><li><code class="module"><a href="./mod/core.html">core</a></code></li><li><code class="module"><a href="./mod/mpm_common.html">mpm_common</a></code></li></ul></td><td><ul><li><code class="directive"><a href="./mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code></li><li><code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code></li></ul></td></tr>
+</table>
+
+
+    <p>Apache启动时，会绑定本机上的地址和端口，然后等待请求的进入。默认情况下，它会监听本机的所有地址。但是，当需要监听特定的地址或端口或地址与端口的组合，或者需要对不同的IP地址、主机名、端口作出不同的响应(如使用虚拟主机)时，就必须明确指定。</p>
+
+    <p><code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code>指令告诉服务器接只受来自特定端口(或地址+端口的组合)的请求。如果<code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code>指令仅指定了端口，则服务器会监听所有的IP地址；如果指定了地址+端口的组合，则服务器只监听来自此特定地址上特定端口的请求。使用多个<code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code>指令，可以指定在多个地址和端口上进行监听。</p>
+
+    <p>例如：使服务器在所有地址上同时接受来自端口80和8000的请求，可以这样写：</p>
+
+    <div class="example"><p><code>
+      Listen 80<br />
+      Listen 8000
+    </code></p></div>
+
+    <p>接受来自两个指定的地址+端口的组合：</p>
+
+    <div class="example"><p><code>
+      Listen 192.170.2.1:80<br />
+      Listen 192.170.2.5:8000
+    </code></p></div>
+
+    <p>IPv6地址必须用方括号括起来：</p>
+
+    <div class="example"><p><code>
+      Listen [2001:db8::a00:20ff:fea7:ccea]:80
+    </code></p></div>
+  </div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="ipv6" id="ipv6">针对IPv6的特殊考虑</a></h2>
+    <p>有越来越多的平台开始支持IPv6 ，而<a class="glossarylink" href="./glossary.html#apr" title="see glossary">APR</a>在大多数平台上也支持IPv6 ，使Apache能够获得IPv6套接字，并处理通过IPv6发送的请求。</p>
+
+    <p>一个经常令Apache管理员疑惑的问题是IPv6的套接字能否同时处理IPv4和IPv6的连接。IPv6套接字在处理IPv4连接时使用的是将IPv6映射到IPv4的地址(IPv4-mapped IPv6 addresses)，这样做在大多数平台上默认是允许的，而在FreeBSD、NetBSD、OpenBSD上，为了配合其系统全局策略，默认却是禁止的。即使在这些默认禁止的平台上，Apache也可以通过特殊的<code class="program"><a href="./programs/configure.html">编译选项</a></code>来改变这种行为。</p>
+
+    <p>另一方面，在某些平台上(如Linux和Tru64)同时处理IPv6和IPv4的<strong>唯一</strong>方法就是使用映射地址(mapped addresses)。如果你希望Apache以最少的套接字同时处理IPv4和IPv6的连接，就必须使用映射到IPv4的IPv6地址，也就是必须指定 <code>--enable-v4-mapped</code> <code class="program"><a href="./programs/configure.html">编译选项</a></code>。</p>
+
+    <p>在除FreeBSD、NetBSD、OpenBSD以外的其他平台上，<code>--enable-v4-mapped</code> 是编译时的默认值。因此你正在使用的Apache很可能就是按照这种方式编译的。</p>
+
+    <p>要使Apache仅仅只处理IPv4连接，无论你的平台是什么或者APR是否支持，只须对所有<code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code>指令都指定IPv4地址即可，如下所示：</p>
+
+    <div class="example"><p><code>
+      Listen 0.0.0.0:80<br />
+      Listen 192.170.2.1:80
+    </code></p></div>
+
+    <p>如果你的平台支持从IPv6到IPv4的地址映射，但是你又希望Apache使用不同的套接字分别处理IPv4和IPv6的连接(也就是禁用地址映射)，必须明确指定 <code>--disable-v4-mapped</code> <code class="program"><a href="./programs/configure.html">编译选项</a></code>。注意：<code>--disable-v4-mapped</code> 在FreeBSD、NetBSD、OpenBSD上是默认值。</p>
+  </div>
+<div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="virtualhost" id="virtualhost">怎样与虚拟主机协同工作</a></h2>
+    
+<p><code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code>指令并不实现虚拟主机，它只是告诉主服务器(main server)去监听哪些地址和端口。如果没有<code class="directive"><a href="./mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>指令，服务器将对所有请求一视同仁；但是如果有<code class="directive"><a href="./mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>指令，则服务器会对不同的地址或端口作出不同的响应。要实现虚拟主机，首先必须告诉服务器需要监听哪些地址和端口，然后为每个特定的地址和端口建立一个<code class="directive"><a href="./mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>段来执行特定的相应。注意，如果将<code class="directive"><a href="./mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>段设置为服务器没有监听的地址和端口，则此段无效。</p>
+  </div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="./translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p></div>
+</body></html>

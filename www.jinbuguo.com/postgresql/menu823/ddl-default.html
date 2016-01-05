@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>缺省值</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="ddl-basics.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="ddl.html">快退</a></td><td width="60%" align="center" valign="bottom">章5. 数据定义</td><td width="10%" align="right" valign="top"><a href="ddl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="ddl-constraints.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DDL-DEFAULT">5.2. 缺省值</a></h1><a name="AEN1966"></a>
+<p>一个字段可以赋予缺省值。如果新创建了一个数据行，而有些字段的数值没有声明，那么这些字段将被填充为它们各自的缺省值。一条数据修改命令也可以明确地要求把一个字段设置为它的缺省值，而不用事先知道这个缺省值是什么。有关数据操作的命令在<a href="dml.html">章6</a>。</p>
+<p><a name="AEN1971"></a>如果没有明确声明缺省值，那么缺省值是 NULL 。这么做通常是合理的，因为 NULL 表示"未知"。</p>
+<p>在一个表定义里，缺省值是在字段数据类型后面列出的。比如：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE products (
+    product_no integer,
+    name text,
+    price numeric <b class="EMPHASIS">DEFAULT 9.99</b>
+);</pre>
+<p>缺省值可以是一个表达式，它会在插入缺省值的时候计算(<span class="emphasis"><i class="EMPHASIS">不是</i></span>在创建表的时候)。一个常见的例子是一个 <tt class="TYPE">timestamp</tt> 字段可能有缺省值 <tt class="LITERAL">now()</tt> ，它表示插入行的时刻。另外一个常见的例子是为每一行生成一个"序列号"。在 PostgreSQL 里，通常是用类似下面这样的方法生成的：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE products (
+    product_no integer <b class="EMPHASIS">DEFAULT nextval('products_product_no_seq')</b>,
+    ...
+);</pre>
+<p>这里的 <tt class="LITERAL">nextval()</tt> 从一个<i class="FIRSTTERM">序列对象</i>(参阅<a href="functions-sequence.html">节9.12</a>)提供后继的数值。这种做法非常普遍，以至于我们有一个专门的缩写用于此目的：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE products (
+    product_no <b class="EMPHASIS">SERIAL</b>,
+    ...
+);</pre>
+<p><tt class="LITERAL">SERIAL</tt> 缩写在<a href="datatype-numeric.html#DATATYPE-SERIAL">节8.1.4</a>里有进一步描述。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="ddl-basics.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="ddl-constraints.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">表的基本概念</td><td width="34%" align="center" valign="top"><a href="ddl.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">约束</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_cursors</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="views-overview.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="view-pg-group.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="VIEW-PG-CURSORS">43.36. <tt class="STRUCTNAME">pg_cursors</tt></a></h1><a name="AEN65442"></a>
+<p><tt class="STRUCTNAME">pg_cursors</tt> 列出了当前可用的游标。游标可以用几种不同的方法定义：</p>
+<ul>
+<li><p>通过 <a href="sql-declare.html"><i>DECLARE</i></a> 语句</p></li>
+<li><p>在前/后端协议中通过 Bind 信息，具体在<a href="protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY">节44.2.3</a>中描述。</p></li>
+<li><p>通过服务器编程接口(SPI)，具体在<a href="spi-interface.html">节41.1</a>中描述。</p></li>
+</ul>
+<p><tt class="STRUCTNAME">pg_cursors</tt> 显示上述所有方法创建的游标。除非被声明为 <tt class="LITERAL">WITH HOLD</tt> ，游标仅存在于定义它们的事务的生命期中。因此非持久游标仅能够在视图中存在到创建该游标的事务结束时为止。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>因为游标用于在 PostgreSQL 内部实现一些比如过程语言之类的组件。因此 <tt class="STRUCTNAME">pg_cursors</tt> 可能包含并非由用户明确创建的游标。</p>
+</blockquote>
+</div>
+<div class="TABLE"><a name="AEN65462"></a>
+<p><b>表43-36. <tt class="STRUCTNAME">pg_cursors</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">name</tt></td><td><tt class="TYPE">text</tt></td><td>游标名</td></tr>
+<tr><td><tt class="STRUCTFIELD">statement</tt></td><td><tt class="TYPE">text</tt></td><td>声明该游标的查询字符串</td></tr>
+<tr><td><tt class="STRUCTFIELD">is_holdable</tt></td><td><tt class="TYPE">boolean</tt></td><td>如果该游标是持久的(也就是在声明该游标的事务结束后仍然可以访问该游标)则为 <tt class="LITERAL">true</tt> ；否则为 <tt class="LITERAL">false</tt></td></tr>
+<tr><td><tt class="STRUCTFIELD">is_binary</tt></td><td><tt class="TYPE">boolean</tt></td><td>如果该游标被声明为 <tt class="LITERAL">BINARY</tt> 则为 <tt class="LITERAL">true</tt> ；否则为 <tt class="LITERAL">false</tt></td></tr>
+<tr><td><tt class="STRUCTFIELD">is_scrollable</tt></td><td><tt class="TYPE">boolean</tt></td><td>如果该游标可以滚动(也就是允许以不连续的方式检索)则为 <tt class="LITERAL">true</tt> ；否则为 <tt class="LITERAL">false</tt></td></tr>
+<tr><td><tt class="STRUCTFIELD">creation_time</tt></td><td><tt class="TYPE">timestamptz</tt></td><td>声明该游标的时间戳</td></tr>
+</tbody>
+</table>
+</div>
+<p><tt class="STRUCTNAME">pg_cursors</tt> 视图是只读的。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="views-overview.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="view-pg-group.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">系统视图</td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_group</tt></td></tr>
+</table>
+</div>
+</body></html>

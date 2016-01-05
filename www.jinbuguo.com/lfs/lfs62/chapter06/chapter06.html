@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>第六章 安装系统基础软件</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>Part III. 构建 LFS 系统</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="../part3.html" title="构建 LFS 系统">后退</a>
+          <p>构建 LFS 系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="kernfs.html" title="挂载虚拟内核文件系统">前进</a>
+          <p>挂载虚拟内核文件系统</p>
+        </li>
+        <li class="up"><a accesskey="u" href="../part3.html" title="Part III. 构建 LFS 系统">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="chapter">
+      <div class="titlepage">
+        <h1 class="chapter">第六章 安装系统基础软件</h1>
+      </div>
+      <div class="sect1">
+        <div class="titlepage">
+          <a id="ch-system-introduction" name="ch-system-introduction"></a>
+          <h2 class="sect1">6.1. 简介</h2>
+        </div>
+        <p>在这一章，我们进入"建筑工地"，开始精心构建 LFS 系统。也就是指我们通过 chroot 命令进入一个临时的微型 Linux 系统，并作一些最后的准备，然后开始安装软件包。</p>
+        <p>软件的安装非常直截了当。尽管许多情况下对安装过程的说明可以更加简洁，但为了消除可能出现的错误，我们为每一个包都提供了全面的安装说明。理解 Linux 系统是如何工作的关键在于明白每个包的用途以及为什么用户(或系统)需要它。对每一个安装的软件包，我们都给出了对其内容的简要说明，另外，对该软件包所安装的每一个程序文件和库文件也作了简要的描述。</p>
+        <p>如果在本章中进行编译器优化，那么请看看编译器优化提示：<a href="http://www.linuxfromscratch.org/hints/downloads/files/optimization.txt"><i>http://www.linuxfromscratch.org/hints/downloads/files/optimization.txt</i></a>，也可以看看 LinuxSir 上的一篇帖子：<a href="http://www.linuxsir.org/bbs/showthread.php?t=222670">GCC 编译选项及优化提示</a>。编译器优化可以使程序运行的稍快一些，但也会出现某些编译问题。如果某个包在使用优化的情况下无法通过编译，试试不用优化编译能不能解决问题。即使使用优化编译成功，由于源码与编译工具之间复杂的相互作用，程序仍有可能被错误的编译了。要注意 <tt class="option">-march</tt> 和 <tt class="option">-mtune</tt> 选项或许会导致一些工具链软件包(Binutils, GCC, Glibc)的问题。使用编译器优化得到的小幅度性能提升，与它带来的风险相比微不足道。所以初次编译 LFS 的用户最好不要使用任何优化，你的系统依然会又快又稳定。</p>
+        <p>本章中软件包的安装顺序应当严格遵守，以确保没有一个程序会把 /tools 作为路径硬连接到代码中。同样不要并行编译包。并行编译可能会节省时间(特别是在双CPU的机器上)，但也可能造成程序包含 /tools 硬连接路径，以致在 /tools 目录被删除之后，程序无法运行。</p>
+        <p>在每个软件包安装说明页的首部都提供了与该包相关的一些信息，包括：包内容的简要说明、编译大约所需时间、编译过程所需磁盘空间、编译所依赖的软件包。在安装说明之后还有该包所安装的程序和库的列表以及对它们的简要说明。</p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="../part3.html" title="构建 LFS 系统">后退</a>
+          <p>构建 LFS 系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="kernfs.html" title="挂载虚拟内核文件系统">前进</a>
+          <p>挂载虚拟内核文件系统</p>
+        </li>
+        <li class="up"><a accesskey="u" href="../part3.html" title="Part III. 构建 LFS 系统">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

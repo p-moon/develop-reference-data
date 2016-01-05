@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE DOMAIN</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createdatabase.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createdatabase.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createfunction.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createfunction.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATEDOMAIN"></a>CREATE DOMAIN</h1>
+<div class="REFNAMEDIV"><a name="AEN47048"></a><h2>名称</h2>CREATE DOMAIN&nbsp;--&nbsp;定义一个新域</div>
+<a name="AEN47051"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN47053"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE DOMAIN <tt class="REPLACEABLE"><i>name</i></tt> [ AS ] <tt class="REPLACEABLE"><i>data_type</i></tt>
+    [ DEFAULT <tt class="REPLACEABLE"><i>expression</i></tt> ]
+    [ <tt class="REPLACEABLE"><i>constraint</i></tt> [ ... ] ]
+
+这里 <tt class="REPLACEABLE"><i>constraint</i></tt> 是：
+
+[ CONSTRAINT <tt class="REPLACEABLE"><i>constraint_name</i></tt> ]
+{ NOT NULL | NULL | CHECK (<tt class="REPLACEABLE"><i>expression</i></tt>) }</pre>
+</div>
+<div class="REFSECT1"><a name="AEN47062"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE DOMAIN</tt> 创建一个新的数据域。域在本质上是一个带有可选约束的数据类型(限制允许的取值范围)。定义域的用户成为其所有者。</p>
+<p>如果给出一个模式名称(比如 <tt class="LITERAL">CREATE DOMAIN myschema.mydomain ...</tt>)，那么该域是在指定的模式中创建的。否则它会在当前模式中创建。域名字必需在其所在模式中的现有类型和域中唯一。</p>
+<p>域可以便于把不同表之间的公共域抽取到一个固定位置进行维护。比如，一个电子邮件地址字段可能在多个表中使用，所有的都是同样的属性。可以定义并使用一个域，而不是分别设置每个表的约束。</p>
+</div>
+<div class="REFSECT1"><a name="AEN47069"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>要创建的域名字(可以有模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>data_type</i></tt></dt>
+<dd><p>域的下层数据类型。它可以包含数组说明符。</p></dd>
+<dt><tt class="LITERAL">DEFAULT <tt class="REPLACEABLE"><i>expression</i></tt></tt></dt>
+<dd><p><tt class="LITERAL">DEFAULT</tt> 子句为域数据类型的字段声明一个缺省值。该值是任何不含变量的表达式(但不允许子查询)。缺省表达式的数据类型必需匹配域的数据类型。如果没有声明缺省值，那么缺省值就是 NULL 。</p>
+<p>缺省表达式将用于任何省略该字段值的插入操作。如果为特定的字段声明了缺省值，那么它覆盖任何和该域相关联的缺省值。然后，域的缺省覆盖任何与下层数据类型相关的缺省。</p></dd>
+<dt><tt class="LITERAL">CONSTRAINT <tt class="REPLACEABLE"><i>constraint_name</i></tt></tt></dt>
+<dd><p>一个约束的可选名称。如果没有声明，系统将自动生成一个名字。</p></dd>
+<dt><tt class="LITERAL">NOT NULL</tt></dt>
+<dd><p>这个域的数值不允许为 NULL</p></dd>
+<dt><tt class="LITERAL">NULL</tt></dt>
+<dd><p>这个域的数值允许为 NULL 。这是缺省。</p>
+<p>这个子句只是用于和非标准的 SQL 数据库兼容用。不建议在新的应用中使用它。</p></dd>
+<dt><tt class="LITERAL">CHECK (<tt class="REPLACEABLE"><i>expression</i></tt>)</tt></dt>
+<dd><p><tt class="LITERAL">CHECK</tt> 子句声明域的数值必须满足的完整性约束或测试。每个约束必须是一个生成布尔结果的表达式。它应该使用关键字 <tt class="LITERAL">VALUE</tt> 来引用被测试的数值。</p>
+<p>目前，<tt class="LITERAL">CHECK</tt> 表达式不能包含子查询，也不能引用除 <tt class="LITERAL">VALUE</tt> 之外的变量。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN47118"></a><h2>例子</h2>
+<p>这个例子创建了 <tt class="TYPE">us_postal_code</tt> 数据类型并且在一个表定义中使用了该类型。使用了一个正则表达式测试以保证这些数值看起来像一个美国的邮政编码。</p>
+<pre class="PROGRAMLISTING">CREATE DOMAIN us_postal_code AS TEXT
+CHECK(
+   VALUE ~ '^\\d{5}$'
+OR VALUE ~ '^\\d{5}-\\d{4}$'
+);
+
+CREATE TABLE us_snail_addy (
+  address_id SERIAL PRIMARY KEY,
+  street1 TEXT NOT NULL,
+  street2 TEXT,
+  street3 TEXT,
+  city TEXT NOT NULL,
+  postal us_postal_code NOT NULL
+);</pre>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATEDOMAIN-COMPATIBILITY"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">CREATE DOMAIN</tt> 命令符合 SQL 标准。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATEDOMAIN-SEE-ALSO"></a><h2>又见</h2><a href="sql-alterdomain.html"><i>ALTER DOMAIN</i></a>, <a href="sql-dropdomain.html"><i>DROP DOMAIN</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createdatabase.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createfunction.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE DATABASE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE FUNCTION</td></tr>
+</table>
+</div>
+</body></html>

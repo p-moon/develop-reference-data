@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.13. Ncurses-5.5</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="binutils-pass2.html" title="Binutils-2.16.1 - 第二遍">后退</a>
+          <p>Binutils-2.16.1 - 第二遍</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="bash.html" title="Bash-3.1">前进</a>
+          <p>Bash-3.1</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.13. Ncurses-5.5</h1>
+      </div>
+      <div class="package">
+        <p>Ncurses 提供独立于终端的字符终端处理库，含有功能键定义(快捷键)、屏幕绘制以及基于文本终端的图形互动功能。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.7 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">30 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.13.1. 安装 Ncurses</h2>
+        </div>
+        <p>为编译 Ncurses 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/tools --with-shared \
+    --without-debug --without-ada --enable-overwrite</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--without-ada</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项让 Ncurses 在即使宿主系统上安装了 Ada 编译器的情况下也不要编译其 Ada 绑定。需要这样做的原因是一旦我们进入 <span><strong class="command">chroot</strong></span> 环境，Ada 就不能使用了。</p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--enable-overwrite</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项让 Ncurses 把它的头文件安装到 <tt class="filename">/tools/include</tt> 目录，而不是 <tt class="filename">/tools/include/ncurses</tt> 目录，以确保其它软件包可以顺利找到 Ncurses 的头文件。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>这个软件包没有附带测试程序。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+      </div>
+      <div class="content">
+        <p>关于这个软件包的详细资料位于<a href="../chapter06/ncurses.html#contents-ncurses" title="6.18.2. Ncurses 的内容">节 6.18.2, Ncurses 的内容</a></p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="binutils-pass2.html" title="Binutils-2.16.1 - 第二遍">后退</a>
+          <p>Binutils-2.16.1 - 第二遍</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="bash.html" title="Bash-3.1">前进</a>
+          <p>Bash-3.1</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

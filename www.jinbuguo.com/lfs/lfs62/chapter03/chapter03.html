@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>第三章 软件包和补丁</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>Part II. 构建前的准备工作</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="../chapter02/mounting.html" title="挂载新分区">后退</a>
+          <p>挂载新分区</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="packages.html" title="全部软件包">前进</a>
+          <p>全部软件包</p>
+        </li>
+        <li class="up"><a accesskey="u" href="../part2.html" title="Part II. 构建前的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="chapter">
+      <div class="titlepage">
+        <h1 class="chapter">3. 软件包和补丁</h1>
+      </div>
+      <div class="sect1">
+        <div class="titlepage">
+          <a id="materials-introduction" name="materials-introduction"></a>
+          <h2 class="sect1">3.1. 简介</h2>
+        </div>
+        <p>本章包含了一个构建基本 Linux 系统需要下载的软件包清单，列出的版本号是已知可以正常工作的版本，本书就是建立在这些软件包之上的。我们强烈建议您不要使用新的版本，因为用于前一个版本的编译安装命令可能并不适用于新的版本。最新版本的软件包也许需要一个与旧版本不同的工作环境，如果并没有配置这样的工作环境，那么软件包就可能会出现问题。</p>
+        <p>下载位置可能并不总是有效的，如果在本书发布之后，某个软件的下载位置有了变动，Google(<a href="http://www.google.com/"><i>http://www.google.com/</i></a>)可以搜索到大多数的软件包。如果 Google 也搜索不到，请尝试 <a href="http://www.linuxfromscratch.org/lfs/packages.html"><i>http://www.linuxfromscratch.org/lfs/packages.html</i></a> 上的其它下载手段。</p>
+        <p>下载的软件包和补丁需要存放到一个构建过程中方便访问的地方，还需要一个工作目录来解压和编译源码包。<tt class="filename">$LFS/sources</tt> 既可以用来存储软件包和补丁，也可以作为工作目录。使用这个目录的好处是，所有需要的部件都在 LFS 分区上，构建过程中的所有步骤都可以访问到。</p>
+        <p>要创建这个目录，在开始下载之前用 <span class="emphasis"><em>root</em></span> 用户登录，并运行下面的命令：</p>
+        <pre class="userinput"><kbd class="command">mkdir -v $LFS/sources</kbd></pre>
+        <p>把目录设置为可写和 sticky 模式，这里"<span class="quote">Sticky</span>"的意思是虽然某个目录对于多个用户有写入的权限，但这个目录中的文件只有其所有者才能删除。请运行下面的命令使目录可写，并设置 sticky 模式：</p>
+        <pre class="userinput"><kbd class="command">chmod -v a+wt $LFS/sources</kbd></pre>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="../chapter02/mounting.html" title="挂载新分区">后退</a>
+          <p>挂载新分区</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="packages.html" title="全部软件包">前进</a>
+          <p>全部软件包</p>
+        </li>
+        <li class="up"><a accesskey="u" href="../part2.html" title="Part II. 构建前的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

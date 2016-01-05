@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.3. Binutils-2.16.1 - 第一遍</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="toolchaintechnotes.html" title="工具链技术说明">后退</a>
+          <p>工具链技术说明</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gcc-pass1.html" title="GCC-4.0.3 - 第一遍">前进</a>
+          <p>GCC-4.0.3 - 第一遍</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.3. Binutils-2.16.1 - 第一遍</h1>
+      </div>
+      <div class="package">
+        <p>Binutils 是一组开发工具，包括连接器、汇编器和其他用于目标文件和档案的工具。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">189 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.3.1. 安装 Binutils</h2>
+        </div>
+        <p>首先安装的第一个软件包是 Binutils ，这非常重要，因为 Glibc 和 GCC 会针对可用的连接器和汇编器进行多种测试，以决定是否打开某些特性。</p>
+        <p>Binutils 的文档推荐用一个新建的目录来编译它，而不是在源码目录中：</p>
+        <pre class="userinput"><kbd class="command">mkdir -v ../binutils-build
+cd ../binutils-build</kbd></pre>
+        <div class="note">
+          <div class="admonhead">
+            <img alt="[Note]" src="../images/note.png" />
+            <h3 class="admontitle">注意</h3>
+          </div>
+          <div class="admonbody">
+            <p>如果你想使用本书余下部份列出的 SBU 值，那么现在就要测量一下编译本软件包的时间。你可以用类似下面这样的 <span><strong class="command">time</strong></span> 命令：<strong class="userinput"><tt>time { ./configure ... &amp;&amp; make &amp;&amp; make install; }</tt></strong> 。</p>
+          </div>
+        </div>
+        <p>为编译 Binutils 做准备：</p>
+        <pre class="userinput"><kbd class="command">../binutils-2.16.1/configure --prefix=/tools --disable-nls</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--prefix=/tools</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个参数告诉 configure 脚本，应该把 Binutils 软件包中的程序安装到 <tt class="filename">/tools</tt> 目录中。</p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--disable-nls</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个参数禁止了国际化(通常简称i18n)，静态程序不需要国际化的特性。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>接下来编译它：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>现在编译完成了。通常我们会运行测试套件，但是目前测试套件(Tcl, Expect, DejaGNU)尚未安装。而且在这里运行测试也没什么用处，因为第一遍安装的程序很快就会被第二遍的程序所覆盖。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <p>接下来为后面"<span class="quote">调整工具链</span>"步骤准备连接器：</p>
+        <pre class="userinput"><kbd class="command">make -C ld clean
+make -C ld LIB_PATH=/tools/lib
+cp -v ld/ld-new /tools/bin</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>make 参数的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>-C ld clean</tt></em></span>
+            </dt>
+            <dd>
+              <p>告诉 make 程序删除所有 <tt class="filename">ld</tt> 子目录中编译生成的文件。</p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><tt>-C ld LIB_PATH=/tools/lib</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项重新编译 <tt class="filename">ld</tt> 子目录中的所有文件。在命令行中指定 Makefile 的 <tt class="envar">LIB_PATH</tt> 变量值，使它明确指向临时工具目录，以覆盖默认值。这个变量的值指定了连接器的默认库搜索路径，它在这一章的稍后部分会用到。</p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="content">
+        <p>关于这个软件包的详细资料位于<a href="../chapter06/binutils.html#contents-binutils" title="6.11.2. Binutils 的内容">节 6.11.2, Binutils 的内容</a></p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="toolchaintechnotes.html" title="工具链技术说明">后退</a>
+          <p>工具链技术说明</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gcc-pass1.html" title="GCC-4.0.3 - 第一遍">前进</a>
+          <p>GCC-4.0.3 - 第一遍</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

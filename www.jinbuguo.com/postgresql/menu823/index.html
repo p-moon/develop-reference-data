@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PostgreSQL 8.2.3 中文文档</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="BOOK">
+<div><a name="POSTGRES"></a>
+<div><h1><a name="POSTGRES">PostgreSQL 8.2.3 中文文档</a></h1><h3 class="CORPAUTHOR">PostgreSQL 全球开发组</h3>
+<p class="COPYRIGHT"><a href="LEGALNOTICE.html">Copyright</a> &copy; 1996-2006 PostgreSQL 全球开发组</p>
+
+<hr />
+<h3>致谢</h3>
+<p>本手册是在何伟平先生的8.1版文档的基础上进行修订、更新、补充的结果，没有何伟平先生之前辛勤劳动积累的成果，单靠我一人之力是不可能完成这项工作的。</p>
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+
+
+<hr></div>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt><a href="preface.html">前言</a></dt>
+<dd><dl>
+<dt><a href="intro-whatis.html">何为 PostgreSQL?</a></dt>
+<dt><a href="history.html">PostgreSQL 简史</a></dt>
+<dt><a href="notation.html">格式约定</a></dt>
+<dt><a href="resources.html">更多信息</a></dt>
+<dt><a href="bug-reporting.html">臭虫汇报指导</a></dt>
+</dl></dd>
+<dt>I. <a href="tutorial.html">教程</a></dt>
+<dd><dl>
+<dt>1. <a href="tutorial-start.html">从头开始</a></dt>
+<dt>2. <a href="tutorial-sql.html">SQL 语言</a></dt>
+<dt>3. <a href="tutorial-advanced.html">高级特性</a></dt>
+</dl></dd>
+<dt>II. <a href="sql.html">SQL 语言</a></dt>
+<dd><dl>
+<dt>4. <a href="sql-syntax.html">SQL 语法</a></dt>
+<dt>5. <a href="ddl.html">数据定义</a></dt>
+<dt>6. <a href="dml.html">数据操作</a></dt>
+<dt>7. <a href="queries.html">查询</a></dt>
+<dt>8. <a href="datatype.html">数据类型</a></dt>
+<dt>9. <a href="functions.html">函数和操作符</a></dt>
+<dt>10. <a href="typeconv.html">类型转换</a></dt>
+<dt>11. <a href="indexes.html">索引</a></dt>
+<dt>12. <a href="mvcc.html">并发控制</a></dt>
+<dt>13. <a href="performance-tips.html">性能提升技巧</a></dt>
+</dl></dd>
+<dt>III. <a href="admin.html">服务器管理</a></dt>
+<dd><dl>
+<dt>14. <a href="installation.html">安装指导</a></dt>
+<dt>15. <a href="install-win32.html">在 Windows 上安装客户端</a></dt>
+<dt>16. <a href="runtime.html">操作系统环境</a></dt>
+<dt>17. <a href="runtime-config.html">服务器配置</a></dt>
+<dt>18. <a href="user-manag.html">数据库角色和权限</a></dt>
+<dt>19. <a href="managing-databases.html">管理数据库</a></dt>
+<dt>20. <a href="client-authentication.html">用户认证</a></dt>
+<dt>21. <a href="charset.html">区域</a></dt>
+<dt>22. <a href="maintenance.html">日常数据库维护工作</a></dt>
+<dt>23. <a href="backup.html">备份与恢复</a></dt>
+<dt>24. <a href="high-availability.html">高可用性与负载均衡</a></dt>
+<dt>25. <a href="monitoring.html">监控数据库的活动</a></dt>
+<dt>26. <a href="diskusage.html">监控磁盘使用情况</a></dt>
+<dt>27. <a href="wal.html">可靠性和预写式日志</a></dt>
+<dt>28. <a href="regress.html">回归测试</a></dt>
+</dl></dd>
+<dt>IV. <a href="client-interfaces.html">客户端接口</a></dt>
+<dd><dl>
+<dt>29. <a href="libpq.html"><span class="APPLICATION">libpq</span> - C库</a></dt>
+<dt>30. <a href="largeobjects.html">大对象</a></dt>
+<dt>31. <a href="ecpg.html"><span class="APPLICATION">ECPG</span> - 在C里嵌入SQL</a></dt>
+<dt>32. <a href="information-schema.html">信息模式</a></dt>
+</dl></dd>
+<dt>V. <a href="server-programming.html">服务器端编程</a></dt>
+<dd><dl>
+<dt>33. <a href="extend.html">扩展 SQL</a></dt>
+<dt>34. <a href="triggers.html">触发器</a></dt>
+<dt>35. <a href="rules.html">规则系统</a></dt>
+<dt>36. <a href="xplang.html">过程语言</a></dt>
+<dt>37. <a href="plpgsql.html">PL/pgSQL - SQL 过程语言</a></dt>
+<dt>38. <a href="pltcl.html">PL/Tcl - Tcl 过程语言</a></dt>
+<dt>39. <a href="plperl.html">PL/Perl - Perl 过程语言</a></dt>
+<dt>40. <a href="plpython.html">PL/Python - Python 过程语言</a></dt>
+<dt>41. <a href="spi.html">服务器编程接口</a></dt>
+</dl></dd>
+<dt>VI. <a href="reference.html">参考手册</a></dt>
+<dd><dl>
+<dt>I. <a href="sql-commands.html">SQL 命令</a></dt>
+<dt>II. <a href="reference-client.html">PostgreSQL 客户端应用程序</a></dt>
+<dt>III. <a href="reference-server.html">PostgreSQL 服务器应用程序</a></dt>
+</dl></dd>
+<dt>VII. <a href="internals.html">内部</a></dt>
+<dd><dl>
+<dt>42. <a href="overview.html">PostgreSQL 内部概貌</a></dt>
+<dt>43. <a href="catalogs.html">系统表</a></dt>
+<dt>44. <a href="protocol.html">前/后端协议</a></dt>
+<dt>45. <a href="source.html">PostgreSQL 编码约定</a></dt>
+<dt>46. <a href="nls.html">本地语言支持</a></dt>
+<dt>47. <a href="plhandler.html">书写一个过程语言处理器</a></dt>
+<dt>48. <a href="geqo.html">基因查询优化器</a></dt>
+<dt>49. <a href="indexam.html">索引访问方法接口定义</a></dt>
+<dt>50. <a href="gist.html">GiST 索引</a></dt>
+<dt>51. <a href="gin.html">GIN 索引</a></dt>
+<dt>52. <a href="storage.html">数据库物理存储</a></dt>
+<dt>53. <a href="bki.html">BKI 后端接口</a></dt>
+<dt>54. <a href="planner-stats-details.html">规划器如何使用统计信息</a></dt>
+</dl></dd>
+<dt>VIII. <a href="appendixes.html">附录</a></dt>
+<dd><dl>
+<dt>A. <a href="errcodes-appendix.html">PostgreSQL 错误代码</a></dt>
+<dt>B. <a href="datetime-appendix.html">日期/时间支持</a></dt>
+<dt>C. <a href="sql-keywords-appendix.html">SQL 关键字</a></dt>
+<dt>D. <a href="features.html">SQL 兼容性</a></dt>
+<dt>F. <a href="cvs.html">CVS 仓库</a></dt>
+<dt>G. <a href="docguide.html">文档</a></dt>
+<dt>H. <a href="external-projects.html">外部项目</a></dt>
+</dl></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top">&nbsp;</td><td width="34%" align="center" valign="top">&nbsp;</td><td width="33%" align="right" valign="top"><a href="preface.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">&nbsp;</td><td width="34%" align="center" valign="top">&nbsp;</td><td width="33%" align="right" valign="top">前言</td></tr>
+</table>
+</div>
+</body></html>

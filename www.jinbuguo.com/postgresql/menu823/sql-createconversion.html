@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE CONVERSION</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createconstraint.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createconstraint.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createdatabase.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createdatabase.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATECONVERSION"></a>CREATE CONVERSION</h1>
+<div class="REFNAMEDIV"><a name="AEN46844"></a><h2>名称</h2>CREATE CONVERSION&nbsp;--&nbsp;定义一个新的的编码转换</div>
+<a name="AEN46847"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN46849"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE [ DEFAULT ] CONVERSION <tt class="REPLACEABLE"><i>name</i></tt>
+    FOR <tt class="REPLACEABLE"><i>source_encoding</i></tt> TO <tt class="REPLACEABLE"><i>dest_encoding</i></tt> FROM <tt class="REPLACEABLE"><i>funcname</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECONVERSION-DESCRIPTION"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE CONVERSION</tt> 定义字符集之间的转换。转换的名字可以用在 <code class="FUNCTION">convert</code> 函数内部声明特定的编码转换。同样，标记为 <tt class="LITERAL">DEFAULT</tt> 的转换可以用于在前端和后端之间的自动编码转换。出于这个原因，必须定义两种转换，从编码 A 到 B <span class="emphasis"><i class="EMPHASIS">和</i></span> 从编码 B 到 A 。</p>
+<p>为了可以创建转换，你必须在函数上有 <tt class="LITERAL">EXECUTE</tt> 权限并且在目标模式上有 <tt class="LITERAL">CREATE</tt> 权限。</p>
+</div>
+<div class="REFSECT1"><a name="AEN46865"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">DEFAULT</tt></dt>
+<dd><p><tt class="LITERAL">DEFAULT</tt> 子句表示这种转换是从这种源编码到目标编码的缺省转换。同一个模式里每一对编码应该只有一个缺省编码转换。</p></dd>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>转换的名字。转换名可以用模式修饰。如果没有，那么转换就在当前模式中定义。转换名在一个模式里必须唯一。</p></dd>
+<dt><tt class="REPLACEABLE"><i>source_encoding</i></tt></dt>
+<dd><p>源编码名</p></dd>
+<dt><tt class="REPLACEABLE"><i>dest_encoding</i></tt></dt>
+<dd><p>目标编码名</p></dd>
+<dt><tt class="REPLACEABLE"><i>funcname</i></tt></dt>
+<dd><p>用于执行转换的函数。这个函数名可以用模式名修饰。如果没有，那么将从路径中找出这个函数。</p>
+<p>此函数必须有如下的样子：</p>
+<pre class="PROGRAMLISTING">conv_proc(
+    integer,  -- 源编码 ID
+    integer,  -- 目的编码 ID
+    cstring,  -- 源字符串(空结尾的 C 字符串)
+    internal, -- 目的字符串(用空结尾的C字符串填充)
+    integer   -- 源字符串长度
+) RETURNS void;</pre></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECONVERSION-NOTES"></a><h2>注意</h2>
+<p>用 <tt class="COMMAND">DROP CONVERSION</tt> 删除用户定义的转换。</p>
+<p>创建转换所需要的权限可能在未来的版本中改变。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECONVERSION-EXAMPLES"></a><h2>例子</h2>
+<p>用 <code class="FUNCTION">myfunc</code> 创建一个从 <tt class="LITERAL">UTF8</tt> 编码到 <tt class="LITERAL">LATIN1</tt> 编码的转换：</p>
+<pre class="PROGRAMLISTING">CREATE CONVERSION myconv FOR 'UTF8' TO 'LATIN1' FROM myfunc;</pre>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECONVERSION-COMPAT"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">CREATE CONVERSION</tt> 是 PostgreSQL 的扩展。在 SQL 标准里没有 <tt class="COMMAND">CREATE CONVERSION</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECONVERSION-SEEALSO"></a><h2>又见</h2><a href="sql-alterconversion.html"><i>ALTER CONVERSION</i></a>, <a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a>, <a href="sql-dropconversion.html"><i>DROP CONVERSION</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createconstraint.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createdatabase.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE CONSTRAINT TRIGGER</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE DATABASE</td></tr>
+</table>
+</div>
+</body></html>

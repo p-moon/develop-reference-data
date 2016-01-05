@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>布尔类型</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="datatype-datetime.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="datatype.html">快退</a></td><td width="60%" align="center" valign="bottom">章8. Data Types</td><td width="10%" align="right" valign="top"><a href="datatype.html">快进</a></td><td width="10%" align="right" valign="top"><a href="datatype-geometric.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DATATYPE-BOOLEAN">8.6. 布尔类型</a></h1><a name="AEN5230"></a><a name="AEN5233"></a><a name="AEN5235"></a>
+<p>PostgreSQL支持 SQL 标准的 <tt class="TYPE">boolean</tt> 数据类型。<tt class="TYPE">boolean</tt> 只能有"true"(真)或"false"(假)两个状态之一，第三种"unknown"(未知)状态，用 NULL 表示。</p>
+<p>"真"值的有效文本值是：
+<table border="0">
+<tbody>
+<tr><td><tt class="LITERAL">TRUE</tt></td></tr>
+<tr><td><tt class="LITERAL">'t'</tt></td></tr>
+<tr><td><tt class="LITERAL">'true'</tt></td></tr>
+<tr><td><tt class="LITERAL">'y'</tt></td></tr>
+<tr><td><tt class="LITERAL">'yes'</tt></td></tr>
+<tr><td><tt class="LITERAL">'1'</tt></td></tr>
+</tbody>
+</table>
+对于"假"，你可以使用下面这些：
+<table border="0">
+<tbody>
+<tr><td><tt class="LITERAL">FALSE</tt></td></tr>
+<tr><td><tt class="LITERAL">'f'</tt></td></tr>
+<tr><td><tt class="LITERAL">'false'</tt></td></tr>
+<tr><td><tt class="LITERAL">'n'</tt></td></tr>
+<tr><td><tt class="LITERAL">'no'</tt></td></tr>
+<tr><td><tt class="LITERAL">'0'</tt></td></tr>
+</tbody>
+</table>
+使用 <tt class="LITERAL">TRUE</tt> 和 <tt class="LITERAL">FALSE</tt> 这样的字眼比较好(也是 SQL 兼容的用法)。</p>
+<div class="EXAMPLE"><a name="DATATYPE-BOOLEAN-EXAMPLE"></a>
+<p><b>例8-2. 使用 <tt class="TYPE">boolean</tt> 类型</b></p>
+<pre class="PROGRAMLISTING">CREATE TABLE test1 (a boolean, b text);
+INSERT INTO test1 VALUES (TRUE, 'sic est');
+INSERT INTO test1 VALUES (FALSE, 'non est');
+SELECT * FROM test1;
+ a |    b
+---+---------
+ t | sic est
+ f | non est
+
+SELECT * FROM test1 WHERE a;
+ a |    b
+---+---------
+ t | sic est</pre>
+</div>
+<p><a href="datatype-boolean.html#DATATYPE-BOOLEAN-EXAMPLE">例8-2</a> 显示了使用字母 <tt class="LITERAL">t</tt> 和 <tt class="LITERAL">f</tt> 输出 <tt class="TYPE">boolean</tt> 数值的例子。</p>
+<p><tt class="TYPE">boolean</tt> 使用 1 字节存储空间。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="datatype-datetime.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="datatype-geometric.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">日期/时间类型</td><td width="34%" align="center" valign="top"><a href="datatype.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">几何类型</td></tr>
+</table>
+</div>
+</body></html>

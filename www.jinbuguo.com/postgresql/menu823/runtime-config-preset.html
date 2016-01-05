@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>预置选项</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="runtime-config-compatible.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime-config.html">快退</a></td><td width="60%" align="center" valign="bottom">章17. 服务器配置</td><td width="10%" align="right" valign="top"><a href="runtime-config.html">快进</a></td><td width="10%" align="right" valign="top"><a href="runtime-config-custom.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="RUNTIME-CONFIG-PRESET">17.13. 预置选项</a></h1>
+<p>下面的"参数"是只读的，它们是在编译或安装 PostgreSQL 的时候决定的。因此，他们被排除在了 <tt class="FILENAME">postgresql.conf</tt> 文件之外。这些选项报告各种 PostgreSQL 某些应用可能感兴趣的行为，特别是管理性的前端。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-BLOCK-SIZE"></a><tt class="VARNAME">block_size</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>报告磁盘块的大小。它是由编译服务器时 <tt class="LITERAL">BLCKSZ</tt> 的值确定的。缺省值是 8192 字节。有些配置变量的含义(比如 <a href="runtime-config-resource.html#GUC-SHARED-BUFFERS">shared_buffers</a>)会被 <tt class="VARNAME">block_size</tt> 影响。参阅<a href="runtime-config-resource.html">节17.4</a>获取信息。</p></dd>
+<dt><a name="GUC-INTEGER-DATETIMES"></a><tt class="VARNAME">integer_datetimes</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>报告 PostgreSQL 是否在编译时打开了 64 位整数日期和时间。这是由配置选项 <tt class="LITERAL">--enable-integer-datetimes</tt> 设置的。缺省值是 <tt class="LITERAL">off</tt> 。</p></dd>
+<dt><a name="GUC-LC-COLLATE"></a><tt class="VARNAME">lc_collate</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>报告文本数据排序使用的区域。参阅<a href="locale.html">节21.1</a>获取更多信息。该值是在初始化数据库集群的时候确定的。</p></dd>
+<dt><a name="GUC-LC-CTYPE"></a><tt class="VARNAME">lc_ctype</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>报告决定字符分类的区域。参阅<a href="locale.html">节21.1</a>获取更多信息。该值是在数据库集群初始化的时候决定的。通常它和 <tt class="VARNAME">lc_collate</tt> 一样，但是可以为特殊应用设置成不同的值。</p></dd>
+<dt><a name="GUC-MAX-FUNCTION-ARGS"></a><tt class="VARNAME">max_function_args</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>报告函数参数的最大个数。它是由编译服务器时的 <tt class="LITERAL">FUNC_MAX_ARGS</tt> 值决定的。缺省是 100 。</p></dd>
+<dt><a name="GUC-MAX-IDENTIFIER-LENGTH"></a><tt class="VARNAME">max_identifier_length</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>报告最大标识符长度。它是由编译服务器时的 <tt class="LITERAL">NAMEDATALEN</tt> 值减一决定的。<tt class="LITERAL">NAMEDATALEN</tt> 的缺省值是 64 ；因此 <tt class="VARNAME">max_identifier_length</tt> 的缺省是 63 。</p></dd>
+<dt><a name="GUC-MAX-INDEX-KEYS"></a><tt class="VARNAME">max_index_keys</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>报告最大索引键字的个数。它是由编译服务器时的 <tt class="LITERAL">INDEX_MAX_KEYS</tt> 值决定的。缺省值是 32 。</p></dd>
+<dt><a name="GUC-SERVER-ENCODING"></a><tt class="VARNAME">server_encoding</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>报告数据库编码(字符集)。这是在创建数据库的时候决定的。通常，客户端只需要关心 <a href="runtime-config-client.html#GUC-CLIENT-ENCODING">client_encoding</a> 的值。</p></dd>
+<dt><a name="GUC-SERVER-VERSION"></a><tt class="VARNAME">server_version</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>报告服务器版本号。它是由编译服务器时的 <tt class="LITERAL">PG_VERSION</tt> 值决定的。</p></dd>
+<dt><a name="GUC-SERVER-VERSION-NUM"></a><tt class="VARNAME">server_version_num</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>报告服务器版本号的整数值。它是由编译服务器时的 <tt class="LITERAL">PG_VERSION_NUM</tt> 值决定的。</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="runtime-config-compatible.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="runtime-config-custom.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">版本和平台兼容性</td><td width="34%" align="center" valign="top"><a href="runtime-config.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">自定义的选项</td></tr>
+</table>
+</div>
+</body></html>

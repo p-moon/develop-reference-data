@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>2.4. 挂载新分区</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第二章 准备一个新分区</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="creatingfilesystem.html" title="在新分区上创建文件系统">后退</a>
+          <p>在新分区上创建文件系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../chapter03/chapter03.html" title="软件包和补丁">前进</a>
+          <p>软件包和补丁</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter02.html" title="第二章 准备一个新分区">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">2.4. 挂载新分区</h1>
+      </div>
+      <p>创建文件系统之后，要让分区可以访问，需要把分区挂载到一个选定的挂载点上。考虑在本书的目的，我们假定文件系统挂载到 <tt class="filename">/mnt/lfs</tt> ，但是您也可以选择别的目录。</p>
+      <p>选定一个挂载点，并指定给 <tt class="envar">LFS</tt> 环境变量，请运行命令：</p>
+      <pre class="userinput"><kbd class="command">export LFS=/mnt/lfs</kbd></pre>
+      <p>下一步，创建这个挂载点，并挂载 LFS 文件系统，请运行命令：</p>
+      <pre class="userinput"><kbd class="command">mkdir -pv $LFS
+mount -v -t ext3 /dev/<em class="replaceable"><tt>&lt;xxx&gt;</tt></em> $LFS</kbd></pre>
+      <p>用您创建的 LFS 分区名称替换 <em class="replaceable"><tt>&lt;xxx&gt;</tt></em> 。</p>
+      <p>如果 LFS 装在多个分区上(比如一个分区用于 <tt class="filename">/</tt> 目录，另一个分区用于 <tt class="filename">/usr</tt> 目录)，用下面的命令挂载它们：</p>
+      <pre class="userinput"><kbd class="command">mkdir -pv $LFS
+mount -v -t ext3 /dev/<em class="replaceable"><tt>&lt;xxx&gt;</tt></em> $LFS
+mkdir -v $LFS/usr
+mount -v -t ext3 /dev/<em class="replaceable"><tt>&lt;yyy&gt;</tt></em> $LFS/usr</kbd></pre>
+      <p>用相应的分区名称替换 <em class="replaceable"><tt>&lt;xxx&gt;</tt></em> 和 <em class="replaceable"><tt>&lt;yyy&gt;</tt></em> 。</p>
+      <p>请确认挂载新分区的时候没有使用太多的限制选项(如 <tt class="option">nosuid</tt>, <tt class="option">nodev</tt>, <tt class="option">noatime</tt> 选项)。运行不带参数的 <span><strong class="command">mount</strong></span> 命令看看挂载的 LFS 分区设置了什么选项，如果出现了 <em class="parameter"><tt>nosuid</tt></em>, <em class="parameter"><tt>nodev</tt></em>, <em class="parameter"><tt>noatime</tt></em> 选项之一，您就需要重新挂载这个分区。</p>
+      <p>如果你使用了交换分区，可以使用下述 <span><strong class="command">swapon</strong></span> 命令确保它被启用了：</p>
+      <pre class="userinput"><kbd class="command">/sbin/swapon -v /dev/<em class="replaceable"><tt>&lt;zzz&gt;</tt></em></kbd></pre>
+      <p>将 <em class="replaceable"><tt>&lt;zzz&gt;</tt></em> 替换为正确的交换分区名。</p>
+      <p>现在工作的空间已经建立好了，接下来要下载所需的软件包。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="creatingfilesystem.html" title="在新分区上创建文件系统">后退</a>
+          <p>在新分区上创建文件系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../chapter03/chapter03.html" title="软件包和补丁">前进</a>
+          <p>软件包和补丁</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter02.html" title="第二章 准备一个新分区">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

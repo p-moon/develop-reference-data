@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.9. Expect-5.43.0</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="tcl.html" title="Tcl-8.4.13">后退</a>
+          <p>Tcl-8.4.13</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="dejagnu.html" title="DejaGNU-1.4.4">前进</a>
+          <p>DejaGNU-1.4.4</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.9. Expect-5.43.0</h1>
+      </div>
+      <div class="package">
+        <p>Expect 软件包包含一个通过执行脚本对话框与其它交互式程序通信的工具。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">4 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.9.1. 安装 Expect</h2>
+        </div>
+        <p>先修正一个可能导致 GCC 测试程序假失败的 bug ：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../expect-5.43.0-spawn-1.patch</kbd></pre>
+        <p>为编译 Expect 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/tools --with-tcl=/tools/lib \
+  --with-tclinclude=/tools/include --with-x=no</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--with-tcl=/tools/lib</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项确保配置脚本找到的是安装在临时工具目录下的 Tcl ，而不是宿主系统里的。</p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--with-tclinclude=/tools/include</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项告诉 Expect 到哪里寻找 Tcl 的源代码目录和头文件。使用这个选项可以避免 <span><strong class="command">configure</strong></span> 脚本因为找不到 Tcl 的源代码目录而导致的失败。</p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--with-x=no</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项告诉 <span><strong class="command">configure</strong></span> 脚本不要搜索 Tk(Tcl的图形界面组件)或者 X Window 系统的库，这两者都可能位于宿主系统上。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make test</tt></strong> 。请注意，已知 Expect 的测试程序会在某些不在我们控制范围内的宿主系统下出现测试失败。因此，如果您运行这里的测试程序失败了也没关系，因为这并不关键。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make SCRIPTS="" install</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>make 参数的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>SCRIPTS=""</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项防止安装 Expect 所补充的一些并不需要的脚本。</p>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-expect" name="contents-expect"></a>
+          <h2 class="sect2">5.9.2. Expect 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">expect</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">安装的库：</span></strong> <span class="seg">libexpect-5.43.a</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3669453" name="id3669453"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="expect" name="expect"></a><span class="term"><span><strong class="command">expect</strong></span></span></td>
+                <td><p>按照一个脚本与其它交互式程序通信</p></td>
+              </tr>
+              <tr>
+                <td><a id="libexpect" name="libexpect"></a><span class="term"><tt class="filename">libexpect-5.43.a</tt></span></td>
+                <td><p>包含的函数可以让 Expect 作为 Tcl 的扩展来使用，或者直接被 C 或 C++ 使用(不需要 Tcl) </p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="tcl.html" title="Tcl-8.4.13">后退</a>
+          <p>Tcl-8.4.13</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="dejagnu.html" title="DejaGNU-1.4.4">前进</a>
+          <p>DejaGNU-1.4.4</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

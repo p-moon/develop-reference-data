@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>几何函数和操作符</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-datetime.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="functions-net.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-GEOMETRY">9.10. 几何函数和操作符</a></h1>
+<p>有许多内置函数和操作符支持几何类型 <tt class="TYPE">point</tt>, <tt class="TYPE">box</tt>, <tt class="TYPE">lseg</tt>, <tt class="TYPE">line</tt>, <tt class="TYPE">path</tt>, <tt class="TYPE">polygon</tt>, <tt class="TYPE">circle</tt> ，在<a href="functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">表9-28</a>, <a href="functions-geometry.html#FUNCTIONS-GEOMETRY-FUNC-TABLE">表9-29</a>, <a href="functions-geometry.html#FUNCTIONS-GEOMETRY-CONV-TABLE">表9-30</a>中展示。</p>
+<div class="CAUTION">
+<table class="CAUTION" border="1" width="100%">
+<tr><td align="CENTER"><b>警告</b></td></tr>
+<tr><td align="LEFT"><p>请注意"相同"操作符 <tt class="LITERAL">~=</tt> 表示 <tt class="TYPE">point</tt>, <tt class="TYPE">box</tt>, <tt class="TYPE">polygon</tt>, <tt class="TYPE">circle</tt> 类型在一般意义上相同。这些类型有些还有一个 <tt class="LITERAL">=</tt> 操作符，不过它只是比较相同的<span class="emphasis"><i class="EMPHASIS">面积</i></span>。其它的标量比较操作符(<tt class="LITERAL">&lt;=</tt> 等)也是为这些类型比较面积。</p></td></tr>
+</table>
+</div>
+<div class="TABLE"><a name="FUNCTIONS-GEOMETRY-OP-TABLE"></a>
+<p><b>表9-28. 几何操作符</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>操作符</th><th>描述</th><th>例子</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">+</tt></td><td>平移</td><td><tt class="LITERAL">box '((0,0),(1,1))' + point '(2.0,0)'</tt></td></tr>
+<tr><td><tt class="LITERAL">-</tt></td><td>平移</td><td><tt class="LITERAL">box '((0,0),(1,1))' - point '(2.0,0)'</tt></td></tr>
+<tr><td><tt class="LITERAL">*</tt></td><td>伸缩/旋转</td><td><tt class="LITERAL">box '((0,0),(1,1))' * point '(2.0,0)'</tt></td></tr>
+<tr><td><tt class="LITERAL">/</tt></td><td>伸缩/旋转</td><td><tt class="LITERAL">box '((0,0),(2,2))' / point '(2.0,0)'</tt></td></tr>
+<tr><td><tt class="LITERAL">#</tt></td><td>交点或者交面</td><td><tt class="LITERAL">'((1,-1),(-1,1))' # '((1,1),(-1,-1))'</tt></td></tr>
+<tr><td><tt class="LITERAL">#</tt></td><td>路径或多边形顶点数</td><td><tt class="LITERAL"># '((1,0),(0,1),(-1,0))'</tt></td></tr>
+<tr><td><tt class="LITERAL">@-@</tt></td><td>长度或者周长</td><td><tt class="LITERAL">@-@ path '((0,0),(1,0))'</tt></td></tr>
+<tr><td><tt class="LITERAL">@@</tt></td><td>中心</td><td><tt class="LITERAL">@@ circle '((0,0),10)'</tt></td></tr>
+<tr><td><tt class="LITERAL">##</tt></td><td>第一个操作数相对第二个操作数的最近点</td><td><tt class="LITERAL">point '(0,0)' ## lseg '((2,0),(0,2))'</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;-&gt;</tt></td><td>间距</td><td><tt class="LITERAL">circle '((0,0),1)' &lt;-&gt; circle '((5,0),1)'</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;&amp;</tt></td><td>重叠?</td><td><tt class="LITERAL">box '((0,0),(1,1))' &amp;&amp; box '((0,0),(2,2))'</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;&lt;</tt></td><td>是否严格在左?</td><td><tt class="LITERAL">circle '((0,0),1)' &lt;&lt; circle '((5,0),1)'</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;&gt;</tt></td><td>是否严格在右?</td><td><tt class="LITERAL">circle '((5,0),1)' &gt;&gt; circle '((0,0),1)'</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;&lt;</tt></td><td>是否没有延伸到右边?</td><td><tt class="LITERAL">box '((0,0),(1,1))' &amp;&lt; box '((0,0),(2,2))'</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;&gt;</tt></td><td>是否没有延伸到左边?</td><td><tt class="LITERAL">box '((0,0),(3,3))' &amp;&gt; box '((0,0),(2,2))'</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;&lt;|</tt></td><td>严格在下?</td><td><tt class="LITERAL">box '((0,0),(3,3))' &lt;&lt;| box '((3,4),(5,5))'</tt></td></tr>
+<tr><td><tt class="LITERAL">|&gt;&gt;</tt></td><td>严格在上?</td><td><tt class="LITERAL">box '((3,4),(5,5))' |&gt;&gt; box '((0,0),(3,3))'</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;&lt;|</tt></td><td>没有延伸到上面?</td><td><tt class="LITERAL">box '((0,0),(1,1))' &amp;&lt;| box '((0,0),(2,2))'</tt></td></tr>
+<tr><td><tt class="LITERAL">|&amp;&gt;</tt></td><td>没有延伸到下面?</td><td><tt class="LITERAL">box '((0,0),(3,3))' |&amp;&gt; box '((0,0),(2,2))'</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;^</tt></td><td>低于(允许接触)?</td><td><tt class="LITERAL">circle '((0,0),1)' &lt;^ circle '((0,5),1)'</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;^</tt></td><td>高于(允许接触)?</td><td><tt class="LITERAL">circle '((0,5),1)' &gt;^ circle '((0,0),1)'</tt></td></tr>
+<tr><td><tt class="LITERAL">?#</tt></td><td>相交?</td><td><tt class="LITERAL">lseg '((-1,0),(1,0))' ?# box '((-2,-2),(2,2))'</tt></td></tr>
+<tr><td><tt class="LITERAL">?-</tt></td><td>水平?</td><td><tt class="LITERAL">?- lseg '((-1,0),(1,0))'</tt></td></tr>
+<tr><td><tt class="LITERAL">?-</tt></td><td>水平对齐?</td><td><tt class="LITERAL">point '(1,0)' ?- point '(0,0)'</tt></td></tr>
+<tr><td><tt class="LITERAL">?|</tt></td><td>竖直?</td><td><tt class="LITERAL">?| lseg '((-1,0),(1,0))'</tt></td></tr>
+<tr><td><tt class="LITERAL">?|</tt></td><td>竖直对齐?</td><td><tt class="LITERAL">point '(0,1)' ?| point '(0,0)'</tt></td></tr>
+<tr><td><tt class="LITERAL">?-|</tt></td><td>垂直?</td><td><tt class="LITERAL">lseg '((0,0),(0,1))' ?-| lseg '((0,0),(1,0))'</tt></td></tr>
+<tr><td><tt class="LITERAL">?||</tt></td><td>平行?</td><td><tt class="LITERAL">lseg '((-1,0),(1,0))' ?|| lseg '((-1,2),(1,2))'</tt></td></tr>
+<tr><td><tt class="LITERAL">@&gt;</tt></td><td>包含?</td><td><tt class="LITERAL">circle '((0,0),2)' @&gt; point '(1,1)'</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;@</tt></td><td>包含或在...上?</td><td><tt class="LITERAL">point '(1,1)' &lt;@ circle '((0,0),2)'</tt></td></tr>
+<tr><td><tt class="LITERAL">~=</tt></td><td>与...相同?</td><td><tt class="LITERAL">polygon '((0,0),(1,1))' ~= polygon '((1,1),(0,0))'</tt></td></tr>
+</tbody>
+</table>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 PostgreSQL 8.2 之前，包含操作符 <tt class="LITERAL">@&gt;</tt> 和 <tt class="LITERAL">&lt;@</tt> 被分别称为 <tt class="LITERAL">~</tt> 和 <tt class="LITERAL">@</tt> 。我们反对使用这两个旧名字(当前仍然可以使用)，它们将来会被废除。</p>
+</blockquote>
+</div>
+<a name="AEN12160"></a><a name="AEN12162"></a><a name="AEN12164"></a><a name="AEN12166"></a><a name="AEN12168"></a><a name="AEN12170"></a><a name="AEN12172"></a><a name="AEN12174"></a><a name="AEN12176"></a><a name="AEN12178"></a><a name="AEN12180"></a><a name="AEN12182"></a>
+<div class="TABLE"><a name="FUNCTIONS-GEOMETRY-FUNC-TABLE"></a>
+<p><b>表9-29. 几何函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>函数</th><th>返回类型</th><th>描述</th><th>例子</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">area</code>(<tt class="REPLACEABLE"><i>object</i></tt>)</tt></td><td><tt class="TYPE">double precision</tt></td><td>面积</td><td><tt class="LITERAL">area(box '((0,0),(1,1))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">center</code>(<tt class="REPLACEABLE"><i>object</i></tt>)</tt></td><td><tt class="TYPE">point</tt></td><td>中心</td><td><tt class="LITERAL">center(box '((0,0),(1,2))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">diameter</code>(<tt class="TYPE">circle</tt>)</tt></td><td><tt class="TYPE">double precision</tt></td><td>圆直径</td><td><tt class="LITERAL">diameter(circle '((0,0),2.0)')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">height</code>(<tt class="TYPE">box</tt>)</tt></td><td><tt class="TYPE">double precision</tt></td><td>矩形的竖直高度</td><td><tt class="LITERAL">height(box '((0,0),(1,1))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">isclosed</code>(<tt class="TYPE">path</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>闭合路径?</td><td><tt class="LITERAL">isclosed(path '((0,0),(1,1),(2,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">isopen</code>(<tt class="TYPE">path</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>开路径?</td><td><tt class="LITERAL">isopen(path '[(0,0),(1,1),(2,0)]')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">length</code>(<tt class="REPLACEABLE"><i>object</i></tt>)</tt></td><td><tt class="TYPE">double precision</tt></td><td>长度</td><td><tt class="LITERAL">length(path '((-1,0),(1,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">npoints</code>(<tt class="TYPE">path</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>点数</td><td><tt class="LITERAL">npoints(path '[(0,0),(1,1),(2,0)]')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">npoints</code>(<tt class="TYPE">polygon</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>点数</td><td><tt class="LITERAL">npoints(polygon '((1,1),(0,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pclose</code>(<tt class="TYPE">path</tt>)</tt></td><td><tt class="TYPE">path</tt></td><td>把路径转换为闭合</td><td><tt class="LITERAL">pclose(path '[(0,0),(1,1),(2,0)]')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">popen</code>(<tt class="TYPE">path</tt>)</tt></td><td><tt class="TYPE">path</tt></td><td>把路径转换为开放</td><td><tt class="LITERAL">popen(path '((0,0),(1,1),(2,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">radius</code>(<tt class="TYPE">circle</tt>)</tt></td><td><tt class="TYPE">double precision</tt></td><td>圆半径</td><td><tt class="LITERAL">radius(circle '((0,0),2.0)')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">width</code>(<tt class="TYPE">box</tt>)</tt></td><td><tt class="TYPE">double precision</tt></td><td>矩形的水平尺寸</td><td><tt class="LITERAL">width(box '((0,0),(1,1))')</tt></td></tr>
+</tbody>
+</table>
+</div>
+<div class="TABLE"><a name="FUNCTIONS-GEOMETRY-CONV-TABLE"></a>
+<p><b>表9-30. 几何类型转换函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>函数</th><th>返回类型</th><th>描述</th><th>例子</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">box</code>(<tt class="TYPE">circle</tt>)</tt></td><td><tt class="TYPE">box</tt></td><td>将圆转换成矩形</td><td><tt class="LITERAL">box(circle '((0,0),2.0)')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">box</code>(<tt class="TYPE">point</tt>, <tt class="TYPE">point</tt>)</tt></td><td><tt class="TYPE">box</tt></td><td>将点转换成矩形</td><td><tt class="LITERAL">box(point '(0,0)', point '(1,1)')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">box</code>(<tt class="TYPE">polygon</tt>)</tt></td><td><tt class="TYPE">box</tt></td><td>将多边形转换成矩形</td><td><tt class="LITERAL">box(polygon '((0,0),(1,1),(2,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">circle</code>(<tt class="TYPE">box</tt>)</tt></td><td><tt class="TYPE">circle</tt></td><td>矩形转换成圆</td><td><tt class="LITERAL">circle(box '((0,0),(1,1))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">circle</code>(<tt class="TYPE">point</tt>, <tt class="TYPE">double precision</tt>)</tt></td><td><tt class="TYPE">circle</tt></td><td>将圆心和半径转换成圆</td><td><tt class="LITERAL">circle(point '(0,0)', 2.0)</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">circle</code>(<tt class="TYPE">polygon</tt>)</tt></td><td><tt class="TYPE">circle</tt></td><td>将多边形转换成园</td><td><tt class="LITERAL">circle(polygon '((0,0),(1,1),(2,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">lseg</code>(<tt class="TYPE">box</tt>)</tt></td><td><tt class="TYPE">lseg</tt></td><td>矩形对角线转化成线段</td><td><tt class="LITERAL">lseg(box '((-1,0),(1,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">lseg</code>(<tt class="TYPE">point</tt>, <tt class="TYPE">point</tt>)</tt></td><td><tt class="TYPE">lseg</tt></td><td>点转换成线段</td><td><tt class="LITERAL">lseg(point '(-1,0)', point '(1,0)')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">path</code>(<tt class="TYPE">polygon</tt>)</tt></td><td><tt class="TYPE">point</tt></td><td>多边形转换成路径</td><td><tt class="LITERAL">path(polygon '((0,0),(1,1),(2,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">point</code>(<tt class="TYPE">double precision</tt>, <tt class="TYPE">double precision</tt>)</tt></td><td><tt class="TYPE">point</tt></td><td>结点</td><td><tt class="LITERAL">point(23.4, -44.5)</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">point</code>(<tt class="TYPE">box</tt>)</tt></td><td><tt class="TYPE">point</tt></td><td>矩形的中心</td><td><tt class="LITERAL">point(box '((-1,0),(1,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">point</code>(<tt class="TYPE">circle</tt>)</tt></td><td><tt class="TYPE">point</tt></td><td>圆心</td><td><tt class="LITERAL">point(circle '((0,0),2.0)')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">point</code>(<tt class="TYPE">lseg</tt>)</tt></td><td><tt class="TYPE">point</tt></td><td>线段的中心</td><td><tt class="LITERAL">point(lseg '((-1,0),(1,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">point</code>(<tt class="TYPE">polygon</tt>)</tt></td><td><tt class="TYPE">point</tt></td><td>多边形的中心</td><td><tt class="LITERAL">point(polygon '((0,0),(1,1),(2,0))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">polygon</code>(<tt class="TYPE">box</tt>)</tt></td><td><tt class="TYPE">polygon</tt></td><td>矩形转换成 4 点多边形</td><td><tt class="LITERAL">polygon(box '((0,0),(1,1))')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">polygon</code>(<tt class="TYPE">circle</tt>)</tt></td><td><tt class="TYPE">polygon</tt></td><td>圆转换成 12 点多边形</td><td><tt class="LITERAL">polygon(circle '((0,0),2.0)')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">polygon</code>(<tt class="REPLACEABLE"><i>npts</i></tt>, <tt class="TYPE">circle</tt>)</tt></td><td><tt class="TYPE">polygon</tt></td><td>圆转换成 <tt class="REPLACEABLE"><i>npts</i></tt> 点多边形</td><td><tt class="LITERAL">polygon(12, circle '((0,0),2.0)')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">polygon</code>(<tt class="TYPE">path</tt>)</tt></td><td><tt class="TYPE">polygon</tt></td><td>路径转换成多边形</td><td><tt class="LITERAL">polygon(path '((0,0),(1,1),(2,0))')</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p>我们可以把一个 <tt class="TYPE">point</tt> 的两个组成部分当作索引分别为 0 和 1 的数组元素进行访问。比如，如果 <tt class="LITERAL">t.p</tt> 是一个 <tt class="TYPE">point</tt> 字段，那么 <tt class="LITERAL">SELECT p[0] FROM t</tt> 检索 X 座标而 <tt class="LITERAL">UPDATE t SET p[1] = ...</tt> 改变 Y 座标。同样，<tt class="TYPE">box</tt> 或 <tt class="TYPE">lseg</tt> 的值可以当作两个 <tt class="TYPE">point</tt> 的数组值看待。</p>
+<p><code class="FUNCTION">area</code> 函数可以用于 <tt class="TYPE">box</tt>, <tt class="TYPE">circle</tt>, <tt class="TYPE">path</tt> 类型。<code class="FUNCTION">area</code> 函数操作 <tt class="TYPE">path</tt> 数据类型的时候，只有在 <tt class="TYPE">path</tt> 的点没有交叉的情况下才可用。比如，<tt class="TYPE">path</tt> <tt class="LITERAL">'((0,0),(0,1),(2,1),(2,2),(1,2),(1,0),(0,0))'::PATH</tt> 是不行的，而下面的视觉等效 <tt class="TYPE">path</tt> <tt class="LITERAL">'((0,0),(0,1),(1,1),(1,2),(2,2),(2,1),(1,1),(1,0),(0,0))'::PATH</tt> 就可以。如果交叉和不交叉的 <tt class="TYPE">path</tt> 概念让你胡涂，那么把上面两个 <tt class="TYPE">path</tt> 都画在纸上，你就明白了。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-datetime.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="functions-net.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">时间/日期函数和操作符</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">网络地址函数和操作符</td></tr>
+</table>
+</div>
+</body></html>

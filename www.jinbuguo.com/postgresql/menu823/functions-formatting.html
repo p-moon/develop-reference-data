@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>数据类型格式化函数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-matching.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="functions-datetime.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-FORMATTING">9.8. 数据类型格式化函数</a></h1><a name="AEN10227"></a><a name="AEN10229"></a><a name="AEN10231"></a><a name="AEN10233"></a><a name="AEN10235"></a>
+<p>PostgreSQL 格式化函数提供一套有效的工具用于把各种数据类型转换成格式化的字符串以及反过来从格式化的字符串转换成指定的数据类型。<a href="functions-formatting.html#FUNCTIONS-FORMATTING-TABLE">表9-20</a>列出了这些函数。这些函数都遵循一个公共的调用习惯：第一个参数是待格式化的值，而第二个是定义输出或输出格式的模板。</p>
+<p><code class="FUNCTION">to_timestamp</code> 函数也能接受一个 <tt class="TYPE">double precision</tt> 参数，把它从 Unix 纪元转换成 <tt class="TYPE">timestamp with time zone</tt>。<tt class="TYPE">Integer</tt> 类型的 Unix 纪元隐含地转换成了 <tt class="TYPE">double precision</tt> 。</p>
+<div class="TABLE"><a name="FUNCTIONS-FORMATTING-TABLE"></a>
+<p><b>表9-20. 格式化函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>函数</th><th>返回类型</th><th>描述</th><th>例子</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_char</code>(<tt class="TYPE">timestamp</tt>, <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把时间戳转换成字符串</td><td><tt class="LITERAL">to_char(current_timestamp, 'HH12:MI:SS')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_char</code>(<tt class="TYPE">interval</tt>, <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把时间间隔转为字符串</td><td><tt class="LITERAL">to_char(interval '15h&nbsp;2m&nbsp;12s', 'HH24:MI:SS')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_char</code>(<tt class="TYPE">int</tt>, <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把整数转换成字符串</td><td><tt class="LITERAL">to_char(125, '999')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_char</code>(<tt class="TYPE">double precision</tt>, <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把实数/双精度数转换成字符串</td><td><tt class="LITERAL">to_char(125.8::real, '999D9')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_char</code>(<tt class="TYPE">numeric</tt>, <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把数字转换成字符串</td><td><tt class="LITERAL">to_char(-125.8, '999D99S')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_date</code>(<tt class="TYPE">text</tt>, <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">date</tt></td><td>把字符串转换成日期</td><td><tt class="LITERAL">to_date('05&nbsp;Dec&nbsp;2000', 'DD&nbsp;Mon&nbsp;YYYY')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_number</code>(<tt class="TYPE">text</tt>, <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">numeric</tt></td><td>把字符串转换成数字</td><td><tt class="LITERAL">to_number('12,454.8-', '99G999D9S')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_timestamp</code>(<tt class="TYPE">text</tt>, <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">timestamp with time zone</tt></td><td>把字符串转换成时间戳</td><td><tt class="LITERAL">to_timestamp('05&nbsp;Dec&nbsp;2000', 'DD&nbsp;Mon&nbsp;YYYY')</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_timestamp</code>(<tt class="TYPE">double precision</tt>)</tt></td><td><tt class="TYPE">timestamp with time zone</tt></td><td>把 UNIX 纪元转换成时间戳</td><td><tt class="LITERAL">to_timestamp(200120400)</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p>在输出模板字符串里(对 <code class="FUNCTION">to_char</code> 而言)，该函数族可以识别一些特定的模式，并且把待格式化的数值正确地格式化成相应的数据。任何不属于模板模式的文本都简单地逐字拷贝。同样，在一个输入模板字符串里(对除 <code class="FUNCTION">to_char</code> 外的任何东西)，模板模式标识要查看的输入数据字符串，并且将在该位置寻找数值。</p>
+<p><a href="functions-formatting.html#FUNCTIONS-FORMATTING-DATETIME-TABLE">表9-21</a>显示了可以用于格式化日期和时间值的模版。</p>
+<div class="TABLE"><a name="FUNCTIONS-FORMATTING-DATETIME-TABLE"></a>
+<p><b>表9-21. 用于日期/时间格式化的模式</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>模式</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">HH</tt></td><td>一天的小时数(01-12)</td></tr>
+<tr><td><tt class="LITERAL">HH12</tt></td><td>一天的小时数(01-12)</td></tr>
+<tr><td><tt class="LITERAL">HH24</tt></td><td>一天的小时数(00-23)</td></tr>
+<tr><td><tt class="LITERAL">MI</tt></td><td>分钟(00-59)</td></tr>
+<tr><td><tt class="LITERAL">SS</tt></td><td>秒(00-59)</td></tr>
+<tr><td><tt class="LITERAL">MS</tt></td><td>毫秒(000-999)</td></tr>
+<tr><td><tt class="LITERAL">US</tt></td><td>微秒(000000-999999)</td></tr>
+<tr><td><tt class="LITERAL">SSSS</tt></td><td>午夜后的秒(0-86399)</td></tr>
+<tr><td><tt class="LITERAL">AM</tt> 或 <tt class="LITERAL">A.M.</tt> 或 <tt class="LITERAL">PM</tt> 或 <tt class="LITERAL">P.M.</tt></td><td>上下午标识(大写)</td></tr>
+<tr><td><tt class="LITERAL">am</tt> 或 <tt class="LITERAL">a.m.</tt> 或 <tt class="LITERAL">pm</tt> 或 <tt class="LITERAL">p.m.</tt></td><td>上下午标识(小写)</td></tr>
+<tr><td><tt class="LITERAL">Y,YYY</tt></td><td>带逗号的年(4 和更多位)</td></tr>
+<tr><td><tt class="LITERAL">YYYY</tt></td><td>年(4 和更多位)</td></tr>
+<tr><td><tt class="LITERAL">YYY</tt></td><td>年的后三位</td></tr>
+<tr><td><tt class="LITERAL">YY</tt></td><td>年的后两位</td></tr>
+<tr><td><tt class="LITERAL">Y</tt></td><td>年的最后一位</td></tr>
+<tr><td><tt class="LITERAL">IYYY</tt></td><td>ISO年(4 位或更多位)</td></tr>
+<tr><td><tt class="LITERAL">IYY</tt></td><td>ISO年的最后三位</td></tr>
+<tr><td><tt class="LITERAL">IY</tt></td><td>ISO年的最后两位</td></tr>
+<tr><td><tt class="LITERAL">I</tt></td><td>ISO年的最后一位</td></tr>
+<tr><td><tt class="LITERAL">BC</tt> 或 <tt class="LITERAL">B.C.</tt> 或 <tt class="LITERAL">AD</tt> 或 <tt class="LITERAL">A.D.</tt></td><td>纪元标识(大写)</td></tr>
+<tr><td><tt class="LITERAL">bc</tt> 或 <tt class="LITERAL">b.c.</tt> 或 <tt class="LITERAL">ad</tt> 或 <tt class="LITERAL">a.d.</tt></td><td>纪元标识(小写)</td></tr>
+<tr><td><tt class="LITERAL">MONTH</tt></td><td>全长大写月份名(空白填充为 9 字符)</td></tr>
+<tr><td><tt class="LITERAL">Month</tt></td><td>全长混合大小写月份名(空白填充为 9 字符)</td></tr>
+<tr><td><tt class="LITERAL">month</tt></td><td>全长小写月份名(空白填充为 9 字符)</td></tr>
+<tr><td><tt class="LITERAL">MON</tt></td><td>大写缩写月份名(3 字符)</td></tr>
+<tr><td><tt class="LITERAL">Mon</tt></td><td>混合大小写缩写月份名(3 字符)</td></tr>
+<tr><td><tt class="LITERAL">mon</tt></td><td>小写缩写月份名(3 字符)</td></tr>
+<tr><td><tt class="LITERAL">MM</tt></td><td>月份数(01-12)</td></tr>
+<tr><td><tt class="LITERAL">DAY</tt></td><td>全长大写日期名(空白填充为 9 字符)</td></tr>
+<tr><td><tt class="LITERAL">Day</tt></td><td>全长混合大小写日期名(空白填充为 9 字符)</td></tr>
+<tr><td><tt class="LITERAL">day</tt></td><td>全长小写日期名(空白填充为 9 字符)</td></tr>
+<tr><td><tt class="LITERAL">DY</tt></td><td>缩写大写日期名(3 字符)</td></tr>
+<tr><td><tt class="LITERAL">Dy</tt></td><td>缩写混合大小写日期名(3 字符)</td></tr>
+<tr><td><tt class="LITERAL">dy</tt></td><td>缩写小写日期名(3 字符)</td></tr>
+<tr><td><tt class="LITERAL">DDD</tt></td><td>一年里的日(001-366)</td></tr>
+<tr><td><tt class="LITERAL">DD</tt></td><td>一个月里的日(01-31)</td></tr>
+<tr><td><tt class="LITERAL">D</tt></td><td>	一周里的日(1-7 ；周日是 1)</td></tr>
+<tr><td><tt class="LITERAL">W</tt></td><td>一个月里的周数(1-5)(第一周从该月第一天开始)</td></tr>
+<tr><td><tt class="LITERAL">WW</tt></td><td>一年里的周数(1-53)(第一周从该年的第一天开始)</td></tr>
+<tr><td><tt class="LITERAL">IW</tt></td><td>ISO一年里的周数(第一个星期四在第一周里)</td></tr>
+<tr><td><tt class="LITERAL">CC</tt></td><td>世纪(2 位)(20 世纪从 2001-01-01 开始)</td></tr>
+<tr><td><tt class="LITERAL">J</tt></td><td>儒略日(自公元前 4712 年 1 月 1 日来的天数)</td></tr>
+<tr><td><tt class="LITERAL">Q</tt></td><td>季度</td></tr>
+<tr><td><tt class="LITERAL">RM</tt></td><td>罗马数字的月份(I-XII ；I=JAN)(大写)</td></tr>
+<tr><td><tt class="LITERAL">rm</tt></td><td>罗马数字的月份(I-XII ；I=JAN)(小写)</td></tr>
+<tr><td><tt class="LITERAL">TZ</tt></td><td>时区名(大写)</td></tr>
+<tr><td><tt class="LITERAL">tz</tt></td><td>时区名(小写)</td></tr>
+</tbody>
+</table>
+</div>
+<p>有一些修饰词可以应用于模板来修改它们的行为。比如，<tt class="LITERAL">FMMonth</tt> 就是带着 <tt class="LITERAL">FM</tt> 前缀的 <tt class="LITERAL">Month</tt> 模式。<a href="functions-formatting.html#FUNCTIONS-FORMATTING-DATETIMEMOD-TABLE">表9-22</a>显示了用于日期/时间格式化的修饰词模式。</p>
+<div class="TABLE"><a name="FUNCTIONS-FORMATTING-DATETIMEMOD-TABLE"></a>
+<p><b>表9-22. 日期/时间格式化的模板模式修饰词</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>修饰符</th><th>描述</th><th>例子</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">FM</tt> 前缀</td><td>填充模式(抑制填充空白和零)</td><td><tt class="LITERAL">FMMonth</tt></td></tr>
+<tr><td><tt class="LITERAL">TH</tt> 后缀</td><td>大写顺序数后缀</td><td><tt class="LITERAL">DDTH</tt></td></tr>
+<tr><td><tt class="LITERAL">th</tt> 后缀</td><td>小写顺序数后缀</td><td><tt class="LITERAL">DDth</tt></td></tr>
+<tr><td><tt class="LITERAL">FX</tt> 前缀</td><td>固定格式全局选项(见用法须知)</td><td><tt class="LITERAL">FX&nbsp;Month&nbsp;DD&nbsp;Day</tt></td></tr>
+<tr><td><tt class="LITERAL">TM</tt> 前缀</td><td>翻译模式(基于 <tt class="VARNAME">lc_messages</tt> 显示本地化的日期和月份名)</td><td><tt class="LITERAL">TMMonth</tt></td></tr>
+<tr><td><tt class="LITERAL">SP</tt> 后缀</td><td>拼写模式(还未实现)</td><td><tt class="LITERAL">DDSP</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p>日期/时间格式化的用法须知：</p>
+<ul>
+<li><p><tt class="LITERAL">FM</tt> 抑制前导的零或尾随的空白，如果没有使用它的话，会在输出中增加这些填充最终把输出变成固定宽度的模式。</p></li>
+<li><p><tt class="LITERAL">TM</tt> 不包含结尾空白。</p></li>
+<li><p>如果没有使用 <tt class="LITERAL">FX</tt> ，<code class="FUNCTION">to_timestamp</code> 和 <code class="FUNCTION">to_date</code> 在转换字符串的时候忽略多个空白。<tt class="LITERAL">FX</tt> 必须做为模板里的第一个项声明。比如 <tt class="LITERAL">to_timestamp('2000&nbsp;&nbsp;&nbsp;&nbsp;JUN', 'YYYY MON')</tt> 是正确的，但是 <tt class="LITERAL">to_timestamp('2000&nbsp;&nbsp;&nbsp;&nbsp;JUN', 'FXYYYY MON')</tt> 会返回一个错误，因为 <code class="FUNCTION">to_timestamp</code> 只预料会有一个空白。</p></li>
+<li><p>在 <code class="FUNCTION">to_char</code> 模板里可以有普通文本，并且它们会被逐字输出。你可以把一个字符串放到双引号里强迫它解释成一个文本，即使它里面包含模式关键字也如此。比如，<tt class="LITERAL">'"Hello Year "YYYY'</tt> 中的 <tt class="LITERAL">YYYY</tt> 将被年份数据代替，但是 <tt class="LITERAL">Year</tt> 里单独的 <tt class="LITERAL">Y</tt> 不会。</p></li>
+<li><p>如果你想在输出里有双引号，那么你必须在它们前面放双反斜杠，比如 <tt class="LITERAL">E'\\"YYYY Month\\"'</tt> (需要两个反斜杠是因为反斜杠在字符串常量里已经有特殊含义了)。</p></li>
+<li><p>如果你使用的年份长于4位字符，那么用 <tt class="LITERAL">YYYY</tt> 从字符串向 <tt class="TYPE">timestamp</tt> 或 <tt class="TYPE">date</tt> 做转换时要受到限制。你必须在 <tt class="LITERAL">YYYY</tt> 后面使用一些非数字字符或者模板，否则年份总是解释为 4 位数字。比如对于 20000 年：<tt class="LITERAL">to_date('200001131', 'YYYYMMDD')</tt> 将会被解释成一个 4 位数字的年份，最好在年后面使用一个非数字的分隔符，像 <tt class="LITERAL">to_date('20000-1131', 'YYYY-MMDD')</tt> 或 <tt class="LITERAL">to_date('20000Nov31', 'YYYYMonDD')</tt> 。</p></li>
+<li><p>在从字符串向 <tt class="TYPE">timestamp</tt> 或 <tt class="TYPE">date</tt> 转换的时候，如果有 <tt class="LITERAL">YYY</tt>, <tt class="LITERAL">YYYY</tt> 或 <tt class="LITERAL">Y,YYY</tt> 字段，那么 <tt class="LITERAL">CC</tt> 字段会被忽略。如果 <tt class="LITERAL">CC</tt> 与 <tt class="LITERAL">YY</tt> 或 <tt class="LITERAL">Y</tt> 一起使用，那么年份用公式 <tt class="LITERAL">(CC-1)*100+YY</tt> 计算。</p></li>
+<li><p>将字符串转化为 <tt class="TYPE">timestamp</tt> 时，毫秒(<tt class="LITERAL">MS</tt>)和微秒(<tt class="LITERAL">US</tt>)都是用字符串的小数点后面的部分转换的。比如 <tt class="LITERAL">to_timestamp('12:3', 'SS:MS')</tt> 不是 3 毫秒, 而是 300 毫秒，因为转换把它看做 12+0.3 秒。这意味着对于格式 <tt class="LITERAL">SS:MS</tt> 而言，输入值 <tt class="LITERAL">12:3</tt>, <tt class="LITERAL">12:30</tt>, <tt class="LITERAL">12:300</tt> 声明了相同的毫秒数。对于 3 毫秒，你必须使用 <tt class="LITERAL">12:003</tt> ，那么转换会把它看做 12+0.003 = 12.003 秒。这个更复杂的例子<tt class="LITERAL">to_timestamp('15:12:02.020.001230', 'HH:MI:SS.MS.US')</tt> 是 15小时、12分钟、2秒+20毫秒+1230微秒 = 2.021230秒。</p></li>
+<li><p><code class="FUNCTION">to_char</code> 的星期编号(参阅'D'格式化模式)与 <code class="FUNCTION">extract</code> 的不同。</p></li>
+<li><p><code class="FUNCTION">to_char(interval)</code> 将 <tt class="LITERAL">HH</tt> 和 <tt class="LITERAL">HH12</tt> 格式化为一日之内的小时数，而 <tt class="LITERAL">HH24</tt> 可以输出超出一日的小时数，比如 &gt;24 。</p></li>
+</ul>
+<p><a href="functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE">表9-23</a> shows the template patterns available for formatting numeric values</p>
+<div class="TABLE"><a name="FUNCTIONS-FORMATTING-NUMERIC-TABLE"></a>
+<p><b>表9-23. 显示了可以用于数值格式化的模版模式。</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>模式</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">9</tt></td><td>带有指定数值位数的值</td></tr>
+<tr><td><tt class="LITERAL">0</tt></td><td>带前导零的值</td></tr>
+<tr><td><tt class="LITERAL">.</tt> (句点)</td><td>小数点</td></tr>
+<tr><td><tt class="LITERAL">,</tt> (逗号)</td><td>分组(千)分隔符</td></tr>
+<tr><td><tt class="LITERAL">PR</tt></td><td>尖括号内负值</td></tr>
+<tr><td><tt class="LITERAL">S</tt></td><td>带符号的数值(使用区域设置)</td></tr>
+<tr><td><tt class="LITERAL">L</tt></td><td>货币符号(使用区域设置)</td></tr>
+<tr><td><tt class="LITERAL">D</tt></td><td>小数点(使用区域设置)</td></tr>
+<tr><td><tt class="LITERAL">G</tt></td><td>分组分隔符(使用区域设置)</td></tr>
+<tr><td><tt class="LITERAL">MI</tt></td><td>在指明的位置的负号(如果数字 &lt; 0)</td></tr>
+<tr><td><tt class="LITERAL">PL</tt></td><td>在指明的位置的正号(如果数字 &gt; 0)</td></tr>
+<tr><td><tt class="LITERAL">SG</tt></td><td>在指明的位置的正/负号</td></tr>
+<tr><td><tt class="LITERAL">RN</tt></td><td>罗马数字(输入在 1 和 3999 之间)</td></tr>
+<tr><td><tt class="LITERAL">TH</tt> 或 <tt class="LITERAL">th</tt></td><td>序数后缀</td></tr>
+<tr><td><tt class="LITERAL">V</tt></td><td>移动指定位(小数)(参阅注解)</td></tr>
+<tr><td><tt class="LITERAL">EEEE</tt></td><td>科学记数(尚未实现)</td></tr>
+</tbody>
+</table>
+</div>
+<p>数字格式化的用法须知：</p>
+<ul>
+<li><p>使用 <tt class="LITERAL">SG</tt>, <tt class="LITERAL">PL</tt>, <tt class="LITERAL">MI</tt> 生成的符号并不挂在数字上面；比如，<tt class="LITERAL">to_char(-12, 'S9999')</tt> 生成 <tt class="LITERAL">'&nbsp;&nbsp;-12'</tt> ；<tt class="LITERAL">to_char(-12, 'MI9999')</tt> 生成 <tt class="LITERAL">'-&nbsp;&nbsp;12'</tt> 。Oracle里的实现不允许在 <tt class="LITERAL">9</tt> 前面使用 <tt class="LITERAL">MI</tt> ，而是要求 <tt class="LITERAL">9</tt> 在 <tt class="LITERAL">MI</tt> 前面。</p></li>
+<li><p><tt class="LITERAL">9</tt> 声明和 <tt class="LITERAL">9</tt> 的个数相同的数字位数的数值。如果某个数值位没有数字，则输出一个空白。</p></li>
+<li><p><tt class="LITERAL">TH</tt> 不会转换小于零的数值，也不会转换小数。</p></li>
+<li><p><tt class="LITERAL">PL</tt>, <tt class="LITERAL">SG</tt>, <tt class="LITERAL">TH</tt> 是 PostgreSQL 扩展。</p></li>
+<li><p><tt class="LITERAL">V</tt> 方便地把输入值乘以 <tt class="LITERAL">10^<tt class="REPLACEABLE"><i>n</i></tt></tt> ，这里 <tt class="REPLACEABLE"><i>n</i></tt> 是跟在 <tt class="LITERAL">V</tt> 后面的数字。<code class="FUNCTION">to_char</code> 不支持把 <tt class="LITERAL">V</tt> 与一个小数点组合在一起使用(也就是说 <tt class="LITERAL">99.9V99</tt> 是不允许的)。</p></li>
+</ul>
+<p><a href="functions-formatting.html#FUNCTIONS-FORMATTING-EXAMPLES-TABLE">表9-24</a> 显示了一些 <code class="FUNCTION">to_char</code> 函数的用法。</p>
+<div class="TABLE"><a name="FUNCTIONS-FORMATTING-EXAMPLES-TABLE"></a>
+<p><b>表9-24. <code class="FUNCTION">to_char</code> 示例</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>表达式</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">to_char(current_timestamp, 'Day,&nbsp;DD&nbsp;&nbsp;HH12:MI:SS')</tt></td><td><tt class="LITERAL">'Tuesday&nbsp;&nbsp;,&nbsp;06&nbsp;&nbsp;05:39:18'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(current_timestamp, 'FMDay,&nbsp;FMDD&nbsp;&nbsp;HH12:MI:SS')</tt></td><td><tt class="LITERAL">'Tuesday,&nbsp;6&nbsp;&nbsp;05:39:18'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(-0.1, '99.99')</tt></td><td><tt class="LITERAL">'&nbsp;&nbsp;-.10'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(-0.1, 'FM9.99')</tt></td><td><tt class="LITERAL">'-.1'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(0.1, '0.9')</tt></td><td><tt class="LITERAL">'&nbsp;0.1'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(12, '9990999.9')</tt></td><td><tt class="LITERAL">'&nbsp;&nbsp;&nbsp;&nbsp;0012.0'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(12, 'FM9990999.9')</tt></td><td><tt class="LITERAL">'0012.'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, '999')</tt></td><td><tt class="LITERAL">'&nbsp;485'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(-485, '999')</tt></td><td><tt class="LITERAL">'-485'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, '9&nbsp;9&nbsp;9')</tt></td><td><tt class="LITERAL">'&nbsp;4&nbsp;8&nbsp;5'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(1485, '9,999')</tt></td><td><tt class="LITERAL">'&nbsp;1,485'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(1485, '9G999')</tt></td><td><tt class="LITERAL">'&nbsp;1&nbsp;485'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(148.5, '999.999')</tt></td><td><tt class="LITERAL">'&nbsp;148.500'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(148.5, 'FM999.999')</tt></td><td><tt class="LITERAL">'148.5'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(148.5, 'FM999.990')</tt></td><td><tt class="LITERAL">'148.500'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(148.5, '999D999')</tt></td><td><tt class="LITERAL">'&nbsp;148,500'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(3148.5, '9G999D999')</tt></td><td><tt class="LITERAL">'&nbsp;3&nbsp;148,500'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(-485, '999S')</tt></td><td><tt class="LITERAL">'485-'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(-485, '999MI')</tt></td><td><tt class="LITERAL">'485-'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, '999MI')</tt></td><td><tt class="LITERAL">'485&nbsp;'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, 'FM999MI')</tt></td><td><tt class="LITERAL">'485'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, 'PL999')</tt></td><td><tt class="LITERAL">'+485'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, 'SG999')</tt></td><td><tt class="LITERAL">'+485'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(-485, 'SG999')</tt></td><td><tt class="LITERAL">'-485'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(-485, '9SG99')</tt></td><td><tt class="LITERAL">'4-85'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(-485, '999PR')</tt></td><td><tt class="LITERAL">'&lt;485&gt;'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, 'L999')</tt></td><td><tt class="LITERAL">'DM&nbsp;485</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, 'RN')</tt></td><td><tt class="LITERAL">'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDLXXXV'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, 'FMRN')</tt></td><td><tt class="LITERAL">'CDLXXXV'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(5.2, 'FMRN')</tt></td><td><tt class="LITERAL">'V'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(482, '999th')</tt></td><td><tt class="LITERAL">'&nbsp;482nd'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485, '"Good&nbsp;number:"999')</tt></td><td><tt class="LITERAL">'Good&nbsp;number:&nbsp;485'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(485.8, '"Pre:"999"&nbsp;Post:"&nbsp;.999')</tt></td><td><tt class="LITERAL">'Pre:&nbsp;485&nbsp;Post:&nbsp;.800'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(12, '99V999')</tt></td><td><tt class="LITERAL">'&nbsp;12000'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(12.4, '99V999')</tt></td><td><tt class="LITERAL">'&nbsp;12400'</tt></td></tr>
+<tr><td><tt class="LITERAL">to_char(12.45, '99V9')</tt></td><td><tt class="LITERAL">'&nbsp;125'</tt></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-matching.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="functions-datetime.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">模式匹配</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">时间/日期函数和操作符</td></tr>
+</table>
+</div>
+</body></html>

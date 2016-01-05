@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.26. Perl-5.8.8</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="patch.html" title="Patch-2.5.4">后退</a>
+          <p>Patch-2.5.4</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="sed.html" title="Sed-4.1.5">前进</a>
+          <p>Sed-4.1.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.26. Perl-5.8.8</h1>
+      </div>
+      <div class="package">
+        <p>Perl 是 Practical Extraction and Report Language的缩写。Perl 将 C, sed, awk 和 sh 的最佳特性集于一身，是一种强大的编程语言。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.7 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">84 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.26.1. 安装 Perl</h2>
+        </div>
+        <p>首先应用下面的补丁，调整指向 C 库的硬连接路径：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../perl-5.8.8-libc-2.patch</kbd></pre>
+        <p>准备编译 Perl(请正确输入下面命令中的'Data/Dumper Fcntl IO POSIX'——全是字母)：</p>
+        <pre class="userinput"><kbd class="command">./configure.gnu --prefix=/tools -Dstatic_ext='Data/Dumper Fcntl IO POSIX'</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>-Dstatic_ext='Data/Dumper Fcntl IO
+              POSIX'</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项让 Perl 编译静态扩展的最小集，下一章安装和测试 Coreutils 软件包的时候需要用到。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>仅需要编译这个软件包中的一小部分必要工具：</p>
+        <pre class="userinput"><kbd class="command">make perl utilities</kbd></pre>
+        <p>尽管 Perl 附带测试程序，但我们不推荐在这里运行。由于只编译了一部分 Perl，现在运行 <span><strong class="command">make test</strong></span> 会编译 Perl 的其余部分，而这里我们并不需要它们。如果想测试的话，可以到下一章再运行测试程序。</p>
+        <p>安装这些工具和库：</p>
+        <pre class="userinput"><kbd class="command">cp -v perl pod/pod2man /tools/bin
+mkdir -pv /tools/lib/perl5/5.8.8
+cp -Rv lib/* /tools/lib/perl5/5.8.8</kbd></pre>
+      </div>
+      <div class="content">
+        <p>关于这个软件包的详细资料位于<a href="../chapter06/perl.html#contents-perl" title="6.22.2. Perl 的内容">节 6.22.2, Perl 的内容</a></p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="patch.html" title="Patch-2.5.4">后退</a>
+          <p>Patch-2.5.4</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="sed.html" title="Sed-4.1.5">前进</a>
+          <p>Sed-4.1.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

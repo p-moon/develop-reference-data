@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>用户认证</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="auth-methods.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="client-authentication.html">快退</a></td><td width="60%" align="center" valign="bottom">章20. 用户认证</td><td width="10%" align="right" valign="top"><a href="client-authentication.html">快进</a></td><td width="10%" align="right" valign="top"><a href="charset.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CLIENT-AUTHENTICATION-PROBLEMS">20.3. 用户认证</a></h1>
+<p>真正的认证失败以及相关的问题通常由类似下面的错误信息表白。</p>
+<pre class="PROGRAMLISTING">FATAL:  no pg_hba.conf entry for host "123.123.123.123", user "andym", database "testdb"</pre>
+<p>这条信息出现的最大可能是你已经连接了服务器，但它不愿意和你说话。就像信息自己表示的那样，服务器拒绝了连接请求，因为它没有在它的 <tt class="FILENAME">pg_hba.conf</tt> 配置文件里找到匹配的记录。</p>
+<pre class="PROGRAMLISTING">FATAL:  Password authentication failed for user "andym"</pre>
+<p>这样的信息表示你连接了服务器，并且它也愿意和你交谈，但是你必须通过 <tt class="FILENAME">pg_hba.conf</tt> 文件里声明的认证方法。检查你提交的口令，或者如果错误信息提到这些 Kerberos 或 IDENT 认证类型时检查这些软件。</p>
+<pre class="PROGRAMLISTING">FATAL:  user "andym" does not exist</pre>
+<p>这是表示此用户不存在的另一方法。</p>
+<pre class="PROGRAMLISTING">FATAL:  database "testdb" does not exist</pre>
+<p>你试图连接的数据库不存在。请注意如果你没有声明数据库名，缺省是数据库用户名，这可能正确也可能不正确。</p>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b>请注意服务器日志可能包含比报告给客户端的更多的有关认证失败的信息。如果你被失败的原因搞糊涂了，那么请检查日志。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="auth-methods.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="charset.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">认证方法</td><td width="34%" align="center" valign="top"><a href="client-authentication.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">区域</td></tr>
+</table>
+</div>
+</body></html>

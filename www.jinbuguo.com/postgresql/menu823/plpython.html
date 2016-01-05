@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PL/Python - Python 过程语言</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plperl-missing.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plperl.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="spi.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plpython-funcs.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="PLPYTHON"></a>章40. PL/Python - Python 过程语言</h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>40.1. <a href="plpython-funcs.html">PL/Python 函数</a></dt>
+<dt>40.2. <a href="plpython-trigger.html">触发器函数</a></dt>
+<dt>40.3. <a href="plpython-database.html">数据库访问</a></dt>
+</dl>
+</div>
+<a name="AEN41618"></a><a name="AEN41620"></a>
+<p>PL/Python 过程语言允许用 <a href="http://www.python.org" target="_top">Python 语言</a>编写 PostgreSQL 函数。</p>
+<p>要在特定数据库里安装 PL/Python ，使用 <tt class="LITERAL">createlang plpythonu <tt class="REPLACEABLE"><i>dbname</i></tt></tt></p>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b>如果一门语言安装到了 <tt class="LITERAL">template1</tt> 里面，那么所有随后创建的数据库都会自动安装该语言。</p>
+</blockquote>
+</div>
+<p>到目前为止，PL/Python 只能当作一种"不可信任的"语言(意思是它没有提供任何限制用户可为与不可为的手段)。因此，它被重新命名为 <tt class="LITERAL">plpythonu</tt> 。可信任的 <tt class="LITERAL">plpython</tt> 可能在将来的某个时间能够获得，条件是在 Python 里开发出了新的安全执行机制。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>使用源码包的用户必须在安装过程中声明打开 PL/Python 的编译。二进制包的用户可能会在独立的子包中找到 PL/Python 。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plperl-missing.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plpython-funcs.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">限制及缺少的特性</td><td width="34%" align="center" valign="top"><a href="server-programming.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PL/Python 函数</td></tr>
+</table>
+</div>
+</body></html>

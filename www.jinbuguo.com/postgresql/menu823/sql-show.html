@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SHOW</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-set-transaction.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-set-transaction.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-start-transaction.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-start-transaction.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-SHOW"></a>SHOW</h1>
+<div class="REFNAMEDIV"><a name="AEN54721"></a><h2>名称</h2>SHOW&nbsp;--&nbsp;显示运行时参数的值</div>
+<a name="AEN54724"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN54726"></a><h2>语法</h2>
+<pre class="SYNOPSIS">SHOW <tt class="REPLACEABLE"><i>name</i></tt>
+SHOW ALL</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54729"></a><h2>描述</h2>
+<p><tt class="COMMAND">SHOW</tt> 将显示当前运行时参数的数值。这些变量可以通过 <tt class="COMMAND">SET</tt> 语句、编辑 <tt class="FILENAME">postgresql.conf</tt> 文件、<tt class="ENVAR">PGOPTIONS</tt> 环境变量(在使用基于 <span class="APPLICATION">libpq</span> 的应用程序的时候)、启动 <tt class="COMMAND">postgres</tt> 的命令行参数来设置。参阅<a href="runtime-config.html">章17</a>获取细节。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54740"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>运行时参数的名称。可用的参数在<a href="runtime-config.html">章17</a>以及 <a href="sql-set.html"><i>SET</i></a> 手册页里面有文档。另外，还有几个参数可以显示，但是不能设置：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">SERVER_VERSION</tt></dt>
+<dd><p>显示服务器的版本号</p></dd>
+<dt><tt class="LITERAL">SERVER_ENCODING</tt></dt>
+<dd><p>显示服务器端的字符集编码。目前，这个参数只能显示但不能设置，因为编码是在创建数据库的时候决定的。</p></dd>
+<dt><tt class="LITERAL">LC_COLLATE</tt></dt>
+<dd><p>显示数据库的字符集区域设置(字符顺序)。目前，这个参数只能显示但不能设置，因为它是在 <tt class="COMMAND">initdb</tt> 的时候设置的。</p></dd>
+<dt><tt class="LITERAL">LC_CTYPE</tt></dt>
+<dd><p>为字符集分类显示数据库的区域设置。目前，这个参数只能显示但不能设置，因为它是在 <tt class="COMMAND">initdb</tt> 的时候设置的。</p></dd>
+<dt><tt class="LITERAL">IS_SUPERUSER</tt></dt>
+<dd><p>如果当前事务认证标识符有超级用户权限，则为真。</p></dd>
+</dl>
+</div></dd>
+<dt><tt class="LITERAL">ALL</tt></dt>
+<dd><p>显示所有配置参数参数以及其描述</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN54783"></a><h2>注意</h2>
+<p>函数 <code class="FUNCTION">current_setting</code> 生成相同的输出。参阅<a href="functions-admin.html">节9.20</a>。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54788"></a><h2>例子</h2>
+<p>显示当前 <tt class="VARNAME">DateStyle</tt> 设置：</p>
+<pre class="PROGRAMLISTING">SHOW DateStyle;
+ DateStyle
+-----------
+ ISO, MDY
+(1 row)</pre>
+<p>显示参数 <tt class="VARNAME">geqo</tt> 的当前设置：</p>
+<pre class="PROGRAMLISTING">SHOW geqo;
+ geqo
+------
+ on
+(1 row)</pre>
+<p>显示所有设置：</p>
+<pre class="PROGRAMLISTING">SHOW ALL;
+              name              |            setting             |                                         description                                          
+--------------------------------+--------------------------------+----------------------------------------------------------------------------------------------
+ add_missing_from               | off                            | Automatically adds missing table references to FROM clauses.
+ archive_command                | unset                          | WAL archiving command.
+    .
+    .
+    .
+ work_mem                       | 1024                           | Sets the maximum memory to be used for query workspaces.
+ zero_damaged_pages             | off                            | Continues processing past damaged page headers.
+(146 rows)</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54798"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">SHOW</tt> 命令是 PostgreSQL 扩展。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54803"></a><h2>又见</h2><a href="sql-set.html"><i>SET</i></a>, <a href="sql-reset.html"><i>RESET</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-set-transaction.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-start-transaction.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SET TRANSACTION</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">START TRANSACTION</td></tr>
+</table>
+</div>
+</body></html>

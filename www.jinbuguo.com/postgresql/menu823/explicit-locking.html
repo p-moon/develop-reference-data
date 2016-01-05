@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>明确锁定</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="transaction-iso.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="mvcc.html">快退</a></td><td width="60%" align="center" valign="bottom">章12. 并发控制</td><td width="10%" align="right" valign="top"><a href="mvcc.html">快进</a></td><td width="10%" align="right" valign="top"><a href="applevel-consistency.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="EXPLICIT-LOCKING">12.3. 明确锁定</a></h1><a name="AEN16491"></a>
+<p>PostgreSQL 提供了多种锁模式用于控制对表中数据的并发访问。这些模式可以用于在 MVCC 无法给出期望行为的场合。同样，大多数 PostgreSQL 命令自动施加恰当的锁以保证被引用的表在命令的执行过程中不会以一种不兼容的方式被删除或者修改。比如，在存在其它并发操作的时候，<tt class="COMMAND">ALTER TABLE</tt> 是不能在同一个表上面执行的。</p>
+<p>要检查数据库服务器里所有当前正在被持有的锁，可以使用 <a href="view-pg-locks.html"><tt class="STRUCTNAME">pg_locks</tt></a> 系统视图。有关监控锁管理器子系统状态的更多信息，请参考<a href="monitoring.html">章25</a>。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="LOCKING-TABLES">12.3.1. 表级锁</a></h2><a name="AEN16504"></a>
+<p>下面的列表显示了可用的锁模式和它们被 PostgreSQL 自动使用的场合。你也可以用 <a href="sql-lock.html"><i>LOCK</i></a> 命令明确获取这些锁。请注意所有这些锁模式都是表级锁，即使它们的名字包含"row"单词(这些名称是历史遗产)。从某种角度而言，这些名字反应了每种锁模式的典型用法，但是语意却都是一样的。两种锁模式之间真正的区别是它们有着不同的冲突锁集合。两个事务在同一时刻不能在同一个表上持有相互冲突的锁。不过，一个事务决不会和自身冲突。比如，它可以在一个表上请求 <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 然后接着请求 <tt class="LITERAL">ACCESS SHARE</tt> 。非冲突锁模式可以被许多事务同时持有。请特别注意有些锁模式是自冲突的(比如，在任意时刻 <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 模式就不能够被多个事务拥有)，但其它锁模式都不是自冲突的(比如，<tt class="LITERAL">ACCESS SHARE</tt> 可以被多个事务持有)。</p>
+<div class="VARIABLELIST">
+<p><b>表级锁模式</b></p>
+<dl>
+<dt><tt class="LITERAL">ACCESS SHARE</tt></dt>
+<dd><p>只与 <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 冲突。</p>
+<p><tt class="COMMAND">SELECT</tt> 命令在被引用的表上请求一个这种锁。通常，任何只读取表而不修改它的命令都请求这种锁模式。</p></dd>
+<dt><tt class="LITERAL">ROW SHARE</tt></dt>
+<dd><p>与 <tt class="LITERAL">EXCLUSIVE</tt> 和 <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 冲突。</p>
+<p><tt class="COMMAND">SELECT FOR UPDATE</tt> 和 <tt class="COMMAND">SELECT FOR SHARE</tt> 命令在目标表上需要一个这样模式的锁(加上在所有被引用但没有 <tt class="LITERAL">ACCESS SHARE</tt> 的表上的 <tt class="OPTION">FOR UPDATE/FOR SHARE</tt> 锁)。</p></dd>
+<dt><tt class="LITERAL">ROW EXCLUSIVE</tt></dt>
+<dd><p>与 <tt class="LITERAL">SHARE</tt>, <tt class="LITERAL">SHARE ROW EXCLUSIVE</tt>, <tt class="LITERAL">EXCLUSIVE</tt>, <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 冲突。</p>
+<p><tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">INSERT</tt> 命令自动请求这个锁模式(加上所有其它被引用的表上的 <tt class="LITERAL">ACCESS SHARE</tt> 锁)。通常，这种锁将被任何修改表中数据的查询请求。</p></dd>
+<dt><tt class="LITERAL">SHARE UPDATE EXCLUSIVE</tt></dt>
+<dd><p>与 <tt class="LITERAL">SHARE UPDATE EXCLUSIVE</tt>, <tt class="LITERAL">SHARE</tt>, <tt class="LITERAL">SHARE ROW EXCLUSIVE</tt>, <tt class="LITERAL">EXCLUSIVE</tt>, <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 冲突。这个模式保护一个表不被并发模式改变和 <tt class="COMMAND">VACUUM</tt> 。</p>
+<p><tt class="COMMAND">VACUUM</tt>(不带 <tt class="OPTION">FULL</tt>选项), <tt class="COMMAND">ANALYZE</tt>, <tt class="COMMAND">CREATE INDEX CONCURRENTLY</tt> 请求这样的锁。</p></dd>
+<dt><tt class="LITERAL">SHARE</tt></dt>
+<dd><p>与 <tt class="LITERAL">ROW EXCLUSIVE</tt>, <tt class="LITERAL">SHARE UPDATE EXCLUSIVE</tt>, <tt class="LITERAL">SHARE ROW EXCLUSIVE</tt>, <tt class="LITERAL">EXCLUSIVE</tt>, <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 冲突。这个模式避免表的并发数据修改。</p>
+<p><tt class="COMMAND">CREATE INDEX</tt>(不带 <tt class="OPTION">CONCURRENTLY</tt> 选项)语句要求这样的锁模式。</p></dd>
+<dt><tt class="LITERAL">SHARE ROW EXCLUSIVE</tt></dt>
+<dd><p>与 <tt class="LITERAL">ROW EXCLUSIVE</tt>, <tt class="LITERAL">SHARE UPDATE EXCLUSIVE</tt>, <tt class="LITERAL">SHARE</tt>, <tt class="LITERAL">SHARE ROW EXCLUSIVE</tt>, <tt class="LITERAL">EXCLUSIVE</tt>, <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 冲突。</p>
+<p>任何 PostgreSQL 命令都不会自动请求这个锁模式。</p></dd>
+<dt><tt class="LITERAL">EXCLUSIVE</tt></dt>
+<dd><p>与 <tt class="LITERAL">ROW SHARE</tt>, <tt class="LITERAL">ROW EXCLUSIVE</tt>, <tt class="LITERAL">SHARE UPDATE EXCLUSIVE</tt>, <tt class="LITERAL">SHARE</tt>, <tt class="LITERAL">SHARE ROW EXCLUSIVE</tt>, <tt class="LITERAL">EXCLUSIVE</tt>, <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 冲突。这个模式只允许并发 <tt class="LITERAL">ACCESS SHARE</tt> 锁，也就是说，只有对表的读动作可以和持有这个锁模式的事务并发执行。</p>
+<p>任何 PostgreSQL 命令都不会在用户表上自动请求这个锁模式。不过，在某些操作的时候，会在某些系统表上请求它。</p></dd>
+<dt><tt class="LITERAL">ACCESS EXCLUSIVE</tt></dt>
+<dd><p>与与所有模式冲突(包括其自身)。这个模式保证其所有者(事务)是可以访问该表的唯一事务。</p>
+<p><tt class="COMMAND">ALTER TABLE</tt>, <tt class="COMMAND">DROP TABLE</tt>, <tt class="COMMAND">TRUNCATE</tt>, <tt class="COMMAND">REINDEX</tt>, <tt class="COMMAND">CLUSTER</tt>, <tt class="COMMAND">VACUUM FULL</tt> 命令要求这样的锁。在 <tt class="COMMAND">LOCK TABLE</tt> 命令没有明确声明需要的锁模式时，它是缺省锁模式。</p></dd>
+</dl>
+</div>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b>只有 <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 阻塞 <tt class="COMMAND">SELECT</tt>(不包含 <tt class="OPTION">FOR UPDATE/SHARE</tt> 语句)。</p>
+</blockquote>
+</div>
+<p>一旦请求已获得某种锁，那么该锁模式将持续到事务结束。但是如果在建立保存点之后才获得锁，那么在回滚到这个保存点的时候将立即释放所有该保存点之后获得的锁。这与 <tt class="COMMAND">ROLLBACK</tt> 取消所有保存点之后对表的影响的原则一致。同样的原则也适用于 PL/pgSQL 异常块中获得的锁：一个跳出块的错误将释放在块中获得的锁。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="LOCKING-ROWS">12.3.2. 行级锁</a></h2>
+<p>除了表级锁以外，还有行级锁，他们可以是排他的或者是共享的。特定行上的排他行级锁是在行被更新的时候自动请求的。该锁一直保持到事务提交或者回滚。行级锁不影响对数据的查询，它们只阻塞对<span class="emphasis"><i class="EMPHASIS">同一行的写入</i></span>。</p>
+<p>要在不修改某行的前提下请求该行上的一个排他行级锁，用 <tt class="COMMAND">SELECT FOR UPDATE</tt> 选取该行。请注意一旦我们请求了特定的行级锁，那么该事务就可以多次对该行进行更新而不用担心冲突。</p>
+<p>要在某行上请求一个共享的行级锁，用 <tt class="COMMAND">SELECT FOR SHARE</tt> 选取该行。一个共享锁并不阻止其它事务请求同一个共享的锁。不过，其它事务不允许更新、删除、或者排他锁住持有共享锁的行。任何这么做的企图都将被阻塞并等待共享锁的释放。</p>
+<p>PostgreSQL 不会在内存里保存任何关于已修改行的信息，因此对一次锁定的行数没有限制。不过，锁住一行会导致一次磁盘写；因为 <tt class="COMMAND">SELECT FOR UPDATE</tt> 将修改选中的行以标记它们被锁住了，所以会导致磁盘写。</p>
+<p>除了表级别和行级别的锁以外，页面级别的共享/排他锁也用于控制共享缓冲池中表页面的读/写。这些锁在抓取或者更新一行后马上被释放。应用程序员通常不需要关心页级锁，我们在这里提到它们只是为了完整。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="LOCKING-DEADLOCKS">12.3.3. 死锁</a></h2><a name="AEN16650"></a>
+<p>明确锁定的使用可能会增加<i class="FIRSTTERM">死锁</i>的可能性，死锁是指两个(或多个)事务相互持有对方期待的锁。比如，如果事务 1 在表 A 上持有一个排他锁，同时试图请求一个在表 B 上的排他锁，而事务 2 已经持有表 B 的排他锁，而却正在请求在表 A 上的一个排他锁，那么两个事务就都不能执行。 PostgreSQL 能够自动侦测死锁条件并且会通过退出其中一个事务从而允许其它事务完成来解决这个问题。具体哪个事务会被退出是很难预计的，而且也不应该依靠这样的预计。</p>
+<p>要注意的是死锁也可能会因为行级锁而发生(即使是没有使用明确的锁定)。考虑如下情况，两个并发事务在修改一个表。第一个事务执行了：</p>
+<pre class="SCREEN">UPDATE accounts SET balance = balance + 100.00 WHERE acctnum = 11111;</pre>
+<p>这样就在指定帐号的行上请求了一个行级锁。然后，第二个事务执行：</p>
+<pre class="SCREEN">UPDATE accounts SET balance = balance + 100.00 WHERE acctnum = 22222;
+UPDATE accounts SET balance = balance - 100.00 WHERE acctnum = 11111;</pre>
+<p>第一个 <tt class="COMMAND">UPDATE</tt> 语句成功地在指定行上请求到了一个行级锁，因此它成功更新了该行。但是第二个 <tt class="COMMAND">UPDATE</tt> 语句发现它试图更新的行已经被锁住了，因此它等待持有该锁的事务结束。事务二现在就在等待事务一结束，然后再继续执行。现在，事务一执行：</p>
+<pre class="SCREEN">UPDATE accounts SET balance = balance - 100.00 WHERE acctnum = 22222;</pre>
+<p>事务一企图在指定行上请求一个行级锁，但是它得不到：事务二已经持有这样的锁了。所以它等待事务二完成。因此，事务一被事务二阻塞住了，而事务二也被事务一阻塞住了：这就是一个死锁条件。PostgreSQL 将侦测这样的条件并退出其中一个事务。</p>
+<p>防止死锁的最好方法通常是保证所有使用一个数据库的应用都以一致的顺序在多个对象上请求锁定。在上面的例子里，如果两个事务以同样的顺序更新那些行，那么就不会发生死锁。我们也要保证在一个对象上请求的第一个锁是该对象需要的最高的锁模式。如果我们无法提前核实这些问题，那么我们可以通过在现场重新尝试因死锁而退出的事务的方法来处理。</p>
+<p>只要没有检测到死锁条件，事务将一直等待表级锁或行级锁的释放。这意味着一个事务持续的时间太长不是什么好事(比如等待用户输入)。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="ADVISORY-LOCKS">12.3.4. 咨询锁</a></h2><a name="AEN16666"></a>
+<p>PostgreSQL 允许创建由应用定义其含义的锁。这种锁被称为<i class="FIRSTTERM">咨询锁</i>，因为系统并不强迫其使用，而是由应用来保证其被恰当的使用。咨询锁可用于 MVCC 难以实现的锁定策略。咨询锁一旦被持有就将持续到被明确释放或会话结束。不同于各种标准的锁，咨询锁并不考虑事务的语意：在一个被回滚的事务中获得的咨询锁并不会被自动释放，同样的，在一个失败的事务中释放的咨询锁仍将保持释放。同一个咨询锁可以被它自己的进程多次获得：对于每一个锁定请求必须有一个相应的释放请求，这样才能最终真正释放该锁。如果某个会话已经持有一个咨询锁，那么对该锁的多次锁定请求将总会成功，即使其它会话正在等候该锁的释放也是如此。与 PostgreSQL 中其它锁一样，可以在 <a href="view-pg-locks.html"><tt class="STRUCTNAME">pg_locks</tt></a> 系统视图中查看当前被会话持有的所有咨询锁。</p>
+<p>咨询锁是从共享内存池中分配的，共享内存池的大小由 <a href="runtime-config-locks.html#GUC-MAX-LOCKS-PER-TRANSACTION">max_locks_per_transaction</a> 和 <a href="runtime-config-connection.html#GUC-MAX-CONNECTIONS">max_connections</a> 配置参数决定。千万不要耗尽这些内存，否则服务器将不能再获取任何新锁。因此服务器可以获得的咨询锁数量是有限的，根据服务器的配置不同，这个限制可能是几万到几十万个。</p>
+<p>咨询锁一般用于模拟常见于"平面文件"数据管理系统的悲观锁策略。虽然可以用存储在表中的一个特定标志达到同样的目的，但是使用咨询锁更快，还可以避免 MVCC 臃肿，更可以在会话结束的时候由系统自动执行清理工作。在某些特定情况下，特别是查询包括明确的排序或 <tt class="LITERAL">LIMIT</tt> 子句的时候，由于 SQL 表达式求值顺序的影响，必须注意控制咨询锁的获取。例如：</p>
+<pre class="SCREEN">SELECT pg_advisory_lock(id) FROM foo WHERE id = 12345; -- ok
+SELECT pg_advisory_lock(id) FROM foo WHERE id &gt; 12345 LIMIT 100; -- 危险!
+SELECT pg_advisory_lock(q.id) FROM
+(
+  SELECT id FROM foo WHERE id &gt; 12345 LIMIT 100;
+) q; -- ok</pre>
+<p>在上述查询中，第二种形式是危险的，因为 <tt class="LITERAL">LIMIT</tt> 并不一定在锁定函数执行之前被应用。这可能导致获得某些应用不期望的锁，并因此在会话结束之前无法释放。从应用的角度来看，这样的锁将被挂起，虽然它们仍然在 <tt class="STRUCTNAME">pg_locks</tt> 中可见。</p>
+<p>用于操作咨询锁的函数在<a href="functions-admin.html#FUNCTIONS-ADVISORY-LOCKS">表9-50</a>中描述。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="transaction-iso.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="applevel-consistency.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">事务隔离</td><td width="34%" align="center" valign="top"><a href="mvcc.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">应用层数据完整性检查</td></tr>
+</table>
+</div>
+</body></html>

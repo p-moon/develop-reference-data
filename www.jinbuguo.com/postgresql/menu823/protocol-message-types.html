@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>消息数据类型</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="protocol-flow.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="protocol.html">快退</a></td><td width="60%" align="center" valign="bottom">章44. 前/后端协议</td><td width="10%" align="right" valign="top"><a href="protocol.html">快进</a></td><td width="10%" align="right" valign="top"><a href="protocol-message-formats.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PROTOCOL-MESSAGE-TYPES">44.3. 消息数据类型</a></h1>
+<p>本节描述消息里用到的基本数据类型。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>Int<tt class="REPLACEABLE"><i>n</i></tt>(<tt class="REPLACEABLE"><i>i</i></tt>)</dt>
+<dd><p>一个网络字节顺序的 <tt class="REPLACEABLE"><i>n</i></tt> 位整数。如果声明了 <tt class="REPLACEABLE"><i>i</i></tt> is，它就是将出现的确切值，否则这个数值就是一个变量。比如 Int16 ，Int32(42)。</p></dd>
+<dt>Int<tt class="REPLACEABLE"><i>n</i></tt>[<tt class="REPLACEABLE"><i>k</i></tt>]</dt>
+<dd><p>一个 <tt class="REPLACEABLE"><i>k</i></tt> 个 <tt class="REPLACEABLE"><i>n</i></tt> 位整数元素的数组，每个都是以网络字节顺序存储的。数组长度 <tt class="REPLACEABLE"><i>k</i></tt> 总是由消息前面的字段来判断的。比如 Int16[M]</p></dd>
+<dt>String(<tt class="REPLACEABLE"><i>s</i></tt>)</dt>
+<dd><p>一个(C 风格的)空零结尾的字符串。对字符串没有特别的长度限制。如果声明了 <tt class="REPLACEABLE"><i>s</i></tt> ，那么它是将出现的确切的数值，否则这个数值就是一个变量。比如 String, String("user")</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>后端返回的字符串的可能长度<span class="emphasis"><i class="EMPHASIS">没有预定义的限制</i></span>。所以前端必须使用良好的编码策略，使用某种可扩展的缓冲区以便能接受任何能放进内存里的东西。如果那样做不可行，则读取全长的字符串然后抛弃不能放进你的定长缓冲区的尾部字符。</p>
+</blockquote>
+</div></dd>
+<dt>Byte<tt class="REPLACEABLE"><i>n</i></tt>(<tt class="REPLACEABLE"><i>c</i></tt>)</dt>
+<dd><p>精确的 <tt class="REPLACEABLE"><i>n</i></tt> 字节。如果字段宽度 <tt class="REPLACEABLE"><i>n</i></tt> 不是一个常量，那么总是可以从消息中更早的字段中判断它。如果声明了 <tt class="REPLACEABLE"><i>c</i></tt> 那么它是确切数值。例如 Byte2, Byte1('\n')</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="protocol-flow.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="protocol-message-formats.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">消息流</td><td width="34%" align="center" valign="top"><a href="protocol.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">消息格式</td></tr>
+</table>
+</div>
+</body></html>

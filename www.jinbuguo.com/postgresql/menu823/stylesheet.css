@@ -1,0 +1,82 @@
+@charset "utf-8";
+/* 导入字体 */
+@font-face {
+	font-family: "JinBuGuoWebMono";
+	src: url("/d/mono.eot");
+	src: url("/d/mono.eot#iefix") format("embedded-opentype"),
+	     url("/d/mono.ttf") format("truetype");
+}
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+
+
+/* 默认颜色、背景 */
+html,body {
+	color:#000;
+	background: #FFFFFF;
+}
+
+/* 默认连接样式 */
+A:link     { color: #00a; }
+A:visited  { color: #a0a; }
+A:hover    { color: #f0f; }
+A:active   { color: #f00; }
+
+/* 首页居中标题 */
+BODY.BOOK H1 {
+	text-align: center;
+	font-size: 250%;
+	color: #f74;
+}
+/* 首页版权信息 */
+BODY.BOOK .COPYRIGHT, BODY.BOOK .CORPAUTHOR {
+	text-align: center;
+}
+
+/* 样例布局 */
+DIV.EXAMPLE {
+	padding-left: 10px;
+	border-style: solid;
+	border-width: 0 0 0 2px;
+	border-color: black;
+	margin: 0.5em;
+}
+
+/* 屏幕 大纲 程序清单 */
+.SCREEN, .SYNOPSIS, .PROGRAMLISTING {
+	margin-left: 2em;
+}
+
+VAR { font-weight: bold; }
+
+.ABBREV { color:#660000 }
+.APPLICATION { color:#CC0033 }
+.COMMAND { color:#990000 }
+.COMPUTEROUTPUT { color:#003300 }
+.emphasis , .EMPHASIS { color:#FF0000 }
+.ENVAR { color:#009966 }
+.FILENAME { color:#336699 }
+.FIRSTTERM { color:#CC66FF }
+.VARNAME, { color:#996600 }
+.USERINPUT { color:#006633 }
+.TYPE { color:#0000CC }
+.TOKEN { color:#CC9966 }
+.TERM { color:#33FF00 }
+.SYSTEMITEM { color:#99CC00 }
+.SYMBOL { color:#FF9900 }
+.STRUCTNAME { color:#9966FF }
+.STRUCTFIELD { color:#996666 }
+.SGMLTAG { color:#666666 }
+.REPLACEABLE { color:#333300 }
+.PROMPT { color:#333300 }
+.REFENTRYTITLE { color:#0066FF }
+.FOREIGNPHRASE { color:#00FF00 }
+.FUNCTION { color:#CCCC66 }
+.GUIMENU, .GUIBUTTON, .GUIMENUITEM, .GUISUBMENU { color:#9933FF}
+.KEYCAP { color:#9900FF }
+.LINEANNOTATION {color:#663366 }
+.LITERAL { color:#FF6633 }
+.OPTION { color:#99FF33 }
+.OPTIONAL { color:#999900 }
+.PARAMETER { color:#000033 }
+
+span { color:#FF9900 }

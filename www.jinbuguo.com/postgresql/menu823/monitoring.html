@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>监控数据库的活动</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="high-availability.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="high-availability.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="diskusage.html">快进</a></td><td width="10%" align="right" valign="top"><a href="monitoring-ps.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="MONITORING"></a>章25. 监控数据库的活动</h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>25.1. <a href="monitoring-ps.html">标准 Unix 工具</a></dt>
+<dt>25.2. <a href="monitoring-stats.html">统计收集器</a></dt>
+<dd><dl>
+<dt>25.2.1. <a href="monitoring-stats.html#MONITORING-STATS-SETUP">统计收集器配置</a></dt>
+<dt>25.2.2. <a href="monitoring-stats.html#MONITORING-STATS-VIEWS">查看收集到的统计信息</a></dt>
+</dl></dd>
+<dt>25.3. <a href="monitoring-locks.html">查看锁</a></dt>
+<dt>25.4. <a href="dynamic-trace.html">动态跟踪</a></dt>
+<dd><dl>
+<dt>25.4.1. <a href="dynamic-trace.html#COMPILING-FOR-TRACE">编译动态跟踪支持</a></dt>
+<dt>25.4.2. <a href="dynamic-trace.html#TRACE-POINTS">内置跟踪点</a></dt>
+<dt>25.4.3. <a href="dynamic-trace.html#USING-TRACE-POINTS">使用跟踪点</a></dt>
+<dt>25.4.4. <a href="dynamic-trace.html#DEFINING-TRACE-POINTS">定义跟踪点</a></dt>
+</dl></dd>
+</dl>
+</div>
+<a name="AEN25495"></a><a name="AEN25498"></a>
+<p>一个数据库管理员常常想知道"现在系统正在干什么呢?"。本章讨论如何回答这个问题。</p>
+<p>有一些工具可以用来监控数据库活动以及分析性能。本章大部分内容是用于描述 PostgreSQL 的"统计收集器"，但我们也不能忽视普通的 Unix 监控程序，比如 <tt class="COMMAND">ps</tt>, <tt class="COMMAND">top</tt>, <tt class="COMMAND">iostat</tt>, <tt class="COMMAND">vmstat</tt> 。同样，一旦发现了某个性能恶劣的查询，可能还要用 PostgreSQL 的 <a href="sql-explain.html"><i>EXPLAIN</i></a> 命令进行进一步分析。<a href="using-explain.html">节13.1</a> 里讨论了 <tt class="COMMAND">EXPLAIN</tt> 和其它用于理解独立查询行为的方法。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="high-availability.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="monitoring-ps.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">高可用性与负载均衡</td><td width="34%" align="center" valign="top"><a href="admin.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">标准 Unix 工具</td></tr>
+</table>
+</div>
+</body></html>

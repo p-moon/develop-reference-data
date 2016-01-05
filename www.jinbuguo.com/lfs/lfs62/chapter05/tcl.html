@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.8. Tcl-8.4.13</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="adjusting.html" title="调整工具链">后退</a>
+          <p>调整工具链</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="expect.html" title="Expect-5.43.0">前进</a>
+          <p>Expect-5.43.0</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.8. Tcl-8.4.13</h1>
+      </div>
+      <div class="package">
+        <p>Tcl 软件包包含工具命令语言(Tool Command Language)。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.3 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">24 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.8.1. 安装 Tcl</h2>
+        </div>
+        <p>这个软件包和接下来安装的两个软件包(Expect 和 DejaGNU)是为了给运行 GCC 和 Binutils 的测试程序提供支持。仅为了测试而安装三个软件包，看起来似乎有点多余，但是看到那些最重要的工具正常工作，心理上会比较踏实。即使没有运行本章中测试程序(不是必需的)，运行<a href="../chapter06/chapter06.html">第六章</a>中的测试时也需要这些软件包。</p>
+        <p>为编译 Tcl 做准备：</p>
+        <pre class="userinput"><kbd class="command">cd unix
+./configure --prefix=/tools</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>TZ=UTC make test</tt></strong> 。已知 Tcl 的测试程序会在某些还未完全了解的宿主系统下出现测试失败的情况，因此，如果这里的测试失败了，不要紧，因为这并不关键。<em class="parameter"><tt>TZ=UTC</tt></em> 参数将时区设置为协调世界时(UTC)，也就是格林尼治时间(GMT)，但只是在运行测试程序的时候才这样设置，这将确保时钟测试正确。关于 <tt class="envar">TZ</tt> 环境变量的详细资料位于<a href="../chapter07/chapter07.html">第七章</a>。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <p>安装 Tcl 头文件，下一个包(Expect)要使用 Tcl 的头文件。</p>
+        <pre class="userinput"><kbd class="command">make install-private-headers</kbd></pre>
+        <p>现在创建一个必需的符号链接：</p>
+        <pre class="userinput"><kbd class="command">ln -sv tclsh8.4 /tools/bin/tclsh</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-tcl" name="contents-tcl"></a>
+          <h2 class="sect2">5.8.2. Tcl 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">tclsh(→tclsh8.4), tclsh8.4</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">安装的库：</span></strong> <span class="seg">libtcl8.4.so</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3669692" name="id3669692"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="tclsh8.4" name="tclsh8.4"></a><span class="term"><span><strong class="command">tclsh8.4</strong></span></span></td>
+                <td><p>Tcl 命令 shell</p></td>
+              </tr>
+              <tr>
+                <td><a id="tclsh" name="tclsh"></a><span class="term"><span><strong class="command">tclsh</strong></span></span></td>
+                <td><p>指向 tclsh8.4 的链接</p></td>
+              </tr>
+              <tr>
+                <td><a id="libtcl8.4.so" name="libtcl8.4.so"></a><span class="term"><tt class="filename">libtcl8.4.so</tt></span></td>
+                <td><p>Tcl 库文件</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="adjusting.html" title="调整工具链">后退</a>
+          <p>调整工具链</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="expect.html" title="Expect-5.43.0">前进</a>
+          <p>Expect-5.43.0</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

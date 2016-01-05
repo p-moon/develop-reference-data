@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.11. Binutils-2.16.1</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="readjusting.html" title="再次调整工具链">后退</a>
+          <p>再次调整工具链</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gcc.html" title="GCC-4.0.3">前进</a>
+          <p>GCC-4.0.3</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.11. Binutils-2.16.1</h1>
+      </div>
+      <div class="package">
+        <p>Binutils 是一组开发工具，包括连接器、汇编器和其他用于目标文件和档案的工具。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">1.5 SBU (含测试套件)</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">172 MB (含测试套件)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.11.1. 安装 Binutils</h2>
+        </div>
+        <p>现在我们测试一下在 chroot 环境中，你的伪终端(PTY)是否正常工作。运行下面的命令：</p>
+        <pre class="userinput"><kbd class="command">expect -c "spawn ls"</kbd></pre>
+        <p>如果看到这样的输出：</p>
+        <pre class="screen"><tt class="computeroutput">The system has no more ptys.
+Ask your system administrator to create more.</tt></pre>
+        <p>说明你的chroot环境还没有设置好 PTY，这时运行 Binutils 和 GCC 的测试套件就没有意义了，你必须先解决 PTY 设置。</p>
+        <p>Binutils 的文档推荐用一个新建的目录来编译它，而不是在源码目录中：</p>
+        <pre class="userinput"><kbd class="command">mkdir -v ../binutils-build
+cd ../binutils-build</kbd></pre>
+        <p>为编译 Binutils 做准备：</p>
+        <pre class="userinput"><kbd class="command">../binutils-2.16.1/configure --prefix=/usr \
+    --enable-shared</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make tooldir=/usr</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>make 参数的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>tooldir=/usr</tt></em></span>
+            </dt>
+            <dd>
+              <p>通常情况下，tooldir(可执行文件的安装目录) 是 <tt class="filename">$(exec_prefix)/$(target_alias)</tt>。例如在 i686 机器上，将是 tt class="filename">/usr/i686-pc-linux-gnu</tt> 。因为我们只为自己的系统进行编译，就并不需要在 <tt class="filename">/usr</tt> 目录后面再存在特殊的后缀。<tt class="filename">$(exec_prefix)/$(target_alias)</tt> 只是在交叉编译时(比如在 Intel 机器上编译将要在 PowerPC 上执行的程序)才用到。</p>
+            </dd>
+          </dl>
+        </div>
+        <div class="important">
+          <div class="admonhead">
+            <img alt="[Important]" src="../images/important.png" />
+            <h3 class="admontitle">重要</h3>
+          </div>
+          <div class="admonbody">
+            <p>本节的 Binutils 测试套件很重要。在任何情况下都不要省略这一步。</p>
+          </div>
+        </div>
+        <p>对结果进行测试：</p>
+        <pre class="userinput"><kbd class="command">make check</kbd></pre>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make tooldir=/usr install</kbd></pre>
+        <p>安装某些软件包需要的 <tt class="filename">libiberty</tt> 头文件：</p>
+        <pre class="userinput"><kbd class="command">cp -v ../binutils-2.16.1/include/libiberty.h /usr/include</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-binutils" name="contents-binutils"></a>
+          <h2 class="sect2">6.11.2. Binutils 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">addr2line, ar, as,
+              c++filt, gprof, ld, nm, objcopy, objdump, ranlib, readelf,
+              size, strings, strip</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">安装的库：</span></strong> <span class="seg">libiberty.a,
+              libbfd.{a,so}, libopcodes.{a,so}</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3676447" name="id3676447"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="addr2line" name="addr2line"></a><span class="term"><span><strong class="command">addr2line</strong></span></span></td>
+                <td><p>把程序地址转换为文件名和行号。在命令行中给它一个地址和一个可执行文件名，它就会使用这个可执行文件的调试信息指出在给出的地址上是哪个文件以及行号。</p></td>
+              </tr>
+              <tr>
+                <td><a id="ar" name="ar"></a><span class="term"><span><strong class="command">ar</strong></span></span></td>
+                <td><p>建立、修改、提取归档文件。归档文件是包含多个文件内容的一个大文件，其结构保证了可以恢复原始文件内容。</p></td>
+              </tr>
+              <tr>
+                <td><a id="as" name="as"></a><span class="term"><span><strong class="command">as</strong></span></span></td>
+                <td><p>一个汇编器，用来汇编 <span><strong class="command">gcc</strong></span> 的输出，产生的目标文件然后由接器 ld 连接。</p></td>
+              </tr>
+              <tr>
+                <td><a id="c-filt" name="c-filt"></a><span class="term"><span><strong class="command">c++filt</strong></span></span></td>
+                <td><p>连接器使用它来过滤 C++ 和 Java 符号，防止重载函数冲突。</p></td>
+              </tr>
+              <tr>
+                <td><a id="gprof" name="gprof"></a><span class="term"><span><strong class="command">gprof</strong></span></span></td>
+                <td><p>显示程序调用段的各种数据。</p></td>
+              </tr>
+              <tr>
+                <td><a id="ld" name="ld"></a><span class="term"><span><strong class="command">ld</strong></span></span></td>
+                <td><p>连接器，它把一些目标和归档文件结合为一个文件，重定位数据，并链接符号引用。通常，建立一个新编译程序的最后一步就是调用 ld 。</p></td>
+              </tr>
+              <tr>
+                <td><a id="nm" name="nm"></a><span class="term"><span><strong class="command">nm</strong></span></span></td>
+                <td><p>列出出现在目标文件中的符号</p></td>
+              </tr>
+              <tr>
+                <td><a id="objcopy" name="objcopy"></a><span class="term"><span><strong class="command">objcopy</strong></span></span></td>
+                <td><p>把一种目标文件中的内容复制到另一种类型的目标文件中</p></td>
+              </tr>
+              <tr>
+                <td><a id="objdump" name="objdump"></a><span class="term"><span><strong class="command">objdump</strong></span></span></td>
+                <td><p>显示所给目标文件的信息。使用选项来控制其显示的信息。它所显示的信息通常只有编写编译工具的人才感兴趣。</p></td>
+              </tr>
+              <tr>
+                <td><a id="ranlib" name="ranlib"></a><span class="term"><span><strong class="command">ranlib</strong></span></span></td>
+                <td><p>产生归档文件索引，并将其保存到这个归档文件中。在索引中列出了归档文件各成员所定义的可重分配目标文件。</p></td>
+              </tr>
+              <tr>
+                <td><a id="readelf" name="readelf"></a><span class="term"><span><strong class="command">readelf</strong></span></span></td>
+                <td><p>显示 ELF 格式可执行文件的信息</p></td>
+              </tr>
+              <tr>
+                <td><a id="size" name="size"></a><span class="term"><span><strong class="command">size</strong></span></span></td>
+                <td><p>列出目标文件每一段的大小以及总体的大小。默认情况下，对于每个目标文件或者一个归档文件中的每个模块只产生一行输出。</p></td>
+              </tr>
+              <tr>
+                <td><a id="strings" name="strings"></a><span class="term"><span><strong class="command">strings</strong></span></span></td>
+                <td><p>打印某个文件的可打印字符串，这些字符串最少 4 个字符长，也可以使用选项"-n"设置字符串的最小长度。默认情况下，它只打印目标文件初始化和可加载段中的可打印字符；对于其它类型的文件它打印整个文件的可打印字符，这个程序对于了解非文本文件的内容很有帮助。</p></td>
+              </tr>
+              <tr>
+                <td><a id="strip" name="strip"></a><span class="term"><span><strong class="command">strip</strong></span></span></td>
+                <td><p>删除目标文件中的全部或者特定符号</p></td>
+              </tr>
+              <tr>
+                <td><a id="libiberty" name="libiberty"></a><span class="term"><tt class="filename">libiberty</tt></span></td>
+                <td><p>
+包含许多GNU程序都会用到的函数，这些程序有：
+                    <span><strong class="command">getopt</strong></span>，
+                    <span><strong class="command">obstack</strong></span>，
+                    <span><strong class="command">strerror</strong></span>，
+                    <span><strong class="command">strtol</strong></span>， 和
+                    <span><strong class="command">strtoul</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="libbfd" name="libbfd"></a><span class="term"><tt class="filename">libbfd</tt></span></td>
+                <td><p>二进制文件描述库</p></td>
+              </tr>
+              <tr>
+                <td><a id="libopcodes" name="libopcodes"></a><span class="term"><tt class="filename">libopcodes</tt></span></td>
+                <td><p>用来处理 opcodes（"可读文本格式的"）处理器操作指令)的库，在生成一些应用程序的时候也会用到它，比如 <span><strong class="command">objdump</strong></span> 。</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="readjusting.html" title="再次调整工具链">后退</a>
+          <p>再次调整工具链</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gcc.html" title="GCC-4.0.3">前进</a>
+          <p>GCC-4.0.3</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SPI_push</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="spi-spi-finish.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="spi-spi-finish.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="spi-spi-pop.html">快进</a></td><td width="10%" align="right" valign="top"><a href="spi-spi-pop.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SPI-SPI-PUSH"></a>SPI_push</h1>
+<div class="REFNAMEDIV"><a name="AEN41937"></a><h2>函数名</h2>SPI_push&nbsp;--&nbsp;对 SPI 堆栈进行压栈操作以允许递归的 SPI 使用</div>
+<a name="AEN41940"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN41942"></a><h2>原型</h2>
+<pre class="SYNOPSIS">void SPI_push(void)</pre>
+</div>
+<div class="REFSECT1"><a name="AEN41944"></a><h2>描述</h2>
+<p>在执行另外一个可能也使用了 SPI 的过程之前，应该调用 <code class="FUNCTION">SPI_push</code> 。之后，SPI 不再是"已连接"状态，除非再次进行 <code class="FUNCTION">SPI_connect</code> ，否则 SPI 函数调用将被拒绝。这样就保证了你的过程的 SPI 状态和另外一个你调用的过程的状态之间的干净的隔离。在另外一个过程返回后，调用 <code class="FUNCTION">SPI_pop</code> 恢复对你自己的 SPI 状态的访问。</p>
+<p>请注意 <code class="FUNCTION">SPI_execute</code> 和相关的函数在把控制交回 SQL 执行引擎之前自动做与 <code class="FUNCTION">SPI_push</code> 相当的工作，因此你在使用这些函数的时候不用担心这些。只有在你直接调用任意可能包含 <code class="FUNCTION">SPI_connect</code> 调用的代码的时候，你才需要发出 <code class="FUNCTION">SPI_push</code> 和 <code class="FUNCTION">SPI_pop</code> 。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="spi-spi-finish.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="spi-spi-pop.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SPI_finish</td><td width="34%" align="center" valign="top"><a href="spi-interface.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SPI_pop</td></tr>
+</table>
+</div>
+</body></html>

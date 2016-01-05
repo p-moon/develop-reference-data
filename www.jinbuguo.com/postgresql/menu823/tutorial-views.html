@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>视图</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="tutorial-advanced-intro.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="tutorial-advanced.html">快退</a></td><td width="60%" align="center" valign="bottom">章3. 高级特性</td><td width="10%" align="right" valign="top"><a href="tutorial-advanced.html">快进</a></td><td width="10%" align="right" valign="top"><a href="tutorial-fk.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TUTORIAL-VIEWS">3.2. 视图</a></h1><a name="AEN936"></a>
+<p>回头看看<a href="tutorial-join.html">节2.6</a>里的查询。假设你的应用对天气记录和城市位置的组合列表特别感兴趣，而你又不想每次键入这些查询。那么你可以在这个查询上创建一个<i class="FIRSTTERM">视图</i>，它给这个查询一个名字，你可以像普通表那样引用它。</p>
+<pre class="PROGRAMLISTING">CREATE VIEW myview AS
+    SELECT city, temp_lo, temp_hi, prcp, date, location
+        FROM weather, cities
+        WHERE city = name;
+
+SELECT * FROM myview;</pre>
+<p>自由地运用视图是好的 SQL 数据库设计的一个关键要素。视图允许我们把表结构的细节封装起来，这些表可能随你的应用进化而变化，但这些变化却可以隐藏在一个一致的接口后面。</p>
+<p>视图几乎可以在一个真正的表可以使用的任何地方使用。在其它视图上面再创建视图也并非罕见。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="tutorial-advanced-intro.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="tutorial-fk.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">介绍</td><td width="34%" align="center" valign="top"><a href="tutorial-advanced.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">外键</td></tr>
+</table>
+</div>
+</body></html>

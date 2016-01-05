@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>简版</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="installation.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="installation.html">快退</a></td><td width="60%" align="center" valign="bottom">章14. 安装指导</td><td width="10%" align="right" valign="top"><a href="installation.html">快进</a></td><td width="10%" align="right" valign="top"><a href="install-requirements.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INSTALL-SHORT">14.1. 简版</a></h1>
+<pre class="SYNOPSIS">./configure
+gmake
+su
+gmake install
+adduser postgres
+mkdir /usr/local/pgsql/data
+chown postgres /usr/local/pgsql/data
+su - postgres
+/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data
+/usr/local/pgsql/bin/postgres -D /usr/local/pgsql/data &gt;logfile 2&gt;&amp;1 &amp;
+/usr/local/pgsql/bin/createdb test
+/usr/local/pgsql/bin/psql test</pre>
+<p>全版是本章剩余的部分。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="installation.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="install-requirements.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">安装指导</td><td width="34%" align="center" valign="top"><a href="installation.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">要求</td></tr>
+</table>
+</div>
+</body></html>

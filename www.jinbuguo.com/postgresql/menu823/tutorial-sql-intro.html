@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>介绍</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="tutorial-sql.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="tutorial-sql.html">快退</a></td><td width="60%" align="center" valign="bottom">章2. SQL 语言</td><td width="10%" align="right" valign="top"><a href="tutorial-sql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="tutorial-concepts.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TUTORIAL-SQL-INTRO">2.1. 介绍</a></h1>
+<p>本章提供一个如何使用 SQL 执行简单操作的概述。本教程的目的只是给你一个介绍，并非完整的 SQL 教程。有许多关于 SQL 的书，包括 <a href="biblio.html#MELT93"><i>Understanding the New SQL</i></a> 和 <a href="biblio.html#DATE97"><i>A Guide to the SQL Standard</i></a> 。而且你还要知道有些 PostgreSQL 语言特性是对标准的扩展。</p>
+<p>在随后的例子里，我们假设你已经创建了名为 <tt class="LITERAL">mydb</tt> 的数据库，就像在前面的章里面介绍的一样，并且已经启动了 <span class="APPLICATION">psql</span> 。</p>
+<p>本手册的例子也可以在 PostgreSQL 源代码发布目录里的 <tt class="FILENAME">src/tutorial/</tt> 中找到。要使用这些文件，首先进入该目录然后运行 <span class="APPLICATION">make</span> ：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">cd <tt class="REPLACEABLE"><i>....</i></tt>/src/tutorial</kbd>
+<samp class="PROMPT">$</samp> <kbd class="USERINPUT">make</kbd></pre>
+<p>这样就创建了那些脚本以及编译了包含用户定义函数和类型的 C 文件。如果你安装的是一个预打包的(不是从源代码编译的)版本，"make"部分的事情应当已经为你做好了，请参照文档中 <tt class="FILENAME">tutorial</tt> 目录。要开始这个教程，按照下面说的进行：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">cd <tt class="REPLACEABLE"><i>....</i></tt>/tutorial</kbd>
+<samp class="PROMPT">$</samp> <kbd class="USERINPUT">psql -s mydb</kbd>
+<samp class="COMPUTEROUTPUT">...</samp>
+
+<samp class="PROMPT">mydb=&gt;</samp> <kbd class="USERINPUT">\i basics.sql</kbd></pre>
+<p><tt class="LITERAL">\i</tt> 命令从指定的文件中读取命令。<tt class="LITERAL">-s</tt> 选项把你置于单步模式，它在向服务器发送每个语句之前暂停。本节使用的命令都在 <tt class="FILENAME">basics.sql</tt> 文件中。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="tutorial-sql.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="tutorial-concepts.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SQL 语言</td><td width="34%" align="center" valign="top"><a href="tutorial-sql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">概念</td></tr>
+</table>
+</div>
+</body></html>

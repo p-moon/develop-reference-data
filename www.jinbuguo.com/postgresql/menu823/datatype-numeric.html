@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>数值类型</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="datatype.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="datatype.html">快退</a></td><td width="60%" align="center" valign="bottom">章8. Data Types</td><td width="10%" align="right" valign="top"><a href="datatype.html">快进</a></td><td width="10%" align="right" valign="top"><a href="datatype-money.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DATATYPE-NUMERIC">8.1. 数值类型</a></h1><a name="AEN3909"></a>
+<p>数值类型由 2 、4 或 8 字节的整数以及 4 或 8 字节的浮点数和可选精度的小数组成。<a href="datatype-numeric.html#DATATYPE-NUMERIC-TABLE">表8-2</a>列出了所有可用类型。</p>
+<div class="TABLE"><a name="DATATYPE-NUMERIC-TABLE"></a>
+<p><b>表8-2. 数值类型</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>存储空间</th><th>描述</th><th>范围</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="TYPE">smallint</tt></td><td>2 字节</td><td>小范围整数</td><td>-32768 到 +32767</td></tr>
+<tr><td><tt class="TYPE">integer</tt></td><td>4 字节</td><td>常用的整数</td><td>-2147483648 到 +2147483647</td></tr>
+<tr><td><tt class="TYPE">bigint</tt></td><td>8 字节</td><td>大范围的整数</td><td>-9223372036854775808 到 9223372036854775807</td></tr>
+<tr><td><tt class="TYPE">decimal</tt></td><td>变长</td><td>用户声明精度，精确</td><td>无限制</td></tr>
+<tr><td><tt class="TYPE">numeric</tt></td><td>变长</td><td>用户声明精度，精确</td><td>无限制</td></tr>
+<tr><td><tt class="TYPE">real</tt></td><td>4 字节</td><td>变精度，不精确</td><td>6 位十进制数字精度</td></tr>
+<tr><td><tt class="TYPE">double precision</tt></td><td>8 字节</td><td>变精度，不精确</td><td>15 位十进制数字精度</td></tr>
+<tr><td><tt class="TYPE">serial</tt></td><td>4 字节</td><td>自增整数</td><td>1 到 2147483647</td></tr>
+<tr><td><tt class="TYPE">bigserial</tt></td><td>8 字节</td><td>大范围的自增整数</td><td>1 到 9223372036854775807</td></tr>
+</tbody>
+</table>
+</div>
+<p>数值类型常量的语法在<a href="sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS">节4.1.2</a>里描述。数值类型对应有一套完整的数学操作符和函数。相关信息请参考<a href="functions.html">章9</a>。下面的几节详细描述这些类型。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="DATATYPE-INT">8.1.1. 整数类型</a></h2><a name="AEN3983"></a><a name="AEN3985"></a><a name="AEN3987"></a><a name="AEN3989"></a><a name="AEN3992"></a><a name="AEN3995"></a>
+<p><tt class="TYPE">smallint</tt>, <tt class="TYPE">integer</tt>, <tt class="TYPE">bigint</tt> 类型存储各种范围的全部是数字的数，也就是没有小数部分的数字。试图存储超出范围以外的数值将导致一个错误。</p>
+<p>常用的类型是 <tt class="TYPE">integer</tt> ，因为它提供了在范围、存储空间、性能之间的最佳平衡。一般只有在磁盘空间紧张的时候才使用 <tt class="TYPE">smallint</tt> 。而只有在 <tt class="TYPE">integer</tt> 的范围不够的时候才使用 <tt class="TYPE">bigint</tt> ，因为前者绝对快得多。</p>
+<p><tt class="TYPE">bigint</tt> 类型可能不是在所有平台上都运转正确，因为它依赖编译器对八字节整数的支持。在那些没有八字节整数支持的机器上，<tt class="TYPE">bigint</tt> 的作用和 <tt class="TYPE">integer</tt> 一样(但是仍然占据八字节存储)。不过，我们目前还没听说过有这样的平台。</p>
+<p>SQL 只声明了整数类型 <tt class="TYPE">integer</tt>(或 <tt class="TYPE">int</tt>) 和 <tt class="TYPE">smallint</tt> 。类型 <tt class="TYPE">bigint</tt> 和类型别名 <tt class="TYPE">int2</tt>, <tt class="TYPE">int4</tt>, <tt class="TYPE">int8</tt> 都是扩展，并且也在许多其它 SQL 数据库系统中使用。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="DATATYPE-NUMERIC-DECIMAL">8.1.2. 任意精度数值</a></h2><a name="AEN4023"></a><a name="AEN4025"></a>
+<p><tt class="TYPE">numeric</tt> 类型可以存储最多 1000 位精度的数字并且准确地进行计算。我们特别建议将它用于货币金额和其它要求精确计算的场合。不过，<tt class="TYPE">numeric</tt> 类型上的算术运算比整数类型或者我们下一节描述的浮点数类型要慢很多。</p>
+<p>在随后的内容里，我们使用下述术语：一个 <tt class="TYPE">numeric</tt> 类型的<i class="FIRSTTERM">标度(scale)</i>是小数部分的位数，<i class="FIRSTTERM">精度(precision)</i>是全部数据位的数目，也就是小数点两边的位数总和。因此数字 23.5141 的精度为 6 而标度为 4 。你可以认为整数的标度为零。</p>
+<p><tt class="TYPE">numeric</tt> 字段的最大精度和最大标度都是可以配置的。要声明一个字段的类型为 <tt class="TYPE">numeric</tt> ，你可以用下面的语法：</p>
+<pre class="PROGRAMLISTING">NUMERIC(<tt class="REPLACEABLE"><i>precision</i></tt>, <tt class="REPLACEABLE"><i>scale</i></tt>)</pre>
+<p>精度必须为正数，标度可以为零或者正数。另外，</p>
+<pre class="PROGRAMLISTING">NUMERIC(<tt class="REPLACEABLE"><i>precision</i></tt>)</pre>
+<p>选择了标度为 0 。不带任何精度与标度的声明</p>
+<pre class="PROGRAMLISTING">NUMERIC</pre>
+<p>则创建一个可以存储一个直到实现精度上限的任意精度和标度的数值，一个这样类型的字段将不会把输入数值转化成任何特定的标度，而带有标度声明的 <tt class="TYPE">numeric</tt> 字段将把输入值转化为该标度。SQL 标准要求缺省的标度是 0(也就是转化成整数精度)。我们觉得这样做有点没用。如果你关心移植性，那你最好总是明确声明精度和标度。</p>
+<p>如果一个要存储的数值的标度比字段声明的标度高，那么系统将尝试圆整(四舍五入)该数值到指定的小数位。然后，如果小数点左边的数据位数超过了声明的精度减去声明的标度，那么将抛出一个错误。</p>
+<p><tt class="TYPE">numeric</tt> 类型的数据值在物理上是不带任何前导或者后缀零的形式存储的。因此，字段上声明的精度和标度都是最大值，而不是固定分配的。在这个方面，<tt class="TYPE">numeric</tt> 类型更类似于 <tt class="TYPE">varchar(<tt class="REPLACEABLE"><i>n</i></tt>)</tt> 而不是 <tt class="TYPE">char(<tt class="REPLACEABLE"><i>n</i></tt>)</tt> 。实际存储是每四个十进制位两个字节，然后在整个数据上加上八个字节的额外开销。</p>
+<p>除了普通的数字值之外，<tt class="TYPE">numeric</tt> 类型允许用特殊值 <tt class="LITERAL">NaN</tt> 表示"不是一个数字"。任何在 <tt class="LITERAL">NaN</tt> 上面的操作都生成另外一个 <tt class="LITERAL">NaN</tt> 。如果在 SQL 命令里把这些值当作一个常量写，你必须在其周围放上单引号，比如 <tt class="LITERAL">UPDATE table SET x = 'NaN'</tt> 。在输入时，字符串 <tt class="LITERAL">NaN</tt> 是大小写无关的。</p>
+<p>类型 <tt class="TYPE">decimal</tt> 和 <tt class="TYPE">numeric</tt> 是等效的。两种类型都是 SQL 标准。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="DATATYPE-FLOAT">8.1.3. 浮点数类型</a></h2><a name="AEN4068"></a><a name="AEN4070"></a><a name="AEN4072"></a><a name="AEN4075"></a><a name="AEN4078"></a>
+<p>数据类型 <tt class="TYPE">real</tt> 和 <tt class="TYPE">double precision</tt> 是不精确的、变精度的数字类型。实际上，这些类型是 IEEE 754 标准二进制浮点数算术(分别对应单和双精度)的一般实现，外加下层处理器、操作系统和编译器对它的支持。</p>
+<p>不精确意味着一些数值不能精确地转换成内部格式并且是以近似值存储的，因此存储后再把数据打印出来可能有一些差异。处理这些错误以及这些错误是如何在计算中传播的属于数学和计算机科学的一个完整的分支，我们不会在这里进一步讨论它，这里的讨论仅限于如下几点：</p>
+<ul>
+<li><p>如果你要求精确的计算(比如计算货币金额)，应使用 <tt class="TYPE">numeric</tt> 类型。</p></li>
+<li><p>如果你想用这些类型做任何重要的复杂计算，尤其是那些你对范围情况(无穷/下溢)严重依赖的事情，那你应该仔细评诂你的实现。</p></li>
+<li><p>拿两个浮点数值进行相等性比较可能像、也可能不像你想像那样运转。</p></li>
+</ul>
+<p>在大多数平台上，<tt class="TYPE">real</tt> 类型的范围是至少 1E-37 到 1E+37 ，精度至少是 6 位小数。<tt class="TYPE">double precision</tt> 的范围通常是 1E-307 到 1E+308 ，精度是至少 15 位数字。太大或者太小的数值都会导致错误。如果输入数据的精度太高，那么将会发生园整。太接近零的数字，如果无法与零值的表现形式相区分就会产生下溢错误。</p>
+<p>除了普通的数字值之外，浮点类型还有几个特殊值：
+<p class="LITERALLAYOUT"><tt class="LITERAL">Infinity</tt><br>
+<tt class="LITERAL">-Infinity</tt><br>
+<tt class="LITERAL">NaN</tt></p>
+这些值分别表示 IEEE 754 特殊值"正无穷大"、"负无穷大"、"不是一个数字"。在不遵循 IEEE 754 浮点算术的机器上，这些值的含义可能不是预期的。如果在 SQL 命令里把这些数值当作常量写，你必须在它们周围放上单引号，像这样：<tt class="LITERAL">UPDATE table SET x = 'Infinity'</tt> 。输入时，这些值是以大小写无关的方式识别的。</p>
+<p>PostgreSQL 还支持 SQL 标准表示法 <tt class="TYPE">float</tt> 和 <tt class="TYPE">float(<tt class="REPLACEABLE"><i>p</i></tt>)</tt> 用于声明非精确的数值类型。其中的 <tt class="REPLACEABLE"><i>p</i></tt> 声明以二进制位表示的最低可接受精度。在选取 <tt class="TYPE">real</tt> 类型的时候，PostgreSQL 接受 <tt class="TYPE">float(1)</tt> 到 <tt class="TYPE">float(24)</tt>，在选取 <tt class="TYPE">double precision</tt> 的时候，接受 <tt class="TYPE">float(25)</tt> 到 <tt class="TYPE">float(53)</tt> 。在允许范围之外的 <tt class="REPLACEABLE"><i>p</i></tt> 值将导致一个错误。没有声明精度的 <tt class="TYPE">float</tt> 将被当作 <tt class="TYPE">double precision</tt> 。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>PostgreSQL 7.4以前，在 <tt class="TYPE">float(<tt class="REPLACEABLE"><i>p</i></tt>)</tt> 里面的精度会被当作是这么多位数的十进制位。到 7.4 已经被修改成与 SQL 标准匹配，标准声明这个精度是以二进制位度量的。假设 <tt class="TYPE">real</tt> 和 <tt class="TYPE">double precision</tt> 分别有 24 和 53 个二进制位的位数对 IEEE 标准的浮点实现来说是正确的。在非 IEEE 平台上，这个数值可能略有偏差，但是为了简化，我们在所有平台上都用了同样的 <tt class="REPLACEABLE"><i>p</i></tt> 值范围。</p>
+</blockquote>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="DATATYPE-SERIAL">8.1.4. 序列号类型</a></h2><a name="AEN4131"></a><a name="AEN4133"></a><a name="AEN4135"></a><a name="AEN4137"></a><a name="AEN4139"></a><a name="AEN4142"></a>
+<p><tt class="TYPE">serial</tt> 和 <tt class="TYPE">bigserial</tt> 类型不是真正的类型，只是为在表中设置唯一标识做的概念上的便利。类似其它一些数据库中的 <tt class="LITERAL">AUTO_INCREMENT</tt> 属性。在目前的实现中，下面一个语句：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE <tt class="REPLACEABLE"><i>tablename</i></tt> (
+    <tt class="REPLACEABLE"><i>colname</i></tt> SERIAL
+);</pre>
+<p>等价于声明下面几个语句：</p>
+<pre class="PROGRAMLISTING">CREATE SEQUENCE <tt class="REPLACEABLE"><i>tablename</i></tt>_<tt class="REPLACEABLE"><i>colname</i></tt>_seq;
+CREATE TABLE <tt class="REPLACEABLE"><i>tablename</i></tt> (
+    <tt class="REPLACEABLE"><i>colname</i></tt> integer NOT NULL DEFAULT nextval('<tt class="REPLACEABLE"><i>tablename</i></tt>_<tt class="REPLACEABLE"><i>colname</i></tt>_seq')
+);
+ALTER SEQUENCE <tt class="REPLACEABLE"><i>tablename</i></tt>_<tt class="REPLACEABLE"><i>colname</i></tt>_seq OWNED BY <tt class="REPLACEABLE"><i>tablename</i></tt>.<tt class="REPLACEABLE"><i>colname</i></tt>;</pre>
+<p>因此，我们就创建了一个整数字段并且把它的缺省数值安排为从一个序列发生器读取。应用了一个 <tt class="LITERAL">NOT NULL</tt> 约束以确保 NULL 不会被插入。在大多数情况下你可能还希望附加一个 <tt class="LITERAL">UNIQUE</tt> 或 <tt class="LITERAL">PRIMARY KEY</tt> 约束避免意外地插入重复的数值，但这个不是自动的。最后，将序列发生器"从属于"那个字段，这样当该字段或表被删除的时候也一并删除它。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>PostgreSQL 7.3以前，<tt class="TYPE">serial</tt> 隐含 <tt class="LITERAL">UNIQUE</tt> 。但现在不再如此。如果你希望一个序列字段有一个唯一约束或者一个主键，那么你现在必须声明，就像其它数据类型一样。</p>
+</blockquote>
+</div>
+<p>要在 <tt class="TYPE">serial</tt>字段中插入序列中的下一个数值，主要是要注意 <tt class="TYPE">serial</tt>字段应该赋予缺省值。我们可以通过在 <tt class="COMMAND">INSERT</tt> 语句中把该字段排除在字段列表之外来实现，也可以通过使用 <tt class="LITERAL">DEFAULT</tt> 关键字来实现。</p>
+<p>类型名 <tt class="TYPE">serial</tt> 和 <tt class="TYPE">serial4</tt> 是等效的：两者都创建 <tt class="TYPE">integer</tt> 字段。类型名 <tt class="TYPE">bigserial</tt> 和 <tt class="TYPE">serial8</tt> 也一样，只不过它创建一个 <tt class="TYPE">bigint</tt> 字段。如果你预计在表的生存期中使用的标识数目可能超过 2<SUP>31</SUP> 个，那么你应该使用 <tt class="TYPE">bigserial</tt> 。</p>
+<p>一个 <tt class="TYPE">serial</tt> 类型创建的序列在所属的字段被删除的时候自动删除。你可以只删除序列而不删除字段，不过这将删除该字段的缺省值表达式。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="datatype.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="datatype-money.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">数据类型</td><td width="34%" align="center" valign="top"><a href="datatype.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">货币类型</td></tr>
+</table>
+</div>
+</body></html>

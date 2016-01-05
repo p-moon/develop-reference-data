@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PREPARE TRANSACTION</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-prepare.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-prepare.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-reassign-owned.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-reassign-owned.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-PREPARE-TRANSACTION"></a>PREPARE TRANSACTION</h1>
+<div class="REFNAMEDIV"><a name="AEN52865"></a><h2>名称</h2>PREPARE TRANSACTION&nbsp;--&nbsp;为当前事务做两阶段提交的准备</div>
+<a name="AEN52868"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN52870"></a><h2>语法</h2>
+<pre class="SYNOPSIS">PREPARE TRANSACTION <tt class="REPLACEABLE"><i>transaction_id</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN52873"></a><h2>描述</h2>
+<p><tt class="COMMAND">PREPARE TRANSACTION</tt> 为当前事务的两阶段提交做准备。在命令之后，事务就不再和当前会话关联了；它的状态完全保存在磁盘上，它提交成功有非常高的可能性，即使是在请求提交之前数据库发生了崩溃也如此。</p>
+<p>一旦准备好了，一个事务就可以在稍后用 <a href="sql-commit-prepared.html"><i>COMMIT PREPARED</i></a> 或 <a href="sql-rollback-prepared.html"><i>ROLLBACK PREPARED</i></a> 命令分别进行提交或者回滚。这些命令可以从任何会话中发出，而不光是最初执行事务的那个会话。</p>
+<p>从发出命令的会话的角度来看，<tt class="COMMAND">PREPARE TRANSACTION</tt> 不同于 <tt class="COMMAND">ROLLBACK</tt> ：在执行它之后，就不再有活跃的当前事务了，并且预备事务的效果无法见到(在事务提交的时候其效果会再次可见)。</p>
+<p>如果 <tt class="COMMAND">PREPARE TRANSACTION</tt> 因为某些原因失败，那么它就会变成一个 <tt class="COMMAND">ROLLBACK</tt> ，当前事务被取消。</p>
+</div>
+<div class="REFSECT1"><a name="AEN52886"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>transaction_id</i></tt></dt>
+<dd><p>一个任意的标识符，用于后面在 <tt class="COMMAND">COMMIT PREPARED</tt> 或 <tt class="COMMAND">ROLLBACK PREPARED</tt> 的时候标识这个事务。这个标识符必须以字符串文本的方式书写，并且必须小于 200 字节长。它不能和任何当前预备事务已经使用了的标识符同名。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN52896"></a><h2>注意</h2>
+<p>这条命令必须在一个事务块里面使用。用 <a href="sql-begin.html"><i>BEGIN</i></a> 开始一个事务。</p>
+<p>目前，不允许对那些执行了涉及临时表或者是创建了带 <tt class="LITERAL">WITH HOLD</tt> 游标的事务进行 <tt class="COMMAND">PREPARE</tt> 。这些特性和当前会话绑定得实在是太紧密了，因此在一个预备事务里没什么可用的。</p>
+<p>如果事务用 <tt class="COMMAND">SET</tt> 修改了运行时参数，这些效果在 <tt class="COMMAND">PREPARE TRANSACTION</tt> 之后保留，并且不会被任何以后的 <tt class="COMMAND">COMMIT PREPARED</tt> 或 <tt class="COMMAND">ROLLBACK PREPARED</tt> 所影响。因此，在这方面，<tt class="COMMAND">PREPARE TRANSACTION</tt> 表现得更像 <tt class="COMMAND">COMMIT</tt> 而不是 <tt class="COMMAND">ROLLBACK</tt> 。</p>
+<p>所有目前可用的预备事务都在系统视图 <a href="view-pg-prepared-xacts.html"><tt class="STRUCTNAME">pg_prepared_xacts</tt></a> 里面列出。</p>
+<p>从性能的角度来看，把一个事务长时间停在预备状态是不明智的：它会影响 <tt class="COMMAND">VACUUM</tt> 回收存储的能力。还要记住，事务会继续持有它们持有的锁。这个特性的用法是预备事务通常会在外部的事务管理器核实了其它数据库也准备好提交之后，提交或者回滚事务。</p>
+<p>如果你非常严肃地使用预备事务，那么可能需要增大 <a href="runtime-config-resource.html#GUC-MAX-PREPARED-TRANSACTIONS">max_prepared_transactions</a> 的数值，因为缺省的设置太小(以避免浪费那些不需要它的用户的资源)。建议至少将其设置为等于 <a href="runtime-config-connection.html#GUC-MAX-CONNECTIONS">max_connections</a> ，这样每个会话都可以有一个等待中的预备事务。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-PREPARE-TRANSACTION-EXAMPLES"></a><h2>例子</h2>
+<p>把当前事务为两阶段提交做准备，使用 <tt class="LITERAL">foobar</tt> 做为事务标识符：</p>
+<pre class="PROGRAMLISTING">PREPARE TRANSACTION 'foobar';</pre>
+</div>
+<div class="REFSECT1"><a name="AEN52924"></a><h2>又见</h2><a href="sql-commit-prepared.html"><i>COMMIT PREPARED</i></a>, <a href="sql-rollback-prepared.html"><i>ROLLBACK PREPARED</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-prepare.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-reassign-owned.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PREPARE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">REASSIGN OWNED</td></tr>
+</table>
+</div>
+</body></html>

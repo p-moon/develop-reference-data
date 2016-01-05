@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>第五章 构建临时编译环境</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>Part II. 构建前的准备工作</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="../chapter04/abouttestsuites.html" title="关于软件包测试套件">后退</a>
+          <p>关于软件包测试套件</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="toolchaintechnotes.html" title="工具链技术说明">前进</a>
+          <p>工具链技术说明</p>
+        </li>
+        <li class="up"><a accesskey="u" href="../part2.html" title="Part II. 构建前的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="chapter">
+      <div class="titlepage">
+        <h1 class="chapter">5. 构建临时编译环境</h1>
+      </div>
+      <div class="sect1">
+        <div class="titlepage">
+          <a id="ch-tools-introduction" name="ch-tools-introduction"></a>
+          <h2 class="sect1">5.1. 简介</h2>
+        </div>
+        <p>本章介绍如何编译和安装一个小的 Linux 系统。这个系统将仅包含必要的工具，用于构建<a href="../chapter06/chapter06.html">第六章</a>中最终的 LFS 系统。</p>
+        <p>构建这个小系统分两步进行，第一步是构建一个新的不依赖于宿主系统的工具链(编译器、汇编器、连接器、库文件以及一些有用的软件)，第二个步骤是利用这个工具链去构建其它基本的工具。</p>
+        <p>本章中编译的文件将安装在 <tt class="filename">$LFS/tools</tt> 目录下，这样可以与下一章将要安装的软件以及宿主系统区分开来。这些软件包编译出来是起临时作用的，我们不希望这些软件和即将建立的 LFS 系统混杂在一起。</p>
+        <div class="important">
+          <div class="admonhead">
+            <img alt="[Important]" src="../images/important.png" />
+            <h3 class="admontitle">重要</h3>
+          </div>
+          <div class="admonbody">
+            <p>在运行每一个软件包的编译指令之前，都需要用 <tt class="systemitem">lfs</tt> 用户解开这个软件包，并用 <span><strong class="command">cd</strong></span> 命令进入软件包解开后的目录。编译指令假定您使用的是 <span><strong class="command">bash</strong></span> shell 。</p>
+          </div>［译者注］举例来说，对于第一个软件包 Binutils-2.16.1 ，在执行书上的第一个命令<pre class="userinput"><kbd class="command">mkdir -v ../binutils-build</kbd></pre>之前，必须先执行下列解包和切换目录的命令：<pre class="userinput"><kbd class="command">tar -xvjf $LFS/sources/binutils-2.16.1.tar.bz2 -C $LFS/sources/
+cd $LFS/sources/binutils-2.16.1/</kbd></pre>其他软件包以此类推。
+        </div>
+        <p>某些软件包在编译之前需要打上补丁，但仅仅是需要补丁来解决某个问题的时候。一个补丁可能本章和下一章都会用到，也可能只在其中一章用到。因此，当某个软件包存在一个补丁，而在编译时并未让你使用这个补丁时，不要以为是我们忘记了。事实上，那个补丁只需要在另外一次编译中被用到。而应用某个补丁的时候，也可能会出现某些关于 <span class="emphasis"><em>offset</em></span> 或 <span class="emphasis"><em>fuzz</em></span> 的警告信息，不要理会，这个补丁仍然会被成功的应用。</p>
+        <p>大多数软件包的编译过程中，屏幕上可能会滚过一些警告信息，这些是正常且可以被安全忽略的。这些警告就像显示的那样：警告的是不标准，却不是不正确的 C 或 C++ 语法。C 标准常常会变，而某些软件包仍然使用老的标准，这不是问题，仅仅导致一些警告信息而已。</p>
+        <div class="important">
+          <div class="admonhead">
+            <img alt="[Important]" src="../images/important.png" />
+            <h3 class="admontitle">重要</h3>
+          </div>
+          <div class="admonbody">
+            <p>在安装完每个软件包之后，删除其源代码和编译目录，除非另有特别说明。删除源文件可以节省磁盘空间，并且可以在下次需要安装同一个软件包的时候不会出现配置错误。</p>
+          </div>［译者注］举例来说，对于第一个软件包 Binutils-2.16.1 ，在执行完书上的最后一个命令<pre class="userinput"><kbd class="command">cp -v ld/ld-new /tools/bin</kbd></pre>之后，可以使用下列命令删除其源文件和编译目录：<pre class="userinput"><kbd class="command">rm -fr $LFS/sources/binutils-2.16.1/
+rm -fr $LFS/sources/binutils-build/</kbd></pre>其他的软件包以此类推。
+        </div>
+        <p>最后一次检查 <tt class="envar">LFS</tt> 环境变量是否设置正确：</p>
+        <pre class="userinput"><kbd class="command">echo $LFS</kbd></pre>
+        <p>请确认输出显示的是挂载 LFS 分区的路径，在我们的例子中是 <tt class="filename">/mnt/lfs</tt> 。</p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="../chapter04/abouttestsuites.html" title="关于软件包测试套件">后退</a>
+          <p>关于软件包测试套件</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="toolchaintechnotes.html" title="工具链技术说明">前进</a>
+          <p>工具链技术说明</p>
+        </li>
+        <li class="up"><a accesskey="u" href="../part2.html" title="Part II. 构建前的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

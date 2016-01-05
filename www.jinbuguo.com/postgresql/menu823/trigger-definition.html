@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>触发器行为概述</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="triggers.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="triggers.html">快退</a></td><td width="60%" align="center" valign="bottom">章34. 触发器</td><td width="10%" align="right" valign="top"><a href="triggers.html">快进</a></td><td width="10%" align="right" valign="top"><a href="trigger-datachanges.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TRIGGER-DEFINITION">34.1. 触发器行为概述</a></h1>
+<p>一个触发器是一种声明，告诉数据库应该在执行特定的操作的时候执行特定的函数。触发器可以定义在一个 <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt> 命令之前或者之后执行，要么是对每行执行一次，要么是对每条 SQL 语句执行一次。如果发生触发器事件，那么将在合适的时刻调用触发器函数以处理该事件。</p>
+<p>触发器函数必须在创建触发器之前，作为一个没有参数并且返回 <tt class="LITERAL">trigger</tt> 类型的函数定义。触发器函数通过特殊的 <tt class="STRUCTNAME">TriggerData</tt> 结构接收其输入，而不是用普通的函数参数方式。</p>
+<p>一旦创建了一个合适的触发器函数，就可以用 <a href="sql-createtrigger.html"><i>CREATE TRIGGER</i></a> 创建触发器。同一个触发器函数可以用于多个触发器。</p>
+<p>PostgreSQL 提供<i class="FIRSTTERM">按行</i>与<i class="FIRSTTERM">按语句</i>触发的触发器。按行触发的触发器函数为触发语句影响的每一行执行一次；按语句触发的触发器函数为每条触发语句执行一次，而不管影响的行数。特别是，一个影响零行的语句将仍然导致按语句触发的触发器执行。这两种类型的触发器有时候分别叫做<i class="FIRSTTERM">行级</i>触发器和<i class="FIRSTTERM">语句级</i>触发器。</p>
+<p>触发器还通常分成 <i class="FIRSTTERM">before</i> 触发器和 <i class="FIRSTTERM">after</i> 触发器。语句级别的"before"触发器通常在语句开始做任何事情之前触发，而语句级别的"after"触发器在语句结束时触发。行级别的"before"触发器在对特定行进行操作之前触发，而行级别的"after"触发器在语句结束的时候触发(但是在任何语句级别的"after"触发器之前)。</p>
+<p>按语句触发的触发器应该总是返回 <tt class="SYMBOL">NULL</tt> 。如果必要，按行触发的触发器函数可以给调用它的执行者返回一行数据(一个类型为 <tt class="STRUCTNAME">HeapTuple</tt> 的数值)，那些在操作之前触发的触发器有以下选择：</p>
+<ul>
+<li><p>它可以返回 <tt class="SYMBOL">NULL</tt> 以忽略对当前行的操作。这就指示执行器不要执行调用该触发器的行级别操作(对特定行的插入或者更改)。</p></li>
+<li><p>只用于 <tt class="COMMAND">INSERT</tt> 和 <tt class="COMMAND">UPDATE</tt> 行触发器：返回的行将成为被插入的行或者是成为将要更新的行。这样就允许触发器函数修改将要被插入或者更新的行。</p></li>
+</ul>
+<p>一个无意导致任何这类行为的在操作之前触发的行级触发器必须仔细返回那个被当作新行传进来的行。也就是说，对于 <tt class="COMMAND">INSERT</tt> 和 <tt class="COMMAND">UPDATE</tt> 触发器而言，是 <tt class="VARNAME">NEW</tt> 行，对于 <tt class="COMMAND">DELETE</tt> 触发器而言，是 <tt class="VARNAME">OLD</tt> 行。</p>
+<p>对于在操作之后触发的行级触发器，其返回值会被忽略，因此可以返回 <tt class="SYMBOL">NULL</tt> 。</p>
+<p>如果多于一个触发器为同样的事件定义在同样的关系上，触发器将按照名字的字母顺序触发。如果是事件之前触发的触发器，每个触发器返回的可能已经被修改过的行成为下一个触发器的输入。如果任何事件之前触发的触发器返回 <tt class="SYMBOL">NULL</tt> ，那么对该行的操作将被丢弃并且随后的触发器也不会被触发。</p>
+<p>通常，行的 before 触发器用于检查或修改将要插入或者更新的数据。比如，一个 before 触发器可以用于把当前时间插入一个 <tt class="TYPE">timestamp</tt> 字段，或者跟踪该行的两个元素是一致的。行的 after 触发器多数用于填充或者更新其它表，或者对其它表进行一致性检查。这么区分工作的原因是 after 触发器肯定可以看到该行的最后数值，而 before 触发器不能；还可能有其它的 before 触发器在其后触发。如果你没有具体的原因定义触发器是 before 还是 after ，那么 before 触发器的效率高些，因为操作相关的信息不必保存到语句的结尾。</p>
+<p>如果一个触发器函数执行 SQL 命令，而这些命令再次触发触发器，这就是所谓的级联触发器。对级联触发器的级联深度没有明确的限制。有可能出现级联触发器导致同一个触发器递归调用的情况；比如，一个 <tt class="COMMAND">INSERT</tt> 触发器可能执行一个命令，把一个额外的行插入同一个表中，导致 <tt class="COMMAND">INSERT</tt> 触发器再次触发。避免这样无穷递归的问题是触发器程序员的责任。</p>
+<p>在定义一个触发器的时候，可以声明一些参数。在触发器定义中包含参数的目的是允许类似需求的不同触发器调用同一个函数。比如，可能有一个通用的触发器函数，接受两个字段名字，把当前用户放在第一个，而当前时间戳在第二个。只要写得恰当，那么这个触发器函数就可以和触发它的特定表无关。这样同一个函数就可以用于有着合适字段的任何表的 <tt class="COMMAND">INSERT</tt> 事件，实现自动跟踪交易表中的记录创建之类的问题。如果定义成一个 <tt class="COMMAND">UPDATE</tt> 触发器，还可以用它跟踪最后更新的事件。</p>
+<p>每种支持触发器的编程语言都有自己的方法让触发器函数得到输入数据。这些输入数据包括触发器事件的类型(比如 <tt class="COMMAND">INSERT</tt> 或 <tt class="COMMAND">UPDATE</tt>)以及所有在 <tt class="COMMAND">CREATE TRIGGER</tt> 里面列出的参数。对于低层次的触发器，输入数据也包括 <tt class="COMMAND">INSERT</tt> 和 <tt class="COMMAND">UPDATE</tt> 触发器的 <tt class="VARNAME">NEW</tt> 和/或 <tt class="COMMAND">UPDATE</tt> 和 <tt class="COMMAND">DELETE</tt> 触发器的 <tt class="VARNAME">OLD</tt> 行。语句级别的触发器目前没有任何方法检查该语句修改的独立行。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="triggers.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="trigger-datachanges.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">触发器</td><td width="34%" align="center" valign="top"><a href="triggers.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">数据改变的可视性</td></tr>
+</table>
+</div>
+</body></html>

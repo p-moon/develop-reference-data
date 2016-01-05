@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.10. 再次调整工具链</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="glibc.html" title="Glibc-2.3.6">后退</a>
+          <p>Glibc-2.3.6</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="binutils.html" title="Binutils-2.16.1">前进</a>
+          <p>Binutils-2.16.1</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">6.10. 再次调整工具链</h1>
+      </div>
+      <p>现在，最终的 C 库已经安装好了，我们需要再次调整工具链，让本章随后编译的那些工具都连接到这个库上。基本上，就是把 <a href="../chapter05/chapter05.html">Chapter 5</a> 中"<span class="quote">调整工具链</span>"那里做的调整给取消掉。在 <a href="../chapter05/chapter05.html">Chapter 5</a> 中，工具链使用的库是从宿主系统的 <tt class="filename">/{,usr/}lib</tt> 转向新安装的 <tt class="filename">/tools/lib</tt> 目录。同样的，现在工具链使用的库将从临时的 <tt class="filename">/tools/lib</tt> 转向 LFS 系统最终的 <tt class="filename">/{,usr/}lib</tt> 目录。</p>
+      <p>首先，备份 <tt class="filename">/tools</tt> 下的链接，用我们在第 5 章中编译的链接器来替换，再创建一个链接到在 <tt class="filename">/tools/$(gcc -dumpmachine)/bin</tt> 中的复本。</p>
+      <pre class="userinput"><kbd class="command">mv -v /tools/bin/{ld,ld-old}
+mv -v /tools/$(gcc -dumpmachine)/bin/{ld,ld-old}
+mv -v /tools/bin/{ld-new,ld}
+ln -sv /tools/bin/ld /tools/$(gcc -dumpmachine)/bin/ld</kbd></pre>
+      <p>接下来，修正 GCC 的 specs 文件，使它指向新的动态链接器，这样 GCC 才能知道在哪能发现开始文件。应用一个 <span><strong class="command">perl</strong></span> 命令：</p>
+      <pre class="userinput"><kbd class="command">gcc -dumpspecs | \
+perl -p -e 's@/tools/lib/ld-linux.so.2@/lib/ld-linux.so.2@g;' \
+    -e 's@\*startfile_prefix_spec:\n@$_/usr/lib/ @g;' &gt; \
+    `dirname $(gcc --print-libgcc-file-name)`/specs</kbd></pre>
+      <p>修改之后，用你的眼睛亲自检查一下 specs 文件，确保已经改正确了。</p>
+      <div class="important">
+        <div class="admonhead">
+          <img alt="[Important]" src="../images/important.png" />
+          <h3 class="admontitle">重要</h3>
+        </div>
+        <div class="admonbody">
+          <p>如果你的系统平台上，动态连接器的名字不是 <tt class="filename">ld-linux.so.2</tt> ，你必须把上面命令里的"<span class="quote">ld-linux.so.2</span>"换成你的系统平台上动态连接器的名字。若有必要，请参见 <a href="../chapter05/toolchaintechnotes.html" title="5.2.&nbsp;Toolchain Technical Notes">Section 5.2 "工具链技术说明"</a>。</p>
+        </div>
+      </div>
+       <p>现在有必要停下来，检查一下新工具链的基本功能(编译和连接)是否正常，我们进行一个简单的合理性检查：</p>
+      <pre class="userinput"><kbd class="command">echo 'main(){}' &gt; dummy.c
+cc dummy.c -Wl,--verbose &amp;&gt; dummy.log
+readelf -l a.out | grep ': /lib'</kbd></pre>
+      <p>如果一切正常，应该不会出错，而且最后一个命令的结果应该是(某些特殊平台上动态连接器的名称可能与此处不同)：</p>
+      <pre class="screen"><tt class="computeroutput">[Requesting program interpreter: /lib/ld-linux.so.2]</tt></pre>
+      <p>注意，<tt class="filename">/lib</tt> 应该是动态连接器的前缀。</p>
+      <p>现在确保我们设置使用正确的开始文件：</p>
+      <pre class="userinput"><kbd class="command">grep -o '/usr/lib.*/crt[1in].* .*' dummy.log</kbd></pre>
+      <p>如果一切正常，应该不会出错，而且最后一个命令的结果应该是：</p>
+      <pre class="screen"><tt class="computeroutput">/usr/lib/crt1.o succeeded
+/usr/lib/crti.o succeeded
+/usr/lib/crtn.o succeeded</tt></pre>
+      <p>接下来要做的是验证新的链接器是否在正确的搜索路径内：</p>
+      <pre class="userinput"><kbd class="command">grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'</kbd></pre>
+      <p>如果一切正常，应该不会出错，而且最后一个命令的结果应该是：</p>
+      <pre class="screen"><tt class="computeroutput">SEARCH_DIR("/tools/i686-pc-linux-gnu/lib")
+SEARCH_DIR("/usr/lib")
+SEARCH_DIR("/lib");</tt></pre>
+      <p>下面，确保我们是否正在使用正确的 libc：</p>
+      <pre class="userinput"><kbd class="command">grep "/lib/libc.so.6 " dummy.log</kbd></pre>
+      <p>如果一切正常，应该不会出错，而且最后一个命令的结果应该是：</p>
+      <pre class="screen"><tt class="computeroutput">attempt to open /lib/libc.so.6 succeeded</tt></pre>
+      <p>最后，确保 GCC 正在使用正确的动态链接器：</p>
+      <pre class="userinput"><kbd class="command">grep found dummy.log</kbd></pre>
+      <p>如果一切正常，应该不会出错，而且最后一个命令的结果应该是(某些特殊平台上动态连接器的名称可能与此处不同)：</p>
+      <pre class="screen"><tt class=
+      "computeroutput">found ld-linux.so.2 at /lib/ld-linux.so.2</tt></pre>
+      <p>如果输出与上面不同或者没有输出，那么就有大问题了。你需要检查一下前面的操作，看看问题出在哪里，并改正过来。在改正之前，不要继续后面的部份，因为没什么意义。大多数情况下，出错都是因为上面的 specs 文件没改对。当然，如果你的平台上动态连接器的名字不是 ld-linux.so.2 ，上面的结果也会不同。在继续之前要解决所有的问题。</p>
+      <p>在确定一切正常后，删除测试文件：</p>
+      <pre class="userinput"><kbd class="command">rm -v dummy.c a.out dummy.log</kbd></pre>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="glibc.html" title="Glibc-2.3.6">后退</a>
+          <p>Glibc-2.3.6</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="binutils.html" title="Binutils-2.16.1">前进</a>
+          <p>Binutils-2.16.1</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

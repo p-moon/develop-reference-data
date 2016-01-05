@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SET SESSION AUTHORIZATION</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-set-role.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-set-role.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-set-transaction.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-set-transaction.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-SET-SESSION-AUTHORIZATION"></a>SET SESSION AUTHORIZATION</h1>
+<div class="REFNAMEDIV"><a name="AEN54579"></a><h2>名称</h2>SET SESSION AUTHORIZATION&nbsp;--&nbsp;为当前会话设置会话用户标识符和当前用户标识符</div>
+<a name="AEN54582"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN54584"></a><h2>语法</h2>
+<pre class="SYNOPSIS">SET [ SESSION | LOCAL ] SESSION AUTHORIZATION <tt class="REPLACEABLE"><i>username</i></tt>
+SET [ SESSION | LOCAL ] SESSION AUTHORIZATION DEFAULT
+RESET SESSION AUTHORIZATION</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54587"></a><h2>描述</h2>
+<p>这条命令把当前会话环境里的会话用户标识和当前用户标识都设置为 <tt class="REPLACEABLE"><i>username</i></tt> 。这个用户名可以写成一个标识符或者一个字符串文本。使用这个命令，可以临时变成一个非特权用户，稍后再切换回超级用户。</p>
+<p>会话用户标识符一开始设置为(可能经过认证的)客户端提供的用户名。当前用户标识符通常等于会话用户标识符，但是可能在"setuid"的环境里或者类似的机制里临时改变。也可以用 <a href="sql-set-role.html"><i>SET ROLE</i></a> 来修改。当前用户的身份和权限检查有关。</p>
+<p>只有在初始会话用户(<i class="FIRSTTERM">已认证用户</i>)有超级用户权限的时候，会话用户标识符才能改变。否则，只有在指定了被认证的用户名的情况下，系统才接受该命令。</p>
+<p>The <tt class="LITERAL">SESSION</tt> 和 <tt class="LITERAL">LOCAL</tt> 修饰词和普通 <a href="sql-set.html"><i>SET</i></a> 命令里的作用相同。</p>
+<p>The <tt class="LITERAL">DEFAULT</tt> 和 <tt class="LITERAL">RESET</tt> 形式重置会话和当前用户标识符为初始认证的用户名。这些形式可以为任何用户执行。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54603"></a><h2>例子</h2>
+<pre class="PROGRAMLISTING">SELECT SESSION_USER, CURRENT_USER;
+
+ session_user | current_user 
+--------------+--------------
+ peter        | peter
+
+SET SESSION AUTHORIZATION 'paul';
+
+SELECT SESSION_USER, CURRENT_USER;
+
+ session_user | current_user 
+--------------+--------------
+ paul         | paul</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54606"></a><h2>兼容性</h2>
+<p>SQL 标准允许一些其它的表达式出现在文本 <tt class="REPLACEABLE"><i>username</i></tt> 的位置上，不过这个东西实际上并不重要。PostgreSQL 允许标识符语法(<tt class="LITERAL">"username"</tt>)，而 SQL 不允许。SQL 不允许在一个事务的过程中用这条命令；PostgreSQL 没有这个限制，因为没有什么理由不允许这样用。<tt class="LITERAL">SESSION</tt> 和 <tt class="LITERAL">LOCAL</tt> 是 PostgreSQL 扩展，<tt class="LITERAL">RESET</tt> 语法也是。</p>
+<p>标准把执行这条命令所需要的权限留给具体实现来定义。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54618"></a><h2>又见</h2><a href="sql-set-role.html"><i>SET ROLE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-set-role.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-set-transaction.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SET ROLE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SET TRANSACTION</td></tr>
+</table>
+</div>
+</body></html>

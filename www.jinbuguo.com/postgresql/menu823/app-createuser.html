@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>createuser</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="app-createlang.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="app-createlang.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-dropdb.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-dropdb.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-CREATEUSER"></a><span class="APPLICATION">createuser</span></h1>
+<div class="REFNAMEDIV"><a name="AEN55916"></a><h2>名称</h2>createuser&nbsp;--&nbsp;定义一个新用户帐户</div>
+<a name="AEN55920"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN55922"></a><h2>语法</h2>
+<p><tt class="COMMAND">createuser</tt> [<tt class="REPLACEABLE"><i>option</i></tt>...] [<tt class="REPLACEABLE"><i>username</i></tt>]</p>
+</div>
+<div class="REFSECT1"><a name="AEN55929"></a><h2>描述</h2>
+<p><span class="APPLICATION">createuser</span> 创建一个新的 PostgreSQL 用户(更准确地说是一个角色)。只有超级用户和有 <tt class="LITERAL">CREATEROLE</tt> 权限的用户可以创建新的用户。因此，<span class="APPLICATION">createuser</span> 必须由超级用户或者是有 <tt class="LITERAL">CREATEROLE</tt> 权限的用户执行。</p>
+<p>如果你希望创建一个新的超级用户，你必须以超级用户身份连接，而不仅仅是一个有 <tt class="LITERAL">CREATEROLE</tt> 权限的用户。成为超级用户就意味着将在数据库里绕开所有访问权限检查，因此，不要轻易赋予超级用户权限。</p>
+<p><span class="APPLICATION">createuser</span> 是 SQL 命令 <a href="sql-createrole.html"><i>CREATE ROLE</i></a> 的封装。因此，这两种方法创建的新用户没什么差别。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55943"></a><h2>选项</h2>
+<p><span class="APPLICATION">createuser</span> 接受下列命令行参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>username</i></tt></dt>
+<dd><p>要创建的 PostgreSQL 角色名称。该名称必须在该 PostgreSQL 安装的所有角色中唯一。</p></dd>
+<dt><tt class="OPTION">-s</tt><br><tt class="OPTION">--superuser</tt></dt>
+<dd><p>表明新用户将是超级用户</p></dd>
+<dt><tt class="OPTION">-S</tt><br><tt class="OPTION">--no-superuser</tt></dt>
+<dd><p>新用户将不是超级用户。这个是缺省。</p></dd>
+<dt><tt class="OPTION">-d</tt><br><tt class="OPTION">--createdb</tt></dt>
+<dd><p>允许该新建用户创建数据库</p></dd>
+<dt><tt class="OPTION">-D</tt><br><tt class="OPTION">--no-createdb</tt></dt>
+<dd><p>禁止该新建用户创建数据库。这个是缺省。</p></dd>
+<dt><tt class="OPTION">-r</tt><br><tt class="OPTION">--createrole</tt></dt>
+<dd><p>T新用户将被允许创建新角色，也就是说，这个用户将有 <tt class="LITERAL">CREATEROLE</tt> 权限。</p></dd>
+<dt><tt class="OPTION">-R</tt><br><tt class="OPTION">--no-createrole</tt></dt>
+<dd><p>新用户将不允许创建新角色。这个是缺省。</p></dd>
+<dt><tt class="OPTION">-l</tt><br><tt class="OPTION">--login</tt></dt>
+<dd><p>新用户将允许登录，也就是说，用户名可以用作初始会话的用户标识。这个是缺省。</p></dd>
+<dt><tt class="OPTION">-L</tt><br><tt class="OPTION">--no-login</tt></dt>
+<dd><p>新用户将不允许登录。一个不能登录的角色仍然是很有用的，比如用于权限管理。</p></dd>
+<dt><tt class="OPTION">-i</tt><br><tt class="OPTION">--inherit</tt></dt>
+<dd><p>新角色将自动继承其所属角色组的权限。这个是缺省。</p></dd>
+<dt><tt class="OPTION">-I</tt><br><tt class="OPTION">--no-inherit</tt></dt>
+<dd><p>新角色将不会自动继承他所属角色组的权限。</p></dd>
+<dt><tt class="OPTION">-c <tt class="REPLACEABLE"><i>number</i></tt></tt><br><tt class="OPTION">--connection-limit <tt class="REPLACEABLE"><i>number</i></tt></tt></dt>
+<dd><p>为新用户设置最大数目的连接数。缺省为无限制。</p></dd>
+<dt><tt class="OPTION">-P</tt><br><tt class="OPTION">--pwprompt</tt></dt>
+<dd><p>如果给出，<span class="APPLICATION">createuser</span> 将发出一个提示符要求输入新用户的口令。如果你不打算用口令认证，那么这是不必要的。</p></dd>
+<dt><tt class="OPTION">-E</tt><br><tt class="OPTION">--encrypted</tt></dt>
+<dd><p>对用户存储在数据库里的口令进行加密。如果没有声明，使用缺省的口令行为。</p></dd>
+<dt><tt class="OPTION">-N</tt><br><tt class="OPTION">--unencrypted</tt></dt>
+<dd><p>不要加密用户存储在数据库里的口令。如果没有声明，使用缺省的口令行为。</p></dd>
+<dt><tt class="OPTION">-e</tt><br><tt class="OPTION">--echo</tt></dt>
+<dd><p>回显 <span class="APPLICATION">createuser</span> 生成并发送到服务器的命令。</p></dd>
+<dt><tt class="OPTION">-q</tt><br><tt class="OPTION">--quiet</tt></dt>
+<dd><p>不显示服务器应答(安静模式)</p></dd>
+</dl>
+</div>
+<p>如果没有在命令行上声明必须的信息，程序会提示你输入。</p>
+<p><span class="APPLICATION">createuser</span> 还接受下列命令行参数作为连接参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-h <tt class="REPLACEABLE"><i>host</i></tt></tt><br><tt class="OPTION">--host <tt class="REPLACEABLE"><i>host</i></tt></tt></dt>
+<dd><p>指定运行服务器的主机名。如果数值以斜杠开头，则被用作到 Unix 域套接字的路径。</p></dd>
+<dt><tt class="OPTION">-p <tt class="REPLACEABLE"><i>port</i></tt></tt><br><tt class="OPTION">--port <tt class="REPLACEABLE"><i>port</i></tt></tt></dt>
+<dd><p>指定服务器正在侦听的 TCP 端口或本地 Unix 域套接字文件的扩展(描述符)</p></dd>
+<dt><tt class="OPTION">-U <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--username <tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>连接的用户名(不是要创建的用户名)</p></dd>
+<dt><tt class="OPTION">-W</tt><br><tt class="OPTION">--password</tt></dt>
+<dd><p>强制口令提示(与服务器连接的口令而不是新用户的口令)</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN56110"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGHOST</tt><br><tt class="ENVAR">PGPORT</tt><br><tt class="ENVAR">PGUSER</tt></dt>
+<dd><p>缺省连接参数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN56122"></a><h2>诊断</h2>
+<p>如果出现问题，将会显示后端错误信息。参阅 <a href="sql-createrole.html"><i>CREATE ROLE</i></a> 和 <a href="app-psql.html"><span class="APPLICATION">psql</span></a> 获取可用信息的描述。数据库服务器必须在目标主机上运行。同样，任何 <span class="APPLICATION">libpq</span> 前端库使用的缺省连接设置和环境变量都将适用。</p>
+</div>
+<div class="REFSECT1"><a name="AEN56128"></a><h2>例子</h2>
+<p>在缺省数据库服务器上创建一个 <tt class="LITERAL">joe</tt> 用户：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">createuser joe</kbd>
+<samp class="COMPUTEROUTPUT">Shall the new role be a superuser? (y/n) </samp><kbd class="USERINPUT">n</kbd>
+<samp class="COMPUTEROUTPUT">Shall the new role be allowed to create databases? (y/n) </samp><kbd class="USERINPUT">n</kbd>
+<samp class="COMPUTEROUTPUT">Shall the new role be allowed to create more new roles? (y/n) </samp><kbd class="USERINPUT">n</kbd>
+<samp class="COMPUTEROUTPUT">CREATE USER</samp></pre>
+<p>用在主机 <tt class="LITERAL">eden</tt> 上的服务器里创建 <tt class="LITERAL">joe</tt> 用户，端口是 5000 ，避免提示并且回显执行的命令：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">createuser -h eden -p 5000 -S -D -R -e joe</kbd>
+<samp class="COMPUTEROUTPUT">CREATE ROLE joe NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN;</samp>
+<samp class="COMPUTEROUTPUT">CREATE ROLE</samp></pre>
+<p>把用户 <tt class="LITERAL">joe</tt> 创建为超级用户，并且立即赋予口令：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">createuser -P -s -e joe</kbd>
+<samp class="COMPUTEROUTPUT">Enter password for new role: </samp><kbd class="USERINPUT">xyzzy</kbd>
+<samp class="COMPUTEROUTPUT">Enter it again: </samp><kbd class="USERINPUT">xyzzy</kbd>
+<samp class="COMPUTEROUTPUT">CREATE ROLE joe PASSWORD 'xyzzy' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;</samp>
+<samp class="COMPUTEROUTPUT">CREATE ROLE</samp></pre>
+<p>在上面例子中，虽然新口令在输入的时候实际上并不会实际显示出来，但是我们还是明确的把它显示出来了。然而<span class="emphasis"><i class="EMPHASIS">口令会在回显的命令里显示出来</i></span>，正如上面显示的那样，因此在指定口令的时候，我们反对你在别人可以看见你的屏幕的情况下使用 <tt class="LITERAL">-e</tt> 选项。</p>
+</div>
+<div class="REFSECT1"><a name="AEN56163"></a><h2>又见</h2><a href="app-dropuser.html"><span class="APPLICATION">dropuser</span></a>, <a href="sql-createrole.html"><i>CREATE ROLE</i></a>, 环境变量(<a href="libpq-envars.html">节29.12</a>)</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="app-createlang.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-dropdb.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><span class="APPLICATION">createlang</span></td><td width="34%" align="center" valign="top"><a href="reference-client.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><span class="APPLICATION">dropdb</span></td></tr>
+</table>
+</div>
+</body></html>

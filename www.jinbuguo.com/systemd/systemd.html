@@ -1,0 +1,441 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>systemd 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>systemd 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+systemd(1)                          systemd-228                         systemd(1)
+
+<h3>名称</h3>
+    systemd, init - systemd 系统与服务管理器
+
+<h3>概览</h3>
+    systemd [OPTIONS...]
+    init [OPTIONS...] {COMMAND}
+
+<h3>描述</h3>
+    systemd 是一个专用于 Linux 操作系统的系统与服务管理器。
+    当作为启动进程(PID=1)运行时，它将作为 init 系统运行，也就是启动并维护各种用户空间的服务。
+
+    为了与传统的 SysV 兼容，如果将 systemd 以 init 名称启动，并且 PID 不为"1"，那么它将执行 telinit 命令并将所有命令行参数原封不动的传递过去。
+    这样对于普通的登陆会话来说，无论调用 init 还是 telinit 都是等价的。详见 <a href="http://www.freedesktop.org/software/systemd/man/telinit.html">telinit(8)</a> 手册页。
+
+    当作为系统实例运行时，systemd 将会遵照 system.conf 配置文件以及 system.conf.d 配置目录中的指令工作；
+    当作为用户实例运行时，systemd 将会遵照 user.conf 配置文件以及 user.conf.d 配置目录中的指令工作。详见 <a href="systemd-system.conf.html">systemd-system.conf(5)</a> 手册页。
+
+<h3>选项(OPTIONS)</h3>
+    systemd 能够识别下列选项：
+
+    --test
+        检测并输出启动序列，然后退出。仅用于调试目的。
+
+    --dump-configuration-items
+        输出一个单元(unit)列表。此列表简明且完整的列出了所有单元文件中定义的"unit"。
+
+    --unit=
+        设置启动时默认启动的单元(unit)。默认值是"default.target"。
+
+    --system, --user
+        --system 表示强制作为系统实例运行(即使PID不等于"1")，--user 表示强制作为用户实例运行(即使PID等于"1")。通常不应该使用此选项。
+        此选项仅用于调试目的，而且 --system 仅在与 --test 联合使用时才有实际意义。
+
+    --dump-core
+        在崩溃时进行内核转储。当作为用户实例运行时，此选项没有任何意义。
+        此选项还可以通过内核命令行选项 systemd.dump_core=yes 开启(参见"内核命令行参数"小节)。
+
+    --crash-vt=VT
+        在崩溃是切换到指定的虚拟控制台(VT)。当作为用户实例运行时，此选项没有任何意义。
+        可以设为一个 1–63 之间的整数或布尔值。若设为整数则切换到指定编号的虚拟控制台；
+        若设为"yes"则表示使用内核消息所使用的虚拟控制台；若设为"no"则不切换到任何虚拟控制台。
+        此选项还可以通过内核命令行选项  systemd.crash_vt= 设置(参见"内核命令行参数"小节)。
+
+    --crash-shell
+        在崩溃时启动一个 shell 。当作为用户实例运行时，此选项没有任何意义。
+        此选项还可以通过内核命令行选项 systemd.crash_shell=yes 开启(参见"内核命令行参数"小节)。
+
+    --crash-reboot
+        在崩溃时自动重启系统。当作为用户实例运行时，此选项没有任何意义。
+        此选项还可以通过内核命令行选项 systemd.crash_reboot=yes 开启(参见"内核命令行参数"小节)。
+
+    --confirm-spawn
+        在派生新进程时进行确认提示。当作为用户实例运行时，此选项没有任何意义。
+
+    --show-status=
+        在系统启动过程中显示简明的服务状态信息。当作为用户实例运行时，此选项没有任何意义。
+        其参数必须是一个表示真假的逻辑值，如果未指定则相当于设为"true"。
+
+    --log-target=
+        设置日志的目标，其参数必须是 console, journal, kmsg, journal-or-kmsg, null 之一(小写)。
+
+    --log-level=
+        设置日志的等级，其参数必须是一个数字或者 emerg, alert, crit, err, warning, notice, info, debug 之一(小写)。
+
+    --log-color=
+        高亮重要的日志信息，其参数必须是一个表示真假的逻辑值，如果未指定则相当于设为"true"。
+
+    --log-location=
+        在日志中包含代码的位置，其参数必须是一个表示真假的逻辑值，如果未指定则相当于设为"true"。仅用于调试目的。
+
+    --default-standard-output=, --default-standard-error=
+        为所有的 service 与 socket 设置默认的标准输出与标准错误，相当于设置 StandardOutput= 与 StandardError= 指令的值(参见 <a href="systemd.exec.html">systemd.exec(5)</a> 手册页)。
+        其参数必须是 inherit, null, tty, journal, journal+console, syslog, syslog+console, kmsg, kmsg+console 之一(小写)。
+        --default-standard-output= 的默认值是"journal"；而 --default-standard-error= 的默认值是"inherit"。
+
+    -h, --help
+        输出简短的帮助信息并退出
+
+    --version
+        输出简短的版本信息并退出
+
+<h3>概念</h3>
+    systemd 将与系统启动和维护相关的各种对象，概括为各种不同类型的单元(unit)，并提供了处理不同单元间依赖关系的能力。
+    大多数单元的定义都位于单元文件中(参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册页)，但是有少部分则是自动生成的，
+    其中一部分来自于其他传统的配置文件(为了兼容性)，而另一部分则动态的来自于系统状态或者可编程的运行时状态。
+
+    单元既可以处于活动(active)状态也可以处于停止(inactive)状态，当然也可以处于正在被启动(activating)或正在被停止(deactivating)的状态。
+    还有一个特别的失败(failed)状态，意思是服务单元以某种方式失败了(进程崩溃了或者退出时返回了错误代码或者遇到了操作超时之类的故障)。
+    当进入这种状态的时候，导致故障的原因将被记录到日志以方便日后排查。
+    需要注意的是，不同的单元可能还会有各自不同的"子状态"，但它们都被映射到上述五种状态之一。
+
+    各种不同的单元类型如下：
+
+    (1) service 单元。用于封装一个后台服务进程。参见 <a href="systemd.service.html">systemd.service(5)</a> 手册页。
+
+    (2) socket 单元。用于封装一个系统套接字(UNIX)或互联网套接字(INET/INET6)或FIFO管道。相应的服务在第一个"连接"进入套接字时才会被启动。
+        有关套接字单元的详情，参见 <a href="systemd.socket.html">systemd.socket(5)</a> 手册页；有关套接字或其他方式的激活，参见 <a href="daemon.html">daemon(7)</a> 手册页。
+
+    (3) target 单元。用于将多个单元在逻辑上组合在一起。参见 <a href="systemd.target.html">systemd.target(5)</a> 手册。
+
+    (4) device 单元。用于封装一个设备文件，还可以用于基于设备的激活。并非每一个设备文件都需要一个 device 单元，
+        但是每一个被 udev 规则标记的设备都必须作为一个 device 单元出现。参见 <a href="systemd.device.html">systemd.device(5)</a> 手册。
+
+    (5) mount 单元。用于封装一个文件系统中的挂载点(也向后兼容传统的 /etc/fstab 文件)。参见 <a href="systemd.mount.html">systemd.mount(5)</a> 手册。
+
+    (6) automount 单元。用于封装一个文件系统中的自动挂载点，也就是仅在挂载点确实被访问的情况下才进行挂载。
+        它取代了传统的 autofs 服务。参见 <a href="systemd.automount.html">systemd.automount(5)</a> 手册。
+
+    (7) timer 单元。用于封装一个基于时间触发的动作。它取代了传统的 atd, crond 等任务计划服务。参见 <a href="systemd.timer.html">systemd.timer(5)</a> 手册。
+
+    (8) swap 单元。用于封装一个交换分区或者交换文件。它与 mount 单元非常类似。参见 <a href="systemd.swap.html">systemd.swap(5)</a> 手册页。
+
+    (9) path 单元。可用于根据文件系统上特定对象的变化来激活其他服务。参见 <a href="systemd.path.html">systemd.path(5)</a> 手册页。
+
+    (10) slice 单元。可用于控制特定 CGroup 内(例如一组 service 与 scope 单元)所有进程的总体资源占用。参见 <a href="systemd.slice.html">systemd.slice(5)</a> 手册。
+
+    (11) scope 单元。它与 service 单元类似，但是由 systemd 根据 D-bus 接口接收到的信息自动创建，
+         可用于管理外部创建的进程。参见 <a href="systemd.scope.html">systemd.scope(5)</a> 手册页。
+
+    单元的名称由其单元文件的文件名决定，某些特定的单元名称具有特殊的含义，详情参见 <a href="systemd.special.html">systemd.special(7)</a> 手册页。
+
+    systemd 能够处理各种类型的依赖关系，包括依赖与冲突(也就是 Requires= 与 Conflicts= 指令)，以及先后顺序(也就是 After= 与 Before= 指令)。
+    注意，上述两种类型的依赖关系(依赖与冲突、先后顺序)之间是相互独立的(正交的)。
+    举例来说，假定 foo.service 依赖于[Requires] bar.service 但并未指定先后顺序，那么这两个服务将被同时并行启动。
+    不过在两个单元之间既存在依赖关系也存在先后顺序的情形也很常见。
+    另外需要注意的是，大多数依赖关系都是由 systemd 隐式创建和维护的，因此没有必要额外手动创建它们。
+
+    应用程序和单元(透过依赖关系)可能会查询其他单元的状态变化。在 systemd 中，这种查询被包装为'任务(job)'并被作为'任务队列'进行管理。
+    任务的执行结果可能成功也可能失败，但是它们的执行顺序是依照其所属单元之间的先后顺序确定的。
+
+    在系统启动时，systemd 默认启动 default.target 单元，该单元中应该包含所有你想在开机时默认启动的单元。
+    但实际上，它通常只是一个指向 graphical.target 或 multi-user.target 的符号连接。详见 <a href="systemd.special.html">systemd.special(7)</a> 手册页。
+
+    systemd 依赖于内核提供的<a href="https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt">cgroups</a>特性控制进程的派生，从而确保可以追踪到所有子进程。
+    <a href="https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt">cgroups</a>信息由内核负责维护，并且可以通过 /sys/fs/cgroup/systemd/ 接口进行访问。
+    此外，还可以通过 <a href="http://man7.org/linux/man-pages/man1/systemd-cgls.1.html">systemd-cgls(1)</a> 或 <a href="http://man7.org/linux/man-pages/man1/ps.1.html">ps(1)</a> 之类的工具进行查看("ps xawf -eo pid,user,cgroup,args")。
+
+    systemd 几乎完全兼容传统的 SysV init 系统：SysV init 脚本可以作为另一种配置文件格式被识别；提供与 SysV 兼容的 /dev/initctl 接口；
+    提供各种 SysV 工具的兼容实现；依然兼容诸如 /etc/fstab 或者 utmp 之类传统的 Unix 特性。
+
+    systemd 还有一个迷你型的事务系统：如果要启动或关闭一个单元，那么该单元所依赖的所有其它单元都会被一起加入到同一个临时事务中。
+    这样，就可以校验整个事务的一致性(检查是否存在循环依赖)，如果存在循环依赖，那么 systemd 将会尝试通过去掉弱依赖(want)来解决这个问题，
+    如果最终实在无法解决循环依赖的问题，那么 systemd 将会报错。
+
+    systemd 内置了许多系统启动过程中必需的操作，例如，设置 hostname 以及配置 loopback 网络设备，以及挂载 /sys 和 /proc 文件系统。
+
+    在系统启动或者"systemctl reload ..."时，systemd 可以根据其他配置文件或者内核命令行参数动态生成单元，参见 <a href="systemd.generator.html">systemd.generator(7)</a> 手册页。
+
+    如果要从容器中调用 systemd 那么必须实现 <a href="http://www.freedesktop.org/wiki/Software/systemd/ContainerInterface">Container Interface</a>
+    如果要从 initrd 中调用 systemd 那么必须实现 <a href="http://www.freedesktop.org/wiki/Software/systemd/InitrdInterface">initrd Interface</a>
+
+<h3>目录</h3>
+
+    系统单元目录
+        systemd 会从多个目录中读取单元配置，软件包应该将其单元文件安装在
+            pkg-config systemd --variable=systemdsystemunitdir
+        命令所返回的目录中[通常是"/usr/lib/systemd/system"]。
+        系统配置目录(优先级最高)位于
+            pkg-config systemd --variable=systemdsystemconfdir
+        命令所返回的目录中[通常是"/etc/systemd/system"]。
+        除上述目录外，systemd 还会读取如下目录中的系统单元文件：
+        /usr/local/lib/systemd/system  (优先级较高)
+        /usr/lib/systemd/system  (优先级较低)
+
+        注意，上述目录中的内容应该只使用"systemctl enable|disable ..."命令进行修改。
+        完整的目录列表参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册页。
+
+    用户单元目录
+        用户单元目录所遵守的规则与系统单元目录类似，软件包应该将其单元文件安装在
+            pkg-config systemd --variable=systemduserunitdir
+        命令所返回的目录中[通常是"/usr/lib/systemd/user"]。
+        用户单元的全局配置(针对所有用户)位于
+            pkg-config systemd --variable=systemduserconfdir
+        命令所返回的目录中[通常是"/etc/systemd/user"]。
+
+        此外，因为用户单元目录还遵守 <a href="http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html">XDG Base Directory specification</a> 规范，
+        所以 systemd 还会读取如下目录中的用户单元文件：
+        $XDG_DATA_HOME/systemd/user       (仅在设置了 $XDG_DATA_HOME 的情况下)
+        $HOME/.local/share/systemd/user   (仅在未设置 $XDG_DATA_HOME 的情况下)
+
+        注意，上述目录中的内容应该只使用"systemctl enable|disable ..."命令进行修改：
+        既可以全局性的修改(针对所有用户)、也可以局部性的修改(针对个别用户)。
+        完整的目录列表参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册页。
+
+    SysV启动脚本目录(不同发行版之间差别可能很大)
+        如果 systemd 找不到指定服务所对应的单元文件，那么就会到SysV启动脚本目录中去寻找同名脚本(去掉 .service 后缀)。
+
+    SysV运行级目录(不同发行版之间差别可能很大)
+        systemd 在决定是否启用一个服务的时候，会参照SysV运行级目录对该服务的设置。
+        注意，这个规则不适用于那些已经拥有原生单元配置的单元。
+
+<h3>信号</h3>
+
+    SIGTERM
+        systemd system manager 将会保存其当前状态，然后重新执行它自身，再恢复到先前保存的状态。
+        基本上相当于执行"systemctl daemon-reexec"命令。
+
+        systemd user manager 将会启动 exit.target 单元，基本上相当于执行"systemctl --user start exit.target"命令。
+
+    SIGINT
+        systemd system manager 将会启动 ctrl-alt-del.target 单元，基本上相当于执行"systemctl start ctl-alt-del.target"命令。
+        在控制台上按 Ctrl-Alt-Del 组合键即可触发这个信号。但是，如果在2秒内连续收到超过7次这个信号，那么将会不顾一切的立即强制重启。
+        因此，如果系统在重启过程中僵死，那么可以通过快速连按7次 Ctrl-Alt-Del 组合键来强制立即重启。
+
+        systemd user manager 处理此信号的方式与 SIGTERM 相同。
+
+    SIGWINCH
+        systemd system manager 将会启动 kbrequest.target 单元，基本上相当于执行"systemctl start kbrequest.target"命令。
+
+        systemd user manager 将会完全忽略此信号。
+
+    SIGPWR
+        systemd 将会启动 sigpwr.target 单元，基本上相当于执行"systemctl start sigpwr.target"命令。
+
+    SIGUSR1
+        systemd 将会尝试重新连接到 D-Bus 总线。
+
+    SIGUSR2
+        systemd 将会以人类可读的格式将其完整的状态记录到日志中。日期的格式与 systemd-analyze 的输出格式相同。
+
+    SIGHUP
+        重新加载守护进程的配置文件，基本上相当于执行"systemctl daemon-reload"命令。
+
+    SIGRTMIN+0
+        进入默认模式，启动 default.target 单元，基本上相当于执行"systemctl start default.target"命令。
+
+    SIGRTMIN+1
+        进入救援模式，启动 rescue.target 单元，基本上相当于执行"systemctl isolate rescue.target"命令。
+
+    SIGRTMIN+2
+        进入紧急模式，启动 emergency.service 单元，基本上相当于执行"systemctl isolate emergency.service"命令。
+
+    SIGRTMIN+3
+        关闭系统，启动 halt.target 单元，基本上相当于执行"systemctl start halt.target"命令。
+
+    SIGRTMIN+4
+        关闭系统并切断电源，启动 poweroff.target 单元，基本上相当于执行"systemctl start poweroff.target"命令。
+
+    SIGRTMIN+5
+        重新启动，启动 reboot.target 单元，基本上相当于执行"systemctl start reboot.target"命令。
+
+    SIGRTMIN+6
+        通过内核的 kexec 接口重新启动，启动 kexec.target 单元，基本上相当于执行"systemctl start kexec.target"命令。
+
+    SIGRTMIN+13
+        立即关闭机器
+
+    SIGRTMIN+14
+        立即关闭机器并切断电源
+
+    SIGRTMIN+15
+        立即重新启动
+
+    SIGRTMIN+16
+        立即通过内核的 kexec 接口重新启动
+
+    SIGRTMIN+20
+        在控制台上显示状态消息，相当于使用 systemd.show_status=1 内核命令行参数。
+
+    SIGRTMIN+21
+        禁止在控制台上显示状态消息，相当于使用 systemd.show_status=0 内核命令行参数。
+
+    SIGRTMIN+22, SIGRTMIN+23
+        将日志等级设为"debug"(22)或"info"(23)，相当于使用 systemd.log_level=debug 或 systemd.log_level=info 内核命令行参数。
+
+    SIGRTMIN+24
+        立即退出 systemd user manager (仅对 --user 实例有效)
+
+    SIGRTMIN+26, SIGRTMIN+27, SIGRTMIN+28
+        将日志等级设为"journal-or-kmsg"(26)或"console"(27)或"kmsg"(28)，
+        相当于使用 systemd.log_target=journal-or-kmsg 或 systemd.log_target=console 或 systemd.log_target=kmsg 内核命令行参数。
+
+<h3>环境变量</h3>
+
+    $SYSTEMD_LOG_LEVEL
+        systemd 日志等级。可以被 --log-level= 选项覆盖。
+
+    $SYSTEMD_LOG_TARGET
+        systemd 日志目标。可以被 --log-target= 选项覆盖。
+
+    $SYSTEMD_LOG_COLOR
+        systemd 是否应该高亮重要的日志信息。可以被 --log-color= 选项覆盖。
+
+    $SYSTEMD_LOG_LOCATION
+        systemd 是否应该在日志信息中打印代码位置(code location)。可以被 --log-location= 选项覆盖。
+
+    $XDG_CONFIG_HOME, $XDG_CONFIG_DIRS, $XDG_DATA_HOME, $XDG_DATA_DIRS
+        systemd user manager 根据 <a href="http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html">XDG Base Directory specification</a> 规范使用这些变量查找单元文件以及单元配置。
+        参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册页。
+
+    $SYSTEMD_UNIT_PATH
+        单元文件的存放目录
+
+    $SYSTEMD_SYSVINIT_PATH
+        SysV启动脚本目录
+
+    $SYSTEMD_SYSVRCND_PATH
+        SysV运行级目录
+
+    $LISTEN_PID, $LISTEN_FDS, $LISTEN_FDNAMES
+        在基于套接字激活的过程中由 systemd 设置此变量，以供管理程序使用。详见 <a href="http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html">sd_listen_fds(3)</a> 手册页。
+
+    $NOTIFY_SOCKET
+        由 systemd 设置此变量，以报告状态以及提供启动完毕的通知，以供管理程序使用。详见 <a href="http://www.freedesktop.org/software/systemd/man/sd_notify.html">sd_notify(3)</a> 手册页。
+
+<h3>内核命令行参数</h3>
+    当作为系统实例运行的时候，systemd 能够接受下面列出的内核命令行参数。
+    当 systemd 在 Linux 容器中运行的时候，这些参数可以直接在 systemd 命令行上传递(放置在所有命令行选项之后)，
+    当 systemd 不在 Linux 容器中运行的时候，这些参数将从 /proc/cmdline 中获取。
+
+    systemd.unit=, rd.systemd.unit=
+        设置启动时默认启动的单元(unit)。默认值是"default.target"。可用于临时修改启动单元(例如 rescue.target 或 emergency.service)。
+        详情参见 <a href="systemd.special.html">systemd.special(7)</a> 手册页。
+        以"rd."为前缀的参数专用于 initrd(initial RAM disk) 环境，而无前缀的参数则用于常规环境。
+
+    systemd.dump_core=
+        如果设为默认值"yes"那么 systemd(pid=1) 将会在其崩溃时进行核心转储，否则不进行任何转储。
+
+    systemd.crash_chvt=
+        可以设为一个 1-63 之间的整数或布尔值。若设为整数则 systemd(PID=1) 将在其崩溃时切换到指定编号的虚拟控制台；
+        若设为"yes"则表示切换到内核消息所使用的虚拟控制台；若设为"no"(默认值)则不切换到任何虚拟控制台。
+
+    systemd.crash_shell=
+        如果设为"yes"，systemd(PID=1) 将在其崩溃10秒后启动一个 shell ，默认值"no"则表示即使崩溃也不启动任何 shell 。
+        由于被启动的 shell 不需要任何密码认证，所以使用这个特性时需要注意其带来的安全隐患。
+
+    systemd.crash_reboot=
+        如果设为"yes"，systemd(PID=1) 将在其崩溃10秒后自动重启整个机器，
+        默认值"no"则表示即使崩溃也不重启(无限制的死在那里)，这样可以避免进入循环重启。
+        如果与 systemd.crash_shell=yes 同时使用，那么系统将在退出 shell 之后重启。
+
+    systemd.confirm_spawn=
+        设为"yes"表示 systemd(PID=1) 在派生新进程时进行确认提示。默认值"no"表示不提示。
+
+    systemd.show_status=
+        启动时是否在控制台上显示简明的服务状态。可以接受"yes"(显示),"no"(不显示),"auto"(自动)三个值。
+        "auto"与"no"相似，不同之处在于当某个服务启动失败或者启动耗时太长时，将会显示其状态。
+        当使用了"quiet"内核命令行选项的时候，默认值是"auto"，否则默认值是"yes"。
+
+    systemd.log_target=, systemd.log_level=, systemd.log_color=, systemd.log_location=
+        用于控制日志输出，含义与之前的 $SYSTEMD_LOG_TARGET, $SYSTEMD_LOG_LEVEL, $SYSTEMD_LOG_COLOR, $SYSTEMD_LOG_LOCATION 环境变量相同。
+
+    systemd.default_standard_output=, systemd.default_standard_error=
+        设置服务的默认标准输出与标准错误，含义与相应的 --default-standard-output= 和 --default-standard-error= 命令行选项相同。
+
+    systemd.setenv=
+        接受"VARIABLE=VALUE"格式的字符串，可用于为派生的子进程设置默认环境变量。可以多次使用以设置多个变量。
+
+    quiet
+        关闭启动过程中的状态输出，导致 systemd.show_status= 的默认值变为"auto"。
+        注意，因为此选项也同样被内核所识别，并用于禁止内核日志输出，所以使用此选项会导致同时关闭内核与 systemd 的输出。
+
+    debug
+        开启调试输出，等价于设置了"systemd.log_level=debug"。
+        注意，因为此选项也同样被内核所识别，并用于开启内核的调试输出，所以使用此选项会导致同时开启内核与 systemd 的调试输出。
+
+    emergency, -b
+        启动到紧急模式。等价于设置了"systemd.unit=emergency.target"。
+
+    rescue, single, s, S, 1
+        启动到救援模式。等价于设置了"systemd.unit=rescue.target"。
+
+    2, 3, 4, 5
+        启动到对应的 SysV 运行级。等价于设置了对应的"systemd.unit=runlevel2.target", "systemd.unit=runlevel3.target", 
+        "systemd.unit=runlevel4.target", "systemd.unit=runlevel5.target"。
+
+    locale.LANG=, locale.LANGUAGE=, locale.LC_CTYPE=, locale.LC_NUMERIC=, locale.LC_TIME=, 
+    locale.LC_COLLATE=, locale.LC_MONETARY=, locale.LC_MESSAGES=, locale.LC_PAPER=, locale.LC_NAME=, 
+    locale.LC_ADDRESS=, locale.LC_TELEPHONE=, locale.LC_MEASUREMENT=, locale.LC_IDENTIFICATION=
+        设置相应的系统 locale ，会覆盖 /etc/locale.conf 中的设置。参见 <a href="locale.conf.html">locale.conf(5)</a> 与 <a href="locale.html">locale(7)</a> 手册页。
+        
+    更多内核命令行参数的解释，参见 <a href="kernel-command-line.html">kernel-command-line(7)</a> 手册页。
+
+<h3>Socket 与 FIFO</h3>
+    /run/systemd/notify
+        通知守护进程状态的 UNIX socket 文件，用于实现 <a href="http://www.freedesktop.org/software/systemd/man/sd_notify.html">sd_notify(3)</a> 中实现的守护进程通知逻辑。
+
+    /run/systemd/private
+        仅被 <a href="systemctl.html">systemctl(1)</a> 工具内部用于与 systemd 进程通信的 UNIX socket 文件。其他进程不应该使用它。
+
+    /dev/initctl
+        由 systemd-initctl.service 单元提供的与传统 SysV 兼容的客户端接口(FIFO)。这是一个反对使用，即将被废弃的接口。
+
+<h3>参见</h3>
+      <a href="http://www.freedesktop.org/wiki/Software/systemd/">systemd 项目主页</a>, <a href="systemd-system.conf.html">systemd-system.conf(5)</a>, <a href="locale.conf.html">locale.conf(5)</a>, <a href="systemctl.html">systemctl(1)</a>, <a href="journalctl.html">journalctl(1)</a>, <a href="systemd-notify.html">systemd-notify(1)</a>, <a href="daemon.html">daemon(7)</a>,
+      <a href="http://www.freedesktop.org/software/systemd/man/sd-daemon.html">sd-daemon(3)</a>, <a href="systemd.unit.html">systemd.unit(5)</a>, <a href="systemd.special.html">systemd.special(5)</a>, <a href="http://linux.die.net/man/1/pkg-config">pkg-config(1)</a>, <a href="kernel-command-line.html">kernel-command-line(7)</a>, <a href="http://man7.org/linux/man-pages/man7/bootup.7.html">bootup(7)</a>, <a href="systemd.directives.html">systemd.directives(7)</a>
+
+systemd(1)                          systemd-228                         systemd(1)
+</pre>
+
+
+<hr />
+
+
+</body></html>

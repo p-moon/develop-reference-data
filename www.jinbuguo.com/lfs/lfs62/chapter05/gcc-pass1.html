@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.4. GCC-4.0.3 - 第一遍</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="binutils-pass1.html" title="Binutils-2.16.1 - 第一遍">后退</a>
+          <p>Binutils-2.16.1 - 第一遍</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="linux-libc-headers.html" title="Linux-Libc-Headers-2.6.12.0">前进</a>
+          <p>Linux-Libc-Headers-2.6.12.0</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.4. GCC-4.0.3 - 第一遍</h1>
+      </div>
+      <div class="package">
+        <p>GCC 软件包包含 GNU 编译器集合，其中有 C 和 C++ 编译器。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">8.2 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">514 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.4.1. 安装 GCC</h2>
+        </div>
+        <p>GCC 的安装指南推荐用一个新建的目录来编译它，而不是在源码目录中：</p>
+        <pre class="userinput"><kbd class="command">mkdir -v ../gcc-build
+cd ../gcc-build</kbd></pre>
+        <p>为编译 GCC 做准备：</p>
+        <pre class="userinput"><kbd class="command">../gcc-4.0.3/configure --prefix=/tools \
+    --with-local-prefix=/tools --disable-nls --enable-shared \
+    --enable-languages=c</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--with-local-prefix=/tools</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个参数的目的是把 <tt class="filename">/usr/local/include</tt> 目录从 <span><strong class="command">gcc</strong></span> 的 include 搜索路径里删除。这并不是绝对必要，但我们想尽量减小宿主系统的影响，所以才这样做。</p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--enable-shared</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个参数咋一看有点违反直觉。但只有加上它，才能编译出 <tt class="filename">libgcc_s.so.1</tt> 和 <tt class="filename">libgcc_eh.a</tt> 。Glibc(下一个软件包)的配置脚本只有在找到 <tt class="filename">libgcc_eh.a</tt> 时才能确保产生正确的结果。</p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--enable-languages=c</tt></em></span>
+            </dt>
+            <dd>
+              <p>只编译 GCC 软件包中的 C 编译器。我们在本章里不需要其它编译器。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>接下来编译它：</p>
+        <pre class="userinput"><kbd class="command">make bootstrap</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>make 参数的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>bootstrap</tt></em></span>
+            </dt>
+            <dd>
+              <p>使用这个参数的目的不仅仅是编译 GCC ，而是重复编译它几次。它用第一次编译生成的程序来第二次编译自己，然后又用第二次编译生成的程序来第三次编译自己，最后比较第二次和第三次编译的结果，以确保编译器能毫无差错的编译自身，这通常表明编译是正确的。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>编译现在完成了，通常我们会在这里运行测试套件，但是正如前面说过的，测试套件目前尚未安装，而且在这里运行测试没什么用处，因为第一遍安装的程序很快就会被第二遍的程序所覆盖。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <p>最后，我们创建一个必要的符号连接。因为许多程序和脚本试图运行 <span><strong class="command">cc</strong></span> 而不是 <span><strong class="command">gcc</strong></span> ，这样做是为了让程序能在多种 Unix 平台上运行，并保持一致性。并不是每个人都安装 GNU C 编译器。只运行 <span><strong class="command">cc</strong></span> 而不是 <span><strong class="command">gcc</strong></span> 可以把选择 C 编译器的自由留给系统管理员，我们这里将指向 <span><strong class="command">gcc</strong></span> ：</p>
+        <pre class="userinput"><kbd class="command">ln -vs gcc /tools/bin/cc</kbd></pre>
+      </div>
+      <div class="content">
+        <p>关于这个软件包的详细资料位于<a href="../chapter06/gcc.html#contents-gcc" title="6.12.2. GCC 的内容">节 6.12.2, GCC 的内容</a></p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="binutils-pass1.html" title="Binutils-2.16.1 - 第一遍">后退</a>
+          <p>Binutils-2.16.1 - 第一遍</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="linux-libc-headers.html" title="Linux-Libc-Headers-2.6.12.0">前进</a>
+          <p>Linux-Libc-Headers-2.6.12.0</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

@@ -1,0 +1,8 @@
+文件说明
+========
+
+1. *.brd文件为PCB源文件，使用 Allegro PCB Designer 16.5或以上版本浏览或编辑，也可以安装PCB-Tools\allegro_free_viewer.exe，打开浏览。
+2. *Size.dxf文件文件可使用autocad等cad工具打开，方便客户准确测量PCB的尺寸。
+3. *.dsn文件为原理图源文件，使用Orcad Capture CIS 16.5或以上版本浏览或编辑。
+
+> 提示：客户可以从brd文件中导出封装库，在Allegro PCB Designer中执行File->Export->Libraries...

@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>规则与触发器的比较</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="rules-status.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="rules.html">快退</a></td><td width="60%" align="center" valign="bottom">章35. 规则系统</td><td width="10%" align="right" valign="top"><a href="rules.html">快进</a></td><td width="10%" align="right" valign="top"><a href="xplang.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="RULES-TRIGGERS">35.6. 规则与触发器的比较</a></h1><a name="AEN39116"></a><a name="AEN39119"></a>
+<p>许多用触发器可以干的事情同样也可以用 PostgreSQL 规则系统来完成。目前不能用规则来实现的东西之一是某些约束，特别是外键。可能在某字段的值没有在另一个表里出现的情况下用一条有条件的规则把查询重写为 <tt class="LITERAL">NOTHING</tt> 。不过这样做数据就会被不声不响的仍掉，因而这也不是一个好主意。如果需要检查有效的值，而且如果是无效值出现时要生成一个错误信息，这种情况下要用触发器来做。</p>
+<p>另一方面，一个用于 <tt class="COMMAND">INSERT</tt> 视图的触发器可以做到与规则一样，把数据放到另外的地方去而取代对视图的插入。但它不能在 <tt class="COMMAND">UPDATE</tt> 或 <tt class="COMMAND">DELETE</tt> 时做同样的事情，因为在视图关系里没有可供扫描的真实数据，因而触发器将永远不被调用。这时只有规则可用。</p>
+<p>对于两者都可用的情况，哪个更好取决于对数据库的使用。触发器为任何涉及到的行执行一次。规则修改查询树或生成额外的查询。所以如果在一个语句中涉及到多行，一个生成额外查询的规则通常可能会比一个对每一行都分别执行一次(因此要执行很多次)的触发器快一些。不过，触发器的方法从概念上要远比规则的方法简单，并且很容易让新手可以做正确事情。</p>
+<p>下面展示一个在同一个情况下选择规则与触发器的对比例子。例如这里有两个表</p>
+<pre class="PROGRAMLISTING">CREATE TABLE computer (
+    hostname        text,    -- 已索引
+    manufacturer    text     -- 已索引
+);
+
+CREATE TABLE software (
+    software        text,    -- 已索引
+    hostname        text     -- 已索引
+);</pre>
+<p>两个表都有好几千行，并且 <tt class="STRUCTFIELD">hostname</tt> 上的索引是唯一的。规则/触发器应该实现这样一个约束，这个约束从 <tt class="LITERAL">software</tt> 表中删除引用已删除计算机的行。触发器可以用下面这条命令：</p>
+<pre class="PROGRAMLISTING">DELETE FROM software WHERE hostname = $1;</pre>
+<p>因为触发器是为从 <tt class="LITERAL">computer</tt> 里面删除的每一个独立的行调用一次，那么它可以准备并且保存这个命令的规划，把 <tt class="STRUCTFIELD">hostname</tt> 作为参数传递。规则应该这样写</p>
+<pre class="PROGRAMLISTING">CREATE RULE computer_del AS ON DELETE TO computer
+    DO DELETE FROM software WHERE hostname = OLD.hostname;</pre>
+<p>现在看看这两种不同的删除。在下面情况</p>
+<pre class="PROGRAMLISTING">DELETE FROM computer WHERE hostname = 'mypc.local.net';</pre>
+<p>对表 <tt class="LITERAL">computer</tt> 使用索引(快速)进行扫描并且由触发器声明的查询也用索引进行扫描(同样快速)。规则里多出来的查询是一个</p>
+<pre class="PROGRAMLISTING">DELETE FROM software WHERE computer.hostname = 'mypc.local.net'
+                       AND software.hostname = computer.hostname;</pre>
+<p>因为已经建立了合适的索引，规划器将创建一个下面的规划</p>
+<pre class="LITERALLAYOUT">Nestloop
+  -&gt;  Index Scan using comp_hostidx on computer
+  -&gt;  Index Scan using soft_hostidx on software</pre>
+<p>所以在规则和触发器的实现之间没有太多的速度差别。</p>
+<p>下面的删除希望删掉所有 2000 个 <tt class="STRUCTFIELD">hostname</tt> 以 <tt class="LITERAL">old</tt> 开头的计算机(记录)。有两个可能的用于这个用途的查询。一个是</p>
+<pre class="PROGRAMLISTING">DELETE FROM computer WHERE hostname &gt;= 'old'
+                       AND hostname &lt;  'ole'</pre>
+<p>规则增加的命令是</p>
+<pre class="PROGRAMLISTING">DELETE FROM software WHERE computer.hostname &gt;= 'old' AND computer.hostname &lt; 'ole'
+                       AND software.hostname = computer.hostname;</pre>
+<p>查询的规划将会是</p>
+<pre class="LITERALLAYOUT">Hash Join
+  -&gt;  Seq Scan on software
+  -&gt;  Hash
+    -&gt;  Index Scan using comp_hostidx on computer</pre>
+<p>另一个可能的查询是</p>
+<pre class="PROGRAMLISTING">DELETE FROM computer WHERE hostname ~ '^old';</pre>
+<p>它由规则增加执行规划是：</p>
+<pre class="LITERALLAYOUT">Nestloop
+  -&gt;  Index Scan using comp_hostidx on computer
+  -&gt;  Index Scan using soft_hostidx on software</pre>
+<p>这表明，规划器不能认识到表 <tt class="LITERAL">computer</tt> 里的 <tt class="STRUCTFIELD">hostname</tt> 的条件在多个条件表达式以 <tt class="LITERAL">AND</tt> 的方式组合在一起时同样可以用于 <tt class="LITERAL">software</tt> ，就像在用正则表达式的查询里一样。触发器将在任何 2000 个要被删除的旧计算机里被调用一次，结果是对 <tt class="LITERAL">computer</tt> 的一次索引扫描和对 <tt class="LITERAL">software</tt> 的 2000 次索引扫描。规则的实现将会使用两个使用索引的命令来完成。所以 <tt class="LITERAL">software</tt> 表的实际大小决定了规则进行顺序扫描后是否仍然更快。即使所有要使用的索引块都很快在缓冲里出现，执行 2000 个在 SPI 管理器上的查询仍然要花不少时间。</p>
+<p>我们要看的最后一个查询是</p>
+<pre class="PROGRAMLISTING">DELETE FROM computer WHERE manufacturer = 'bim';</pre>
+<p>同样，这也会导致从 <tt class="LITERAL">computer</tt> 表里删除多行。所以触发器同样会向执行器提交很多查询。规则生成的命令将会是</p>
+<pre class="PROGRAMLISTING">DELETE FROM software WHERE computer.manufacturer = 'bim'
+                       AND software.hostname = computer.hostname;</pre>
+<p>但规则规划又将是对两个索引扫描的嵌套循环。不过使用了 <tt class="LITERAL">computer</tt> 的另外一个索引：</p>
+<pre class="PROGRAMLISTING">Nestloop
+  -&gt;  Index Scan using comp_manufidx on computer
+  -&gt;  Index Scan using soft_hostidx on software</pre>
+<p>在任何一种情况下，从规则系统出来的额外查询都或多或少与查询中涉及到的行数量相对独立。</p>
+<p>概括来说，规则只是在它们的动作生成了又大又烂的条件连接时才比触发器有较大速度差异，这时规划器将失效。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="rules-status.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="xplang.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">规则和命令状态</td><td width="34%" align="center" valign="top"><a href="rules.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">过程语言</td></tr>
+</table>
+</div>
+</body></html>

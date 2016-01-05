@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>安装后的设置</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="install-procedure.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="installation.html">快退</a></td><td width="60%" align="center" valign="bottom">章14. 安装指导</td><td width="10%" align="right" valign="top"><a href="installation.html">快进</a></td><td width="10%" align="right" valign="top"><a href="supported-platforms.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INSTALL-POST">14.6. 安装后的设置</a></h1>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN17808">14.6.1. 共享库</a></h2><a name="AEN17810"></a>
+<p>在一些有共享库的系统里(大多数系统都有)。你需要告诉系统如何找到新安装的共享库。那些并<span class="emphasis"><i class="EMPHASIS">不是</i></span>必须做这个工作的系统包括 <span class="SYSTEMITEM">BSD/OS</span>, <span class="SYSTEMITEM">FreeBSD</span>, <span class="SYSTEMITEM">HP-UX</span>, <span class="SYSTEMITEM">IRIX</span>, <span class="SYSTEMITEM">Linux</span>, <span class="SYSTEMITEM">NetBSD</span>, <span class="SYSTEMITEM">OpenBSD</span>, <span class="SYSTEMITEM">Tru64 UNIX</span>(以前的 <span class="SYSTEMITEM">Digital UNIX</span>), and <span class="SYSTEMITEM">Solaris</span> 。</p>
+<p>设置共享库的搜索路径的方法因平台而异，但是最广泛使用的方法是设置 <tt class="ENVAR">LD_LIBRARY_PATH</tt> 环境变量，比如在 Bourne shell(<tt class="COMMAND">sh</tt>, <tt class="COMMAND">ksh</tt>, <tt class="COMMAND">bash</tt>, <tt class="COMMAND">zsh</tt>)中：</p>
+<pre class="PROGRAMLISTING">LD_LIBRARY_PATH=/usr/local/pgsql/lib
+export LD_LIBRARY_PATH</pre>
+<p>在 <tt class="COMMAND">csh</tt> 或 <tt class="COMMAND">tcsh</tt> 中：</p>
+<pre class="PROGRAMLISTING">setenv LD_LIBRARY_PATH /usr/local/pgsql/lib</pre>
+<p>把 <tt class="LITERAL">/usr/local/pgsql/lib</tt> 换成你在 <a href="install-procedure.html#CONFIGURE">step 1</a> 设置的 <tt class="OPTION"><tt class="LITERAL">--libdir</tt></tt> 。你应该把这些命令放到启动文件，如 <tt class="FILENAME">/etc/profile</tt> 或 <tt class="FILENAME">~/.bash_profile</tt> 里面。和这个方法相关的一些注意事项和很好的信息可以在 <a href="http://www.visi.com/~barr/ldpath.html" target="_top">http://www.visi.com/~barr/ldpath.html</a> 找到。</p>
+<p>在有些系统上，更好的方法可能是在编译<span class="emphasis"><i class="EMPHASIS">之前</i></span>设置 <tt class="ENVAR">LD_RUN_PATH</tt> 环境变量。</p>
+<p>在 <span class="SYSTEMITEM">Cygwin</span> 里，把库目录放在 <tt class="ENVAR">PATH</tt> 或者把 <tt class="FILENAME">.dll</tt> 文件移动到 <tt class="FILENAME">bin</tt> 目录。</p>
+<p>如果有疑问，请参考系统的手册页(可能是 <tt class="COMMAND">ld.so</tt> 或 <tt class="COMMAND">rld</tt>)。如果稍后你收到下面这样的信息：</p>
+<pre class="SCREEN">psql: error in loading shared libraries
+libpq.so.2.1: cannot open shared object file: No such file or directory</pre>
+<p>那么这一步就是必须的了。只需关注一下就是了。</p>
+<p><a name="AEN17854"></a>如果你的系统是 <span class="SYSTEMITEM">BSD/OS</span>, <span class="SYSTEMITEM">Linux</span>, <span class="SYSTEMITEM">SunOS 4</span> 并且你还有 root 权限，那么你可以在安装后运行</p>
+<pre class="PROGRAMLISTING">/sbin/ldconfig /usr/local/pgsql/lib</pre>
+<p>(或者相应的目录)以便让运行时链接器更快地找到共享库。请参考 <tt class="COMMAND">ldconfig</tt> 的手册页获取更多信息。在 <span class="SYSTEMITEM">FreeBSD</span>, <span class="SYSTEMITEM">NetBSD</span>, <span class="SYSTEMITEM">OpenBSD</span> 上，命令是</p>
+<pre class="PROGRAMLISTING">/sbin/ldconfig -m /usr/local/pgsql/lib</pre>
+<p>我们不知道其它系统有什么等效命令。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN17865">14.6.2. 环境变量</a></h2><a name="AEN17867"></a>
+<p>如果你安装到 <tt class="FILENAME">/usr/local/pgsql</tt> 或者其它什么缺省时不搜索程序的地方，那你应该在 <tt class="ENVAR">PATH</tt> 环境变量里增加一个 <tt class="FILENAME">/usr/local/pgsql/bin</tt>(或者是你在 <a href="install-procedure.html#CONFIGURE">step 1</a> 给选项 <tt class="OPTION"><tt class="LITERAL">--bindir</tt></tt> 设置的值)。严格说，这些都不是必须的，但这么做可以让你使用 PostgreSQL 更方便。</p>
+<p>要做这些事情，把下面几行加到 shell 启动文件，如 <tt class="FILENAME">~/.bash_profile</tt> 或 <tt class="FILENAME">/etc/profile</tt>(如果你想影响所有用户)中：</p>
+<pre class="PROGRAMLISTING">PATH=/usr/local/pgsql/bin:$PATH
+export PATH</pre>
+<p>如果你用的是 <tt class="COMMAND">csh</tt> 或 <tt class="COMMAND">tcsh</tt> ，那么用这条命令：</p>
+<pre class="PROGRAMLISTING">set path = ( /usr/local/pgsql/bin $path )</pre>
+<p><a name="AEN17886"></a>为了让系统找得到 <span class="APPLICATION">man</span> 文档，你需要加类似下面的一行到一个 shell 启动文件里(除非你安装到了缺省时搜索的位置)：</p>
+<pre class="PROGRAMLISTING">MANPATH=/usr/local/pgsql/man:$MANPATH
+export MANPATH</pre>
+<p>环境变量 <tt class="ENVAR">PGHOST</tt> 和 <tt class="ENVAR">PGPORT</tt> 为客户端应用声明了数据库服务器的主机和端口，覆盖了那些编译时的缺省项。如果你想从远端运行客户端应用，那么每个准备使用该数据库的用户都设置 <tt class="ENVAR">PGHOST</tt> 将会非常方便。但这不是必须的，而且大部分客户端程序也可以通过命令行选项替换这些设置。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="install-procedure.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="supported-platforms.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">安装过程</td><td width="34%" align="center" valign="top"><a href="installation.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">支持的平台</td></tr>
+</table>
+</div>
+</body></html>

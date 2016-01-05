@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SQL 语法</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql.html#AEN1060">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="ddl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-syntax-lexical.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="SQL-SYNTAX"></a>章4. SQL 语法</h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>4.1. <a href="sql-syntax-lexical.html">词法结构</a></dt>
+<dd><dl>
+<dt>4.1.1. <a href="sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS">标识符和关键字</a></dt>
+<dt>4.1.2. <a href="sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS">常量</a></dt>
+<dt>4.1.3. <a href="sql-syntax-lexical.html#SQL-SYNTAX-OPERATORS">操作符</a></dt>
+<dt>4.1.4. <a href="sql-syntax-lexical.html#AEN1392">特殊字符</a></dt>
+<dt>4.1.5. <a href="sql-syntax-lexical.html#SQL-SYNTAX-COMMENTS">注释</a></dt>
+<dt>4.1.6. <a href="sql-syntax-lexical.html#SQL-PRECEDENCE">词法优先级</a></dt>
+</dl></dd>
+<dt>4.2. <a href="sql-expressions.html">值表达式</a></dt>
+<dd><dl>
+<dt>4.2.1. <a href="sql-expressions.html#AEN1633">字段引用</a></dt>
+<dt>4.2.2. <a href="sql-expressions.html#AEN1649">位置参数</a></dt>
+<dt>4.2.3. <a href="sql-expressions.html#AEN1663">下标</a></dt>
+<dt>4.2.4. <a href="sql-expressions.html#AEN1682">字段选择</a></dt>
+<dt>4.2.5. <a href="sql-expressions.html#AEN1693">操作符调用</a></dt>
+<dt>4.2.6. <a href="sql-expressions.html#AEN1722">函数调用</a></dt>
+<dt>4.2.7. <a href="sql-expressions.html#SYNTAX-AGGREGATES">聚集表达式</a></dt>
+<dt>4.2.8. <a href="sql-expressions.html#SQL-SYNTAX-TYPE-CASTS">类型转换</a></dt>
+<dt>4.2.9. <a href="sql-expressions.html#SQL-SYNTAX-SCALAR-SUBQUERIES">标量子查询</a></dt>
+<dt>4.2.10. <a href="sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">数组构造器</a></dt>
+<dt>4.2.11. <a href="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">行构造器</a></dt>
+<dt>4.2.12. <a href="sql-expressions.html#SYNTAX-EXPRESS-EVAL">表达式计算规则</a></dt>
+</dl></dd>
+</dl>
+</div>
+<a name="AEN1077"></a>
+<p>本章描述 SQL 的语法。这些内容是理解随后各章的基础，那些章里面将详细介绍 SQL 命令如何用于定义和修改数据。</p>
+<p>我们也建议那些已经很熟悉 SQL 的用户仔细阅读本章，因为有一些规则和概念在 SQL 数据库之间并不一致，或者是有些东西是 PostgreSQL 特有的。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-syntax-lexical.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SQL 语言</td><td width="34%" align="center" valign="top"><a href="sql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">词法结构</td></tr>
+</table>
+</div>
+</body></html>

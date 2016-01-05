@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_attribute</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-attrdef.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-authid.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-ATTRIBUTE">43.7. <tt class="STRUCTNAME">pg_attribute</tt></a></h1><a name="AEN62265"></a>
+<p><tt class="STRUCTNAME">pg_attribute</tt> 表存储关于表的字段的信息。数据库里每个表的每个字段都在 <tt class="STRUCTNAME">pg_attribute</tt> 里有一行。还有用于索引，以及所有在 <tt class="STRUCTNAME">pg_class</tt> 里有记录的对象。</p>
+<p>术语属性等效于列/字段，使用它是历史原因。</p>
+<div class="TABLE"><a name="AEN62272"></a>
+<p><b>表43-7. <tt class="STRUCTNAME">pg_attribute</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">attrelid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-class.html"><tt class="STRUCTNAME">pg_class</tt></a>.oid</tt></td><td>此字段所属的表</td></tr>
+<tr><td><tt class="STRUCTFIELD">attname</tt></td><td><tt class="TYPE">name</tt></td><td>&nbsp;</td><td>字段名字</td></tr>
+<tr><td><tt class="STRUCTFIELD">atttypid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-type.html"><tt class="STRUCTNAME">pg_type</tt></a>.oid</tt></td><td>这个字段的数据类型</td></tr>
+<tr><td><tt class="STRUCTFIELD">attstattarget</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>控制 <a href="sql-analyze.html"><i>ANALYZE</i></a> 为这个字段积累的统计细节的级别。零值表示不收集统计信息。负数表示使用系统缺省的统计对象。正数值的确切信息是和数据类型相关的。对于标量数据类型，<tt class="STRUCTFIELD">attstattarget</tt> 既是要收集的"最常用数值"的目标数目，也是要创建的柱状图的目标数量。</td></tr>
+<tr><td><tt class="STRUCTFIELD">attlen</tt></td><td><tt class="TYPE">int2</tt></td><td>&nbsp;</td><td>是本字段类型的 <tt class="LITERAL">pg_type.typlen</tt> 的拷贝</td></tr>
+<tr><td><tt class="STRUCTFIELD">attnum</tt></td><td><tt class="TYPE">int2</tt></td><td>&nbsp;</td><td>字段数目。普通字段是从 1 开始计数的。系统字段(比如 <tt class="STRUCTFIELD">oid</tt>)有(任意)正数。</td></tr>
+<tr><td><tt class="STRUCTFIELD">attndims</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>如果该字段是数组，那么是维数，否则是 0 。目前，一个数组的维数并未强制，因此任何非零值都表示"这是一个数组"。</td></tr>
+<tr><td><tt class="STRUCTFIELD">attcacheoff</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>在磁盘上的时候总是 -1 ，但是如果加载入内存中的行描述器中，它可能会被更新以缓冲在行中字段的偏移量。</td></tr>
+<tr><td><tt class="STRUCTFIELD">atttypmod</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>记录创建新表时支持的类型特定的数据(比如一个 <tt class="TYPE">varchar</tt> 字段的最大长度)。它传递给类型相关的输入和长度转换函数当做第三个参数。其值对那些不需要 <tt class="STRUCTFIELD">atttypmod</tt> 的类型通常为 -1 。</td></tr>
+<tr><td><tt class="STRUCTFIELD">attbyval</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>这个字段类型的 <tt class="LITERAL">pg_type.typbyval</tt> 的拷贝。</td></tr>
+<tr><td><tt class="STRUCTFIELD">attstorage</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td>这个字段的类型的 <tt class="LITERAL">pg_type.typstorage</tt> 的拷贝。对于可压缩的数据类型(TOAST)，这个字段可以在字段创建之后改变，以便于控制存储策略。</td></tr>
+<tr><td><tt class="STRUCTFIELD">attalign</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td>这个字段类型的 <tt class="LITERAL">pg_type.typalign</tt> 的拷贝</td></tr>
+<tr><td><tt class="STRUCTFIELD">attnotnull</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>这代表一个非空约束。可以改变这个字段以打开或者关闭这个约束。</td></tr>
+<tr><td><tt class="STRUCTFIELD">atthasdef</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>这个字段有一个缺省值，此时它对应 <tt class="STRUCTNAME">pg_attrdef</tt> 表里实际定义此值的记录。</td></tr>
+<tr><td><tt class="STRUCTFIELD">attisdropped</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>这个字段已经被删除了，不再有效。一个已经删除的字段物理上仍然存在表中，但会被分析器忽略，因此不能再通过 SQL 访问。</td></tr>
+<tr><td><tt class="STRUCTFIELD">attislocal</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>这个字段是局部定义在关系中的。请注意一个字段可以同时是局部定义和继承的。</td></tr>
+<tr><td><tt class="STRUCTFIELD">attinhcount</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>这个字段所拥有的直接祖先的个数。如果一个字段的祖先个数非零，那么它就不能被删除或重命名。</td></tr>
+</tbody>
+</table>
+</div>
+<p>在一个已被删除字段的 <tt class="STRUCTNAME">pg_attribute</tt> 记录里，<tt class="STRUCTFIELD">atttypid</tt> 将被重置为零，但是 <tt class="STRUCTFIELD">attlen</tt> 和其它从 <tt class="STRUCTNAME">pg_type</tt> 拷贝的仍然有效。这么安排是为了对付后来被删除的字段的数据类型也被删除的情况，因为这个时候不再有 <tt class="STRUCTNAME">pg_type</tt> 行了。<tt class="STRUCTFIELD">attlen</tt> 和其它字段可以用于解析表中一行内容。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-attrdef.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-authid.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_attrdef</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_authid</tt></td></tr>
+</table>
+</div>
+</body></html>

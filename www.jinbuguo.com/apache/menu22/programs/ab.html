@@ -1,0 +1,141 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>ab - Apache HTTP服务器性能测试工具 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">支持程序</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>ab - Apache HTTP服务器性能测试工具</h1>
+
+
+    <p><code>ab</code>是Apache超文本传输协议(HTTP)的性能测试工具。其设计意图是描绘当前所安装的Apache的执行性能，主要是显示你安装的Apache每秒可以处理多少个请求。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="synopsis" id="synopsis">语法</a></h2>
+    <p><code><strong>ab</strong>
+    [ -<strong>A</strong> <var>auth-username</var>:<var>password</var> ]
+    [ -<strong>c</strong> <var>concurrency</var> ]
+    [ -<strong>C</strong> <var>cookie-name</var>=<var>value</var> ]
+    [ -<strong>d</strong> ]
+    [ -<strong>e</strong> <var>csv-file</var> ]
+    [ -<strong>g</strong> <var>gnuplot-file</var> ]
+    [ -<strong>h</strong> ]
+    [ -<strong>H</strong> <var>custom-header</var> ]
+    [ -<strong>i</strong> ]
+    [ -<strong>k</strong> ]
+    [ -<strong>n</strong> <var>requests</var> ]
+    [ -<strong>p</strong> <var>POST-file</var> ]
+    [ -<strong>P</strong> <var>proxy-auth-username</var>:<var>password</var> ]
+    [ -<strong>q</strong> ]
+    [ -<strong>s</strong> ]
+    [ -<strong>S</strong> ]
+    [ -<strong>t</strong> <var>timelimit</var> ]
+    [ -<strong>T</strong> <var>content-type</var> ]
+    [ -<strong>v</strong> <var>verbosity</var>]
+    [ -<strong>V</strong> ]
+    [ -<strong>w</strong> ]
+    [ -<strong>x</strong> <var>&lt;table&gt;-attributes</var> ]
+    [ -<strong>X</strong> <var>proxy</var>[:<var>port</var>] ]
+    [ -<strong>y</strong> <var>&lt;tr&gt;-attributes</var> ]
+    [ -<strong>z</strong> <var>&lt;td&gt;-attributes</var> ]
+    [http://]<var>hostname</var>[:<var>port</var>]/<var>path</var></code></p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="options" id="options">选项</a></h2>
+    <dl>
+    <dt><code>-A <var>auth-username</var>:<var>password</var></code></dt>
+    <dd>向服务器提供<strong>基本认证</strong>信息。用户名和密码之间由一个"<code>:</code>"隔开，并将被以base64编码形式发送。无论服务器是否需要(即是否发送了401认证需求代码)，此字符串都会被发送。</dd>
+
+    <dt><code>-c <var>concurrency</var></code></dt>
+    <dd>一次产生的请求个数。默认是一次一个。</dd>
+
+    <dt><code>-C <var>cookie-name</var>=<var>value</var></code></dt>
+    <dd>对请求附加一个"<code>Cookie:</code>"头行。其典型形式是 <code><var>name</var>=<var>value</var></code> 的一个参数对。此参数可以重复。</dd>
+
+    <dt><code>-d</code></dt>
+    <dd>不显示"percentage served within XX [ms] table"消息(为以前的版本提供支持)。</dd>
+
+    <dt><code>-e <var>csv-file</var></code></dt>
+    <dd>产生一个逗号分隔(CSV)文件，其中包含了处理每个相应百分比请求(从1%到100%)所需要的相应百分比时间(以微秒为单位)。由于这种格式已经"二进制化"，所以比"gnuplot"格式更有用。</dd>
+
+    <dt><code>-g <var>gnuplot-file</var></code></dt>
+    <dd>把所有测试结果写入一个"gnuplot"或者TSV(以Tab分隔)文件。此文件可以方便地导入到 Gnuplot, IDL, Mathematica, Excel中。其中的第一行为标题。</dd>
+
+    <dt><code>-h</code></dt>
+    <dd>显示使用方法的帮助信息。</dd>
+
+    <dt><code>-H <var>custom-header</var></code></dt>
+    <dd>对请求附加额外的头信息。此参数的典型形式是一个有效的头信息行，其中包含了以冒号分隔的字段和值(如：<code>"Accept-Encoding: zip/zop;8bit"</code>)。</dd>
+
+    <dt><code>-i</code></dt>
+    <dd>执行<code>HEAD</code>请求，而不是<code>GET</code> 。</dd>
+
+    <dt><code>-k</code></dt>
+    <dd>启用KeepAlive功能，即在一个HTTP会话中执行多个请求。默认不启用KeepAlive功能。</dd>
+
+    <dt><code>-n <var>requests</var></code></dt>
+    <dd>在测试会话中所执行的请求个数。默认仅执行一个请求，此时其结果不具有意义。</dd>
+
+    <dt><code>-p <var>POST-file</var></code></dt>
+    <dd>包含了POST数据的文件。</dd>
+
+    <dt><code>-P <var>proxy-auth-username</var>:<var>password</var></code></dt>
+    <dd>对一个中转代理提供<strong>基本认证</strong>信息。用户名和密码由一个"<code>:</code>"隔开，并将被以base64编码形式发送。无论服务器是否需要(即是否发送了407代理认证需求代码)，此字符串都会被发送。</dd>
+
+    <dt><code>-q</code></dt>
+    <dd>如果处理的请求数大于150，<code>ab</code>每处理大约10%或者100个请求时，会在<code>stderr</code>输出一个进度计数。此 <code>-q</code> 标记可以屏蔽这些信息。</dd>
+
+    <dt><code>-s</code></dt>
+    <dd>用于编译中(<code>ab -h</code> 会告诉你)使用了SSL的受保护的<code>https</code> ，而不是<code>http</code>协议的时候。此功能是<em>实验性</em>的，最好不要用。</dd>
+
+    <dt><code>-S</code></dt>
+    <dd>不显示中值和标准偏差值，而且在均值和中值为标准偏差值的1到2倍时，也不显示警告或出错信息。默认时，会显示最小值/均值/最大值等数值。(为以前的版本提供支持)</dd>
+
+    <dt><code>-t <var>timelimit</var></code></dt>
+    <dd>测试所进行的最大秒数。内部隐含值是"<code>-n 50000</code>"。它可以使对服务器的测试限制在一个固定的总时间以内。默认时，没有时间限制。</dd>
+
+    <dt><code>-T <var>content-type</var></code></dt>
+    <dd>POST数据时所使用的"Content-type"头信息。</dd>
+
+    <dt><code>-v <var>verbosity</var></code></dt>
+    <dd>设置显示信息的详细程度，<code>4</code>或更大值会显示头信息，<code>3</code>或更大值可以显示响应代码(404，200等)，<code>2</code>或更大值可以显示警告和其他信息。</dd>
+
+    <dt><code>-V</code></dt>
+    <dd>显示版本号并退出。</dd>
+
+    <dt><code>-w</code></dt>
+    <dd>以HTML表格形式输出结果。默认时，它是白色背景的两列宽度的一张表。</dd>
+
+    <dt><code>-x <var>&lt;table&gt;-attributes</var></code></dt>
+    <dd>设置<code>&lt;table&gt;</code>属性的字符串。此属性被填入<code>&lt;table <var>这里</var> &gt;</code> 。</dd>
+
+    <dt><code>-X <var>proxy</var>[:<var>port</var>]</code></dt>
+    <dd>对请求使用代理服务器。</dd>
+
+    <dt><code>-y <var>&lt;tr&gt;-attributes</var></code></dt>
+    <dd>设置<code>&lt;tr&gt;</code>属性的字符串。</dd>
+
+    <dt><code>-z <var>&lt;td&gt;-attributes</var></code></dt>
+    <dd>设置<code>&lt;td&gt;</code>属性的字符串。</dd>
+    </dl>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="bugs" id="bugs">Bugs</a></h2>
+    <p>程序中有各种静态声明的固定长度的缓冲区。另外，对命令行参数、服务器的响应头和其他外部输入的解析也很简单，这可能会有不良后果。</p>
+
+    <p>没有完整实现HTTP/1.x ；仅接受某些"预想"的响应格式。<code>strstr()</code>的频繁使用可能会带来性能问题，即你可能是在测试<code>ab</code>而不是服务器的性能。</p>
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>资源消耗</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="runtime-config-connection.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime-config.html">快退</a></td><td width="60%" align="center" valign="bottom">章17. 服务器配置</td><td width="10%" align="right" valign="top"><a href="runtime-config.html">快进</a></td><td width="10%" align="right" valign="top"><a href="runtime-config-wal.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="RUNTIME-CONFIG-RESOURCE">17.4. 资源消耗</a></h1>
+<div class="SECT2"><h2 class="SECT2"><a name="RUNTIME-CONFIG-RESOURCE-MEMORY">17.4.1. 内存</a></h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-SHARED-BUFFERS"></a><tt class="VARNAME">shared_buffers</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>设置数据库服务器将使用的共享内存缓冲区数量。缺省通常是 4000 ，如果内核设置不支持这么大，那么可以少些(在 <span class="APPLICATION">initdb</span> 的时候决定)。每个缓冲区大小的典型值是 8192 字节，除非你在编译的时候修改了 <tt class="SYMBOL">BLCKSZ</tt> 的值。这个数值必须大于 16 ，并且至少是 <a href="runtime-config-connection.html#GUC-MAX-CONNECTIONS">max_connections</a> 数值的两倍；不过，这个数值大一些通常可以改进性能。对于生产安装，我们通常建议至少是几千。这个选项只能在服务器启动的时候设置。</p>
+<p>增大这个参数可能导致 PostgreSQL 要求更多 <span class="SYSTEMITEM">System V</span> 共享内存，可能超出操作系统配置许可的范围。必要时请参阅<a href="kernel-resources.html#SYSVIPC">节16.4.1</a>获取如何调整这些参数的信息。</p></dd>
+<dt><a name="GUC-TEMP-BUFFERS"></a><tt class="VARNAME">temp_buffers</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>设置每个数据库会话使用的临时缓冲区的最大数目。这些都是会话的本地缓冲区，只用于访问临时表。缺省是 1000 。这个设置可以在独立的会话内部设置，但是只有在会话第一次使用临时表的时候才能增长；企图在该会话里随后改变该数值是无效的。</p>
+<p>一个会话将按照 <tt class="VARNAME">temp_buffers</tt> 给出的限制，根据需要分配临时缓冲区。如果在一个并不需要大量临时缓冲区的会话里设置一个大的数值，其开销只是一个缓冲区描述符，或者说每个 <tt class="VARNAME">temp_buffers</tt> 增加大概 64 字节。不过，如果一个缓冲区实际上被使用，那么就会额外消耗 8192 字节(或者说是 <tt class="SYMBOL">BLCKSZ</tt> 字节)。</p></dd>
+<dt><a name="GUC-MAX-PREPARED-TRANSACTIONS"></a><tt class="VARNAME">max_prepared_transactions</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>设置可以同时处于"预备"状态的事务的最大数目(参阅 <a href="sql-prepare-transaction.html"><i>PREPARE TRANSACTION</i></a>)。把这个参数设置为零则关闭预备事务的特性。缺省是 5 。这个值只能在服务器启动的时候设置。</p>
+<p>如果你不使用预备事务，这个参数也可以设置为零。如果你使用它们，你可能会需要把 <tt class="VARNAME">max_prepared_transactions</tt> 设置成至少和 <a href="runtime-config-connection.html#GUC-MAX-CONNECTIONS">max_connections</a> 一样大，以避免在准备步骤失败。</p>
+<p>增加这个参数可能会导致 PostgreSQL 要求比缺省的操作系统配置的更多的 <span class="SYSTEMITEM">System V</span> 共享内存。必要时请参阅<a href="kernel-resources.html#SYSVIPC">节16.4.1</a>获取有关如何调节这个参数的信息。</p></dd>
+<dt><a name="GUC-WORK-MEM"></a><tt class="VARNAME">work_mem</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>声明内部排序操作和 Hash 表在开始使用临时磁盘文件之前使用的内存数目。数值是以千字节为单位的，缺省是 1024 千字节(<tt class="LITERAL">1MB</tt>)。请注意对于复杂的查询，可能会同时并发运行好几个排序或者散列操作；每个都会被批准使用这个参数声明的这么多内存，然后才会开始求助于临时文件。同样，好几个正在运行的会话可能会同时进行排序操作。因此使用的总内存可能是 <tt class="VARNAME">work_mem</tt> 的好几倍。<tt class="LITERAL">ORDER BY</tt>, <tt class="LITERAL">DISTINCT</tt> 和融合连接都要用到排序操作。 Hash 表在散列连接、散列为基础的聚集、散列为基础的 <tt class="LITERAL">IN</tt> 子查询处理中都要用到。</p></dd>
+<dt><a name="GUC-MAINTENANCE-WORK-MEM"></a><tt class="VARNAME">maintenance_work_mem</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>声明在维护性操作(比如 <tt class="COMMAND">VACUUM</tt>, <tt class="COMMAND">CREATE INDEX</tt>, <tt class="COMMAND">ALTER TABLE ADD FOREIGN KEY</tt> 等)中使用的最大的内存数。数值是用千字节计的，缺省是 16384 千字节(<tt class="LITERAL">16MB</tt>)。因为在一个数据库会话里，任意时刻只有一个这样的操作可以执行，并且一个数据库安装通常不会有太多这样的工作并发执行，把这个数值设置得比 <tt class="VARNAME">work_mem</tt> 更大是安全的。更大的设置可以改进清理和恢复数据库转储的速度。</p></dd>
+<dt><a name="GUC-MAX-STACK-DEPTH"></a><tt class="VARNAME">max_stack_depth</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>声明服务器的执行堆栈的最大安全深度。为此设置一个参数的原因是内核强制的实际堆栈尺寸(就是 <tt class="LITERAL">ulimit -s</tt> 或者局部等效物的设置)小于安全的一兆字节左右的范围。需要这个安全界限是因为在服务器里，并非所有过程都检查了堆栈深度，只是在可能递规的过程，比如表达式计算这样的过程里面才进行检查。缺省设置是 2048kB(<tt class="LITERAL">2MB</tt>)，这个值相对比较小，不容易导致崩溃。但是，这个值可能太小了，以至于无法执行复杂的函数。</p>
+<p>把 <tt class="VARNAME">max_stack_depth</tt> 参数设置得大于实际的内核限制意味着一个正在运行的递归函数可能会导致一个独立的服务器进程的崩溃。在 PostgreSQL 能够检测内核限制的平台上，将不允许你将其设置为一个不安全的值。因为并非所有平台都能够检测，所以还是建议你在此设置一个明确的值。</p></dd>
+</dl>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="RUNTIME-CONFIG-RESOURCE-FSM">17.4.2. 自由空间映射</a></h2><a name="AEN20065"></a>
+<p>这些参数控制共享的<i class="FIRSTTERM">自由空间映射</i>的尺寸，自由空间映射用于跟踪数据库中未使用空间的位置。太小会导致数据库随着时间推移消耗不合理的磁盘空间，因为不在映射表里面的自由空间是不能重复使用的；这样在 PostgreSQL 需要存储新数据的时候，会向操作系统要求更多的磁盘空间。一个数据库范围内的 <tt class="COMMAND">VACUUM VERBOSE</tt> 命令显示的最后几行信息可以帮助判断当前的设置是否足够。如果当前的设置太低，那么会打印一条 <tt class="LITERAL">NOTICE</tt> 信息。</p>
+<p>增加这些参数值可能导致 PostgreSQL 要求超过系统缺省允许的 <span class="SYSTEMITEM">System V</span> 共享内存数量。必要的话，参阅<a href="kernel-resources.html#SYSVIPC">节16.4.1</a>获取有关如何调整这些参数的信息。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-MAX-FSM-PAGES"></a><tt class="VARNAME">max_fsm_pages</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>设置在共享的自由空间映射表里自由空间能够跟踪的最大磁盘页面数。每个页面槽位需要消耗六个字节的共享内存。这个设置必须大于 16*<tt class="VARNAME">max_fsm_relations</tt> 。缺省值由 <span class="APPLICATION">initdb</span> 根据可用内存总量设置，从 20k 到 200k 都有可能。这个值只能在服务器启动的时候设置。</p></dd>
+<dt><a name="GUC-MAX-FSM-RELATIONS"></a><tt class="VARNAME">max_fsm_relations</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>设置在共享的自由空间映射里跟踪的最大关系(表和索引)数目。每个槽位大概要使用 70 字节左右。缺省值是 1000 。这个值只能在服务器启动的时候设置。</p></dd>
+</dl>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="RUNTIME-CONFIG-RESOURCE-KERNEL">17.4.3. 内核资源使用</a></h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-MAX-FILES-PER-PROCESS"></a><tt class="VARNAME">max_files_per_process</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>设置每个服务器进程允许同时打开的最大文件数目。缺省是 1000 。如果内核强制一个合理的每进程限制，那么你不用操心这个设置。但是在一些平台上(特别是大多数 BSD 系统)，内核允许独立进程打开比个系统真正可以支持的数目大得多得文件数。如果你发现有"Too many open files"这样的失败现像，那么就尝试缩小这个设置。这个值只能在服务器启动的时候设置。</p></dd>
+<dt><a name="GUC-SHARED-PRELOAD-LIBRARIES"></a><tt class="VARNAME">shared_preload_libraries</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>这个变量声明一个或者多个在服务器启动的时候预先装载的共享库。多个库名字之间用逗号分隔。比如 <tt class="LITERAL">'$libdir/mylib'</tt> 会在加载标准库目录中的库文件之前预先加载 <tt class="LITERAL">mylib.so</tt>(在某些平台上可能是 <tt class="LITERAL">mylib.sl</tt>)库文件。这个值只能在服务器启动的时候设置。</p>
+<p>可以用这个方法预先装载 PostgreSQL 的过程语言库，通常是使用 <tt class="LITERAL">'$libdir/plXXX'</tt> 语法，这里的 <tt class="LITERAL">XXX</tt> 是 <tt class="LITERAL">pgsql</tt>, <tt class="LITERAL">perl</tt>, <tt class="LITERAL">tcl</tt>, <tt class="LITERAL">python</tt> 之一。</p>
+<p>通过预先装载一个共享库(以及在需要的时候初始化它)，我们就可以避免第一次使用这个库的加载时间。不过，启动每个服务器进程的时间可能会增加，即使进程从来没有使用过这些库也这样。因此我们只是建议对那些将被大多数会话使用的库才使用这个选项。</p>
+<p>如果没有找到声明的库，那么服务器启动将失败。</p>
+<p>每一个支持 PostgreSQL 的库都有一个"magic block"用于保证兼容性。因此，不支持 PostgreSQL 的库不能用这种办法加载。</p></dd>
+</dl>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="RUNTIME-CONFIG-RESOURCE-VACUUM-COST">17.4.4. 基于开销的清理延迟</a></h2>
+<p>在 <a href="sql-vacuum.html"><i>VACUUM</i></a> 和 <a href="sql-analyze.html"><i>ANALYZE</i></a> 命令执行过程中，系统维护一个内部的记数器，跟踪所执行的各种 I/O 操作的近似开销。如果积累的开销达到了 <tt class="VARNAME">vacuum_cost_limit</tt> 声明的限制，那么执行这个操作的进程将睡眠 <tt class="VARNAME">vacuum_cost_delay</tt> 指定的时间。然后它会重置记数器然后继续执行。</p>
+<p>这个特性的目的是允许管理员减少这些命令在并发活动的数据库上的 I/O 影响。比如，像 <tt class="COMMAND">VACUUM</tt> 和 <tt class="COMMAND">ANALYZE</tt> 这样的维护命令并不需要迅速完成，并且不希望它们严重干扰系统执行其它的数据库操作。基于开销的清理延迟为管理员提供了一个实现这个目的的手段。</p>
+<p>这个特性是缺省关闭的。要想打开它，把 <tt class="VARNAME">vacuum_cost_delay</tt> 变量设置为一个非零值。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-VACUUM-COST-DELAY"></a><tt class="VARNAME">vacuum_cost_delay</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>以毫秒计的时间长度，如果超过了开销限制，那么进程将睡眠一会儿。缺省值 0 关闭基于开销的清理延迟特性。正数值打开基于开销的清理。不过，要注意在许多系统上，睡眠的有效分辨率是 10 毫秒；把 <tt class="VARNAME">vacuum_cost_delay</tt> 设置为一个不是 10 的整数倍的数值与将它设置为下一个 10 的整数倍作用相同。</p></dd>
+<dt><a name="GUC-VACUUM-COST-PAGE-HIT"></a><tt class="VARNAME">vacuum_cost_page_hit</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>清理一个在共享缓存里找到的缓冲区的预计开销。它代表锁住缓冲池、查找共享的 Hash 表、扫描页面内容的开销。缺省值是 1 。</p></dd>
+<dt><a name="GUC-VACUUM-COST-PAGE-MISS"></a><tt class="VARNAME">vacuum_cost_page_miss</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>清理一个要从磁盘上读取的缓冲区的预计开销。它代表锁住缓冲池、查找共享 Hash 表、从磁盘读取需要的数据块、扫描它的内容的开销。缺省值是 10 。</p></dd>
+<dt><a name="GUC-VACUUM-COST-PAGE-DIRTY"></a><tt class="VARNAME">vacuum_cost_page_dirty</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>清理修改一个原先是干净的块的预计开销。它代表把一个脏的磁盘块再次刷新到磁盘上的额外开销。缺省值是 20 。</p></dd>
+<dt><a name="GUC-VACUUM-COST-LIMIT"></a><tt class="VARNAME">vacuum_cost_limit</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>导致清理进程休眠的积累开销。缺省是 200 。</p></dd>
+</dl>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>有些操作会持有关键的锁，并且应该尽快结束。在这样的操作过程中，基于开销的清理延迟不会发生作用。为了避免在这种情况下的长延时，实际的延迟是 <tt class="VARNAME">vacuum_cost_delay</tt>*<tt class="VARNAME">accumulated_balance</tt>/<tt class="VARNAME">vacuum_cost_limit</tt> 与 <tt class="VARNAME">vacuum_cost_delay</tt>*4 两者之间的最大值。</p>
+</blockquote>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="RUNTIME-CONFIG-RESOURCE-BACKGROUND-WRITER">17.4.5. 后端写进程</a></h2>
+<p>从 PostgreSQL 8.0 开始，就有一个独立的服务器进程，叫做<i class="FIRSTTERM">后端写进程</i>，它唯一的功能就是发出写"脏"共享缓冲区的命令。这么做的目的是让持有用户查询的服务器进程应该很少或者几乎不等待写动作的发生，因为后端写进程会做这件事情。这样的安排同样也减少了检查点造成的性能下降。后端写进程将持续的把脏页面刷新到磁盘上，所以在检查点到来的时候，只有几个页面需要刷新到磁盘上。但是这样还是增加了 I/O 的总净负荷，因为以前的检查点间隔里，一个重复弄脏的页面可能只会冲刷一次，而同一个间隔里，后端写进程可能会写好几次。在大多数情况下，连续的低负荷要比周期性的尖峰负荷好，但是在本节讨论的参数可以用于按实际需要调节其行为。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-BGWRITER-DELAY"></a><tt class="VARNAME">bgwriter_delay</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>声明后端写进程活跃轮回之间的延迟。在每个轮回里，写进程都会为一些脏的缓冲区发出写操作(可以用下面的参数控制)。然后它就休眠 <tt class="VARNAME">bgwriter_delay</tt> 毫秒(缺省值是 200)，然后重复动作。请注意在许多系统上，休眠延时的有效分辨率是 10 毫秒；因此，设置一个不是10的倍数的数值与把它设置为下一个10的倍数是一样的效果。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-BGWRITER-LRU-PERCENT"></a><tt class="VARNAME">bgwriter_lru_percent</tt> (<tt class="TYPE">floating point</tt>)</dt>
+<dd><p>为了减少服务器进程发出自己的写操作的可能，后端写进程尽量写那些可能很快被回收使用的缓冲区。在每个轮回里，它检查最多百分之 <tt class="VARNAME">bgwriter_lru_percent</tt> 的快要被回收使用的缓冲区，然后写出其中的脏缓冲区。缺省值是 1.0(这是全部共享缓冲区的百分比)。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-BGWRITER-LRU-MAXPAGES"></a><tt class="VARNAME">bgwriter_lru_maxpages</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>在每个轮回里，不超过这么多个缓冲区将做为扫描到的即将回收使用的缓冲区写入磁盘。缺省值是 5 。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-BGWRITER-ALL-PERCENT"></a><tt class="VARNAME">bgwriter_all_percent</tt> (<tt class="TYPE">floating point</tt>)</dt>
+<dd><p>为了减少在检查点时需要做的工作，后端写进程还会对整个缓冲池进行循环扫描，把那些认为是脏的缓冲区写出到磁盘。在每个轮回里，它为此检查最多百分之 <tt class="VARNAME">bgwriter_all_percent</tt> 的缓冲区进行操作。缺省值是 0.333(这是全部共享缓冲区的百分比)。使用缺省的 <tt class="VARNAME">bgwriter_delay</tt> 设置可以做到每分钟扫描一次整个共享缓冲池。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-BGWRITER-ALL-MAXPAGES"></a><tt class="VARNAME">bgwriter_all_maxpages</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>在每个轮回里，不超过这个数值的缓冲区将作为扫描整个缓冲池的结果写入磁盘。如果达到这个限制，扫描停止，然后在下个轮回里，从下一个缓冲区开始。缺省值是 5 。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+</dl>
+</div>
+<p>小的 <tt class="VARNAME">bgwriter_all_percent</tt> 和 <tt class="VARNAME">bgwriter_all_maxpages</tt> 减少后端写进程导致的额外 I/O 负荷，但是会导致在检查点的时候做更多工作。要降低检查点时的峰值负荷，增加这两个值。类似的，小的 <tt class="VARNAME">bgwriter_lru_percent</tt> 和 <tt class="VARNAME">bgwriter_lru_maxpages</tt> 减小后端写进程导致的额外 I/O 负载，但是会有可能使服务器进程不得不自己发出写动作，降低查询的交互性。要想完全关闭后台写进程，可以把两个 <tt class="VARNAME">maxpages</tt> 和/或两个 <tt class="VARNAME">percent</tt> 设置为零。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="runtime-config-connection.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="runtime-config-wal.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">连接和认证</td><td width="34%" align="center" valign="top"><a href="runtime-config.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">预写式日志</td></tr>
+</table>
+</div>
+</body></html>

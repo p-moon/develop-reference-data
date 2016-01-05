@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>COPY</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-commit-prepared.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-commit-prepared.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createaggregate.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createaggregate.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-COPY"></a>COPY</h1>
+<div class="REFNAMEDIV"><a name="AEN46055"></a><h2>名称</h2>COPY&nbsp;--&nbsp;在表和文件之间拷贝数据</div>
+<a name="AEN46058"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN46060"></a><h2>语法</h2>
+<pre class="SYNOPSIS">COPY <tt class="REPLACEABLE"><i>tablename</i></tt> [ ( <tt class="REPLACEABLE"><i>column</i></tt> [, ...] ) ]
+    FROM { '<tt class="REPLACEABLE"><i>filename</i></tt>' | STDIN }
+    [ [ WITH ] 
+          [ BINARY ]
+          [ OIDS ]
+          [ DELIMITER [ AS ] '<tt class="REPLACEABLE"><i>delimiter</i></tt>' ]
+          [ NULL [ AS ] '<tt class="REPLACEABLE"><i>null string</i></tt>' ]
+          [ CSV [ HEADER ]
+                [ QUOTE [ AS ] '<tt class="REPLACEABLE"><i>quote</i></tt>' ] 
+                [ ESCAPE [ AS ] '<tt class="REPLACEABLE"><i>escape</i></tt>' ]
+                [ FORCE NOT NULL <tt class="REPLACEABLE"><i>column</i></tt> [, ...] ]
+
+COPY { <tt class="REPLACEABLE"><i>tablename</i></tt> [ ( <tt class="REPLACEABLE"><i>column</i></tt> [, ...] ) ] | ( <tt class="REPLACEABLE"><i>query</i></tt> ) }
+    TO { '<tt class="REPLACEABLE"><i>filename</i></tt>' | STDOUT }
+    [ [ WITH ] 
+          [ BINARY ]
+          [ HEADER ]
+          [ OIDS ]
+          [ DELIMITER [ AS ] '<tt class="REPLACEABLE"><i>delimiter</i></tt>' ]
+          [ NULL [ AS ] '<tt class="REPLACEABLE"><i>null string</i></tt>' ]
+          [ CSV [ HEADER ]
+                [ QUOTE [ AS ] '<tt class="REPLACEABLE"><i>quote</i></tt>' ] 
+                [ ESCAPE [ AS ] '<tt class="REPLACEABLE"><i>escape</i></tt>' ]
+                [ FORCE QUOTE <tt class="REPLACEABLE"><i>column</i></tt> [, ...] ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN46079"></a><h2>描述</h2>
+<p><tt class="COMMAND">COPY</tt> 在表和文件之间交换数据。<tt class="COMMAND">COPY TO</tt> 把一个表的所有内容都拷贝到一个文件，而 <tt class="COMMAND">COPY FROM</tt> 从一个文件里拷贝数据到一个表里(把数据附加到表中已经存在的内容里)。<tt class="COMMAND">COPY TO</tt> 还能拷贝 <tt class="COMMAND">SELECT</tt> 查询的结果。</p>
+<p>如果声明了一个字段列表，<tt class="COMMAND">COPY</tt> 将只在文件和表之间拷贝已声明字段的数据。如果表中有任何不在字段列表里的字段，那么 <tt class="COMMAND">COPY FROM</tt> 将为那些字段插入缺省值。</p>
+<p>带文件名的 <tt class="COMMAND">COPY</tt> 指示 PostgreSQL 服务器直接从文件中读写数据。如果声明了文件名，那么服务器必须可以访问该文件，而且文件名必须从服务器的角度声明。如果指定了 <tt class="LITERAL">STDIN</tt> 或 <tt class="LITERAL">STDOUT</tt> ，那么数据将在客户前端和服务器之间流动。</p>
+</div>
+<div class="REFSECT1"><a name="AEN46098"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>tablename</i></tt></dt>
+<dd><p>现存表的名字(可以有模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>column</i></tt></dt>
+<dd><p>可选的待拷贝字段列表。如果没有声明字段列表，那么将使用所有字段。</p></dd>
+<dt><tt class="REPLACEABLE"><i>query</i></tt></dt>
+<dd><p>一个必须用圆括弧包围的 <a href="sql-select.html"><i>SELECT</i></a> 或 <a href="sql-values.html"><i>VALUES</i></a> 命令，其结果将被拷贝。</p></dd>
+<dt><tt class="REPLACEABLE"><i>filename</i></tt></dt>
+<dd><p>输入或输出文件的绝对路径。Windows 用户可能需要使用 <tt class="LITERAL">E''</tt> 字符串和双反斜线作为路径分割符。</p></dd>
+<dt><tt class="LITERAL">STDIN</tt></dt>
+<dd><p>声明输入是来自客户端应用</p></dd>
+<dt><tt class="LITERAL">STDOUT</tt></dt>
+<dd><p>声明输入前往客户端应用</p></dd>
+<dt><tt class="LITERAL">BINARY</tt></dt>
+<dd><p>使用二进制格式存储和读取，而不是以文本的方式。在二进制模式下，不能声明 <tt class="OPTION">DELIMITER</tt>, <tt class="OPTION">NULL</tt>, <tt class="OPTION">CSV</tt> 选项。</p></dd>
+<dt><tt class="LITERAL">OIDS</tt></dt>
+<dd><p>声明为每行拷贝内部对象标识(OID)。如果为一个 <tt class="REPLACEABLE"><i>query</i></tt> 拷贝或者没有 OID 的表声明了 <tt class="LITERAL">OIDS</tt> 选项，则抛出一个错误。</p></dd>
+<dt><tt class="REPLACEABLE"><i>delimiter</i></tt></dt>
+<dd><p>在文件中分隔各个字段的单个字符。在文本模式下，缺省是水平制表符，在 <tt class="LITERAL">CSV</tt> 模式下是一个逗号。</p></dd>
+<dt><tt class="REPLACEABLE"><i>null string</i></tt></dt>
+<dd><p>这是一个代表 NULL 值的字符串。在文本模式下缺省是 <tt class="LITERAL">\N</tt> ，在 <tt class="LITERAL">CSV</tt> 模式下是一个没有引号的 NULL 。如果你不想区分 NULL 和空字符串，那么即使在文本模式下你可能也会使用一个空字符串。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在使用 <tt class="COMMAND">COPY FROM</tt> 的时候，任何匹配这个字符串的字符串将被存储为 NULL 值，所以你应该确保你用的字符串和 <tt class="COMMAND">COPY TO</tt> 相同。</p>
+</blockquote>
+</div></dd>
+<dt><tt class="LITERAL">CSV</tt></dt>
+<dd><p>打开逗号分隔变量(<tt class="LITERAL">CSV</tt>)模式</p></dd>
+<dt><tt class="LITERAL">HEADER</tt></dt>
+<dd><p>声明文件包含一个标题头行，包含文件中每个字段的名字。输出时，第一行包含表的字段名；输入时，第一行被忽略。</p></dd>
+<dt><tt class="REPLACEABLE"><i>quote</i></tt></dt>
+<dd><p>声明 <tt class="LITERAL">CSV</tt> 模式里的引号字符。缺省是双引号。</p></dd>
+<dt><tt class="REPLACEABLE"><i>escape</i></tt></dt>
+<dd><p>声明在 <tt class="LITERAL">CSV</tt> 模式下应该出现在数据里 <tt class="LITERAL">QUOTE</tt> 字符值前面的字符。缺省是 <tt class="LITERAL">QUOTE</tt> 值(通常是双引号)。</p></dd>
+<dt><tt class="LITERAL">FORCE QUOTE</tt></dt>
+<dd><p>在 <tt class="LITERAL">CSV</tt> <tt class="COMMAND">COPY TO</tt> 模式下，强制在每个声明的字段周围对所有非 <tt class="LITERAL">NULL</tt> 值都使用引号包围。<tt class="LITERAL">NULL</tt> 输出从不会被引号包围。</p></dd>
+<dt><tt class="LITERAL">FORCE NOT NULL</tt></dt>
+<dd><p>在 <tt class="LITERAL">CSV</tt> <tt class="COMMAND">COPY FROM</tt> 模式下，把声明的每个字段都当作它们有引号包围来处理，因此就没有 <tt class="LITERAL">NULL</tt> 值。对于在 <tt class="LITERAL">CSV</tt> 模式下的缺省空字符串(<tt class="LITERAL">''</tt>)，这样导致一个缺失的数值当作一个零长字符串输入。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN46210"></a><h2>输出</h2>
+<p>成功完成时，<tt class="COMMAND">COPY</tt> 按照如下格式返回一个命令标签：</p>
+<pre class="SCREEN">COPY <tt class="REPLACEABLE"><i>count</i></tt></pre>
+<p>其中的 <tt class="REPLACEABLE"><i>count</i></tt> 是拷贝的行数。</p>
+</div>
+<div class="REFSECT1"><a name="AEN46217"></a><h2>注意</h2>
+<p><tt class="COMMAND">COPY</tt> 只能用于表，不能用于视图。当然也可以用于 <tt class="LITERAL">COPY (SELECT * FROM <tt class="REPLACEABLE"><i>viewname</i></tt>) TO ...</tt></p>
+<p><tt class="LITERAL">BINARY</tt> 关键字将强制使用二进制对象而不是文本存储/读取所有数据。这样做在一定程度上比传统的拷贝命令快，但二进制拷贝文件在不同机器体系和 PostgreSQL 版本之间的移植性不是很好。</p>
+<p>你对任何要 <tt class="COMMAND">COPY TO</tt> 出来的数据必须有选取数据的权限，对任何要 <tt class="COMMAND">COPY FROM</tt> 入数据的表必须有插入权限。</p>
+<p><tt class="COMMAND">COPY</tt> 命令里面的文件必须是由服务器直接读或写的文件，而不是由客户端应用读写。因此，它们必须位于数据库服务器上或者可以被数据库服务器所访问，这些事情不应该由客户端来做。它们必须被运行 PostgreSQL 服务器的用户可读或写，而不是客户端。只允许数据库超级用户 <tt class="COMMAND">COPY</tt> 一个文件，因为它允许读写任意服务器有权限访问的文件。</p>
+<p>不要混淆 <tt class="COMMAND">COPY</tt> 和 <span class="APPLICATION">psql</span> 的 <tt class="COMMAND">\copy</tt> 指令。<tt class="COMMAND">\copy</tt> 调用 <tt class="COMMAND">COPY FROM STDIN</tt> 或 <tt class="COMMAND">COPY TO STDOUT</tt> ，然后把数据抓取/存储到一个 <span class="APPLICATION">psql</span> 客户端可以访问的文件中。因此，使用 <tt class="COMMAND">\copy</tt> 的时候，文件访问权限是由客户端而不是服务器端决定的。</p>
+<p>建议在 <tt class="COMMAND">COPY</tt> 里的文件名字总是使用绝对路径。在 <tt class="COMMAND">COPY TO</tt> 的时候是由服务器强制进行的，但是对于 <tt class="COMMAND">COPY FROM</tt> ，你的确可从一个相对路径的文件里读取。该路径将解释为相对于服务器的工作目录(通常是数据目录)，而不是客户端的工作目录。</p>
+<p><tt class="COMMAND">COPY FROM</tt> 会激活所有触发器和检查约束。不过，不会激活规则。</p>
+<p><tt class="COMMAND">COPY</tt> 输入和输出被 <tt class="VARNAME">DateStyle</tt> 影响。为了和其它 PostgreSQL 安装移植(它们可能是非缺省 <tt class="VARNAME">DateStyle</tt> 设置)，应该在使用 <tt class="COMMAND">COPY TO</tt> 前把 <tt class="VARNAME">DateStyle</tt> 设置为 <tt class="LITERAL">ISO</tt> 。</p>
+<p><tt class="COMMAND">COPY</tt> 在第一个错误处停下来。这些在 <tt class="COMMAND">COPY TO</tt> 中不应该导致问题，但在 <tt class="COMMAND">COPY FROM</tt> 时目标表会已经接收到早先的行，这些行将不可见或不可访问，但是仍然会占据磁盘空间。如果你碰巧拷贝大块数据文件的话，这些东西积累起来可能会占据相当大的磁盘空间。你可以调用 <tt class="COMMAND">VACUUM</tt> 来恢复那些磁盘空间。</p>
+</div>
+<div class="REFSECT1"><a name="AEN46261"></a><h2>文件格式</h2>
+<div class="REFSECT2"><a name="AEN46263"></a><h3>文本格式</h3>
+<p>当不带 <tt class="LITERAL">BINARY</tt> 或 <tt class="LITERAL">CSV</tt> 选项使用 <tt class="COMMAND">COPY</tt> 时，读写的文件是一个文本文件，每行代表表中一个行。行中的列(字段)用分隔符分开。字段值本身是由与每个字段类型相关的输出函数生成的字符串，或者是输入函数可接受的字符串。数据中使用特定的 NULL 字符串表示那些值为 NULL 的字段。如果输入文件的任意行包含比预期多或者少的字段，那么 <tt class="COMMAND">COPY FROM</tt> 将抛出一个错误。如果声明了 <tt class="LITERAL">OIDS</tt> ，那么 OID 将作为第一个字段读写，放在所有用户字段前面。</p>
+<p>数据的结束可以用一个只包含反斜杠和句点(<tt class="LITERAL">\.</tt>)的行表示。如果从文件中读取数据，那么数据结束的标记是不必要的，因为文件结束起的作用就很好了；但是在 3.0 之前的客户端协议里，如果在客户端应用之间拷贝数据，那么必须要有结束标记。</p>
+<p>反斜杠字符(<tt class="LITERAL">\</tt>)可以用在 <tt class="COMMAND">COPY</tt> 里给那些会有歧义的字符进行逃逸(否则那些字符会被当做行或者字段分隔符处理)。特别是下面的字符如果是字段值的一部分时，<span class="emphasis"><i class="EMPHASIS">必须</i></span>前缀一个反斜杠：反斜杠本身、换行符、回车符、当前分隔符。</p>
+<p>声明的空字符串被 <tt class="COMMAND">COPY TO</tt> 不加任何反斜杠发送；与之相对，<tt class="COMMAND">COPY FROM</tt> 在删除反斜杠之前拿它的输入与空字符串比较。因此，像 <tt class="LITERAL">\N</tt> 这样的空字符串不会和实际数据值 <tt class="LITERAL">\N</tt> 之间混淆(因为后者会表现成 <tt class="LITERAL">\\N</tt>)。</p>
+<p><tt class="COMMAND">COPY FROM</tt> 能够识别下列特殊反斜杠序列：
+<div class="INFORMALTABLE"><a name="AEN46285"></a>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>序列</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">\b</tt></td><td>反斜杠 (ASCII 8)</td></tr>
+<tr><td><tt class="LITERAL">\f</tt></td><td>进纸 (ASCII 12)</td></tr>
+<tr><td><tt class="LITERAL">\n</tt></td><td>换行符 (ASCII 10)</td></tr>
+<tr><td><tt class="LITERAL">\r</tt></td><td>回车符 (ASCII 13)</td></tr>
+<tr><td><tt class="LITERAL">\t</tt></td><td>水平制表符 (ASCII 9)</td></tr>
+<tr><td><tt class="LITERAL">\v</tt></td><td>垂直制表符 (ASCII 11)</td></tr>
+<tr><td><tt class="LITERAL">\</tt><tt class="REPLACEABLE"><i>digits</i></tt></td><td>反斜杠后面跟着一到三个八进制数，表示 ASCII 值为该数的字符</td></tr>
+<tr><td><tt class="LITERAL">\x</tt><tt class="REPLACEABLE"><i>digits</i></tt></td><td>反斜杠 <tt class="LITERAL">x</tt> 后面跟着一个或两个十六进制位声明指定数值编码的字符</td></tr>
+</tbody>
+</table>
+</div>
+目前，<tt class="COMMAND">COPY TO</tt> 绝不会发出一个八进制或者十六进制反斜杠序列，但是它的确使用了上面列出的其它字符用于控制字符。</p>
+<p>任何上表列出之外的其它反斜杠逃役字符将使用其字面含义。因此要小心添加不必要的反斜杠，因为这样做可能会生成一个含有数据结束标志(<tt class="LITERAL">\.</tt>)的字符串或 NULL(默认为 <tt class="LITERAL">\N</tt>)。这些字符串将在识别任何其它反斜杠逃逸之前被识别。</p>
+<p>强烈建议生成 <tt class="COMMAND">COPY</tt> 数据的应用把换行符和回车分别转换成 <tt class="LITERAL">\n</tt> 和 <tt class="LITERAL">\r</tt> 序列。目前可以用一个反斜杠和一个回车表示一个数据回车，以及用一个反斜杠和一个换行符表示一个数据换行符。不过，这样的表示在将来的版本中可能不会被接受。并且，如果在不同机器之间传递 <tt class="COMMAND">COPY</tt> 文件，也非常容易出错(比如在 Unix 和 Windows 之间)。</p>
+<p><tt class="COMMAND">COPY TO</tt> 将在每行的结尾用一个换行符(Unix 上是<span class="QUOTE">"<tt class="LITERAL">\n</tt>"</span>，Windows 上是<span class="QUOTE">"<tt class="LITERAL">\r\n</tt>"</span>)标记一行终止，但只是用于 <tt class="COMMAND">COPY</tt> 到服务器文件里；为了在不同平台之间一致，<tt class="COMMAND">COPY TO STDOUT</tt> 总是发送 <span class="QUOTE">"<tt class="LITERAL">\n</tt>"</span> 而不管服务器平台是什么。<tt class="COMMAND">COPY FROM</tt> 可以处理那些以回车符、换行符、回车换行符作为行结束的数据。为了减少在数据中出现的未逃逸的新行或者回车导致的错误，如果输入的行结尾不像上面这些符号，<tt class="COMMAND">COPY FROM</tt> 会发出警告。</p>
+</div>
+<div class="REFSECT2"><a name="AEN46348"></a><h3>CSV 格式</h3>
+<p>这个格式用于输入和输出逗号分隔数值(<tt class="LITERAL">CSV</tt>)文件格式，许多其它程序都用这个文件格式，比如电子报表。这个模式下生成并识别逗号分隔的 CSV 逃逸机制，而不是使用 PostgreSQL 标准文本模式的逃逸。</p>
+<p>每条记录的值都是用 <tt class="LITERAL">DELIMITER</tt> 字符分隔的。如果数值本身包含分隔字符、<tt class="LITERAL">QUOTE</tt> 字符、<tt class="LITERAL">NULL</tt> 字符串、回车符、换行符，那么整个数值用 <tt class="LITERAL">QUOTE</tt> 字符前缀和后缀(包围)，并且数值里任何 <tt class="LITERAL">QUOTE</tt> 字符或 <tt class="LITERAL">ESCAPE</tt> 字符都前导逃逸字符。你也可以使用 <tt class="LITERAL">FORCE QUOTE</tt> 在输出非 <tt class="LITERAL">NULL</tt> 的指定字段值时强制引号包围。</p>
+<p><tt class="LITERAL">CSV</tt> 格式没有标准的办法区分一个 <tt class="LITERAL">NULL</tt> 值和一个空字符串。PostgreSQL 的 <tt class="COMMAND">COPY</tt> 通过引号包围来处理这些。一个当作 <tt class="LITERAL">NULL</tt> 输出的 <tt class="LITERAL">NULL</tt> 值是没有引号包围的，而匹配 <tt class="LITERAL">NULL</tt> 字符串的数据值是用引号包围的。因此，使用缺省设置时，一个 <tt class="LITERAL">NULL</tt> 是写做一个无引号包围的空字符串，而一个空字符串写做双引号包围(<tt class="LITERAL">""</tt>)。读取数值也遵循类似的规则。你可以使用 <tt class="LITERAL">FORCE NOT NULL</tt> 来避免为特定字段进行 <tt class="LITERAL">NULL</tt> 比较。</p>
+<p>因为对于 <tt class="LITERAL">CSV</tt> 格式而言，反斜杠不是特殊字符，数据的结束标志(<tt class="LITERAL">\.</tt>)可以作为数据值出现。为了避免任何可能的歧意，一个单独的 <tt class="LITERAL">\.</tt> 数据值在输出中将被自动使用引号包围；在输入中，如果被引号界定，那么将不会当作数据结束标志。如果你要加载其它程序创建的、有未用引号界定字段的文件，并且其中含有 <tt class="LITERAL">\.</tt> 值，你就必须用引号进行界定。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 <tt class="LITERAL">CSV</tt> 模式下，所有字符都是有效的。一个被空白包围的引号界定数值，或者任何非 <tt class="LITERAL">DELIMITER</tt> 字符，都会被包含这些字符。如果你从会给 <tt class="LITERAL">CSV</tt> 行填充空白的系统里导入数据到定长字段，那么可能会导致错误。如果出现这种情况，你可能需要先处理一下 <tt class="LITERAL">CSV</tt> 文件，删除结尾空白，然后再向 PostgreSQL 里导入数据。</p>
+</blockquote>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>CSV 模式可以识别和生成引号包围的回车和换行的 CVS 文件。因此这些文件并不像文本模式的文件那样严格地每条记录一行。</p>
+</blockquote>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>许多程序生成奇怪的并且有时候不正确的 CVS 文件，所以这个文件格式更像一种惯用格式，而不是一种标准。因此你可能碰到一些不能使用这个机制输入的文件，而 <tt class="COMMAND">COPY</tt> 也可能生成一些其它程序不能处理的文件。</p>
+</blockquote>
+</div>
+</div>
+<div class="REFSECT2"><a name="AEN46391"></a><h3>二进制格式</h3>
+<p>在 PostgreSQL 7.4 中 <tt class="COMMAND">COPY BINARY</tt> 的文件格式发生了变化。新格式由一个文件头、零或多条行、文件尾组成。文件头和数据现在是网络字节顺序。</p>
+<div class="REFSECT3"><a name="AEN46396"></a><h4>文件头</h4>
+<p>文件头由 15 个字节的固定域组成，后面跟着一个变长的头扩展区。固定域是：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>签名</dt>
+<dd><p>11 字节的序列 <tt class="LITERAL">PGCOPY\n\377\r\n\0</tt>(请注意字节零是签名必须的一部分)。使用这个签名是为了能够很容易看出文件是否已经被一个非 8 位安全的转换器给破坏了。这个签名会被行尾转换过滤器、删除字节零、删除高位、奇偶变化而改变。</p></dd>
+<dt>标志域</dt>
+<dd><p>32 位整数掩码表示该文件格式的重要方面。位是从 0(LSB)到 31(MSB)编码的，请注意这个域是以网络字节顺序存储的(高位在前)，后继的整数都是如此。位 16-31 是保留用做关键文件格式信息的；如果阅读器发现一个不认识的位出现在这个范围内，那么它应该退出。位 0-15 都保留为标志向后兼容的格式使用；阅读器可以忽略这个范围内的不认识的位。目前只定义了一个标志位，而其它的必须是零：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>Bit 16</dt>
+<dd><p>如果为 1 ，那么在数据中包括了 OID ；如果为 0 ，则没有。</p></dd>
+</dl>
+</div></dd>
+<dt>头扩展范围长度</dt>
+<dd><p>32 位整数，以字节计的头剩余长度，不包括自身。目前，它是零，后面紧跟第一条记录行。对该格式的更多修改都将允许额外的数据出现在头中。阅读器应该忽略任何它不知道该如何处理的头扩展数据。</p></dd>
+</dl>
+</div>
+<p>头扩展数据用来保存自定义数据序列块。这个标志域无意告诉阅读器扩展区的内容是什么。头扩展的具体设计内容留给以后的版本使用。</p>
+<p>这样设计就允许向后兼容的头扩展(增加头扩展块或设置低位序标志位)以及非向后兼容的修改(设置高位标志位以标识这样的修改，并且根据需要向扩展区域增加支持数据)。</p>
+</div>
+<div class="REFSECT3"><a name="AEN46422"></a><h4>行</h4>
+<p>每条行都以一个 16 位整数计数开头，该计数是行中字段的数目(目前，在一个表里的每条行都有相同的计数，但可能不会永远这样)。然后后面不断出现行中的各个字段，字段先是一个 32 位的长度字，后面跟着那么长的字段数据。长度字并不包括自己，并且可以为零。一个特例是：-1 表示一个 NULL 字段值。在 NULL 情况下，后面不会跟着数值字节。</p>
+<p>在数据域之间没有对齐填充或者任何其它额外的数据。</p>
+<p>目前，一个 <tt class="COMMAND">COPY BINARY</tt> 文件里的所有数据值都假设是二进制格式的(格式代码为一)。预计将来的扩展可能增加一个头域，允许为每个字段声明格式代码。</p>
+<p>为了判断实际行数据的正确二进制格式，你应该阅读 PostgreSQL 源代码，特别是该字段数据类型的 <code class="FUNCTION">*send</code> 和 <code class="FUNCTION">*recv</code> 函数(典型的函数可以在源代码的 <tt class="FILENAME">src/backend/utils/adt/</tt> 目录找到)。</p>
+<p>如果在文件中包括了 OID ，那么该 OID 域立即跟在字段计数字后面。它是一个普通的字段，只不过它没有包括在字段计数。但它包括长度字，这样就允许方便的处理 4 字节和 8 字节的 OID ，并且如果某个家伙允许 OID 是可选的话，那么还可以把 OID 显示成空。</p>
+</div>
+<div class="REFSECT3"><a name="AEN46434"></a><h4>文件尾</h4>
+<p>文件尾包括保存着 -1 的一个 16 位整数字。这样就很容易与一条行的域计数字相区分。</p>
+<p>如果一个域计数字既不是 -1 也不是预期的字段的数目，那么阅读器应该报错。这样就提供了对丢失与数据同步的额外检查。</p>
+</div>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN46438"></a><h2>例子</h2>
+<p>下面的例子把一个表拷贝到客户端，使用竖直条(<tt class="LITERAL">|</tt>)作为域分隔符：</p>
+<pre class="PROGRAMLISTING">COPY country TO STDOUT WITH DELIMITER '|';</pre>
+<p>从文件中拷贝数据到 <tt class="LITERAL">country</tt> 表中：</p>
+<pre class="PROGRAMLISTING">COPY country FROM '/usr1/proj/bray/sql/country_data';</pre>
+<p>使用一个会被自动删除的临时表，把'A'开头的国家名拷贝到一个文件里：</p>
+<pre class="PROGRAMLISTING">COPY (SELECT * FROM country WHERE country_name LIKE 'A%') TO '/usr1/proj/bray/sql/a_list_countries.copy';</pre>
+<p>下面是一个可以从 <tt class="LITERAL">STDIN</tt> 中拷贝数据到表中的例子：</p>
+<pre class="PROGRAMLISTING">AF      AFGHANISTAN
+AL      ALBANIA
+DZ      ALGERIA
+ZM      ZAMBIA
+ZW      ZIMBABWE</pre>
+<p>注意，每行里的空白实际上是一个水平制表符。</p>
+<p>下面的是同样的数据，以二进制形式输出。这些数据是用 Unix 工具 <tt class="COMMAND">od -c</tt> 过滤之后输出的。该表有三个字段；第一个是 <tt class="TYPE">char(2)</tt> ，第二个是 <tt class="TYPE">text</tt> ，第三个是 <tt class="TYPE">integer</tt> 。所有的行在第三个域都是一个 null 值。</p>
+<pre class="PROGRAMLISTING">0000000   P   G   C   O   P   Y  \n 377  \r  \n  \0  \0  \0  \0  \0  \0
+0000020  \0  \0  \0  \0 003  \0  \0  \0 002   A   F  \0  \0  \0 013   A
+0000040   F   G   H   A   N   I   S   T   A   N 377 377 377 377  \0 003
+0000060  \0  \0  \0 002   A   L  \0  \0  \0 007   A   L   B   A   N   I
+0000100   A 377 377 377 377  \0 003  \0  \0  \0 002   D   Z  \0  \0  \0
+0000120 007   A   L   G   E   R   I   A 377 377 377 377  \0 003  \0  \0
+0000140  \0 002   Z   M  \0  \0  \0 006   Z   A   M   B   I   A 377 377
+0000160 377 377  \0 003  \0  \0  \0 002   Z   W  \0  \0  \0  \b   Z   I
+0000200   M   B   A   B   W   E 377 377 377 377 377 377</pre>
+</div>
+<div class="REFSECT1"><a name="AEN46457"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">COPY</tt> 语句。</p>
+<p>PostgreSQL 7.3 以前使用下面的语法，现在仍然支持：</p>
+<pre class="SYNOPSIS">COPY [ BINARY ] <tt class="REPLACEABLE"><i>tablename</i></tt> [ WITH OIDS ]
+    FROM { '<tt class="REPLACEABLE"><i>filename</i></tt>' | STDIN }
+    [ [USING] DELIMITERS '<tt class="REPLACEABLE"><i>delimiter</i></tt>' ]
+    [ WITH NULL AS '<tt class="REPLACEABLE"><i>null string</i></tt>' ]
+
+COPY [ BINARY ] <tt class="REPLACEABLE"><i>tablename</i></tt> [ WITH OIDS ]
+    TO { '<tt class="REPLACEABLE"><i>filename</i></tt>' | STDOUT }
+    [ [USING] DELIMITERS '<tt class="REPLACEABLE"><i>delimiter</i></tt>' ]
+    [ WITH NULL AS '<tt class="REPLACEABLE"><i>null string</i></tt>' ]</pre>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-commit-prepared.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createaggregate.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">COMMIT PREPARED</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE AGGREGATE</td></tr>
+</table>
+</div>
+</body></html>

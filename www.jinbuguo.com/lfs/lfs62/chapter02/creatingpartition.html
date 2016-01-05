@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>2.2. 创建一个新分区</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第二章 准备一个新分区</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="chapter02.html" title="准备一个新分区">后退</a>
+          <p>准备一个新分区</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="creatingfilesystem.html" title="在新分区上创建文件系统">前进</a>
+          <p>在新分区上创建文件系统</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter02.html" title="第二章 准备一个新分区">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">2.2. 创建一个新分区</h1>
+      </div>
+      <p>像大多数其他操作系统一样，LFS 通常安装在一个新的专用分区上。如果你有充足的磁盘空间，推荐将 LFS 系统构建在一个新的空白磁盘分区上。当然，LFS 系统(甚至是多个 LFS 系统)也可以安装在现存的某个操作系统所在的分区上，它们完全可以和平共处。这个文档：<a href="http://www.linuxfromscratch.org/hints/downloads/files/lfs_next_to_existing_systems.txt"><i>http://www.linuxfromscratch.org/hints/downloads/files/lfs_next_to_existing_systems.txt</i></a> 解释了怎样实现上面的目标。但是本书只讨论如何在一个新的空白分区上构建LFS系统。</p>
+      <p>建立一个最小的系统需要 1.3GB 左右的分区，这样才能有足够的空间存储并编译所有的源码包。当然，如果您打算把 LFS 作为您的主 Linux 系统，您可能会在上面安装其它软件，那么您就需要更大的空间(2~3GB)。LFS 系统本身并不占用这么多空间，所需的空间大部分用来为软件编译提供足够的临时空间，编译软件包的时候需要使用大量的临时空间，软件包装好之后这些临时空间可以回收。</p>
+      <p>因为编译过程中内存(RAM)并不总是够用的，所以最好使用一个小的硬盘分区作为交换空间。内核使用交换空间来存放不常用到的数据，以便为正在运行的进程腾出内存空间。LFS 系统使用的交换分区与宿主系统使用的交换分区可以是同一个，因此当宿主系统已经有交换分区的时候就不必为 LFS 系统再创建一个了。</p>
+      <p>启动一个磁盘分区程序，例如 <span><strong class="command">cfdisk</strong></span> 或者 <span><strong class="command">fdisk</strong></span> ，用即将在上面创建新分区的硬盘名字作为命令行选项，比如主IDE硬盘名字就是 <tt class="filename">/dev/hda</tt> 。创建一个 Linux 本地分区，需要的话，您还要创建一个交换分区。如果您还不知道如何使用这两个工具的话，请参考 <tt class="filename">cfdisk(8)</tt> 或者 <tt class="filename">fdisk(8)</tt> 手册页。</p>
+      <p>请记住新分区的名称(比如 <tt class="filename">hda5</tt>)，本书称其为"LFS 分区"，交换分区的名称也要记住，这些分区的名称以后将在 <tt class="filename">/etc/fstab</tt> 文件中用到。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="chapter02.html" title="准备一个新分区">后退</a>
+          <p>准备一个新分区</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="creatingfilesystem.html" title="在新分区上创建文件系统">前进</a>
+          <p>在新分区上创建文件系统</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter02.html" title="第二章 准备一个新分区">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

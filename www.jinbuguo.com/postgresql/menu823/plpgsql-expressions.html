@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>表达式</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plpgsql-declarations.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plpgsql.html">快退</a></td><td width="60%" align="center" valign="bottom">章37. PL/pgSQL - SQL 过程语言</td><td width="10%" align="right" valign="top"><a href="plpgsql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plpgsql-statements.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLPGSQL-EXPRESSIONS">37.5. 表达式</a></h1>
+<p>所有在 PL/pgSQL 语句里使用的表达式都是用服务器的普通 SQL 执行器进行处理的。实际上，类似下面的查询</p>
+<pre class="SYNOPSIS">SELECT <tt class="REPLACEABLE"><i>expression</i></tt></pre>
+<p>是使用 SPI 管理器执行的。在计算之前，出现 PL/pgSQL 变量标识符的地方先被参数代替，然后变量的实际值放在参数数组里传递给执行器。这样就允许 <tt class="COMMAND">SELECT</tt> 的执行计划只需要准备一次，并且在随后的计算中复用。</p>
+<p>PostgreSQL 的主分析器做的类型检查对常量数值的代换有一些副作用。详细说来就是下面这两个函数做的事情有些区别：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION logfunc1(logtxt text) RETURNS timestamp AS $$
+    BEGIN
+        INSERT INTO logtable VALUES (logtxt, 'now');
+        RETURN 'now';
+    END;
+$$ LANGUAGE plpgsql;</pre>
+<p>和</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION logfunc2(logtxt text) RETURNS timestamp AS $$
+    DECLARE
+        curtime timestamp;
+    BEGIN
+        curtime := 'now';
+        INSERT INTO logtable VALUES (logtxt, curtime);
+        RETURN curtime;
+    END;
+$$ LANGUAGE plpgsql;</pre>
+<p>在 <code class="FUNCTION">logfunc1</code> 的实例里，PostgreSQL 的主分析器在为 <tt class="COMMAND">INSERT</tt> 准备执行计划的时候知道字符串 <tt class="LITERAL">'now'</tt> 应该解释成 <tt class="TYPE">timestamp</tt> 类型，因为 <code class="CLASSNAME">logtable</code> 的目标字段就是该类型。所以，它会在这个时候从这个字符串中计算一个常量，然后在该服务器的整个生存期中的所有 <code class="FUNCTION">logfunc1</code> 调用中使用这个常量。不消说，这可不是程序员想要的。</p>
+<p>在 <code class="FUNCTION">logfunc2</code> 里，PostgreSQL 的主分析器并不知道 <tt class="LITERAL">'now'</tt> 应该转换成什么类型，因此它返回一个包含字符串 <tt class="LITERAL">now</tt> 的类型为 <tt class="TYPE">text</tt> 的数据值。在随后给局部变量 <tt class="VARNAME">curtime</tt> 赋值时，PL/pgSQL 解释器通过调用 <code class="FUNCTION">text_out</code> 和 <code class="FUNCTION">timestamp_in</code> 把这个字符串转换成 <tt class="TYPE">timestamp</tt> 类型的变量。因此，计算出的时戳就会按照程序员希望的那样在每次执行的时候都更新。</p>
+<p>记录变量的易变性在这种结合上提出了一个问题。当一个记录变量在语句或者表达式中使用时，该字段的数据类型在同一个表达式的不同调用期间不能修改，因为该表达式准备使用的是运行第一次到达该表达式时出现的数据类型。在写处理多个表的事件的触发器过程的时候一定要把这个记住。必要时可以用 <tt class="COMMAND">EXECUTE</tt> 绕开这个问题。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plpgsql-declarations.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plpgsql-statements.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">声明</td><td width="34%" align="center" valign="top"><a href="plpgsql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">基本语句</td></tr>
+</table>
+</div>
+</body></html>

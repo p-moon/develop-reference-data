@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.19. Procps-3.2.6</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="ncurses.html" title="Ncurses-5.5">后退</a>
+          <p>Ncurses-5.5</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="sed.html" title="Sed-4.1.5">前进</a>
+          <p>Sed-4.1.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.19. Procps-3.2.6</h1>
+      </div>
+      <div class="package">
+        <p>Procps 包含有用于监视系统进程的程序。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">2.3 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.19.1. 安装 Procps</h2>
+        </div>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>这个软件包没有附带测试程序。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-procps" name="contents-procps"></a>
+          <h2 class="sect2">6.19.2. Procps 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">free, kill, pgrep,
+              pkill, pmap, ps, skill, slabtop, snice, sysctl, tload, top,
+              uptime, vmstat, w, watch</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">安装的库：</span></strong> <span class="seg">libproc.so</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3681244" name="id3681244"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="free" name="free"></a><span class="term"><span><strong class="command">free</strong></span></span></td>
+                <td><p>报告系统中的空闲和已用内存数量(同时包括物理内存和交换内存)</p></td>
+              </tr>
+              <tr>
+                <td><a id="kill" name="kill"></a><span class="term"><span><strong class="command">kill</strong></span></span></td>
+                <td><p>向进程发送消息</p></td>
+              </tr>
+              <tr>
+                <td><a id="pgrep" name="pgrep"></a><span class="term"><span><strong class="command">pgrep</strong></span></span></td>
+                <td><p>基于进程名及其属性来查找进程</p></td>
+              </tr>
+              <tr>
+                <td><a id="pkill" name="pkill"></a><span class="term"><span><strong class="command">pkill</strong></span></span></td>
+                <td><p>依据进程名及其属性向进程发送消息</p></td>
+              </tr>
+              <tr>
+                <td><a id="pmap" name="pmap"></a><span class="term"><span><strong class="command">pmap</strong></span></span></td>
+                <td><p>报告所告所给定进程的内存映射</p></td>
+              </tr>
+              <tr>
+                <td><a id="ps" name="ps"></a><span class="term"><span><strong class="command">ps</strong></span></span></td>
+                <td><p>显示当前正运行的进程列表</p></td>
+              </tr>
+              <tr>
+                <td><a id="skill" name="skill"></a><span class="term"><span><strong class="command">skill</strong></span></span></td>
+                <td><p>向符合所给标准的进程发送消息</p></td>
+              </tr>
+              <tr>
+                <td><a id="slabtop" name="slabtop"></a><span class="term"><span><strong class="command">slabtop</strong></span></span></td>
+                <td><p>实时显示内核 slap 缓冲的详细信息</p></td>
+              </tr>
+              <tr>
+                <td><a id="snice" name="snice"></a><span class="term"><span><strong class="command">snice</strong></span></span></td>
+                <td><p>改变符合所给标准的进程的调度优先权</p></td>
+              </tr>
+              <tr>
+                <td><a id="sysctl" name="sysctl"></a><span class="term"><span><strong class="command">sysctl</strong></span></span></td>
+                <td><p>在运行期间修改内核参数</p></td>
+              </tr>
+              <tr>
+                <td><a id="tload" name="tload"></a><span class="term"><span><strong class="command">tload</strong></span></span></td>
+                <td><p>打印当前系统平均负荷曲线图</p></td>
+              </tr>
+              <tr>
+                <td><a id="top" name="top"></a><span class="term"><span><strong class="command">top</strong></span></span></td>
+                <td><p>显示使用 CPU 最密集的进程列表，它提供了对实时的处理器行为的实时察看。</p></td>
+              </tr>
+              <tr>
+                <td><a id="uptime" name="uptime"></a><span class="term"><span><strong class="command">uptime</strong></span></span></td>
+                <td><p>报告系统运行了多久，有多少用户登录，以及系统平均负荷。</p></td>
+              </tr>
+              <tr>
+                <td><a id="vmstat" name="vmstat"></a><span class="term"><span><strong class="command">vmstat</strong></span></span></td>
+                <td><p>报告虚拟内存统计，并给出有关处进程、内存、块输入/输出(IO)、陷阱、CPU使用率。</p></td>
+              </tr>
+              <tr>
+                <td><a id="w" name="w"></a><span class="term"><span><strong class="command">w</strong></span></span></td>
+                <td><p>显示哪个用户登录，在哪里以及何时登录的。</p></td>
+              </tr>
+              <tr>
+                <td><a id="watch" name="watch"></a><span class="term"><span><strong class="command">watch</strong></span></span></td>
+                <td><p>重复运行所给的命令，以显示输出的第一次满屏，这将允许用户察看随时间变化的输出。</p></td>
+              </tr>
+              <tr>
+                <td><a id="libproc" name="libproc"></a><span class="term"><tt class="filename">libproc</tt></span></td>
+                <td><p>含有该软件包中大多数程序所需使用的函数</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="ncurses.html" title="Ncurses-5.5">后退</a>
+          <p>Ncurses-5.5</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="sed.html" title="Sed-4.1.5">前进</a>
+          <p>Sed-4.1.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>自协议 2.0 以来的变化的概述</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="protocol-error-fields.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="protocol.html">快退</a></td><td width="60%" align="center" valign="bottom">章44. 前/后端协议</td><td width="10%" align="right" valign="top"><a href="protocol.html">快进</a></td><td width="10%" align="right" valign="top"><a href="source.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PROTOCOL-CHANGES">44.6. 自协议 2.0 以来的变化的概述</a></h1>
+<p>本节提供一个快速的变化检查列表，以便于那些视图将现有的客户端库更新到 3.0 协议的开发人员。</p>
+<p>初始化的启动包用了一个灵活的字符串列表格式取代了固定的格式。请注意，运行时参数的会话缺省值现在可以直接在启动包中声明。实际上，你可以在使用 <tt class="LITERAL">options</tt> 字段之前干这件事情，但是因为 <tt class="LITERAL">options</tt> 的宽度限制以及缺乏引起数值中的空白的方法，这并不是很安全的技巧。</p>
+<p>现在所有的消息在消息类型字节后面都有一个长度计数(除了启动包之外，它没有类型字节)。同时还要注意现在 PasswordMessage 有一个类型字节。</p>
+<p>ErrorResponse 和 NoticeResponse('<tt class="LITERAL">E</tt>'和'<tt class="LITERAL">N</tt>')消息现在包含多个字段，从这些字段里客户端代码可以组合出自己所希望的详细程度的错误信息。请注意独立的字段通常不是用换行符终止的，虽然在老协议里发送的单个字符串总是会用换行符终止。</p>
+<p>The ReadyForQuery('<tt class="LITERAL">Z</tt>')消息包括一个事务状态指示符。</p>
+<p>BinaryRow 和 DataRow 消息类型之间的区别不再存在了；单个 DataRow 消息类型用于返回所有格式的数据。请注意 DataRow 的布局已经改变成比较容易分析。同样，二进制数值的表现形式已经改变了：它不再是直接和服务器的内部表现形式绑定。</p>
+<p>有了一种新的"扩展查询"的子协议，它增加了前端消息类型 Parse, Bind, Execute, Describe, Close, Flush, Sync ，以及后端消息类型 ParseComplete, BindComplete, PortalSuspended, ParameterDescription, NoData, CloseComplete 。现有的客户端不用关心这个子协议，但是利用这个子协议将令可能改进性能或者功能。</p>
+<p><tt class="COMMAND">COPY</tt> 数据现在封装到了 CopyData 和 CopyDone 消息里。现在有种很好的方法从正在进行的 <tt class="COMMAND">COPY</tt> 动作中的错误恢复。最后一行的特殊的 <span class="QUOTE">"<tt class="LITERAL">\.</tt>"</span> 不再必须了，并且在 <tt class="COMMAND">COPY OUT</tt> 的过程中不再发送。在 <tt class="COMMAND">COPY IN</tt> 的时候它仍然被认为是一个终止符，但是它的使用已经废弃了并且最终将被删除。现在支持二进制 <tt class="COMMAND">COPY</tt> 。CopyInResponse 和 CopyOutResponse 消息包括只是字段数目和每个字段格式的信息域。</p>
+<p>FunctionCall 和 FunctionCallResponse 消息的布局变化了。FunctionCall 现在支持给函数传递 NULL 参数。它同样可以处理以文本或者二进制格式传递参数和检索结果。不用在认为 FunctionCall 有潜在的安全性漏洞，因为它并不提供对内部服务器数据表现形式的直接访问。</p>
+<p>后端在启动的时候为它认为客户端库感兴趣的所有参数发送发送 ParameterStatus('<tt class="LITERAL">S</tt>')消息。随后，如果这些参数的任何活跃值发生变化，那么发送一条 ParameterStatus 消息。</p>
+<p>RowDescription 为所描述的行的每个字段('<tt class="LITERAL">T</tt>')消息运载新表的 OID 和字段号数据域。它同样还为每个字段显示了格式代码。/p>
+<p>后端不再生成 CursorResponse('<tt class="LITERAL">P</tt>')消息。</p>
+<p>NotificationResponse('<tt class="LITERAL">A</tt>')消息有一个额外的字符串域，它目前是空的，但是以后可能可以运自阿来自 <tt class="COMMAND">NOTIFY</tt> 时间发送者运载的额外数据。</p>
+<p>EmptyQueryResponse('<tt class="LITERAL">I</tt>')以前包含一个空字符串参数；这个已经删除了。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="protocol-error-fields.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="source.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">错误和通知消息字段</td><td width="34%" align="center" valign="top"><a href="protocol.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PostgreSQL 编码约定</td></tr>
+</table>
+</div>
+</body></html>

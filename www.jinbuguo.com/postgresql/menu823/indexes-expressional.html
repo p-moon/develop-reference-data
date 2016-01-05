@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>表达式上的索引</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="indexes-unique.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="indexes.html">快退</a></td><td width="60%" align="center" valign="bottom">章11. 索引</td><td width="10%" align="right" valign="top"><a href="indexes.html">快进</a></td><td width="10%" align="right" valign="top"><a href="indexes-partial.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INDEXES-EXPRESSIONAL">11.6. 表达式上的索引</a></h1><a name="AEN16172"></a>
+<p>索引并非一定要是一个底层表的字段，还可以是一个函数或者从一个或多个字段计算出来的标量表达式。这个特性对于快速访问那些基于计算结果的表非常有用。</p>
+<p>比如，做大小写无关比较的常用方法是使用 <code class="FUNCTION">lower</code> 函数：</p>
+<pre class="PROGRAMLISTING">SELECT * FROM test1 WHERE lower(col1) = 'value';</pre>
+<p>如果我们在 <tt class="LITERAL">lower(col1)</tt> 操作的结果上定义索引</p>
+<pre class="PROGRAMLISTING">CREATE INDEX test1_lower_col1_idx ON test1 (lower(col1));</pre>
+<p>那么上述查询就可以使用该索引。如果我们把这个索引声明为 <tt class="LITERAL">UNIQUE</tt> ，那么它会禁止创建那种 <tt class="LITERAL">col1</tt> 数值只是大小写有别或完全相同的数据行。因此，在表达式上的索引可以用于强制那些无法定义为简单唯一约束的约束。</p>
+<p>另外一个例子是，如果我们经常使用下面这样的查询：</p>
+<pre class="PROGRAMLISTING">SELECT * FROM people WHERE (first_name || ' ' || last_name) = 'John Smith';</pre>
+<p>那么我们就值得创建下面这样的索引：</p>
+<pre class="PROGRAMLISTING">CREATE INDEX people_names ON people ((first_name || ' ' || last_name));</pre>
+<p><tt class="COMMAND">CREATE INDEX</tt> 命令的语法通常要求在索引表达式周围书写圆括弧，就像我们在第二个例子里显示的那样。如果表达式只是一个函数调用，那么可以省略，就像我们在第一个例子里显示的那样。</p>
+<p>从维护角度来看，索引表达式相对费劲一些，因为在插入数据行或者更新数据行的时候，都必须为每一行计算生成的表达式。不过，索引表达式<span class="emphasis"><i class="EMPHASIS">不是</i></span>在索引查找的时候进行计算的，因为它们已经存储在索引里了。在上面的两个例子里，系统都把查询看做只是 <tt class="LITERAL">WHERE indexedcolumn = 'constant'</tt> ，所以搜索的速度等效于任何其它简单的索引查询。因此，表达式上的索引在检索速度比插入和更新速度更重要的场合下是有用的。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="indexes-unique.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="indexes-partial.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">唯一索引</td><td width="34%" align="center" valign="top"><a href="indexes.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">部分索引</td></tr>
+</table>
+</div>
+</body></html>

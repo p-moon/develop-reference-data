@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE TABLE AS</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createtable.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createtable.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createtablespace.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createtablespace.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATETABLEAS"></a>CREATE TABLE AS</h1>
+<div class="REFNAMEDIV"><a name="AEN49209"></a><h2>名称</h2>CREATE TABLE AS&nbsp;--&nbsp;从一条查询的结果中定义一个新表</div>
+<a name="AEN49212"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN49214"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } ] TABLE <tt class="REPLACEABLE"><i>table_name</i></tt>
+    [ (<tt class="REPLACEABLE"><i>column_name</i></tt> [, ...] ) ]
+    [ WITH ( <tt class="REPLACEABLE"><i>storage_parameter</i></tt> [= <tt class="REPLACEABLE"><i>value</i></tt>] [, ... ] ) | WITH OIDS | WITHOUT OIDS ]
+    [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]
+    [ TABLESPACE <tt class="REPLACEABLE"><i>tablespace</i></tt> ]
+    AS <tt class="REPLACEABLE"><i>query</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN49222"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE TABLE AS</tt> 创建一个表并且用来自 <tt class="COMMAND">SELECT</tt> 命令的结果填充该表。该表的字段和 <tt class="COMMAND">SELECT</tt> 输出字段的名字及类型相关。不过你可以通过明确地给出一个字段名字列表来覆盖 <tt class="COMMAND">SELECT</tt> 输出字段的名字。</p>
+<p><tt class="COMMAND">CREATE TABLE AS</tt> 和创建视图有点像，不过两者之间实在是差异很大：它创建一个新表并且只对查询计算一次来填充这个新表。新表不能跟踪源表的变化。相比之下，每次做查询的时候，视图都重新计算定义它的 <tt class="COMMAND">SELECT</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN49231"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">GLOBAL</tt> 或 <tt class="LITERAL">LOCAL</tt></dt>
+<dd><p>忽略。仅仅为了兼容性而存在。请参考 <a href="sql-createtable.html"><i>CREATE TABLE</i></a> 获取细节。</p></dd>
+</dl>
+</div>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">TEMPORARY</tt> 或 <tt class="LITERAL">TEMP</tt></dt>
+<dd><p>如果声明了这个选项，则该表作为临时表创建。参阅 <a href="sql-createtable.html"><i>CREATE TABLE</i></a> 获取细节。</p></dd>
+<dt><tt class="REPLACEABLE"><i>table_name</i></tt></dt>
+<dd><p>要创建的表名(可以用模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>column_name</i></tt></dt>
+<dd><p>字段的名称。如果没有提供字段名字，那么就从查询的输出字段名中获取。如果表是从一个 <tt class="COMMAND">EXECUTE</tt> 命令创建的，那么就不能声明字段名列表。</p></dd>
+<dt><tt class="LITERAL">WITH ( <tt class="REPLACEABLE"><i>storage_parameter</i></tt> [= <tt class="REPLACEABLE"><i>value</i></tt>] [, ... ] )</tt></dt>
+<dd><p>这个子句为新表指定了可选的存储参数；参见<a href="sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS"><i>存储参数</i></a>获取更多信息。<tt class="LITERAL">WITH</tt> 子句还可以包含 <tt class="LITERAL">OIDS=TRUE</tt> 或 <tt class="LITERAL">OIDS</tt> 来为新表中的行分配和存储 OID(对象表示符)；或者用 <tt class="LITERAL">OIDS=FALSE</tt> 表示不分配 OID 。参见 <a href="sql-createtable.html"><i>CREATE TABLE</i></a> 获取更多信息。</p></dd>
+<dt><tt class="LITERAL">WITH OIDS</tt><br><tt class="LITERAL">WITHOUT OIDS</tt></dt>
+<dd><p>这些是反对使用的、分别等价于 <tt class="LITERAL">WITH (OIDS)</tt> 和 <tt class="LITERAL">WITH (OIDS=FALSE)</tt> 的语法。</p></dd>
+<dt><tt class="LITERAL">ON COMMIT</tt></dt>
+<dd><p>控制临时表在事务块结尾的行为。可用的三个选项如下：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">PRESERVE ROWS</tt></dt>
+<dd><p>不采取任何特别的动作，这是缺省。</p></dd>
+<dt><tt class="LITERAL">DELETE ROWS</tt></dt>
+<dd><p>删除临时表中的所有行。本质上是在每次提交事务后自动执行一个 <a href="sql-truncate.html"><i>TRUNCATE</i></a> 命令。</p></dd>
+<dt><tt class="LITERAL">DROP</tt></dt>
+<dd><p>删除临时表</p></dd>
+</dl>
+</div></dd>
+<dt><tt class="LITERAL">TABLESPACE <tt class="REPLACEABLE"><i>tablespace</i></tt></tt></dt>
+<dd><p>指定新表将要在 <tt class="REPLACEABLE"><i>tablespace</i></tt> 表空间内创建。如果没有声明，将使用 <a href="runtime-config-client.html#GUC-DEFAULT-TABLESPACE">default_tablespace</a> ，如果 <tt class="VARNAME">default_tablespace</tt> 为空，那么将使用数据库的缺省表空间。</p></dd>
+<dt><tt class="REPLACEABLE"><i>query</i></tt></dt>
+<dd><p>一个 <a href="sql-select.html"><i>SELECT</i></a> 或 <a href="sql-values.html"><i>VALUES</i></a> 命令或者一个运行预备好的 <tt class="COMMAND">SELECT</tt> 或 <tt class="COMMAND">VALUES</tt> 查询的 <a href="sql-execute.html"><i>EXECUTE</i></a> 命令。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN49326"></a><h2>注意</h2>
+<p>这条命令在功能上等效于 <a href="sql-selectinto.html"><i>SELECT INTO</i></a> ，但是更建议你用这个命令，因为它不太可能和 <tt class="COMMAND">SELECT INTO</tt> 语法的其它方面混淆。另外，<tt class="COMMAND">CREATE TABLE AS</tt> 提供了 <tt class="COMMAND">SELECT INTO</tt> 功能的超集。</p>
+<p>在 PostgreSQL 8.0 之前，<tt class="COMMAND">CREATE TABLE AS</tt> 总是在它创建的表中包含 OID ，而在 PostgresSQL 8.0 里，<tt class="COMMAND">CREATE TABLE AS</tt> 命令允许明确声明是否应该包含 OID 。如果没有明确声明是否应该包含 OID ，那么使用配置变量 <a href="runtime-config-compatible.html#GUC-DEFAULT-WITH-OIDS">default_with_oids</a> 的设置。到了 PostgreSQL 8.1 这个变量缺省为假，缺省行为和 8.0 之前的版本不同。因此，那些要求 <tt class="COMMAND">CREATE TABLE AS</tt> 创建的表包含 OID 的应用应该明确声明 <tt class="LITERAL">WITH (OIDS)</tt> 以确保正确的行为。</p>
+</div>
+<div class="REFSECT1"><a name="AEN49342"></a><h2>例子</h2>
+<p>创建一个只包含表 <tt class="LITERAL">films</tt> 中最近的记录的新表 <tt class="LITERAL">films_recent</tt> ：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE films_recent AS
+  SELECT * FROM films WHERE date_prod &gt;= '2002-01-01';</pre>
+<p>使用预备语句创建一个只包含表 <tt class="LITERAL">films</tt> 中最近的记录的新临时表 <tt class="LITERAL">films_recent</tt> ，该临时表包含 OID 并且在事务结束时将被删除：</p>
+<pre class="PROGRAMLISTING">PREPARE recentfilms(date) AS
+  SELECT * FROM films WHERE date_prod &gt; $1;
+CREATE TEMP TABLE films_recent WITH (OIDS) ON COMMIT DROP AS
+  EXECUTE recentfilms('2002-01-01');</pre>
+</div>
+<div class="REFSECT1"><a name="AEN49352"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">CREATE TABLE AS</tt> 兼容 SQL 标准，只有下面几个小区别：</p>
+<ul compact="COMPACT">
+<li><p>标准要求在子查询子句周围有圆括弧，在 PostgreSQL 里，这些圆括弧是可选的。</p></li>
+<li><p>标准定义了一个 <tt class="LITERAL">WITH [ NO ] DATA</tt> 子句；这个目前在 PostgreSQL 里还没有实现。PostgreSQL 提供的行为相当于标准的 <tt class="LITERAL">WITH DATA</tt> 情况。<tt class="LITERAL">WITH NO DATA</tt> 在查询后面附加 <tt class="LITERAL">LIMIT 0</tt> 进行模拟。</p></li>
+<li><p>PostgreSQL 处理临时表的方法和标准相差较大；参阅 <a href="sql-createtable.html"><i>CREATE TABLE</i></a> 获取细节。</p></li>
+<li><p><tt class="LITERAL">WITH</tt> 子句是 PostgreSQL 扩展，并且 SQL 标准中也没有存储参数和 OID 。</p></li>
+<li><p>PostgreSQL 表空间的概念也不是标准的一部分。因此 <tt class="LITERAL">TABLESPACE</tt> 子句也是扩展。</p></li>
+</ul>
+</div>
+<div class="REFSECT1"><a name="AEN49381"></a><h2>又见</h2><a href="sql-createtable.html"><i>CREATE TABLE</i></a>, <a href="sql-execute.html"><i>EXECUTE</i></a>, <a href="sql-select.html"><i>SELECT</i></a>, <a href="sql-selectinto.html"><i>SELECT INTO</i></a>, <a href="sql-values.html"><i>VALUES</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createtable.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createtablespace.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE TABLE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE TABLESPACE</td></tr>
+</table>
+</div>
+</body></html>

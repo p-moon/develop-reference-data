@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>BKI 命令</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="bki-format.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="bki.html">快退</a></td><td width="60%" align="center" valign="bottom">章53. BKI 后端接口</td><td width="10%" align="right" valign="top"><a href="bki.html">快进</a></td><td width="10%" align="right" valign="top"><a href="bki-structure.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="BKI-COMMANDS">53.2. BKI 命令</a></h1>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">create</tt> [<span class="OPTIONAL"><tt class="LITERAL">bootstrap</tt></span>] [<span class="OPTIONAL"><tt class="LITERAL">shared_relation</tt></span>] [<span class="OPTIONAL"><tt class="LITERAL">without_oids</tt></span>] <tt class="REPLACEABLE"><i>tablename</i></tt> <tt class="REPLACEABLE"><i>tableoid</i></tt> (<tt class="REPLACEABLE"><i>name1</i></tt> = <tt class="REPLACEABLE"><i>type1</i></tt> [<span class="OPTIONAL">, <tt class="REPLACEABLE"><i>name2</i></tt> = <tt class="REPLACEABLE"><i>type2</i></tt>, ...</span>])</dt>
+<dd><p>创建一个名为 <tt class="REPLACEABLE"><i>tablename</i></tt> 并且 OID 为 <tt class="REPLACEABLE"><i>tableoid</i></tt> 的表，表字段在圆括弧中给出。</p>
+<p><tt class="FILENAME">bootstrap.c</tt> 直接支持下列字段类型：<tt class="TYPE">bool</tt>, <tt class="TYPE">bytea</tt>, <tt class="TYPE">char</tt>(1字节), <tt class="TYPE">name</tt>, <tt class="TYPE">int2</tt>, <tt class="TYPE">int4</tt>, <tt class="TYPE">regproc</tt>, <tt class="TYPE">regclass</tt>, <tt class="TYPE">regtype</tt>, <tt class="TYPE">text</tt>, <tt class="TYPE">oid</tt>, <tt class="TYPE">tid</tt>, <tt class="TYPE">xid</tt>, <tt class="TYPE">cid</tt>, <tt class="TYPE">int2vector</tt>, <tt class="TYPE">oidvector</tt>, <tt class="TYPE">_int4</tt>(数组), <tt class="TYPE">_text</tt>(数组), <tt class="TYPE">_oid</tt>(数组), <tt class="TYPE">_char</tt>(数组), <tt class="TYPE">_aclitem</tt>(数组)。尽管可以创建包含其它类型字段的表，但是只有在创建完 <tt class="STRUCTNAME">pg_type</tt> 并且填充了合适的记录之后才行。这实际上就意味着在系统初始化表中，只能使用这些字段类型，而非系统初始化表可以使用任意内置类型。</p>
+<p>如果声明了 <tt class="LITERAL">bootstrap</tt> ，那么将只在磁盘上创建表；不会向 <tt class="STRUCTNAME">pg_class</tt>, <tt class="STRUCTNAME">pg_attribute</tt> 等系统表里面输入任何东西。因此这样的表将无法被普通的 SQL 操作访问，直到那些记录用硬办法(用 <tt class="LITERAL">insert</tt> 命令)填入。这个选项用于创建 <tt class="STRUCTNAME">pg_class</tt> 等自身。</p>
+<p>如果声明了 <tt class="LITERAL">shared_relation</tt> ，那么表就作为共享表创建。除非声明了 <tt class="LITERAL">without_oids</tt> ，否则将会有 OID 。</p></dd>
+<dt><tt class="LITERAL">open</tt> <tt class="REPLACEABLE"><i>tablename</i></tt></dt>
+<dd><p>打开一个名为 <tt class="REPLACEABLE"><i>tablename</i></tt> 的表，准备插入数据。任何当前已经打开的表都会被关闭。</p></dd>
+<dt><tt class="LITERAL">close</tt> [<span class="OPTIONAL"><tt class="REPLACEABLE"><i>tablename</i></tt></span>]</dt>
+<dd><p>关闭打开的表。给出的表名用于交叉检查，但并不是必须的。</p></dd>
+<dt><tt class="LITERAL">insert</tt> [<span class="OPTIONAL"><tt class="LITERAL">OID =</tt> <tt class="REPLACEABLE"><i>oid_value</i></tt></span>] <tt class="LITERAL">(</tt> <tt class="REPLACEABLE"><i>value1</i></tt> <tt class="REPLACEABLE"><i>value2</i></tt> ... <tt class="LITERAL">)</tt></dt>
+<dd><p>如果 <tt class="REPLACEABLE"><i>oid_value</i></tt> 为零，那么用 <tt class="REPLACEABLE"><i>value1</i></tt>, <tt class="REPLACEABLE"><i>value2</i></tt> 等作为字段值以及 <tt class="REPLACEABLE"><i>oid_value</i></tt> 作为其 OID(对象标识)向打开的表插入一条新记录，否则省略子句，而表则拥有 OID ，并赋予下一个可用的 OID 数值。</p>
+<p>NULL 可以用特殊的关键字 <tt class="LITERAL">_null_</tt> 声明。包含空白的值必须用双引号栝起。</p></dd>
+<dt><tt class="LITERAL">declare</tt> [<span class="OPTIONAL"><tt class="LITERAL">unique</tt></span>] <tt class="LITERAL">index</tt> <tt class="REPLACEABLE"><i>indexname</i></tt> <tt class="REPLACEABLE"><i>indexoid</i></tt> <tt class="LITERAL">on</tt> <tt class="REPLACEABLE"><i>tablename</i></tt> <tt class="LITERAL">using</tt> <tt class="REPLACEABLE"><i>amname</i></tt> <tt class="LITERAL">(</tt> <tt class="REPLACEABLE"><i>opclass1</i></tt> <tt class="REPLACEABLE"><i>name1</i></tt> [<span class="OPTIONAL">, ...</span>] <tt class="LITERAL">)</tt></dt>
+<dd><p>在一个叫 <tt class="REPLACEABLE"><i>tablename</i></tt> 的表上用 <tt class="REPLACEABLE"><i>amname</i></tt> 访问方法创建一个 OID 是 <tt class="REPLACEABLE"><i>indexoid</i></tt> 的叫做 <tt class="REPLACEABLE"><i>indexname</i></tt> 的索引。索引的字段叫 <tt class="REPLACEABLE"><i>name1</i></tt>, <tt class="REPLACEABLE"><i>name2</i></tt> 等，而使用的操作符类分别是 <tt class="REPLACEABLE"><i>opclass1</i></tt>, <tt class="REPLACEABLE"><i>opclass2</i></tt> 等。将会创建索引文件和恰当的系统表记录，但是索引内容不会被此命令初始化。</p></dd>
+<dt><tt class="LITERAL">declare toast</tt> <tt class="REPLACEABLE"><i>toasttableoid</i></tt> <tt class="REPLACEABLE"><i>toastindexoid</i></tt> <tt class="LITERAL">on</tt> <tt class="REPLACEABLE"><i>tablename</i></tt></dt>
+<dd><p>为名为 <tt class="REPLACEABLE"><i>tablename</i></tt> 的表创建一个 TOAST 表。这个 TOAST 的 OID 是 <tt class="REPLACEABLE"><i>toasttableoid</i></tt> ，其索引的 OID 是 <tt class="REPLACEABLE"><i>toastindexoid</i></tt> 。与 <tt class="LITERAL">declare index</tt> 一样，索引的填充会被推迟。</p></dd>
+<dt><tt class="LITERAL">build indices</tt></dt>
+<dd><p>填充前面声明的索引。</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="bki-format.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="bki-structure.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">BKI 文件格式</td><td width="34%" align="center" valign="top"><a href="bki.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">系统初始化的 BKI 文件的结构</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PostgreSQL 用户帐户</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="runtime.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime.html">快退</a></td><td width="60%" align="center" valign="bottom">章16. 操作系统环境</td><td width="10%" align="right" valign="top"><a href="runtime.html">快进</a></td><td width="10%" align="right" valign="top"><a href="creating-cluster.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="POSTGRES-USER">16.1. PostgreSQL 用户帐户</a></h1><a name="AEN18717"></a>
+<p>和大量其它可以从外界访问的服务器守护进程一样，我们也建议用一个独立的用户帐户运行 PostgreSQL 。这个用户帐户应该拥有由这个服务器管理的数据，而且不应该与其它守护进程共享这些数据。比如，用 <tt class="LITERAL">nobody</tt> 用户是个烂主意。我们不建议把可执行文件安装为由此用户所有，因为这样一来被攻破的系统就可以修改它们自己拥有的二进制文件。</p>
+<p>要向系统里增加用户帐户，参考 <tt class="COMMAND">useradd</tt> 或 <tt class="COMMAND">adduser</tt> 命令。我们经常使用 <span class="SYSTEMITEM">postgres</span> 的用户名，并且在本书中都假设这个名字，但你不必这么做。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="runtime.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="creating-cluster.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">操作系统环境</td><td width="34%" align="center" valign="top"><a href="runtime.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">创建数据库集群</td></tr>
+</table>
+</div>
+</body></html>

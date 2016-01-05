@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>局限性</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="gin-tips.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="gin.html">快退</a></td><td width="60%" align="center" valign="bottom">章51. GIN 索引</td><td width="10%" align="right" valign="top"><a href="gin.html">快进</a></td><td width="10%" align="right" valign="top"><a href="gin-examples.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="GIN-LIMIT">51.5. 局限性</a></h1>
+<p>GIN 不支持完整的索引扫描，因为通常每个值对应多个 key ，每个堆指针都会被多次返回，并且没有有效的办法防止这种情况的发生。</p>
+<p>当 <code class="FUNCTION">extractQuery</code> 返回零个 key 的时候，GIN 将会报错。取决于不同的操作符，一个空白查询可能匹配所有或部分甚至不匹配任何索引值(例如每个数组都包含空数组，但是并不重叠)。GIN 既无法检查正确的结果，也无法生成全索引扫描的结果。</p>
+<p><code class="FUNCTION">extractValue</code> 返回零个 key 并不是错误，不过在这种情况下，该索引值将在索引中没有代表性。这也是为什么全索引扫描没什么用处的的另外一个原因：它同样会错过这些行。</p>
+<p>GIN 仅使用相等匹配搜索 key 。这一点在将来或许可以被改进。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="gin-tips.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="gin-examples.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">GIN 提示与技巧</td><td width="34%" align="center" valign="top"><a href="gin.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">例子</td></tr>
+</table>
+</div>
+</body></html>

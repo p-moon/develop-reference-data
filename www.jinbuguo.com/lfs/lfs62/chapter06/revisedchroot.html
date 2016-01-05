@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.60. 最终的清理</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="strippingagain.html" title="再次清理系统">后退</a>
+          <p>再次清理系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../chapter07/chapter07.html" title="配置系统启动脚本">前进</a>
+          <p>配置系统启动脚本</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">6.60. 最终的清理</h1>
+      </div>
+      <p>从现在起，在退出后，每当重新进入 Chroot 环境，请使用下面修改过的 chroot 命令:</p>
+      <pre class="userinput"><kbd class="command">chroot "$LFS" /usr/bin/env -i \
+    HOME=/root TERM="$TERM" PS1='\u:\w\$ ' \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin \
+    /bin/bash --login</kbd></pre>
+      <p>这样做的理由是起初在 <tt class="filename">/tools</tt> 目录下的程序已经不再需要了，这个目录可以删除以重新获得更多硬盘空间。在实际动手删除这个目录之前，请退出虚根环境并且使用上面修改过的命令重新进入虚根环境。还有一点，在删除 <tt class="filename">/tools</tt> 目录前，请将此目录打包压缩并且存储在一个安全的地方，以备以后编译另一个 LFS 系统。</p>
+      <div class="note">
+        <div class="admonhead">
+          <img alt="[Note]" src="../images/note.png" />
+          <h3 class="admontitle">注意</h3>
+        </div>
+        <div class="admonbody">
+          <p>删除 <tt class="filename">/tools</tt> 目录将也会删除临时文件夹中已拷贝的 Tcl, Expect, DejaGNU 等文件,而这些文件是那些正在运行的工具链接测试程序使用的。如果要在以后使用这些程序，它们需要重新编译和重新安装，BLFS 手册介绍了如何重新安装(参见 <a href="http://www.linuxfromscratch.org/blfs/"><i>http://www.linuxfromscratch.org/blfs/</i></a>)。</p>
+        </div>
+      </div>
+      <p>如果虚拟内核文件系统被卸载了，或者是重启系统了。确保虚拟内核文件系统在重新进入 chroot 环境时已经挂载了（参见 <a href="kernfs.html#ch-system-bindmount" title="6.2.2. Mounting and Populating /dev">节 6.2.2,
+        "挂载并填充 /dev 目录"</a> 和 <a href="kernfs.html#ch-system-kernfsmount" title="6.2.3. Mounting Virtual Kernel File Systems">节 6.2.3,
+        "挂载虚拟内核文件系统"</a> ）。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="strippingagain.html" title="再次清理系统">后退</a>
+          <p>再次清理系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../chapter07/chapter07.html" title="配置系统启动脚本">前进</a>
+          <p>配置系统启动脚本</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

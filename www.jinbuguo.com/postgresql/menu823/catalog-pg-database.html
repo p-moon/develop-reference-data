@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_database</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-conversion.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-depend.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-DATABASE">43.15. <tt class="STRUCTNAME">pg_database</tt></a></h1><a name="AEN63288"></a>
+<p><tt class="STRUCTNAME">pg_database</tt> 表存储关于可用数据库的信息。数据库是用 <a href="sql-createdatabase.html"><i>CREATE DATABASE</i></a> 创建的。参考<a href="managing-databases.html">章19</a>获取一些参数的详细含义。</p>
+<p>和大多数系统表不同，<tt class="STRUCTNAME">pg_database</tt> 是在一个集群里的所有数据库共享的：每个集群只有一份 <tt class="STRUCTNAME">pg_database</tt> 拷贝，而不是每个数据库一份。</p>
+<div class="TABLE"><a name="AEN63297"></a>
+<p><b>表43-15. <tt class="STRUCTNAME">pg_database</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">datname</tt></td><td><tt class="TYPE">name</tt></td><td>&nbsp;</td><td>数据库名字</td></tr>
+<tr><td><tt class="STRUCTFIELD">datdba</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-authid.html"><tt class="STRUCTNAME">pg_authid</tt></a>.oid</tt></td><td>数据库所有人，通常为其创建者</td></tr>
+<tr><td><tt class="STRUCTFIELD">encoding</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>数据库的字符编码方式(<code class="FUNCTION">pg_encoding_to_char()</code> 能够将这个数字转换为相应的编码名称)</td></tr>
+<tr><td><tt class="STRUCTFIELD">datistemplate</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>如果为真则此数据库可以用于 <tt class="COMMAND">CREATE DATABASE</tt> 的 <tt class="LITERAL">TEMPLATE</tt> 子句，把新数据库创建为此数据库的克隆。</td></tr>
+<tr><td><tt class="STRUCTFIELD">datallowconn</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>如果为假则没有人可以连接到这个数据库。这个字段用于保护 <tt class="LITERAL">template0</tt> 数据库不被更改。</td></tr>
+<tr><td><tt class="STRUCTFIELD">datconnlimit</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>设置该数据库上允许的最大并发连接数，-1 表示无限制。</td></tr>
+<tr><td><tt class="STRUCTFIELD">datlastsysoid</tt></td><td><tt class="TYPE">oid</tt></td><td>&nbsp;</td><td>数据库里最后一个系统 OID ；对 <span class="APPLICATION">pg_dump</span> 特别有用。</td></tr>
+<tr><td><tt class="STRUCTFIELD">datfrozenxid</tt></td><td><tt class="TYPE">xid</tt></td><td>&nbsp;</td><td>该数据库中中所有在这个之前的事务 ID 已经被一个固定的("frozen")事务 ID 替换。这用于跟踪该数据库是否需要为了防止事务 ID 重叠或者允许收缩 <tt class="LITERAL">pg_clog</tt> 而进行清理。它是针对每个表的 <tt class="STRUCTNAME">pg_class</tt>.<tt class="STRUCTFIELD">relfrozenxid</tt> 中的最小值。</td></tr>
+<tr><td><tt class="STRUCTFIELD">dattablespace</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-tablespace.html"><tt class="STRUCTNAME">pg_tablespace</tt></a>.oid</tt></td><td>该数据库的缺省表空间。在这个数据库里，所有 <tt class="STRUCTNAME">pg_class</tt>.<tt class="STRUCTFIELD">reltablespace</tt> 为零的表都将保存在这个表空间里；特别要指出的是，所有非共享的系统表也都存放在这里。</td></tr>
+<tr><td><tt class="STRUCTFIELD">datconfig</tt></td><td><tt class="TYPE">text[]</tt></td><td>&nbsp;</td><td>运行时配置变量的会话缺省值</td></tr>
+<tr><td><tt class="STRUCTFIELD">datacl</tt></td><td><tt class="TYPE">aclitem[]</tt></td><td>&nbsp;</td><td>访问权限，参阅 <a href="sql-grant.html"><i>GRANT</i></a> 和 <a href="sql-revoke.html"><i>REVOKE</i></a> 获取详细描述。</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-conversion.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-depend.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_conversion</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_depend</tt></td></tr>
+</table>
+</div>
+</body></html>

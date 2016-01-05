@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>文件位置</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="config-setting.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime-config.html">快退</a></td><td width="60%" align="center" valign="bottom">章17. 服务器配置</td><td width="10%" align="right" valign="top"><a href="runtime-config.html">快进</a></td><td width="10%" align="right" valign="top"><a href="runtime-config-connection.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="RUNTIME-CONFIG-FILE-LOCATIONS">17.2. 文件位置</a></h1>
+<p>除了已经提到过的 <tt class="FILENAME">postgresql.conf</tt> 文件之外，PostgreSQL 还使用另外两个手工编辑的配置文件，它们控制客户端认证(在<a href="client-authentication.html">章20</a>里讨论)。缺省时，所有三个配置文件都存放在数据库集群的数据目录里。本节描述的选项允许配置文件放在别的地方。这么做可以简化管理，特别是如果配置文件独立放置，通常可以很容易保证它得到恰当的备份。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-DATA-DIRECTORY"></a><tt class="VARNAME">data_directory</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>声明为数据存储使用的目录。这个选项只能在服务器启动的时候设置。</p></dd>
+<dt><a name="GUC-CONFIG-FILE"></a><tt class="VARNAME">config_file</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>声明主服务器配置文件(通常叫 <tt class="FILENAME">postgresql.conf</tt>)。这个选项只能在 <tt class="COMMAND">postgres</tt> 命令行上设置。</p></dd>
+<dt><a name="GUC-HBA-FILE"></a><tt class="VARNAME">hba_file</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>声明基于主机的认证(HBA)配置文件(通常叫 <tt class="FILENAME">pg_hba.conf</tt>)。这个选项只能在服务器启动的时候设置。</p></dd>
+<dt><a name="GUC-IDENT-FILE"></a><tt class="VARNAME">ident_file</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>声明用于 <span class="APPLICATION">ident</span> 认证的配置文件(通常叫 <tt class="FILENAME">pg_ident.conf</tt>)。这个选项只能在服务器启动的时候设置。</p></dd>
+<dt><a name="GUC-EXTERNAL-PID-FILE"></a><tt class="VARNAME">external_pid_file</tt> (<tt class="TYPE">string</tt>)</dt>
+<dd><p>声明可被服务器管理程序使用的额外 PID 文件。这个选项只能在服务器启动的时候设置。</p></dd>
+</dl>
+</div>
+<p>缺省安装不会明确设置这些参数。而是用命令行参数 <tt class="OPTION">-D</tt> 或者环境变量 <tt class="ENVAR">PGDATA</tt> 声明数据目录，并将上述配置文件都放在数据目录里。</p>
+<p>如果你想把配置文件放在别的地方，那么 <tt class="COMMAND">postgres</tt> 的命令行参数 <tt class="OPTION">-D</tt> 或者环境变量 <tt class="ENVAR">PGDATA</tt> 必须指向包含配置文件的目录，而 <tt class="FILENAME">postgresql.conf</tt> 里(或者命令行上)的 <tt class="VARNAME">data_directory</tt> 选项必须设置为数据目录实际存放的地方。请注意，<tt class="VARNAME">data_directory</tt> 将覆盖 <tt class="OPTION">-D</tt> 和 <tt class="ENVAR">PGDATA</tt> 指定的数据目录，但是不覆盖配置文件的目录。</p>
+<p>如果你愿意，可以使用选项 <tt class="VARNAME">config_file</tt>, <tt class="VARNAME">hba_file</tt>, <tt class="VARNAME">ident_file</tt> 分别声明配置文件的路径。<tt class="VARNAME">config_file</tt> 只能在 <tt class="COMMAND">postgres</tt> 命令行上设置，但是其它的可以在主配置文件里设置。如果明确设置了所有三个选项和 <tt class="VARNAME">data_directory</tt> ，那么就没必要声明 <tt class="OPTION">-D</tt> 或 <tt class="ENVAR">PGDATA</tt> 。</p>
+<p>在设置任何这些选项的时候，相对路径将被解释为相对于 <tt class="COMMAND">postgres</tt> 启动时候的路径。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="config-setting.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="runtime-config-connection.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">设置参数</td><td width="34%" align="center" valign="top"><a href="runtime-config.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">连接和认证</td></tr>
+</table>
+</div>
+</body></html>

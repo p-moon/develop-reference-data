@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>启动数据库服务器</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="creating-cluster.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime.html">快退</a></td><td width="60%" align="center" valign="bottom">章16. 操作系统环境</td><td width="10%" align="right" valign="top"><a href="runtime.html">快进</a></td><td width="10%" align="right" valign="top"><a href="kernel-resources.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="SERVER-START">16.3. 启动数据库服务器</a></h1>
+<p>在任何人可以访问数据库前，你必须启动数据库服务器。数据库服务器程序名叫 <tt class="COMMAND">postgres</tt> ，它必须知道在哪里能找到它要用的数据。这是利用 <tt class="OPTION">-D</tt> 选项实现的。因此，启动服务器最简单的方法是像下面这样：</p>
+<pre class="SCREEN">$ <kbd class="USERINPUT">postgres -D /usr/local/pgsql/data</kbd></pre>
+<p>这样将把服务器放在前台运行。这个步骤同样必须以 PostgreSQL 用户帐户登录来做。没有 <tt class="OPTION">-D</tt> 选项，服务器将使用环境变量 <tt class="ENVAR">PGDATA</tt> 命名的目录；如果这个环境变量也没有，将导致失败。</p>
+<p>通常，最好在后台启动 <tt class="COMMAND">postgres</tt> ，使用下面的 shell 语法：</p>
+<pre class="SCREEN">$ <kbd class="USERINPUT">postgres -D /usr/local/pgsql/data &gt;logfile 2&gt;&amp;1 &amp;</kbd></pre>
+<p>把服务器的 <span class="SYSTEMITEM">stdout</span> 和 <span class="SYSTEMITEM">stderr</span> 放到某个地方是非常重要的，就像在上面建议的这样。这样做既可以帮助审计又可以帮助诊断问题。参阅<a href="logfile-maintenance.html">节22.3</a>获取有关日志文件处理的更完整讨论。</p>
+<p><tt class="COMMAND">postgres</tt> 还接受一些其它的一些命令行选项。更多的信息请参考 <a href="app-postgres.html"><span class="APPLICATION">postgres</span></a> 手册页和下面的<a href="runtime-config.html">章17</a>。</p>
+<p>这些 shell 语法很容易让人觉得无聊。因此我们提供了封装程序 <a href="app-pg-ctl.html"><span class="APPLICATION">pg_ctl</span></a> 以简化一些任务。比如：</p>
+<pre class="PROGRAMLISTING">pg_ctl start -l logfile</pre>
+<p>将在后台启动服务器并且把输出放到指定的日志文件中。<tt class="OPTION">-D</tt> 选项和你直接运行 <tt class="COMMAND">postgres</tt> 时的意思是一样的。<tt class="COMMAND">pg_ctl</tt> 还可以用于关闭服务器。</p>
+<p>通常，你会希望在计算机启动的时候启动数据库服务器。自动启动脚本是与操作系统相关的。PostgreSQL 自己带了几个，放在 <tt class="FILENAME">contrib/start-scripts</tt> 目录里。需要 root 权限安装它们。</p>
+<p>不同的系统在引导时有不同的启动守护进程的方法，所以我们建议你先熟悉它。许多系统有名字称为 <tt class="FILENAME">/etc/rc.local</tt> 或 <tt class="FILENAME">/etc/rc.d/rc.local</tt> 这样的文件，其它的还有 <tt class="FILENAME">rc.d</tt> 目录。不管你怎么做，都要记住服务器必须以 PostgreSQL 用户帐户，<span class="emphasis"><i class="EMPHASIS">而不是 root</i></span> 或者任何其它用户身份运行。因此，你可能总是要用 <tt class="LITERAL">su -c '...' postgres</tt> 这样的命令。比如：</p>
+<pre class="PROGRAMLISTING">su -c 'pg_ctl start -D /usr/local/pgsql/data -l serverlog' postgres</pre>
+<p>下面是一些比较详细的与操作系统相关的建议。请注意把每个例子里的具体数值替换成合适的安装路径和用户名。</p>
+<ul>
+<li><p>对于 FreeBSD ，看看 PostgreSQL 源代码版本里的 <tt class="FILENAME">contrib/start-scripts/freebsd</tt> 文件。</p></li>
+<li><p>在 OpenBSD 上，把下面几行加到 <tt class="FILENAME">/etc/rc.local</tt> 文件里：</p>
+<pre class="PROGRAMLISTING">if [ -x /usr/local/pgsql/bin/pg_ctl -a -x /usr/local/pgsql/bin/postgres ]; then
+    su - -c '/usr/local/pgsql/bin/pg_ctl start -l /var/postgresql/log -s' postgres
+    echo -n ' postgresql'
+fi</pre></li>
+<li><p>在 Linux 系统里，要么往 <tt class="FILENAME">/etc/rc.d/rc.local</tt> 文件里加上下面几行：</p>
+<pre class="PROGRAMLISTING">/usr/local/pgsql/bin/pg_ctl start -l logfile -D /usr/local/pgsql/data</pre>
+<p>要么看看 PostgreSQL 源代码树里的 <tt class="FILENAME">contrib/start-scripts/linux</tt> 文件。</p></li>
+<li><p>在 NetBSD 上，你可以根据爱好选择 FreeBSD 或 Linux 的启动脚本之一。</p></li>
+<li><p>在 Solaris 上，创建一个叫 <tt class="FILENAME">/etc/init.d/postgresql</tt> 的文件，包含下面行：</p>
+<pre class="PROGRAMLISTING">su - postgres -c "/usr/local/pgsql/bin/pg_ctl start -l logfile -D /usr/local/pgsql/data"</pre>
+<p>然后在 <tt class="FILENAME">/etc/rc3.d</tt> 里创建一个指向它的符号链接，名字叫 <tt class="FILENAME">S99postgresql</tt> 。</p></li>
+</ul>
+<p>运行的时候，它的 PID 是保存在数据目录下的 <tt class="FILENAME">postmaster.pid</tt> 文件里的。这样做是为了避免多个服务器在同一个数据目录内运行，此文件同样可以用于关闭服务器。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="SERVER-START-FAILURES">16.3.1. 服务器启动失败</a></h2>
+<p>有几个非常常见的原因会导致服务器启动失败。通过检查服务器日志或者使用手工启动的方法(不做 stdout 和 stderr 的重定向)，就可以看到错误信息。下面我们更详细地解释了其中一些错误信息。</p>
+<pre class="SCREEN">LOG:  could not bind IPv4 socket: Address already in use
+HINT:  Is another postmaster already running on port 5432? If not, wait a few seconds and retry.
+FATAL:  could not create TCP/IP listen socket</pre>
+<p>就像它提示的那样：你试图在已经有一个服务器运行着的端口上再运行了一个服务器。不过，如果内核的错误信息不是 <samp class="COMPUTEROUTPUT">Address already in use</samp> 或者是其它的变种，那就有可能是别的毛病。比如，试图在一个保留的端口上运行服务器会收到下面这样的信息：</p>
+<pre class="SCREEN">$ <kbd class="USERINPUT">postgres -p 666</kbd>
+LOG:  could not bind IPv4 socket: Permission denied
+HINT:  Is another postmaster already running on port 666? If not, wait a few seconds and retry.
+FATAL:  could not create TCP/IP listen socket</pre>
+<p>像这样的信息</p>
+<pre class="SCREEN">FATAL:  could not create shared memory segment: Invalid argument
+DETAIL:  Failed system call was shmget(key=5440001, size=4011376640, 03600).</pre>
+<p>可能意味着内核对共享内存区的限制小于 PostgreSQL 试图分配的缓冲区大小(本例中是 4011376640 字节)。或者可能意味着你根本就没有配置 System-V 风格的共享内存支持。作为一个临时的解决办法，你可以试着以小于正常数量的缓冲区数(<a href="runtime-config-resource.html#GUC-SHARED-BUFFERS">shared_buffers</a>)启动服务器。你最终还是会希望重新配置内核，以增加共享内存的尺寸。如果你试图在同一台机器上启动多个服务器，而且它们所需的总空间超过了内核的限制，也会报这个错。</p>
+<p>像下面这样的错误</p>
+<pre class="SCREEN">FATAL:  could not create semaphores: No space left on device
+DETAIL:  Failed system call was semget(5440126, 17, 03600).</pre>
+<p><span class="emphasis"><i class="EMPHASIS">并不</i></span>意味着着你已经用光磁盘空间了。它的意思是内核的 <span class="SYSTEMITEM">System V</span> 信号灯的限制小于 PostgreSQL 想创建的数量。和上面一样，你可以通过减少允许的连接数(<a href="runtime-config-connection.html#GUC-MAX-CONNECTIONS">max_connections</a>)来绕开，但最终你还是会希望修改内核的限制。</p>
+<p>如果你收到一个"illegal system call"错误，那么很有可能是内核根本不支持共享内存或者信号灯。如果是这样的话，你唯一的选择就是重新配置内核并且把这些特性打开。</p>
+<p>关于配置系统 <span class="SYSTEMITEM">System V</span> IPC 资源的细节见<a href="kernel-resources.html#SYSVIPC">节16.4.1</a>。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="CLIENT-CONNECTION-PROBLEMS">16.3.2. 客户端连接问题</a></h2>
+<p>尽管可能在客户端出现的错误条件范围宽广，而且还和应用相关，但的确有几种错误与服务器的启动方式直接相关。除了下面提到的几种错误以外的问题都应该在相应的客户端应用的文档中。</p>
+<pre class="SCREEN">psql: could not connect to server: Connection refused
+        Is the server running on host "server.joe.com" and accepting
+        TCP/IP connections on port 5432?</pre>
+<p>这是纯粹的"我找不到可以交谈的服务器"错误。当试图进行 TCP/IP 通讯时它看起来像上面的样子。常见的错误是忘记把服务器配置成允许 TCP/IP 连接。</p>
+<p>另外，当试图通过一个 Unix 套接字与本机服务器通讯时，你会看到这个：</p>
+<pre class="SCREEN">psql: could not connect to server: No such file or directory
+        Is the server running locally and accepting
+        connections on Unix domain socket "/tmp/.s.PGSQL.5432"?</pre>
+<p>最后一行可以有效地验证客户端进行连接尝试时是否连对了位置。如果实际上没有服务器在那里运行，典型的内核错误是像上面显示的那样或者是 <samp class="COMPUTEROUTPUT">Connection refused</samp> 或 <samp class="COMPUTEROUTPUT">No such file or directory</samp> 。尤其要注意的是这种环境下 <samp class="COMPUTEROUTPUT">Connection refused</samp> 的信息显示<span class="emphasis"><i class="EMPHASIS">并不</i></span>意味着服务器收到连接然后拒绝了连接。那样的话会产生一个不同的信息(像<a href="client-authentication-problems.html">节20.3</a>里面显示的那样)。其它像 <samp class="COMPUTEROUTPUT">Connection timed out</samp> 这样的信息表示更基本的问题，比如缺少网络连接等。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="creating-cluster.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="kernel-resources.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">创建数据库集群</td><td width="34%" align="center" valign="top"><a href="runtime.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">管理内核资源</td></tr>
+</table>
+</div>
+</body></html>

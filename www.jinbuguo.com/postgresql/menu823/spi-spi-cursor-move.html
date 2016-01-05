@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SPI_cursor_move</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="spi-spi-cursor-fetch.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="spi-spi-cursor-fetch.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="spi-spi-cursor-close.html">快进</a></td><td width="10%" align="right" valign="top"><a href="spi-spi-cursor-close.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SPI-SPI-CURSOR-MOVE"></a>SPI_cursor_move</h1>
+<div class="REFNAMEDIV"><a name="AEN42711"></a><h2>函数名</h2>SPI_cursor_move&nbsp;--&nbsp;移动一个游标</div>
+<a name="AEN42714"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN42716"></a><h2>原型</h2>
+<pre class="SYNOPSIS">void SPI_cursor_move(Portal <tt class="PARAMETER">portal</tt>, bool <tt class="PARAMETER">forward</tt>, long <tt class="PARAMETER">count</tt>)</pre>
+</div>
+<div class="REFSECT1"><a name="AEN42721"></a><h2>描述</h2>
+<p><code class="FUNCTION">SPI_cursor_move</code> 忽略游标中的一些航。这个函数等效于 SQL 命令 <tt class="COMMAND">MOVE</tt></p>
+</div>
+<div class="REFSECT1"><a name="AEN42726"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">Portal <tt class="PARAMETER">portal</tt></tt></dt>
+<dd><p>包含游标的入口</p></dd>
+<dt><tt class="LITERAL">bool <tt class="PARAMETER">forward</tt></tt></dt>
+<dd><p>向前移动时为真，向后移动时为假</p></dd>
+<dt><tt class="LITERAL">long <tt class="PARAMETER">count</tt></tt></dt>
+<dd><p>移动的最大行数</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="spi-spi-cursor-fetch.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="spi-spi-cursor-close.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SPI_cursor_fetch</td><td width="34%" align="center" valign="top"><a href="spi-interface.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SPI_cursor_close</td></tr>
+</table>
+</div>
+</body></html>

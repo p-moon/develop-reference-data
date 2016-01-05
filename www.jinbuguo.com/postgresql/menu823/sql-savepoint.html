@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SAVEPOINT</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-rollback-to.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-rollback-to.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-select.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-select.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-SAVEPOINT"></a>SAVEPOINT</h1>
+<div class="REFNAMEDIV"><a name="AEN53517"></a><h2>名称</h2>SAVEPOINT&nbsp;--&nbsp;在当前事务里定义一个新保存点</div>
+<a name="AEN53520"></a><a name="AEN53522"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN53525"></a><h2>语法</h2>
+<pre class="SYNOPSIS">SAVEPOINT <tt class="REPLACEABLE"><i>savepoint_name</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN53528"></a><h2>描述</h2>
+<p><tt class="COMMAND">SAVEPOINT</tt> 在当前事务里建立一个新的保存点。</p>
+<p>保存点是事务中的一个特殊记号，它允许将那些在它建立后执行的命令全部回滚，把事务的状态恢复到保存点所在的时刻。</p>
+</div>
+<div class="REFSECT1"><a name="AEN53533"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>savepoint_name</i></tt></dt>
+<dd><p>赋予新保存点的名字</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN53541"></a><h2>注意</h2>
+<p>使用 <a href="sql-rollback-to.html"><i>ROLLBACK TO SAVEPOINT</i></a> 回滚到一个保存点。使用 <a href="sql-release-savepoint.html"><i>RELEASE SAVEPOINT</i></a> 删除一个保存点，但是保留该保存点建立后执行的命令的效果。</p>
+<p>保存点只能在一个事务块里面建立。在一个事务里面可以定义多个保存点。</p>
+</div>
+<div class="REFSECT1"><a name="AEN53547"></a><h2>例子</h2>
+<p>建立一个保存点，稍后撤销这个保存点建立后执行的所有命令的结果：</p>
+<pre class="PROGRAMLISTING">BEGIN;
+    INSERT INTO table1 VALUES (1);
+    SAVEPOINT my_savepoint;
+    INSERT INTO table1 VALUES (2);
+    ROLLBACK TO SAVEPOINT my_savepoint;
+    INSERT INTO table1 VALUES (3);
+COMMIT;</pre>
+<p>上面的事务将插入数值 1 和 3 ，而不会插入 2 。</p>
+<p>建立并稍后删除一个保存点：</p>
+<pre class="PROGRAMLISTING">BEGIN;
+    INSERT INTO table1 VALUES (3);
+    SAVEPOINT my_savepoint;
+    INSERT INTO table1 VALUES (4);
+    RELEASE SAVEPOINT my_savepoint;
+COMMIT;</pre>
+<p>上面的事务将插入 3 和 4 。</p>
+</div>
+<div class="REFSECT1"><a name="AEN53553"></a><h2>兼容性</h2>
+<p>SQL 要求在另外一个同名保存点建立的时候自动删除前面那个同名保存点。在 PostgreSQL 里，将保留旧的保存点，但是在回滚或者释放的时候，只使用最近的那个。释放了新的保存点将导致旧的再次成为 <tt class="COMMAND">ROLLBACK TO SAVEPOINT</tt> 和 <tt class="COMMAND">RELEASE SAVEPOINT</tt> 可以访问的保存点。<tt class="COMMAND">SAVEPOINT</tt> 是完全符合 SQL 标准的。</p>
+</div>
+<div class="REFSECT1"><a name="AEN53560"></a><h2>又见</h2><a href="sql-begin.html"><i>BEGIN</i></a>, <a href="sql-commit.html"><i>COMMIT</i></a>, <a href="sql-release-savepoint.html"><i>RELEASE SAVEPOINT</i></a>, <a href="sql-rollback.html"><i>ROLLBACK</i></a>, <a href="sql-rollback-to.html"><i>ROLLBACK TO SAVEPOINT</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-rollback-to.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-select.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ROLLBACK TO SAVEPOINT</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SELECT</td></tr>
+</table>
+</div>
+</body></html>

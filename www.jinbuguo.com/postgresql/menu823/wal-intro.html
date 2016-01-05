@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>预写式日志(WAL)</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="wal-reliability.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="wal.html">快退</a></td><td width="60%" align="center" valign="bottom">章27. 可靠性和预写式日志</td><td width="10%" align="right" valign="top"><a href="wal.html">快进</a></td><td width="10%" align="right" valign="top"><a href="wal-configuration.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="WAL-INTRO">27.2. 预写式日志(WAL)</a></h1><a name="AEN26131"></a><a name="AEN26133"></a>
+<p><i class="FIRSTTERM">预写式日志</i>(WAL)是一种实现事务日志的标准方法。有关它的详细描述可以在大多数(如果不是全部的话)有关事务处理的书中找到。简而言之，WAL 的中心思想是对数据文件的修改(它们是表和索引的载体)必须是只能发生在这些修改已经记录到日志之后，也就是说，在描述这些变化的日志记录刷新到永久存储器之后。如果我们遵循这个过程，那么就不需要在每次事务提交的时候都把数据页刷新到磁盘，因为在出现崩溃的情况下可以用日志来恢复数据库：任何尚未附加到数据页的记录都将先从日志记录中重做(这叫向前滚动恢复，也叫 REDO)。</p>
+<p>使用 WAL 的第一个主要的好处就是显著地减少了磁盘写的次数。因为在日志提交的时候只有日志文件需要刷新到磁盘；而不是事务修改的所有数据文件。在多用户环境里，许多事务的提交可以用日志文件的一次 <code class="FUNCTION">fsync</code> 来完成。而且，因为日志文件是顺序写的，所以同步日志的开销要远比同步数据页的开销小。对于许多小事务修改数据存储的许多不同位置更是如此。</p>
+<p> WAL 还提供了数据库在线备份和恢复的可能，就像<a href="continuous-archiving.html">节23.3</a>里描述的那样。通过归档的 WAL 文件，可以将数据库恢复到 WAL 文件包含的任意时刻：只需要简单地安装以前的数据库物理备份，然后重放 WAL 到希望的时间点。另外，物理备份还不必是数据库状态的一个即时快照(如果其制作花了较长时间的话)，因为 WAL 日志的重放将修复任何内部的不一致。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="wal-reliability.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="wal-configuration.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">可靠性</td><td width="34%" align="center" valign="top"><a href="wal.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">WAL 配置</td></tr>
+</table>
+</div>
+</body></html>

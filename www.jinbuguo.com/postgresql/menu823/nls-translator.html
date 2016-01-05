@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>寄语翻译家</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="nls.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="nls.html">快退</a></td><td width="60%" align="center" valign="bottom">章46. 本地语言支持</td><td width="10%" align="right" valign="top"><a href="nls.html">快进</a></td><td width="10%" align="right" valign="top"><a href="nls-programmer.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="NLS-TRANSLATOR">46.1. 寄语翻译家</a></h1>
+<p>PostgreSQL 程序(服务器和客户端)可以用你喜爱的语言发出信息，只要那些信息被翻译过。创建和维护翻译过的信息集需要那些熟悉自己的语言并且希望为 PostgreSQL 做一些事情的人。实际上要干这件事你完全不必是个程序员。本章讲的就是如何帮助 PostgreSQL 做这件事。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN68410">46.1.1. 要求</a></h2>
+<p>本章是有关软件工具的，不会评判你的语言能力。理论上，你只需要一个文本编辑器。但这种情况只存在于你不想看看自己翻译的信息的情况下，这种情况很难发生吧。在你配置你的源程序的时候，记住要使用 <tt class="OPTION">--enable-nls</tt> 选项。这样也会检查 <span class="APPLICATION">libintl</span> 库和 <tt class="FILENAME">msgfmt</tt> 程序，它们是所有最终用户都需要的东西。要试验你的工作，遵照安装指导中相应的部分就可以了。</p>
+<p>如果你想开始一个新的翻译工作或者想做信息表融合工作(下面描述)，那么你就还分别需要有 GNU 兼容的 <tt class="FILENAME">xgettext</tt> 和 <tt class="FILENAME">msgmerge</tt> 。稍后将试着安排它，这样，如果你使用的是一个打包的源码发布，那么你就不再需要 <tt class="FILENAME">xgettext</tt>(从 CVS 里下源码还是需要的)。现在推荐 <span class="APPLICATION">GNU Gettext 0.10.36</span> 或者更高版本。</p>
+<p>你的本地 gettext 实现应该和它自身的文档在一起发布。其中有一些可能和下面的内容重复，但如果要知道额外的细节，你应该看看它们。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN68422">46.1.2. 概念</a></h2>
+<p>信息原文(英语)和它们的(可能)翻译过的等价物都放在<i class="FIRSTTERM">信息表</i>里，每个程序一个(不过相关的程序可以共享一个信息表)以及每种目标语言一个。信息表有两种文件格式：第一种是"PO"(可移植对象)文件，它是纯文本文件，带一些翻译者编辑的特殊语法。第二种是"MO"(机器对象)文件，它是从相应的 PO 文件生成的二进制文件，在国际化了的程序运行的时候使用。翻译者并不处理 MO 文件；实际上几乎没人处理它。</p>
+<p>信息表的文件扩展名分别是 <tt class="FILENAME">.po</tt> 或 <tt class="FILENAME">.mo</tt> 就一点也不奇怪了。主文件名要么是它对应的程序名，要么是该文件适用的语言，视情况而定。这种做法有点让人混淆。例子是 <tt class="FILENAME">psql.po</tt>(psql 的 PO 文件)或者 <tt class="FILENAME">fr.mo</tt> (法语的 MO 文件)。</p>
+<p>PO 文件的文件格式如下所示：</p>
+<pre class="PROGRAMLISTING"># comment
+
+msgid "original string"
+msgstr "translated string"
+
+msgid "more original"
+msgstr "another translated"
+"string can be broken up like this"
+
+...</pre>
+<p>msgid 是从程序源代码中抽取的(其实不必是从源码，但这是最常用的方法)。msgstr 行初始为空，由翻译者填充有用的字符串。该字符串可以包含 C 风格的逃逸字符并且可以像演示的那样跨行继续。下一行必须从该行的开头开始。</p>
+<p># 字符引入一个注释。如果 # 后面紧跟着空白，那么这是翻译者维护的注释。文件里也可能有自动注释，它们是在 # 后面紧跟着非空白字符。这些是由各种在 PO 文件上操作的工具生成的，主要目的是帮助翻译者。</p>
+<pre class="PROGRAMLISTING">#. automatic comment
+#: filename.c:1023
+#, flags, flags</pre>
+<p>#. 风格的注释是从使用信息的源文件中抽取的。程序员可能已经插入了一些信息给翻译者，比如那些预期的格式等。#: 注释表示该信息在源程序中使用的准确位置。翻译者不需要查看程序源文件，不过如果他觉得翻译得不对劲，那么他也可以查看。#, 注释包含从某种程度上描述信息的标志。目前有两个标志：如果该信息因为程序源文件的修改变得过时了，那么设置 <tt class="LITERAL">fuzzy</tt>(模糊)。翻译者然后就可以核实这些，然后删除这个模糊标志。请注意模式信息是最终用户不可见的。另外一个标志 <tt class="LITERAL">c-format</tt> 表示该信息是一个 <code class="FUNCTION">printf</code> 风格的格式模版。这就意味着翻译也应该是一个格式化字符串，带有相同数目和相同类型的占位符。有用于核实这些的工具，它们生成 c 风格标志的键。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN68440">46.1.3. 创建和维护信息表</a></h2>
+<p>好，那怎么创建一个"空白"的信息表呢?首先，进入包含你想翻译信息的程序所在的目录。如果那里有一个文件叫 <tt class="FILENAME">nls.mk</tt> ，那么这个程序就已经准备好翻译了。</p>
+<p>如果目录里已经有一些 <tt class="FILENAME">.po</tt> 文件了，那么就是有人已经做了一些翻译工作了。这些文件是用 <tt class="FILENAME"><tt class="REPLACEABLE"><i>language</i></tt>.po</tt> 命名的，这里的 <tt class="REPLACEABLE"><i>language</i></tt> 是 <a href="http://lcweb.loc.gov/standards/iso639-2/englangn.html" target="_top">ISO 639-1</a> 规定的两字母语言代码(小写)，比如 <tt class="FILENAME">fr.po</tt> 指的是法语。如果每种语言需要多过一种的翻译，那么这些文件也可以叫做 <tt class="FILENAME"><tt class="REPLACEABLE"><i>language</i></tt>_<tt class="REPLACEABLE"><i>region</i></tt>.po</tt> 这里的 <tt class="REPLACEABLE"><i>region</i></tt> 是 <a href="http://www.din.de/gremien/nas/nabd/iso3166ma/codlstp1/en_listp1.html" target="_top">ISO 3166-1</a> 规定的两字母国家代码(大写)，比如 <tt class="FILENAME">pt_BR.po</tt> 指的是巴西葡萄牙语。如果你找到了你想要的语言文件，那么你就可以在那个文件上干活。</p>
+<p>如果你需要开始一个新的翻译工作，那么首先运行下面的命令</p>
+<pre class="PROGRAMLISTING">gmake init-po</pre>
+<p>这样将创建一个文件 <tt class="FILENAME"><tt class="REPLACEABLE"><i>progname</i></tt>.pot</tt> 。用 <tt class="FILENAME">.pot</tt> 和"生产中"使用的 PO 文件区分开。<tt class="LITERAL">T</tt> 代表"template"。把这个文件拷贝成 <tt class="FILENAME"><tt class="REPLACEABLE"><i>language</i></tt>.po</tt> 然后编辑它。要让程序知道有新语言可以用，还要编辑文件 <tt class="FILENAME">nls.mk</tt> 以增加该语言(或者语言和国家)代码到类似下面这样的行：</p>
+<pre class="PROGRAMLISTING">AVAIL_LANGUAGES := de fr</pre>
+<p>当然可能还有其它国家。</p>
+<p>随着下层的程序或者库的改变，程序员可能修改或者增加信息。这个时候，你不必从头再来。只需要运行下面的命令</p>
+<pre class="PROGRAMLISTING">gmake update-po</pre>
+<p>它将创建一个新的空信息表文件(你开始时用的 pot 文件)并且会把它和现有的 PO 文件融合起来。如果融合算法不能确定某条具体的信息是否融合正确，那么它就会像上面解释那样把它定义为"fuzzy(模糊)"。如果有些事情真是出错了，那么旧的 PO 文件就会保存为带 <tt class="FILENAME">.po.old</tt> 扩展的文件。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN68474">46.1.4. 编辑 PO 文件</a></h2>
+<p>PO 文件可以用普通的文本编辑器编辑。翻译者应该只修改那些在 msgstr 指示符后面的双引号中间的内容，也可以增加评注和修改模糊(fuzzy)标志。Emacs 有一个用于 PO 的模式，我觉得相当好用。</p>
+<p>不需要把 PO 文件完全填满。如果有些字符串没有翻译(或者是一个空白的翻译)，那么软件会自动使用原始的字符串。也就是说提交一个未完成的翻译包括再源码树中并不是一个问题；那样可以留下让其他人继续你的工作的空间。不过，鼓励你在完成一次融合之后首先消除模糊的条目。要知道模糊的条目是不会被安装的；它们只起到表示可能是正确翻译的引用的作用。</p>
+<p>下面是一些编辑翻译信息的时候要记住的事情：</p>
+<ul>
+<li><p>确保如果原始信息是以换行结尾的话，翻译信息也如此。类似的情况适用于 tab 等。</p></li>
+<li><p>如果最初的字符串是 <code class="FUNCTION">printf</code> 格式的字符串，那么翻译串也必须如此。翻译串还要有同样的格式声明词，并且顺序相同。有时候语言的自然规则会让这么做几乎不可能或者及其难看。这时候你可以用下面的格式：</p>
+<pre class="PROGRAMLISTING">msgstr "Die Datei %2$s hat %1$u Zeichen."</pre>
+<p>这样，第一个占位符实际上使用列表里的第二个参数。<tt class="LITERAL"><tt class="REPLACEABLE"><i>digits</i></tt>$</tt> 应该跟在 % 后面并且在其它格式操作符之前。这个特性实际上存在于 <code class="FUNCTION">printf</code> 函数族中。你可能从来没有听说过它，因为除了信息国际化以外它没有什么用处。</p></li>
+<li><p>如果原始的字符串包含语言错误，那么请报告它(或者在程序源文件中直接修补它)，然后按照正常翻译。正确的字符串可能跟在程序源文件更新的时候融合进来。如果最初的字符串与事实不符，那么请报告它(或者自己修补它)但是不要翻译它。相反，你可以在 PO 文件中用注解给该字符串做个标记。</p></li>
+<li><p>维护风格和原始字符串的语气。特别是那些不成句子的信息(<tt class="LITERAL">cannot open file %s</tt>)可能不应该以大写字符开头(如果你的语言区分大小写的话)或者用句号结束(如果你的语言里有符号标志)。阅读<a href="error-style-guide.html">节45.3</a>可能会有所帮助。</p></li>
+<li><p>如果你不知道一条消息是什么意思，或者它很含糊，那么在开发者邮递列表上询问。因为可能说英语的最终用户也可能不明白它或者觉得它不好理解，所以最好改善这些信息。</p></li>
+</ul>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="nls.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="nls-programmer.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">本地语言支持</td><td width="34%" align="center" valign="top"><a href="nls.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">寄语程序员</td></tr>
+</table>
+</div>
+</body></html>

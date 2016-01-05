@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PL/Perl 函数和参数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plperl.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plperl.html">快退</a></td><td width="60%" align="center" valign="bottom">章39. PL/Perl - Perl 过程语言</td><td width="10%" align="right" valign="top"><a href="plperl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plperl-database.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLPERL-FUNCS">39.1. PL/Perl 函数和参数</a></h1>
+<p>要用 PL/Perl 语言创建一个函数，可以使用标准的 <a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a> 语法：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION <tt class="REPLACEABLE"><i>funcname</i></tt> (<tt class="REPLACEABLE"><i>argument-types</i></tt>) RETURNS <tt class="REPLACEABLE"><i>return-type</i></tt> AS $$
+    # PL/Perl function body
+$$ LANGUAGE plperl;</pre>
+<p>函数体是普通 Perl 代码。实际上，PL/Perl 胶水代码将其封装在一个 Perl 子过程里。一个 PL/Perl 函数必须总是返回标量数值。你可以像下面描述的那样用返回引用的方法返回更复杂的结构，但绝对不要返回一个列表。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 Perl 里使用命名的嵌套子过程是很危险的，特别是它们在闭包里引用了词法变量的时候。因为 PL/Perl 是封装在一个子过程里，因此，任何你创建的命名子过程都将被嵌套。通常，创建一个用 coderef 调用的匿名子过程要安全得多。参阅 <tt class="LITERAL">perldiag</tt> 手册页获取更多细节。</p>
+</blockquote>
+</div>
+<p><tt class="COMMAND">CREATE FUNCTION</tt> 命令的语法要求把函数体写成字符串常量。通常处理字符串文本用美元符界定更方便(参阅<a href="sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING">节4.1.2.2</a>)，如果你想使用传统的 <tt class="LITERAL">E''</tt> 逃逸语法，必须双写函数体里使用的单引号(<tt class="LITERAL">'</tt>)和反斜杠(<tt class="LITERAL">\</tt>)(参见<a href="sql-syntax-lexical.html#SQL-SYNTAX-STRINGS">节4.1.2.1</a>)。</p>
+<p>参数和结果都是和任何其它 Perl 子过程里那样处理的：参数是放在 <tt class="VARNAME">@_</tt> 里传递的，结果值是用 <tt class="LITERAL">return</tt> 返回或者作为函数中最后计算的表达式的值返回。</p>
+<p>比如，一个返回两个整数中较大值的函数可以这么写：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION perl_max (integer, integer) RETURNS integer AS $$
+    if ($_[0] &gt; $_[1]) { return $_[0]; }
+    return $_[1];
+$$ LANGUAGE plperl;</pre>
+<p>如果给函数传递一个 NULL 那么其参数值将以 Perl 中"undefined"的形式出现。上面的函数定义在输入为 NULL 时的行为不是很正常(实际上，它将表现得好像它们都是零一样)。可以给函数定义增加 <tt class="LITERAL">STRICT</tt> 让 PostgreSQL 做一些更合理的事情：如果传递进来一个 NULL ，那么该函数则根本不会被调用，而只是自动返回一个 NULL 结果。另外，可以在函数体里检查未定义的输入。比如，假设想收到一个 NULL 和一个非 NULL 参数的 <code class="FUNCTION">perl_max</code> 返回非 NULL 的参数，而不是 NULL ：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION perl_max (integer, integer) RETURNS integer AS $$
+    my ($x,$y) = @_;
+    if (! defined $x) {
+        if (! defined $y) { return undef; }
+        return $y;
+    }
+    if (! defined $y) { return $x; }
+    if ($x &gt; $y) { return $x; }
+    return $y;
+$$ LANGUAGE plperl;</pre>
+<p>如上所述，要从 PL/Perl 函数中返回一个 NULL ，可以返回一个未定义的数值。不管该函数是否严格，都可以这么做。</p>
+<p>Perl 可以用 Perl 数组引用的方式返回 PostgreSQL 数组。下面是一个例子：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE function returns_array()
+RETURNS text[][] AS $$
+    return [['a"b','c,d'],['e\\f','g']];
+$$ LANGUAGE plperl;
+
+select returns_array();</pre>
+<p>复合类型的参数是当做指向散列的引用传递给函数的。散列的键字是复合类型的属性名。下面是一个例子：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE employee (
+    name text,
+    basesalary integer,
+    bonus integer
+);
+
+CREATE FUNCTION empcomp(employee) RETURNS integer AS $$
+    my ($emp) = @_;
+    return $emp-&gt;{basesalary} + $emp-&gt;{bonus};
+$$ LANGUAGE plperl;
+
+SELECT name, empcomp(employee.*) FROM employee;</pre>
+<p>使用同样的办法，一个 PL/Perl 函数可以返回一个复合类型的结果：返回一个包含所需要的属性的散列的引用。比如，</p>
+<pre class="PROGRAMLISTING">CREATE TYPE testrowperl AS (f1 integer, f2 text, f3 text);
+
+CREATE OR REPLACE FUNCTION perl_row() RETURNS testrowperl AS $$
+    return {f2 =&gt; 'hello', f1 =&gt; 1, f3 =&gt; 'world'};
+$$ LANGUAGE plperl;
+
+SELECT * FROM perl_row();</pre>
+<p>在声明的结果数据类型里的任何字段如果在散列里面没有出现，那么都会当作 NULL 返回。</p>
+<p>PL/Perl 函数也能返回标量或者复合类型的集合。通常你希望一次返回一行，一方面加速函数启动时间，另外一方面防止在内存里堆积整个结果集。可以用下面说明的函数 <code class="FUNCTION">return_next</code> 。请注意在最后的 <code class="FUNCTION">return_next</code> ，你必须放一个 <tt class="LITERAL">return</tt> 或者(最好是) <tt class="LITERAL">return undef</tt> 。</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION perl_set_int(int)
+RETURNS SETOF INTEGER AS $$
+    foreach (0..$_[0]) {
+        return_next($_);
+    }
+    return undef;
+$$ LANGUAGE plperl;
+
+SELECT * FROM perl_set_int(5);
+
+CREATE OR REPLACE FUNCTION perl_set()
+RETURNS SETOF testrowperl AS $$
+    return_next({ f1 =&gt; 1, f2 =&gt; 'Hello', f3 =&gt; 'World' });
+    return_next({ f1 =&gt; 2, f2 =&gt; 'Hello', f3 =&gt; 'PostgreSQL' });
+    return_next({ f1 =&gt; 3, f2 =&gt; 'Hello', f3 =&gt; 'PL/Perl' });
+    return undef;
+$$ LANGUAGE plperl;</pre>
+<p>对于小的结果集，你可以返回一个指向一个数组的引用，这个数组可以包含标量，指向数组的引用，或者指向简单类型，数组类型以及复合类型等的散列的引用。这里是一个简单的例子，它把整个结果集当作一个数组引用返回：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION perl_set_int(int) RETURNS SETOF INTEGER AS $$
+    return [0..$_[0]];
+$$ LANGUAGE plperl;
+
+SELECT * FROM perl_set_int(5);
+
+CREATE OR REPLACE FUNCTION perl_set() RETURNS SETOF testrowperl AS $$
+    return [
+        { f1 =&gt; 1, f2 =&gt; 'Hello', f3 =&gt; 'World' },
+        { f1 =&gt; 2, f2 =&gt; 'Hello', f3 =&gt; 'PostgreSQL' },
+        { f1 =&gt; 3, f2 =&gt; 'Hello', f3 =&gt; 'PL/Perl' }
+    ];
+$$ LANGUAGE plperl;
+
+SELECT * FROM perl_set();</pre>
+<p>如果你想在自己的代码里使用 <tt class="LITERAL">strict</tt> 用法，最简单的方法是 <tt class="COMMAND">SET</tt> <tt class="LITERAL">plperl.use_strict</tt> 为真。这个参数影响随后的 PL/Perl 函数的编译，但是不影响在当前会话里已经编译了的函数。要想在 PL/Perl 加载之前设置这个参数，必须把<span class="QUOTE">"<tt class="LITERAL">plperl</tt>"</span>添加到 <tt class="FILENAME">postgresql.conf</tt> 的 <a href="runtime-config-custom.html#GUC-CUSTOM-VARIABLE-CLASSES">custom_variable_classes</a> 列表里。</p>
+<p>另外一个使用 <tt class="LITERAL">strict</tt> 用法的方法是把</p>
+<pre class="PROGRAMLISTING">use strict;</pre>
+<p>放在函数体里。但是这个只能在 PL/PerlU 函数里有用，因为 <tt class="LITERAL">use</tt> 不是可信任的操作。在 PL/Perl 里你可以这么用</p>
+<pre class="PROGRAMLISTING">BEGIN { strict-&#62;import(); }</pre>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plperl.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plperl-database.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PL/Perl - Perl 过程语言</td><td width="34%" align="center" valign="top"><a href="plperl.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">从 PL/Perl 访问数据库</td></tr>
+</table>
+</div>
+</body></html>

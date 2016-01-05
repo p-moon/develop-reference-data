@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.4. 进入 Chroot 环境</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="pkgmgt.html" title="包管理">后退</a>
+          <p>包管理</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="creatingdirs.html" title="创建系统目录结构">前进</a>
+          <p>创建系统目录结构</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">6.4. 进入 Chroot 环境</h1>
+      </div>
+      <p>现在将要进入 chroot 环境开始编译安装最终的 LFS 系统了，注意：在这里我们只使用临时构建的工具。以 root 身份运行以下命令进入构建环境：</p>
+      <pre class="userinput"><kbd class="command">chroot "$LFS" /tools/bin/env -i \
+    HOME=/root TERM="$TERM" PS1='\u:\w\$ ' \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
+    /tools/bin/bash --login +h</kbd></pre>
+      <p>env 命令的参数 -i 的作用是清除所有 chroot 环境变量。后面是重新设定 HOME, TERM, PS1, PATH
+       等变量的值。TERM=$TERM 设定虚拟根环境中的 TERM 的值与 chroot 外面的一样。这个值是让像 vim 和
+        less 之类的程序可以正确操作。如果还需要重新设置其它的值，如 CFLAGS 或 CXXFLAGS ，这里是个不错的位置。</p>
+      <p>从这里开始，不再需要 LFS 环境变量了，因为所有的工作都被限制在 LFS 文件系统里面。这是由于已经告诉了 Bash shell $LFS 是现在的根目录(/)。</p>
+      <p>注意，这里 /tools/bin 位于 PATH 的最后面。也就是说当软件包的最终版本安装之后就不再使用临时工具了。为了使 shell 无法"记住"可执行二进制代码的位置，需要通过使用 +h 参数关闭 bash 的散列功能。</p>
+      <p>注意此时 bash 提示符会显示：I have no name! 这是正常的，因为 /etc/passwd 还没有创建。</p>
+      <div class="note">
+        <div class="admonhead">
+          <img alt="[Note]" src="../images/note.png" />
+          <h3 class="admontitle">注意</h3>
+        </div>
+        <div class="admonbody">
+          <p>这一章剩下的命令以及后面几章的命令都是在chroot环境下进行的。如果你离开了这个环境（比如重启），
+          要确保内核虚拟文件系统挂载，像在 <a href="kernfs.html#ch-system-bindmount" title="6.2.2. 挂载并填充 /dev 目录">节 6.2.2,
+            "挂载并填充 /dev 目录"</a> 和 <a href="kernfs.html#ch-system-kernfsmount" title="6.2.3. Mounting Virtual Kernel File Systems">节 6.2.3,
+            "挂载虚拟内核文件系统"</a> 描述的。在继续安装之前，再次进入chroot环境。</p>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="pkgmgt.html" title="包管理">后退</a>
+          <p>包管理</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="creatingdirs.html" title="创建系统目录结构">前进</a>
+          <p>创建系统目录结构</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

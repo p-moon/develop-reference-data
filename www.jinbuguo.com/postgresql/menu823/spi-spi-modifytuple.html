@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SPI_modifytuple</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="spi-spi-returntuple.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="spi-spi-returntuple.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="spi-spi-freetuple.html">快进</a></td><td width="10%" align="right" valign="top"><a href="spi-spi-freetuple.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SPI-SPI-MODIFYTUPLE"></a>SPI_modifytuple</h1>
+<div class="REFNAMEDIV"><a name="AEN43350"></a><h2>函数名</h2>SPI_modifytuple&nbsp;--&nbsp;通过替换一个给出行的选定的字段创建一行</div>
+<a name="AEN43353"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN43355"></a><h2>原型</h2>
+<pre class="SYNOPSIS">HeapTuple SPI_modifytuple(Relation <tt class="PARAMETER">rel</tt>, HeapTuple <tt class="PARAMETER">row</tt>, <tt class="PARAMETER">ncols</tt>, <tt class="PARAMETER">colnum</tt>, Datum * <tt class="PARAMETER">values</tt>, const char * <tt class="PARAMETER">nulls</tt>)</pre>
+</div>
+<div class="REFSECT1"><a name="AEN43363"></a><h2>描述</h2>
+<p><code class="FUNCTION">SPI_modifytuple</code> 通过给选定的字段替换新值，拷贝其它字段的原值的方法创建一个新行。不修改输入的行。</p>
+</div>
+<div class="REFSECT1"><a name="AEN43367"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">Relation <tt class="PARAMETER">rel</tt></tt></dt>
+<dd><p>只用于该行的行描述符的源(传递一个关系而不是一个行描述符是一个误特性)。</p></dd>
+<dt><tt class="LITERAL">HeapTuple <tt class="PARAMETER">row</tt></tt></dt>
+<dd><p>要修改的行</p></dd>
+<dt><tt class="LITERAL">int <tt class="PARAMETER">ncols</tt></tt></dt>
+<dd><p>在数组 <tt class="PARAMETER">colnum</tt> 里字段编号的个数</p></dd>
+<dt><tt class="LITERAL">int * <tt class="PARAMETER">colnum</tt></tt></dt>
+<dd><p>要修改的字段的编号的数组(编号从 1 开始记)</p></dd>
+<dt><tt class="LITERAL">Datum * <tt class="PARAMETER">values</tt></tt></dt>
+<dd><p>声明字段的新值</p></dd>
+<dt><tt class="LITERAL">const char * <tt class="PARAMETER">Nulls</tt></tt></dt>
+<dd><p>如果有的话，哪个新值是空(参阅 <code class="FUNCTION">SPI_execute_plan</code> 获取其格式)</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN43408"></a><h2>返回值</h2>
+<p>修改后的新行，在上层执行者环境里分配；只有在 <tt class="PARAMETER">row</tt> 是 <tt class="SYMBOL">NULL</tt> 的时候为 <tt class="SYMBOL">NULL</tt></p>
+<p>On error, <tt class="VARNAME">SPI_result</tt> is set as follows:</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="SYMBOL">SPI_ERROR_ARGUMENT</tt></dt>
+<dd><p>如果 <tt class="PARAMETER">rel</tt> 是 <tt class="SYMBOL">NULL</tt> ，或者如果 <tt class="PARAMETER">row</tt> 是 <tt class="SYMBOL">NULL</tt> ，或者如果 <tt class="PARAMETER">ncols</tt> 小于或者等于 0 ，或者 <tt class="PARAMETER">colnum</tt> 是 <tt class="SYMBOL">NULL</tt> ，或者如果 <tt class="PARAMETER">values</tt> 是 <tt class="SYMBOL">NULL</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_ERROR_NOATTRIBUTE</tt></dt>
+<dd><p>如果 <tt class="PARAMETER">colnum</tt> 包含一个无效的字段编号(小于或者等于 0 或者大于 <tt class="PARAMETER">row</tt> 里的字段数)</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="spi-spi-returntuple.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="spi-spi-freetuple.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SPI_returntuple</td><td width="34%" align="center" valign="top"><a href="spi-memory.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SPI_freetuple</td></tr>
+</table>
+</div>
+</body></html>

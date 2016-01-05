@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.10. DejaGNU-1.4.4</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="expect.html" title="Expect-5.43.0">后退</a>
+          <p>Expect-5.43.0</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gcc-pass2.html" title="GCC-4.0.3 - 第二遍">前进</a>
+          <p>GCC-4.0.3 - 第二遍</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.10. DejaGNU-1.4.4</h1>
+      </div>
+      <div class="package">
+        <p>DejaGNU 软件包包含了一个测试其它程序的框架。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">少于 0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">6.2 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.10.1. 安装 DejaGNU</h2>
+        </div>
+        <p>为编译 DejaGNU 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/tools</kbd></pre>
+        <p>编译并安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make check</tt></strong> 。</p>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-dejagnu" name="contents-dejagnu"></a>
+          <h2 class="sect2">5.10.2. DejaGNU 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">runtest</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3670128" name="id3670128"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="runtest" name="runtest"></a><span class="term"><span><strong class="command">runtest</strong></span></span></td>
+                <td><p>一个包装脚本，用于定位正确的 <span><strong class="command">expect</strong></span> 解释程序(shell)并运行 DejaGNU</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="expect.html" title="Expect-5.43.0">后退</a>
+          <p>Expect-5.43.0</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gcc-pass2.html" title="GCC-4.0.3 - 第二遍">前进</a>
+          <p>GCC-4.0.3 - 第二遍</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+* { font-size : 15px; text-align:left; color:#222; }
+html { padding:0; border:none; margin:0; background:#f9f9f9; }
+body { padding:0; border:none; margin:10px; }
+hr { height:1px; color:#111; }
+h1 { font-weight : bold; font-size : 24px; text-align:center; }
+h2 { font-weight : bold; font-size : 20px; text-align:center; }
+h3 { font-weight : bold; font-size : 17px; text-align:left; }
+table { vertical-align:middle; border:solid 1px #111; margin:4px; background:#fff; border-collapse:collapse; margin:5px 0; }
+caption { font-weight:bold; font-size:16px; }
+th { font-weight:bold; }
+th, td { border:solid 1px #999; padding:3px; }
+p { line-height:1.1; padding:0; margin:3px; }
+strong, dt { font-weight:bold; }
+img { border:none; }
+dfn { font-style : normal; }
+dt { margin:10px 0 0 0; }
+dfn.默认值 { color:#F60; }
+dfn.继承属性 { color:#B00; }
+dfn.非继承属性 { color:#00B; }
+</style>
+<title>简明 CSS 2.1 参考手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>简明 CSS 2.1 参考手册</h1><h2 id="auth_name">作者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文作者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文作者不保证作品内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留作者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文作者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于作者水平有限，因此不能保证作品内容准确无误。如果你发现了作品中的错误(哪怕是错别字也好)，请来信指出，任何提高作品质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<!-- ========================================= 导入样式表的方法(示范) =================================================== -->
+<h2>导入样式表的方法(示范)</h2>
+<div id="导入样式表的方法">
+	<samp>
+		&lt;style type="text/css" media="all" title="应用于所有媒体的样式"><br />
+		&nbsp; &nbsp; @import url(/style/css/global.css); /*全局样式*/<br />
+		&nbsp; &nbsp; @import url(/style/css/skyblue.css); /*个性化样式*/<br />
+		&nbsp; &nbsp; body { background: url(img/body_bg.gif); } /*文档级样式*/<br />
+		&lt;/style>
+	</samp>
+	<ul>
+		<li>目前受浏览器支持的设备类型仅有：<dfn>all</dfn>(所有)、<dfn>print</dfn>(打印机)、<dfn>screen</dfn>(计算机显示器)</li>
+		<li>必须在外部样式文件开头使用形如 <samp>@charset "utf-8";</samp> 的<dfn>At规则</dfn>来指定其自身使用的字符集。</li>
+		<li><dfn>@import</dfn> 必须放置在常规样式之前，不管是在&lt;style>中还是在外部样式表中。</li>
+	</ul>
+</div>
+<!-- ================================== 术语 ========================================================== -->
+<hr />
+<h2>术语</h2>
+<div id="术语">
+	<dl>
+		<dt>替换元素</dt>
+			<dd>超出 CSS 格式器范围的元素。</dd>
+			<dd>HTML中的 img, input, textarea, select, object 都是替换元素。</dd>
+			<dd>所有的替换元素且仅有替换元素才具有固有尺寸。</dd>
+		<dt>块级元素</dt>
+			<dd>在视觉上被格式化为块的元素。浮动元素以及<dfn class="非继承属性">display</dfn>属性等于<dfn>block</dfn>或<dfn>list-item</dfn>的元素都是块级元素。</dd>
+		<dt>内联元素</dt>
+			<dd>不形成新内容块的元素。<dfn class="非继承属性">display</dfn>属性等于<dfn class="默认值">inline</dfn>的元素都是内联元素。</dd>
+		<dt>已定位元素</dt>
+			<dd><dfn class="非继承属性">position</dfn>属性不等于<dfn class="默认值">static</dfn>的元素。</dd>
+	</dl>
+</div>
+<!-- ========================================= 选择符 =================================================== -->
+<hr />
+<h2>选择符</h2>
+<div id="选择符">
+	<dl>
+		<dt>简单选择符</dt><dd class="语法">[<var>E</var>|*][#<var>id</var>](.<var>class</var>)*[:<dfn>link</dfn>][:<dfn>visited</dfn>][:<dfn>hover</dfn>][:<dfn>active</dfn>]</dd>
+		<dt>伪元素</dt><dd class="语法"><var>S</var>[:<dfn>first-letter</dfn>][:<dfn>first-line</dfn>]</dd>
+		<dt>嵌套</dt><dd class="语法"><var>S1</var> <var>S2</var> ... <var>O</var></dd>
+		<dt>群组</dt><dd class="语法"><var>A1</var>, <var>A2</var>, ... <var>An</var></dd>
+	</dl>
+	<ul>
+		<li>符号含义：<var>E</var>(元素)、<var>S</var>(简单选择符)、<var>O</var>(简单选择符|伪元素)、<var>A</var>(简单选择符|伪元素|嵌套)</li>
+		<li>竖线"|"表示或关系，方括号"[]"表示可选，圆括号"()"用于正则分组。</li>
+		<li>所有标识符(元素名、类、ID)，都不能以 数字、连字符、下划线 开头，但是可以使用汉字。</li>
+		<li>伪类仅可用于超连接。伪元素仅可用于块元素。嵌套顺序中可以夹杂其他元素。</li>
+		<li>允许用于伪元素的属性仅有：字体属性、文本属性、前景背景属性。此外首字还可用：盒模型属性与<dfn class="非继承属性">float</dfn>属性</li>
+		<li>层叠权重：<dfn>!important</dfn> > ID > (伪)类 > (伪)元素 > *</li>
+	</ul>
+</div>
+<!-- ================================== 属性值的数据类型 ========================================================== -->
+<hr />
+<h2>属性值的数据类型</h2>
+<div id="属性值的数据类型">
+	<dl>
+		<dt>长度</dt>
+			<dd>绝对长度以 <dfn>mm</dfn> 或 <dfn>pt</dfn> 为单位(1<dfn>pt</dfn>=0.353<dfn>mm</dfn>)。</dd>
+			<dd>像素长度以 <dfn>px</dfn> 为单位(以96dpi为标准)，只能取整数值。</dd>
+			<dd>相对长度以 <dfn>em</dfn> 为单位(等于当前<dfn class="继承属性">font-size</dfn>计算值)，继承时使用计算值。</dd>
+		<dt>百分比</dt>
+			<dd>使用 <span class="语法">nn%</span> 表示，是相对于另一个值的值，继承时使用计算值。</dd>
+		<dt>URL</dt>
+			<dd>使用 <span class="语法">url(URL)</span> 表示，必须使用"%XX"编码特殊字符(括号/逗号/引号等)，相对URL是指相对于样式表的URL。</dd>
+		<dt>颜色</dt>
+			<dd>使用 <span class="语法">#rrggbb</span> 或 <span class="语法">#rgb</span> 十六进制法表示，其值基于sRGB色彩空间，并且gamma值为2.2。</dd>
+		<dt>字体列表</dt>
+			<dd>用逗号分割的字体名称优先级列表(次序：英文→系列→中文)，字体名称含有空格时必须用引号界定。</dd>
+			<dd>安全英文serif(有衬线)系列字体：<span style="font-family:Georgia">Georgia</span> &nbsp; <span style="font-family:'Palatino Linotype'">"Palatino Linotype"</span> &nbsp; <span style="font-family:'Times New Roman'">"Times New Roman"</span></dd>
+			<dd>安全英文sans-serif(无衬线)系列字体：<span style="font-family:Arial">Arial</span> &nbsp; <span style="font-family:'Lucida Sans Unicode'">"Lucida Sans Unicode"</span> &nbsp; <span style="font-family:'Microsoft Sans Serif'">"Microsoft Sans Serif"</span> &nbsp; <span style="font-family:Tahoma">Tahoma</span> &nbsp; <span style="font-family:'Trebuchet MS'">"Trebuchet MS"</span> &nbsp; <span style="font-family:Verdana">Verdana</span></dd>
+			<dd>安全英文monospace(等宽)系列字体：<span style="font-family:'Courier New'">"Courier New"</span> &nbsp; <span style="font-family:'Lucida Console'">"Lucida Console"</span></dd>
+			<dd>安全英文cursive(模拟笔迹)系列字体：<span style="font-family:'Comic Sans MS'">"Comic Sans MS"</span></dd>
+			<dd>安全中文字体[简繁通用]：<span style="font-family:SimHei">SimHei(XP内嵌16,18,20点阵；Vista无内嵌)</span> &nbsp; <span style="font-family:SimSun">SimSun(内嵌12,13,14,15,16,17[Vista]/18[XP]点阵)</span></dd>
+		<dt>边框样式</dt>
+			<dd>枚举值：<dfn class="默认值" style="border-style:none">none</dfn>(默认) | <dfn style="border-style:dotted">dotted</dfn> | <dfn style="border-style:dashed">dashed</dfn> | <dfn style="border-style:solid">solid</dfn> | <dfn style="border-style:double">double</dfn> | <dfn style="border-style:groove">groove</dfn> | <dfn style="border-style:inset">inset</dfn> | <dfn style="border-style:outset">outset</dfn></dd>
+		<dt>内置列表项图标</dt>
+			<dd>枚举值：<dfn class="默认值">disc</dfn>(实心圆)|<dfn>circle</dfn>(空心圆)|<dfn>square</dfn>(方块)|<dfn>decimal</dfn>(数字)|<dfn>lower-roman</dfn>(小写罗马数字)|<dfn>upper-roman</dfn>(大写罗马数字)|<dfn>lower-alpha</dfn>(小写字母)|<dfn>upper-alpha</dfn>(大写字母)|<dfn>none</dfn>(无)</dd>
+		<dt>指针样式</dt>
+			<dd>枚举值：<dfn class="默认值" style="cursor:auto">auto</dfn>|<dfn style="cursor:crosshair">crosshair</dfn>|<dfn style="cursor:default">default</dfn>|<dfn style="cursor:pointer">pointer</dfn>|<dfn style="cursor:move">move</dfn>|<dfn style="cursor:wait">wait</dfn>|<dfn style="cursor:help">help</dfn>|<dfn style="cursor:progress">progress</dfn>|<dfn style="cursor:not-allowed">not-allowed</dfn></dd>
+	</dl>
+	<p>[注意]对于速记属性，未指定的部分视为指定了<em>默认值</em>。</p>
+</div>
+<!-- =====================================字体属性============================================== -->
+<hr />
+<h2>字体属性</h2>
+<div id="字体属性">
+	<table>
+		<tr><th width="110">字体速记</th><td class="语法"><dfn class="继承属性">font</dfn> : <dfn class="继承属性">font-style</dfn> <dfn class="继承属性">font-weight</dfn> <dfn class="继承属性">font-size</dfn> <dfn class="继承属性">font-family</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">字体倾斜</th><td class="语法"><dfn class="继承属性">font-style</dfn> : <dfn class="默认值">normal</dfn>|<dfn>italic</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">字体粗细</th><td class="语法"><dfn class="继承属性">font-weight</dfn> : <dfn class="默认值">normal</dfn>|<dfn>bold</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">字体大小</th><td class="语法"><dfn class="继承属性">font-size</dfn> : <dfn>长度</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">字体族</th><td class="语法"><dfn class="继承属性">font-family</dfn> : <dfn>字体列表</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+	</table>
+</div>
+<!-- =====================================文本属性=========================================== -->
+<hr />
+<h2>文本属性</h2>
+<div id="文本属性">
+	<table>
+		<tr><th width="110">文本划线</th><td class="语法"><dfn class="非继承属性">text-decoration</dfn> : <dfn class="默认值">none</dfn>|(<dfn>underline</dfn>‖<dfn>overline</dfn>‖<dfn>line-through</dfn>)</td></tr>
+		<tr><td>非继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">字符间距</th><td class="语法"><dfn class="继承属性">letter-spacing</dfn> : <dfn class="默认值">normal</dfn>|<dfn>长度</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">大小写转换</th><td class="语法"><dfn class="继承属性">text-transform</dfn> : <dfn class="默认值">none</dfn>|<dfn>capitalize</dfn>|<dfn>uppercase</dfn>|<dfn>lowercase</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">首行缩进量</th><td class="语法"><dfn class="继承属性">text-indent</dfn> : <dfn class="默认值">0</dfn>|<dfn>长度</dfn></td></tr>
+		<tr><td>继承</td><td>适用：块元素/表格单元格/内联块</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">行高</th><td class="语法"><dfn class="继承属性">line-height</dfn> : <dfn class="默认值">normal</dfn>|<dfn>缩放系数</dfn>|<dfn>长度</dfn>|<dfn>百分比</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+		<tr><td colspan="2">缩放系数按指定值继承</td></tr>
+		<tr><td colspan="2">百分比：相对于自身的<dfn class="继承属性">font-size</dfn>属性值</td></tr>
+		<tr><td colspan="2">行高=文本高度+上下空白；<dfn class="默认值">normal</dfn>大约相当于1.1～1.2的缩放系数。</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">水平对齐</th><td class="语法"><dfn class="继承属性">text-align</dfn> : <dfn class="默认值">left</dfn>|<dfn>right</dfn>|<dfn>center</dfn></td></tr>
+		<tr><td>继承</td><td>适用：块元素/表格单元格/内联块</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">垂直对齐</th><td class="语法"><dfn class="非继承属性">vertical-align</dfn> : <dfn class="默认值">baseline</dfn>|<dfn>sub</dfn>|<dfn>super</dfn>|<dfn>top</dfn>|<dfn>text-top</dfn>|<dfn>middle</dfn>|<dfn>bottom</dfn>|<dfn>text-bottom</dfn>|<dfn>长度</dfn>|<dfn>百分比</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：内联元素/表格单元格</td></tr>
+		<tr><td colspan="2">百分比：相对于自身的<dfn class="继承属性">line-height</dfn>属性值</td></tr>
+		<tr><td colspan="2">长度和百分比表示当前元素的基线相对于父元素基线的偏移量(上为正下为负，没有基线则使用底线)。</td></tr>
+	</table>
+</div>
+<!-- =================================前景和背景属性======================================= -->
+<hr />
+<h2>前景和背景属性</h2>
+<div id="前景和背景属性">
+	<p>前景：内容+边框。背景：背景图+背景色。背景面积：内容+补白+边框。透明：补白/边框空隙/边界。</p>
+	<table>
+		<tr><th width="110">前景色</th><td class="语法"><dfn class="继承属性">color</dfn> : <dfn>颜色</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+		<tr><td colspan="2"> hr 元素默认不执行继承。由于IE的错误，表格与图片的边框也不执行继承。</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">背景速记</th><td class="语法"><dfn class="非继承属性">background</dfn> : (<dfn class="默认值">transparent</dfn>|<dfn>颜色</dfn>) (<dfn class="默认值">none</dfn>|<dfn>URL</dfn>)? (<dfn class="默认值">0% 0%</dfn>|(<dfn>长度</dfn>|<dfn>百分比</dfn>){2})? (<dfn class="默认值">repeat</dfn>|<dfn>repeat-x</dfn>|<dfn>repeat-y</dfn>|<dfn>no-repeat</dfn>)? (<dfn class="默认值">scroll</dfn>|<dfn>fixed</dfn>)?</td></tr>
+		<tr><td>非继承</td><td>适用：所有元素</td></tr>
+		<tr><td colspan="2">速记含义：背景色 背景图 背景图位置 背景图平铺 背景图滚动</td></tr>
+		<tr><td colspan="2">百分比：相对于盒子自身内容+补白区域的尺寸，将背景图与背景区域各自相同偏移量的点对齐。</td></tr>
+	</table>
+</div>
+<!-- =================================列表属性======================================= -->
+<hr />
+<h2>列表属性</h2>
+<div id="列表属性">
+	<table>
+		<tr><th width="110">列表项样式</th><td class="语法"><dfn class="继承属性">list-style</dfn> : <dfn>内置列表项图标</dfn> (<dfn class="默认值">none</dfn>|<dfn>URL</dfn>) (<dfn class="默认值">outside</dfn>|<dfn>inside</dfn>)</td></tr>
+		<tr><td>继承</td><td>适用：列表项元素</td></tr>
+		<tr><td colspan="2">速记含义：内置列表项图标 自定义列表项图标 图标位置</td></tr>
+	</table>
+</div>
+<!-- =================================表格属性======================================= -->
+<hr />
+<h2>表格属性</h2>
+<div id="表格属性">
+	<table>
+		<tr><th width="110">表格布局算法</th><td class="语法"><dfn class="非继承属性">table-layout</dfn> : <dfn class="默认值">auto</dfn>|<dfn>fixed</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：table 元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">单元格边框模型</th><td class="语法"><dfn class="继承属性">border-collapse</dfn> : <dfn class="默认值">separate</dfn>|<dfn>collapse</dfn></td></tr>
+		<tr><td>继承</td><td>适用：表格元素</td></tr>
+	</table>
+</div>
+<!-- =================================指针属性======================================= -->
+<hr />
+<h2>指针属性</h2>
+<div id="指针属性">
+	<table>
+		<tr><th width="110">指针样式</th><td class="语法"><dfn class="继承属性">cursor</dfn> : <dfn>指针样式</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+	</table>
+</div>
+<!-- ==============================盒模型属性=========================================== -->
+<hr />
+<h2>盒模型属性</h2>
+<div id="盒模型属性">
+	<ul>
+		<li>由内到外的层次：内容 → 补白 → 边框 → 边界</li>
+		<li>由上到下的层次：边框 → 内容+补白 → 背景图 → 背景色 → 边界</li>
+	</ul>
+	<table>
+		<tr><th width="110">内容宽度|高度</th><td class="语法"><dfn class="非继承属性">width</dfn>|<dfn class="非继承属性">height</dfn> : <dfn class="默认值">auto</dfn>|<dfn>长度</dfn>|<dfn>百分比</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：块元素/替换元素</td></tr>
+		<tr><td colspan="2">百分比：相对于包含框的<dfn class="非继承属性">width</dfn>|<dfn class="非继承属性">height</dfn>属性值</td></tr>
+		<tr><td colspan="2">内联盒子的高度与<dfn class="非继承属性">height</dfn>属性无关</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">补白宽度</th><td class="语法"><dfn class="非继承属性">padding</dfn> : <dfn class="默认值">0</dfn>|(<dfn>长度</dfn>|<dfn>百分比</dfn>){1,4}</td></tr>
+		<tr><td>非继承</td><td>适用：<dfn class="非继承属性">display</dfn>不等于<dfn>table-*</dfn>的所有元素</td></tr>
+		<tr><td colspan="2">百分比：相对于包含框的<dfn class="非继承属性">width</dfn>属性值</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">边界宽度</th><td class="语法"><dfn class="非继承属性">margin</dfn> : <dfn class="默认值">0</dfn>|(<dfn>长度</dfn>|<dfn>百分比</dfn>|<dfn>auto</dfn>){1,4}</td></tr>
+		<tr><td>非继承</td><td>适用：<dfn class="非继承属性">display</dfn>不等于<dfn>table-*</dfn>的所有元素</td></tr>
+		<tr><td colspan="2">百分比：相对于包含框的<dfn class="非继承属性">width</dfn>属性值</td></tr>
+		<tr><td colspan="2">上下边界宽度对非替换内联元素无效。将左右边界设为<dfn>auto</dfn>是将块元素居中的正确做法。</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">边框速记</th><td class="语法"><dfn class="非继承属性">border</dfn>|<dfn class="非继承属性">border-top</dfn>|<dfn class="非继承属性">border-bottom</dfn>|<dfn class="非继承属性">border-left</dfn>|<dfn class="非继承属性">border-right</dfn> : <dfn>边框样式</dfn> <dfn>长度</dfn> (<dfn>颜色</dfn>|<dfn>transparent</dfn>)?</td></tr>
+		<tr><td>非继承</td><td>适用：所有元素</td></tr>
+		<tr><td colspan="2">速记含义：边框样式 边框宽度 边框颜色</td></tr>
+		<tr><td colspan="2">当边框样式样式为<dfn>none</dfn>时，边框宽度自动强制为零。</td></tr>
+	</table>
+	<h3>边界重叠</h3>
+	<p><dfn>边界重叠</dfn>是指两个或多个盒子(可能相邻也可能嵌套)的相邻边界(其间没有任何非空内容、补白、边框)重合在一起而形成一个单一边界。</p>
+	<p>常规流中两个或多个块级盒子的垂直相邻边界会重合。结果的边界宽度是相邻边界宽度中最大的值。如果出现负边界，则在最大的正边界中减去绝对值最大的负边界。如果没有正边界，则从零中减去绝对值最大的负边界。注意：相邻的盒子可能并非是由父子关系或同胞关系的元素生成。</p>
+	<p>但是边界的重叠也有例外情况：</p>
+	<ul>
+		<li>水平边界永远不会重叠。</li>
+		<li>浮动盒子、绝对定位盒子、内联块盒子、根盒子的边界永不重叠。</li>
+		<li><dfn class="非继承属性">overflow</dfn>属性不等于<dfn class="默认值">visible</dfn>的元素与它的非浮动子元素之间边界不发生重叠。</li>
+	</ul>
+</div>
+<!-- ==================================显示属性===================================== -->
+<hr />
+<h2>显示属性</h2>
+<div id="显示属性">
+	<table>
+		<tr><th width="110">显示类型</th><td class="语法"><dfn class="非继承属性">display</dfn> : <dfn class="默认值">inline</dfn>|<dfn>block</dfn>|<dfn>list-item</dfn>|<dfn>table-header-group</dfn>|<dfn>table-footer-group</dfn>|<dfn>none</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">可见性</th><td class="语法"><dfn class="继承属性">visibility</dfn> : <dfn class="默认值">visible</dfn>|<dfn>hidden</dfn></td></tr>
+		<tr><td>继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">溢出模式</th><td class="语法"><dfn class="非继承属性">overflow</dfn> : <dfn class="默认值">visible</dfn>|<dfn>hidden</dfn>|<dfn>scroll</dfn>|<dfn>auto</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：非替换块元素/表格单元格/内联块</td></tr>
+	</table>
+</div>
+<!-- ===============================定位与布局属性================================ -->
+<hr />
+<h2>定位与布局属性</h2>
+<div id="定位与布局属性">
+	<table>
+		<tr><th width="110">定位方式</th><td class="语法"><dfn class="非继承属性">position</dfn> : <dfn class="默认值">static</dfn>|<dfn>relative</dfn>|<dfn>absolute</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：所有元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">边界偏移量</th><td class="语法"><dfn class="非继承属性">top</dfn>|<dfn class="非继承属性">bottom</dfn>|<dfn class="非继承属性">left</dfn>|<dfn class="非继承属性">right</dfn> : <dfn>长度</dfn>|<dfn>百分比</dfn>|<dfn class="默认值">auto</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：已定位元素</td></tr>
+		<tr><td colspan="2">百分比：垂直|水平相对于包含框的<dfn class="非继承属性">height</dfn>|<dfn class="非继承属性">width</dfn>属性值</td></tr>
+		<tr><td colspan="2">绝对定位偏移量相对于上一级已定位盒子的内容边沿，相对定位偏移量相对于原始的位置。</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">浮动</th><td class="语法"><dfn class="非继承属性">float</dfn> : <dfn class="默认值">none</dfn>|<dfn>left</dfn>|<dfn>right</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：所有元素</td></tr>
+		<tr><td colspan="2">浮动的盒子必须有一个显式的宽度(通过<dfn class="非继承属性">width</dfn>属性指定，或对于替换元素具有固有宽度)，任何浮动盒子都成为一个块盒子。</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">避让浮动</th><td class="语法"><dfn class="非继承属性">clear</dfn> : <dfn class="默认值">none</dfn>|<dfn>left</dfn>|<dfn>right</dfn>|<dfn>both</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：块元素</td></tr>
+	</table>
+	<table>
+		<tr><th width="110">Z轴顺序</th><td class="语法"><dfn class="非继承属性">z-index</dfn> : <dfn class="默认值">auto</dfn>|<dfn>整数</dfn></td></tr>
+		<tr><td>非继承</td><td>适用：已定位元素</td></tr>
+	</table>
+	<h3><dfn class="非继承属性">display</dfn>, <dfn class="非继承属性">position</dfn>, <dfn class="非继承属性">float</dfn> 之间的相互关系：</h3>
+	<ol>
+		<li>如果<dfn class="非继承属性">display</dfn>等于<dfn>none</dfn>，则用户端必须忽略<dfn class="非继承属性">position</dfn>和<dfn class="非继承属性">float</dfn>。在这种情况下，元素不产生盒子。</li>
+		<li>否则，如果<dfn class="非继承属性">position</dfn>等于<dfn>absolute</dfn>，则<dfn class="非继承属性">display</dfn>与<dfn class="非继承属性">float</dfn>皆强制为<dfn>none</dfn>(<dfn>list-item</dfn>保持不变)。盒子的位置由边界偏移量确定。</li>
+		<li>否则，如果<dfn class="非继承属性">float</dfn>不等于<dfn class="默认值">none</dfn>或该元素是根元素，则<dfn class="非继承属性">display</dfn>强制为<dfn>block</dfn>(<dfn>list-item</dfn>保持不变)。</li>
+		<li>否则，使用指定的<dfn class="非继承属性">display</dfn>属性。</li>
+	</ol>
+</div>
+<!-- =============================== HTML默认样式 ================================ -->
+<hr />
+<h2>HTML默认样式</h2>
+<div id="HTML默认样式">
+<pre style="color:#C0C;">
+html,body,div,  h1,h2,h3,h4,h5,h6,p,  ol,ul,dl,dt,dd,
+frame,frameset,form,fieldset,  blockquote,address,hr,pre { <span style="color:#009;">display</span>: <span style="color:#00f;">block</span> }
+button,textarea,input,select { <span style="color:#009;">display</span>: <span style="color:#00f;">inline-block</span> }
+li           { <span style="color:#009;">display</span>: <span style="color:#00f;">list-item</span> }
+head         { <span style="color:#009;">display</span>: <span style="color:#00f;">none</span> }
+table        { <span style="color:#009;">display</span>: <span style="color:#00f;">table</span> }
+caption      { <span style="color:#009;">display</span>: <span style="color:#00f;">table-caption</span> }
+thead        { <span style="color:#009;">display</span>: <span style="color:#00f;">table-header-group</span> }
+tbody        { <span style="color:#009;">display</span>: <span style="color:#00f;">table-row-group</span> }
+tfoot        { <span style="color:#009;">display</span>: <span style="color:#00f;">table-footer-group</span> }
+tr           { <span style="color:#009;">display</span>: <span style="color:#00f;">table-row</span> }
+col          { <span style="color:#009;">display</span>: <span style="color:#00f;">table-column</span> }
+colgroup     { <span style="color:#009;">display</span>: <span style="color:#00f;">table-column-group</span> }
+td,th        { <span style="color:#009;">display</span>: <span style="color:#00f;">table-cell</span> }
+
+caption     { <span style="color:#009;">text-align</span>: <span style="color:#00f;">center</span> }
+th          { <span style="color:#009;">font-weight</span>: <span style="color:#00f;">bolder</span>; <span style="color:#009;">text-align</span>: <span style="color:#00f;">center</span> }
+
+body     { <span style="color:#009;">margin</span>: <span style="color:#00f;">8px</span> }
+blockquote      { <span style="color:#009;">margin-left</span>: <span style="color:#00f;">40px</span>; <span style="color:#009;">margin-right</span>: <span style="color:#00f;">40px</span> }
+h4,p,blockquote,ul,fieldset,form,ol,dl { <span style="color:#009;">margin</span>: <span style="color:#00f;">1.12em 0</span> }
+h1       { <span style="color:#009;">font-size</span>: <span style="color:#00f;">2em</span>;    <span style="color:#009;">margin</span>: <span style="color:#00f;">0.67em 0</span> }
+h2       { <span style="color:#009;">font-size</span>: <span style="color:#00f;">1.5em</span>;  <span style="color:#009;">margin</span>: <span style="color:#00f;">0.75em 0</span> }
+h3       { <span style="color:#009;">font-size</span>: <span style="color:#00f;">1.17em</span>; <span style="color:#009;">margin</span>: <span style="color:#00f;">0.83em 0</span> }
+h5       { <span style="color:#009;">font-size</span>: <span style="color:#00f;">0.83em</span>; <span style="color:#009;">margin</span>: <span style="color:#00f;">1.5em  0</span> }
+h6       { <span style="color:#009;">font-size</span>: <span style="color:#00f;">0.75em</span>; <span style="color:#009;">margin</span>: <span style="color:#00f;">1.67em 0</span> }
+
+pre  { <span style="color:#009;">white-space</span>: <span style="color:#00f;">pre</span> }
+
+h1,h2,h3,h4,h5,h6,strong  { <span style="color:#009;">font-weight</span>: <span style="color:#00f;">bolder</span> }
+
+cite,em,var,address { <span style="color:#009;">font-style</span>: <span style="color:#00f;">italic</span> }
+pre,code,kbd,samp   { <span style="color:#009;">font-family</span>: <span style="color:#00f;">monospace</span> }
+sub,sup   { <span style="color:#009;">font-size</span>: <span style="color:#00f;">.83em</span> }
+sub   { <span style="color:#009;">vertical-align</span>: <span style="color:#00f;">sub</span> }
+sup   { <span style="color:#009;">vertical-align</span>: <span style="color:#00f;">super</span> }
+table      { <span style="color:#009;">border-spacing</span>: <span style="color:#00f;">2px</span>; }
+thead,tbody,tfoot           { <span style="color:#009;">vertical-align</span>: <span style="color:#00f;">middle</span> }
+td, th          { <span style="color:#009;">vertical-align</span>: <span style="color:#00f;">inherit</span> }
+del             { <span style="color:#009;">text-decoration</span>: <span style="color:#00f;">line-through</span> }
+ins             { <span style="color:#009;">text-decoration</span>: <span style="color:#00f;">underline</span> }
+hr              { <span style="color:#009;">border</span>: <span style="color:#00f;">1px inset</span> }
+ol, ul, dd        { <span style="color:#009;">margin-left</span>: <span style="color:#00f;">40px</span> }
+ol              { <span style="color:#009;">list-style-type</span>: <span style="color:#00f;">decimal</span> }
+ol ul, ul ol, ul ul, ol ol    { <span style="color:#009;">margin-top</span>: <span style="color:#00f;">0</span>; <span style="color:#009;">margin-bottom</span>: <span style="color:#00f;">0</span> }
+:link, :visited { <span style="color:#009;">text-decoration</span>: <span style="color:#00f;">underline</span> }
+br:before { <span style="color:#009;">content</span>: <span style="color:#00f;">"\A"</span> }
+:before, :after { <span style="color:#009;">white-space</span>: <span style="color:#00f;">pre-line</span> }
+:focus { <span style="color:#009;">outline</span>: <span style="color:#00f;">thin dotted invert</span> }
+</pre>
+</div>
+<hr />
+
+
+</body></html>

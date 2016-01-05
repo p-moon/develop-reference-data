@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>9.3. 重启系统</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第九章 结束</h3>
+      </div>
+      
+  <ul class="headerlinks">
+    <li class="prev"> <a accesskey="p" href="getcounted.html" title="看看你是第几个?">后退</a> 
+      <p>看看你是第几个?</p>
+    </li>
+    <li class="next"> <a accesskey="n" href="whatnow.html" title="现在做什么?">前进</a> 
+      <p>现在做什么?</p>
+    </li>
+    <li class="up"><a accesskey="u" href="chapter09.html" title="第九章 结束">上一级</a></li>
+    <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+  </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">9.3. 重启系统</h1>
+      </div>
+      
+  <p>  现在所有的软件都安装完毕，到了重启你的电脑的时候了。但是，你应该要注意一些事。你用这本书创建的系统是相当最小限度的系统， 你很可能缺少需要的很多连续前进的功能。用一些来自 BLFS 书额外的包，在最近仍然使用的 chroot 环境中安装，你能离你自己的宿主机器，在你重启一次后进入新的 LFS 系统，可以用更多更佳的形式来继续安装。安装一个文本模式的浏览器，例如象 
+    Lynx，你能在一个虚拟终端方便地观看 BLFS 书，安装包在另一个终端上。GPM 包将同样允许你在你地虚拟终端上完成拷贝/粘贴动作 最后，假如如果静态 IP配置不能符合你的网络需求条件，安装 Dhcpcd 或 PPP 包，这点也是同样有用处的。</p>
+      <p>现在我们说完了，离开我们闪亮的新 LFS 安装，第一次启动！首先，退出 chroot 环境：</p>
+      <pre class="userinput"><kbd class="command">logout</kbd></pre>
+      <p>卸载虚拟文件系统：</p>
+      <pre class="userinput"><kbd class="command">umount -v $LFS/dev/pts
+umount -v $LFS/dev/shm
+umount -v $LFS/dev
+umount -v $LFS/proc
+umount -v $LFS/sys</kbd></pre>
+      
+  <p>卸载 LFS 自己的文件系统：</p>
+      <pre class="userinput"><kbd class="command">umount -v $LFS</kbd></pre>
+      <p>如果多个分区被创建，卸载其他分区之前先卸载主要的一个，比如这个：</p>
+      <pre class="userinput"><kbd class="command">umount -v $LFS/usr
+umount -v $LFS/home
+umount -v $LFS</kbd></pre>
+      <p>现在，重启系统：</p>
+      <pre class="userinput"><kbd class="command">shutdown -r now</kbd></pre>
+      <p>早先的概要说明时，假如 GRUB 引导装载程序已经设置，按照启动菜单的设置可自动启动 <span class="emphasis"><em>LFS 6.2</em></span>
+        。</p>
+      <p>当重启完毕，LFS 系统已经准备使用更多你需要增加的程序。</p>
+    </div>
+    <div class="navfooter">
+      
+  <ul>
+    <li class="prev"> <a accesskey="p" href="getcounted.html" title="看看你是第几个?">后退</a> 
+      <p>看看你是第几个?</p>
+    </li>
+    <li class="next"> <a accesskey="n" href="whatnow.html" title="现在做什么?">前进</a> 
+      <p>现在做什么?</p>
+    </li>
+    <li class="up"><a accesskey="u" href="chapter09.html" title="第九章 结束">上一级</a></li>
+    <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>. 
+    </li>
+  </ul>
+    </div>
+</body></html>

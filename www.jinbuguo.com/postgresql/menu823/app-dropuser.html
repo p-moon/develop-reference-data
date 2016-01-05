@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>dropuser</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="app-droplang.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="app-droplang.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-ecpg.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-ecpg.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-DROPUSER"></a><span class="APPLICATION">dropuser</span></h1>
+<div class="REFNAMEDIV"><a name="AEN56472"></a><h2>名称</h2>dropuser&nbsp;--&nbsp;删除一个用户帐户</div>
+<a name="AEN56476"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN56478"></a><h2>语法</h2>
+<p><tt class="COMMAND">dropuser</tt> [<tt class="REPLACEABLE"><i>option</i></tt>...] [<tt class="REPLACEABLE"><i>username</i></tt>]</p>
+</div>
+<div class="REFSECT1"><a name="AEN56485"></a><h2>描述</h2>
+<p><span class="APPLICATION">dropuser</span> 删除一个 PostgreSQL 用户。只有超级用户和拥有 <tt class="LITERAL">CREATEROLE</tt> 权限的用户可以删除用户。要删除一个超级用户，你必须首先是超级用户。</p>
+<p><span class="APPLICATION">dropuser</span> 是 SQL 命令 <a href="sql-droprole.html"><i>DROP ROLE</i></a> 的封装。因此，用哪种方法删除用户都一样。</p>
+</div>
+<div class="REFSECT1"><a name="AEN56496"></a><h2>选项</h2>
+<p><span class="APPLICATION">dropuser</span> 接受下列命令行参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>username</i></tt></dt>
+<dd><p>要删除的 PostgreSQL 用户名。如果你没有在命令行上声明，将会被提示输入一个。</p></dd>
+<dt><tt class="OPTION">-e</tt><br><tt class="OPTION">--echo</tt></dt>
+<dd><p>回显 <span class="APPLICATION">dropuser</span> 生成并发送给服务器的命令</p></dd>
+<dt><tt class="OPTION">-i</tt><br><tt class="OPTION">--interactive</tt></dt>
+<dd><p>在真正删除用户前提示</p></dd>
+<dt><tt class="OPTION">-q</tt><br><tt class="OPTION">--quiet</tt></dt>
+<dd><p>不显示响应(安静模式)</p></dd>
+</dl>
+</div>
+<p><span class="APPLICATION">dropuser</span> 还接受下列命令行参数作为连接参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-h <tt class="REPLACEABLE"><i>host</i></tt></tt><br><tt class="OPTION">--host <tt class="REPLACEABLE"><i>host</i></tt></tt></dt>
+<dd><p>指定运行服务器的主机名。如果数值以斜杠开头，则被用作到 Unix 域套接字的路径。</p></dd>
+<dt><tt class="OPTION">-p <tt class="REPLACEABLE"><i>port</i></tt></tt><br><tt class="OPTION">--port <tt class="REPLACEABLE"><i>port</i></tt></tt></dt>
+<dd><p>指定服务器正在侦听的 TCP 端口或本地 Unix 域套接字文件的扩展(描述符)</p></dd>
+<dt><tt class="OPTION">-U <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--username <tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>进行连接的用户名(不是要删除的用户名)</p></dd>
+<dt><tt class="OPTION">-W</tt><br><tt class="OPTION">--password</tt></dt>
+<dd><p>强制口令提示(不是要删除的用户的口令)</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN56566"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGHOST</tt><br><tt class="ENVAR">PGPORT</tt><br><tt class="ENVAR">PGUSER</tt></dt>
+<dd><p>缺省连接参数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN56578"></a><h2>诊断</h2>
+<p>如果出现错误，将会显示后端错误信息。参阅 <a href="sql-droprole.html"><i>DROP ROLE</i></a> 和 <a href="app-psql.html"><span class="APPLICATION">psql</span></a> 获取可能的信息描述。数据库服务器必须在目标主机上运行。同样，任何 <span class="APPLICATION">libpq</span> 前端库可获得的缺省设置和环境变量都将生效。</p>
+</div>
+<div class="REFSECT1"><a name="AEN56584"></a><h2>例子</h2>
+<p>删除缺省数据库服务器上的 <tt class="LITERAL">joe</tt> 用户：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">dropuser joe</kbd>
+<samp class="COMPUTEROUTPUT">DROP ROLE</samp></pre>
+<p>在主机 <tt class="LITERAL">eden</tt> 上删除 <tt class="LITERAL">joe</tt> 用户，端口是 5000 ，执行命令前提示并且回显执行的命令：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">dropuser -p 5000 -h eden -i -e joe</kbd>
+<samp class="COMPUTEROUTPUT">Role "joe" will be permanently removed.
+Are you sure? (y/n) </samp><kbd class="USERINPUT">y</kbd>
+<samp class="COMPUTEROUTPUT">DROP ROLE "joe"
+DROP ROLE</samp></pre>
+</div>
+<div class="REFSECT1"><a name="AEN56601"></a><h2>又见</h2><a href="app-createuser.html"><span class="APPLICATION">createuser</span></a>, <a href="sql-droprole.html"><i>DROP ROLE</i></a>, 环境变量(<a href="libpq-envars.html">节29.12</a>)</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="app-droplang.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-ecpg.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><span class="APPLICATION">droplang</span></td><td width="34%" align="center" valign="top"><a href="reference-client.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><span class="APPLICATION">ecpg</span></td></tr>
+</table>
+</div>
+</body></html>

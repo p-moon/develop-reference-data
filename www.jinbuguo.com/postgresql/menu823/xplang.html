@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>过程语言</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="rules-triggers.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="rules.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="plpgsql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="xplang-install.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="XPLANG"></a>章36. 过程语言</h1><a name="AEN39167"></a>
+<p>PostgreSQL 允许用户定义的函数使用 SQL 和 C 之外的语言编写。通常这些额外的语言叫<i class="FIRSTTERM">过程语言</i>(PL)。如果用一种过程语言书写了一个函数，那么数据库服务器没有任何内建的办法解析该函数的源文本。实际上这些任务都传递给一个知道如何处理这些细节的处理器处理。这个处理器既可以自己做所有的分析(语法分析，执行等)工作，也可以充当 PostgreSQL 和一种现有的编程语言实现之间的"胶水"。处理器本身是一个 C 语言函数，它被编译成共享对象并且在需要的时候加载，就像其它 C 函数一样。</p>
+<p>目前在标准的 PostgreSQL 发布里有四种过程语言可用：PL/pgSQL(<a href="plpgsql.html">章37</a>), PL/Tcl(<a href="pltcl.html">章38</a>), PL/Perl(<a href="plperl.html">章39</a>), PL/Python(<a href="plpython.html">章40</a>)还有几种额外的过程语言没有包含在核心发布里。<a href="external-projects.html">附录H</a>里面有如何找到它们的信息。用户可以定义其它语言。开发一种新的过程语言的基本信息在<a href="plhandler.html">章47</a>里介绍。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="rules-triggers.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="xplang-install.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">规则与触发器的比较</td><td width="34%" align="center" valign="top"><a href="server-programming.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">安装过程语言</td></tr>
+</table>
+</div>
+</body></html>

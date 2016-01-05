@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>DROP TYPE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-droptrigger.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-droptrigger.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-dropuser.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-dropuser.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-DROPTYPE"></a>DROP TYPE</h1>
+<div class="REFNAMEDIV"><a name="AEN51475"></a><h2>名称</h2>DROP TYPE&nbsp;--&nbsp;删除一个数据类型</div>
+<a name="AEN51478"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN51480"></a><h2>语法</h2>
+<pre class="SYNOPSIS">DROP TYPE [ IF EXISTS ] <tt class="REPLACEABLE"><i>name</i></tt> [, ...] [ CASCADE | RESTRICT ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN51483"></a><h2>描述</h2>
+<p><tt class="COMMAND">DROP TYPE</tt> 将从系统表里删除用户定义的类型。只有类型所有者才可以删除类型。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51487"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">IF EXISTS</tt></dt>
+<dd><p>如果指定的类型不存在，那么发出一个 notice 而不是抛出一个错误。</p></dd>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>要删除的类型名(可以有模式修饰)</p></dd>
+<dt><tt class="LITERAL">CASCADE</tt></dt>
+<dd><p>级联删除依赖该类型的对象(比如字段、函数、操作符等等)</p></dd>
+<dt><tt class="LITERAL">RESTRICT</tt></dt>
+<dd><p>如果有依赖对象，则拒绝删除该类型。这个是缺省。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="SQL-DROPTYPE-EXAMPLES"></a><h2>例子</h2>
+<p>删除 <tt class="TYPE">box</tt> 类型：</p>
+<pre class="PROGRAMLISTING">DROP TYPE box;</pre>
+</div>
+<div class="REFSECT1"><a name="SQL-DROPTYPE-COMPATIBILITY"></a><h2>兼容性</h2>
+<p>这条命令类似于 SQL 标准里对应的命令，不过，<tt class="LITERAL">IF EXISTS</tt> 选项是 PostgreSQL 的扩展。但是要注意，PostgreSQL 里的 <tt class="COMMAND">CREATE TYPE</tt> 命令和数据类型扩展机制是和 SQL 标准里不同的。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-DROPTYPE-SEE-ALSO"></a><h2>又见</h2><a href="sql-createtype.html"><i>CREATE TYPE</i></a>, <a href="sql-altertype.html"><i>ALTER TYPE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-droptrigger.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-dropuser.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">DROP TRIGGER</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">DROP USER</td></tr>
+</table>
+</div>
+</body></html>

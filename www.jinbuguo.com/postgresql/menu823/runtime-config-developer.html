@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>开发人员选项</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="runtime-config-custom.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime-config.html">快退</a></td><td width="60%" align="center" valign="bottom">章17. 服务器配置</td><td width="10%" align="right" valign="top"><a href="runtime-config.html">快进</a></td><td width="10%" align="right" valign="top"><a href="runtime-config-short.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="RUNTIME-CONFIG-DEVELOPER">17.15. 开发人员选项</a></h1>
+<p>下面的选项目的是在 PostgreSQL 代码上使用，并且在某些情况下可以帮助恢复严重损坏了的数据库。在生产环境里没有理由使用这些设置。因此，我们把他们从样例 <tt class="FILENAME">postgresql.conf</tt> 文件中排除了出去。请注意许多这些选项要求特殊的源代码编译标志才能运转。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><a name="GUC-ALLOW-SYSTEM-TABLE-MODS"></a><tt class="VARNAME">allow_system_table_mods</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>允许修改系统表的结构。它可以被 <tt class="COMMAND">initdb</tt> 使用。这个值只能在服务器启动的时候设置。</p></dd>
+<dt><a name="GUC-DEBUG-ASSERTIONS"></a><tt class="VARNAME">debug_assertions</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>打开各种断言检查。这是调试助手。如果你经历了奇怪的问题或者崩溃，那么你可能会想把这个打开，因为它可能暴露编程的错误。要使用这个选项，我们必须在编译 PostgreSQL 的时候定义宏 <tt class="SYMBOL">USE_ASSERT_CHECKING</tt>(通过 <tt class="COMMAND">configure</tt> 选项 <tt class="OPTION">--enable-cassert</tt> 完成)。请注意，如果启用断言选项编译 PostgreSQL ，那么 <tt class="VARNAME">debug_assertions</tt> 缺省就是 <tt class="LITERAL">on</tt> 。</p></dd>
+<dt><a name="GUC-IGNORE-SYSTEM-INDEXES"></a><tt class="VARNAME">ignore_system_indexes</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>读取系统表时忽略系统索引(但是修改系统表时依然同时修改索引)。这个在从系统索引被破坏的表中恢复数据的时候很有用。该参数不能在会话启动之后修改。</p></dd>
+<dt><a name="GUC-POST-AUTH-DELAY"></a><tt class="VARNAME">post_auth_delay</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>如果为非零，那么在一个新的服务器进程启动并完成认证过程之后，就会延迟这么多秒。这样就给我们一个机会用调试器附着在一个服务器进程上跟踪认证里面的异常行为。该参数不能在会话启动之后修改。</p></dd>
+<dt><a name="GUC-PRE-AUTH-DELAY"></a><tt class="VARNAME">pre_auth_delay</tt> (<tt class="TYPE">integer</tt>)</dt>
+<dd><p>如果为非零，那么在一个新的服务器进程派生出来之后，就会延迟这么多秒，然后才会继续认证过程。这样就给我们一个机会用调试器附着在一个服务器进程上跟踪认证里面的异常行为。这个选项只能在服务器启动的时候或者在 <tt class="FILENAME">postgresql.conf</tt> 文件里设置。</p></dd>
+<dt><a name="GUC-TRACE-NOTIFY"></a><tt class="VARNAME">trace_notify</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>为 <tt class="COMMAND">LISTEN</tt> 和 <tt class="COMMAND">NOTIFY</tt> 命令生成大量调试输出。<a href="runtime-config-logging.html#GUC-CLIENT-MIN-MESSAGES">client_min_messages</a> 或 <a href="runtime-config-logging.html#GUC-LOG-MIN-MESSAGES">log_min_messages</a> 必须是 <tt class="LITERAL">DEBUG1</tt> 或者更低才能把这些输出分别发送到客户端或者服务器日志。</p></dd>
+<dt><a name="GUC-TRACE-SORT"></a><tt class="VARNAME">trace_sort</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>如果打开，发出在排序操作中的资源使用的有关信息。这个选项只有在编译 PostgreSQL 的时候定义了 <tt class="SYMBOL">TRACE_SORT</tt> 宏的时候才可用(不过，目前 <tt class="SYMBOL">TRACE_SORT</tt> 缺省就是定义了的)。</p></dd>
+<dt><tt class="VARNAME">trace_locks</tt> (<tt class="TYPE">boolean</tt>)<br><tt class="VARNAME">trace_lwlocks</tt> (<tt class="TYPE">boolean</tt>)<br><tt class="VARNAME">trace_userlocks</tt> (<tt class="TYPE">boolean</tt>)<br><tt class="VARNAME">trace_lock_oidmin</tt> (<tt class="TYPE">boolean</tt>)<br><tt class="VARNAME">trace_lock_table</tt> (<tt class="TYPE">boolean</tt>)<br><tt class="VARNAME">debug_deadlocks</tt> (<tt class="TYPE">boolean</tt>)<br><tt class="VARNAME">log_btree_build_stats</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>各种其它的代码跟踪和调试选项。</p></dd>
+<dt><a name="GUC-WAL-DEBUG"></a><tt class="VARNAME">wal_debug</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>打开 WAL 相关的调试输出。只有在编译 PostgreSQL 的时候打开了 <tt class="SYMBOL">WAL_DEBUG</tt> 宏的情况下，这个选项才可用。</p></dd>
+<dt><a name="GUC-ZERO-DAMAGED-PAGES"></a><tt class="VARNAME">zero_damaged_pages</tt> (<tt class="TYPE">boolean</tt>)</dt>
+<dd><p>如果侦测到一个损坏了的页面头通常会导致 PostgreSQL 报告一个错误，并且退出当前命令。把 <tt class="VARNAME">zero_damaged_pages</tt> 设置为 on 则令系统报告一个警告，把损坏的页面填充零，然后继续处理。这种行为会<span class="emphasis"><i class="EMPHASIS">破坏数据</i></span>，也就是所有在已经损坏页面上的行。但是它允许你绕开坏页面然后从表中尚存的未损坏页面上继续检索数据行。因此它在因为硬件或者软件错误导致的崩溃中进行恢复是很有用的。通常你不应该把它设置为 on ，除非你已经彻底放弃从崩溃的页面中恢复数据。缺省的设置是 <tt class="LITERAL">off</tt> ，并且只有超级用户可以改变它。</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="runtime-config-custom.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="runtime-config-short.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">自定义的选项</td><td width="34%" align="center" valign="top"><a href="runtime-config.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">短选项</td></tr>
+</table>
+</div>
+</body></html>

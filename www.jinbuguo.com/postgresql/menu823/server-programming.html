@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>服务器端编程</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="PART">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="infoschema-views.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="client-interfaces.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="reference.html">快进</a></td><td width="10%" align="right" valign="top"><a href="extend.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="PART"><a name="SERVER-PROGRAMMING"></a>
+<div><h1>V. 服务器端编程</h1>
+<div class="PARTINTRO"><a name="AEN36121"></a>
+<p>这部分是关于用户怎样通过增加用户定义的类型、操作符、聚集、查询语言和编程语言函数来扩展服务器功能。这些是高级主题，可能需要在阅读完并理解所有其它 PostgreSQL 手册之后才能阅读。这部分后面的章节还描述了在 PostgreSQL 里的服务器端编程语言。我们至少要读过<a href="extend.html">章33</a>的头几节才能深入阅读有关服务器端编程语言的材料。</p>
+</div>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>33. <a href="extend.html">扩展 SQL</a></dt>
+<dd><dl>
+<dt>33.1. <a href="extend-how.html">扩展性是如何实现的</a></dt>
+<dt>33.2. <a href="extend-type-system.html">PostgreSQL 类型系统</a></dt>
+<dt>33.3. <a href="xfunc.html">用户定义函数</a></dt>
+<dt>33.4. <a href="xfunc-sql.html">查询语言(SQL)函数</a></dt>
+<dt>33.5. <a href="xfunc-overload.html">函数重载</a></dt>
+<dt>33.6. <a href="xfunc-volatility.html">函数易失性范畴</a></dt>
+<dt>33.7. <a href="xfunc-pl.html">过程语言函数</a></dt>
+<dt>33.8. <a href="xfunc-internal.html">内部函数</a></dt>
+<dt>33.9. <a href="xfunc-c.html">C 语言函数</a></dt>
+<dt>33.10. <a href="xaggr.html">用户定义聚集</a></dt>
+<dt>33.11. <a href="xtypes.html">用户定义类型</a></dt>
+<dt>33.12. <a href="xoper.html">用户定义操作符</a></dt>
+<dt>33.13. <a href="xoper-optimization.html">操作符优化信息</a></dt>
+<dt>33.14. <a href="xindex.html">扩展索引接口</a></dt>
+</dl></dd>
+<dt>34. <a href="triggers.html">触发器</a></dt>
+<dd><dl>
+<dt>34.1. <a href="trigger-definition.html">触发器行为概述</a></dt>
+<dt>34.2. <a href="trigger-datachanges.html">数据改变的可视性</a></dt>
+<dt>34.3. <a href="trigger-interface.html">用 C 写触发器</a></dt>
+<dt>34.4. <a href="trigger-example.html">一个完整的例子</a></dt>
+</dl></dd>
+<dt>35. <a href="rules.html">规则系统</a></dt>
+<dd><dl>
+<dt>35.1. <a href="querytree.html">查询树</a></dt>
+<dt>35.2. <a href="rules-views.html">视图和规则系统</a></dt>
+<dt>35.3. <a href="rules-update.html">在 <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt> 上的规则</a></dt>
+<dt>35.4. <a href="rules-privileges.html">规则和权限</a></dt>
+<dt>35.5. <a href="rules-status.html">规则和命令状态</a></dt>
+<dt>35.6. <a href="rules-triggers.html">规则与触发器的比较</a></dt>
+</dl></dd>
+<dt>36. <a href="xplang.html">过程语言</a></dt>
+<dd><dl>
+<dt>36.1. <a href="xplang-install.html">安装过程语言</a></dt>
+</dl></dd>
+<dt>37. <a href="plpgsql.html">PL/pgSQL - SQL 过程语言</a></dt>
+<dd><dl>
+<dt>37.1. <a href="plpgsql-overview.html">概述</a></dt>
+<dt>37.2. <a href="plpgsql-development-tips.html">开发 PL/pgSQL 的一些提示</a></dt>
+<dt>37.3. <a href="plpgsql-structure.html">PL/pgSQL 的结构</a></dt>
+<dt>37.4. <a href="plpgsql-declarations.html">声明</a></dt>
+<dt>37.5. <a href="plpgsql-expressions.html">表达式</a></dt>
+<dt>37.6. <a href="plpgsql-statements.html">基本语句</a></dt>
+<dt>37.7. <a href="plpgsql-control-structures.html">控制结构</a></dt>
+<dt>37.8. <a href="plpgsql-cursors.html">游标</a></dt>
+<dt>37.9. <a href="plpgsql-errors-and-messages.html">错误和消息</a></dt>
+<dt>37.10. <a href="plpgsql-trigger.html">触发器过程</a></dt>
+<dt>37.11. <a href="plpgsql-porting.html">从 Oracle PL/SQL 进行移植</a></dt>
+</dl></dd>
+<dt>38. <a href="pltcl.html">PL/Tcl - Tcl 过程语言</a></dt>
+<dd><dl>
+<dt>38.1. <a href="pltcl-overview.html">概述</a></dt>
+<dt>38.2. <a href="pltcl-functions.html">PL/Tcl 函数和参数</a></dt>
+<dt>38.3. <a href="pltcl-data.html">PL/Tcl 里的数据值</a></dt>
+<dt>38.4. <a href="pltcl-global.html">PL/Tcl 里的全局量</a></dt>
+<dt>38.5. <a href="pltcl-dbaccess.html">在 PL/Tcl 里访问数据库</a></dt>
+<dt>38.6. <a href="pltcl-trigger.html">PL/Tcl 里的触发器过程</a></dt>
+<dt>38.7. <a href="pltcl-unknown.html">模块和 <code class="FUNCTION">unknown</code> 的命令</a></dt>
+<dt>38.8. <a href="pltcl-procnames.html">Tcl 过程名字</a></dt>
+</dl></dd>
+<dt>39. <a href="plperl.html">PL/Perl - Perl 过程语言</a></dt>
+<dd><dl>
+<dt>39.1. <a href="plperl-funcs.html">PL/Perl 函数和参数</a></dt>
+<dt>39.2. <a href="plperl-database.html">从 PL/Perl 访问数据库</a></dt>
+<dt>39.3. <a href="plperl-data.html">PL/Perl 里的数据值</a></dt>
+<dt>39.4. <a href="plperl-global.html">PL/Perl 里的全局变量</a></dt>
+<dt>39.5. <a href="plperl-trusted.html">可信的和不可信的 PL/Perl</a></dt>
+<dt>39.6. <a href="plperl-triggers.html">PL/Perl 触发器</a></dt>
+<dt>39.7. <a href="plperl-missing.html">限制及缺少的特性</a></dt>
+</dl></dd>
+<dt>40. <a href="plpython.html">PL/Python - Python 过程语言</a></dt>
+<dd><dl>
+<dt>40.1. <a href="plpython-funcs.html">PL/Python 函数</a></dt>
+<dt>40.2. <a href="plpython-trigger.html">触发器函数</a></dt>
+<dt>40.3. <a href="plpython-database.html">数据库访问</a></dt>
+</dl></dd>
+<dt>41. <a href="spi.html">服务器编程接口</a></dt>
+<dd><dl>
+<dt>41.1. <a href="spi-interface.html">接口函数</a></dt>
+<dt>41.2. <a href="spi-interface-support.html">接口支持函数</a></dt>
+<dt>41.3. <a href="spi-memory.html">内存管理</a></dt>
+<dt>41.4. <a href="spi-visibility.html">数据改变的可视性</a></dt>
+<dt>41.5. <a href="spi-examples.html">例子</a></dt>
+</dl></dd>
+</dl>
+</div>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="infoschema-views.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="extend.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="LITERAL">views</tt></td><td width="34%" align="center" valign="top">&nbsp;</td><td width="33%" align="right" valign="top">扩展 SQL</td></tr>
+</table>
+</div>
+</body></html>

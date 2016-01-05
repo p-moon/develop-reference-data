@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PL/Tcl 里的触发器过程</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="pltcl-dbaccess.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="pltcl.html">快退</a></td><td width="60%" align="center" valign="bottom">章38. PL/Tcl - Tcl 过程语言</td><td width="10%" align="right" valign="top"><a href="pltcl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="pltcl-unknown.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLTCL-TRIGGER">38.6. PL/Tcl 里的触发器过程</a></h1><a name="AEN41112"></a>
+<p>触发器过程可以用 PL/Tcl 写。PostgreSQL 要求当做触发器调用的过程必需声明为没有参数并且返回类型为 <tt class="LITERAL">trigger</tt> 的函数。</p>
+<p>触发器管理器传递给过程体的信息是通过下面变量传递的：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="VARNAME">$TG_name</tt></dt>
+<dd><p><tt class="COMMAND">CREATE TRIGGER</tt> 语句里的触发器名称。</p></dd>
+<dt><tt class="VARNAME">$TG_relid</tt></dt>
+<dd><p>导致触发器被调用的表的对象 ID 。</p></dd>
+<dt><tt class="VARNAME">$TG_table_name</tt></dt>
+<dd><p>导致触发器被调用的表的名字。</p></dd>
+<dt><tt class="VARNAME">$TG_table_schema</tt></dt>
+<dd><p>导致触发器被调用的表的模式。</p></dd>
+<dt><tt class="VARNAME">$TG_relatts</tt></dt>
+<dd><p>以一个空表元素为前导的表中字段名称的 Tcl 列表。所以用 Tcl 命令 <code class="FUNCTION">lsearch</code> 在列表里查找元素名称时，返回的从 1 开始计数的正整数，与 PostgreSQL 里字段编号的传统一样。已经被删除掉的字段位置的空的列表元素仍然会出现，这样，属性编号与字段的对应就是正确的。</p></dd>
+<dt><tt class="VARNAME">$TG_when</tt></dt>
+<dd><p>由触发器调用事件决定的字符串 <tt class="LITERAL">BEFORE</tt> 或 <tt class="LITERAL">AFTER</tt></p></dd>
+<dt><tt class="VARNAME">$TG_level</tt></dt>
+<dd><p>由触发器调用事件决定的字符串 <tt class="LITERAL">ROW</tt> 或 <tt class="LITERAL">STATEMENT</tt></p></dd>
+<dt><tt class="VARNAME">$TG_op</tt></dt>
+<dd><p>由触发器调用事件决定的字符串 <tt class="LITERAL">INSERT</tt>, <tt class="LITERAL">UPDATE</tt>, <tt class="LITERAL">DELETE</tt></p></dd>
+<dt><tt class="VARNAME">$NEW</tt></dt>
+<dd><p>一个关联数组，包含 <tt class="COMMAND">INSERT</tt> 或 <tt class="COMMAND">UPDATE</tt> 动作的新表行，如果是 <tt class="COMMAND">DELETE</tt> 则为空。该数组是用字段名做索引的。那些为空的字段不会在数组中出现。</p></dd>
+<dt><tt class="VARNAME">$OLD</tt></dt>
+<dd><p>一个关联数组，包含 <tt class="COMMAND">UPDATE</tt> 或 <tt class="COMMAND">DELETE</tt> 动作的新表行，如果是 <tt class="COMMAND">INSERT</tt> 则为空。该数组是用字段名做索引的。那些为空的字段不会在数组中出现。</p></dd>
+<dt><tt class="VARNAME">$args</tt></dt>
+<dd><p>如同在 <tt class="COMMAND">CREATE TRIGGER</tt> 语句里给出的参数一样的 Tcl 参数表。这些参数在过程体里可以通过 <tt class="LITERAL">$1</tt> ... <tt class="LITERAL">$<tt class="REPLACEABLE"><i>n</i></tt></tt> 来访问。</p></dd>
+</dl>
+</div>
+<p>触发器过程返回的值是字符串 <tt class="LITERAL">OK</tt> 或 <tt class="LITERAL">SKIP</tt> 之一，或者一个像 <tt class="LITERAL">array get</tt> Tcl 命令返回的数组那样的东西。如果返回值是 <tt class="LITERAL">OK</tt> ，触发触发器的操作(<tt class="COMMAND">INSERT</tt>/<tt class="COMMAND">UPDATE</tt>/<tt class="COMMAND">DELETE</tt>)将会正常进行。<tt class="LITERAL">SKIP</tt> 告诉触发器管理器不声不响地忽略该行的操作。如果返回一个数组，那么它告诉 PL/Tcl 返回一个修改后的行给触发器管理器，该行将代替在 <tt class="VARNAME">$NEW</tt>(只在 <tt class="COMMAND">INSERT</tt> 和 <tt class="COMMAND">UPDATE</tt> 中起作用)中给出的行。当然，这些只有在触发器是 <tt class="LITERAL">BEFORE</tt> 和 <tt class="COMMAND">FOR EACH ROW</tt> 时才有意义；否则返回值将被忽略。</p>
+<p>下面是一个小的触发器过程的例子，它强制表内的一个整数值对行的更新次数进行跟踪。对插入的新行，该值初始化为 0 并且在每次更新操作中加一。</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION trigfunc_modcount() RETURNS trigger AS $$
+    switch $TG_op {
+        INSERT {
+            set NEW($1) 0
+        }
+        UPDATE {
+            set NEW($1) $OLD($1)
+            incr NEW($1)
+        }
+        default {
+            return OK
+        }
+    }
+    return [array get NEW]
+$$ LANGUAGE pltcl;
+
+CREATE TABLE mytab (num integer, description text, modcnt integer);
+
+CREATE TRIGGER trig_mytab_modcount BEFORE INSERT OR UPDATE ON mytab
+    FOR EACH ROW EXECUTE PROCEDURE trigfunc_modcount('modcnt');</pre>
+<p>请注意触发器过程本身并不知道字段名字；那些是从触发器参数中提供的。这样就让可以将触发器过程复用于不同的表。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="pltcl-dbaccess.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="pltcl-unknown.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">在 PL/Tcl 里访问数据库</td><td width="34%" align="center" valign="top"><a href="pltcl.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">模块和 <code class="FUNCTION">unknown</code> 的命令</td></tr>
+</table>
+</div>
+</body></html>

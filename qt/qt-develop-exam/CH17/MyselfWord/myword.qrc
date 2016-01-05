@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/editcopy.png</file>
+        <file>images/editcut.png</file>
+        <file>images/editpaste.png</file>
+        <file>images/editredo.png</file>
+        <file>images/editundo.png</file>
+        <file>images/filenew.png</file>
+        <file>images/fileopen.png</file>
+        <file>images/fileprint.png</file>
+        <file>images/filesave.png</file>
+        <file>images/textbold.png</file>
+        <file>images/textcenter.png</file>
+        <file>images/textitalic.png</file>
+        <file>images/textjustify.png</file>
+        <file>images/textleft.png</file>
+        <file>images/textright.png</file>
+        <file>images/textunder.png</file>
+    </qresource>
+</RCC>

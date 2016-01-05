@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>基因算法</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="geqo-intro.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="geqo.html">快退</a></td><td width="60%" align="center" valign="bottom">章48. 基因查询优化器</td><td width="10%" align="right" valign="top"><a href="geqo.html">快进</a></td><td width="10%" align="right" valign="top"><a href="geqo-pg-intro.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="GEQO-INTRO2">48.2. 基因算法</a></h1>
+<p>基因算法(GA)是一种启发式的优化法，它是通过不确定的随机搜索进行操作。优化问题的可能解的集合被认为是<i class="FIRSTTERM">个体</i>组成的<i class="FIRSTTERM">种群</i>。一个个体对它的环境的适应程度由它的<i class="FIRSTTERM">适应性</i>表示。</p>
+<p>一个个体在搜索空间里的参照物用<i class="FIRSTTERM">染色体</i>表示(实际上是一套字符串)。一个<i class="FIRSTTERM">基因</i>是染色体的一个片段，基因是被优化的单个参数的编码。对一个基因的典型的编码可以是<i class="FIRSTTERM">二进制</i>或<i class="FIRSTTERM">整数</i>。</p>
+<p>通过仿真进化过程的<i class="FIRSTTERM">重组</i>、<i class="FIRSTTERM">变异</i>、<i class="FIRSTTERM">选择</i>找到新一代的搜索点，它们的平均适应性要比它们的祖先好。</p>
+<p>根据 <span class="SYSTEMITEM">comp.ai.genetic</span> FAQ，不论怎么强调 GA 在解决一个问题时不是纯随机搜索都不过份。GA 使用随机处理，但是结果明显不是随机的(比随机更好)。</p>
+<div class="FIGURE"><a name="GEQO-DIAGRAM"></a>
+<p><b>Figure 48-1. 基因算法的结构化框图</b></p>
+<div class="INFORMALTABLE"><a name="AEN68674"></a>
+<table border="0" frame="void" class="CALSTABLE"><col><col>
+<tbody>
+<tr><td>P(t)</td><td>时刻 t 的父代</td></tr>
+<tr><td>P''(t)</td><td>时刻 t 的子代</td></tr>
+</tbody>
+</table>
+</div>
+<pre class="LITERALLAYOUT">+=========================================+
+|&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  Algorithm GA  &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;|
++=========================================+
+| INITIALIZE t := 0                       |
++=========================================+
+| INITIALIZE P(t)                         |
++=========================================+
+| evaluate FITNESS of P(t)                |
++=========================================+
+| while not STOPPING CRITERION do         |
+|   +-------------------------------------+
+|   | P'(t)  := RECOMBINATION{P(t)}       |
+|   +-------------------------------------+
+|   | P''(t) := MUTATION{P'(t)}           |
+|   +-------------------------------------+
+|   | P(t+1) := SELECTION{P''(t) + P(t)}  |
+|   +-------------------------------------+
+|   | evaluate FITNESS of P''(t)          |
+|   +-------------------------------------+
+|   | t := t + 1                          |
++===+=====================================+</pre>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="geqo-intro.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="geqo-pg-intro.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">作为复杂优化问题的查询处理</td><td width="34%" align="center" valign="top"><a href="geqo.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PostgreSQL 里的基因查询优化(GEQO)</td></tr>
+</table>
+</div>
+</body></html>

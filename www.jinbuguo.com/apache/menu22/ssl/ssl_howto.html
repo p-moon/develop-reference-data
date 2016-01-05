@@ -1,0 +1,218 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>SSL/TLS高强度加密：如何...? － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">SSL/TLS</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>SSL/TLS高强度加密：如何...?</h1>
+
+
+<blockquote>
+<p>这个问题的解决方案是简单而且直接的，只是为了给读者做做练习。</p>
+
+<p class="cite">-- <cite>标准教科书</cite></p>
+</blockquote>
+
+<p>由于SSL、HTTP、Apache三者共同对请求进行处理，这使得在支持SSL的web服务器上实现特殊的安全制约变得不那么简单。本节介绍了普通情况下的解决方案，作为找出最终方案的第一步。采用这些方案以前，先要尽量地去理解，不了解其限制和相关性就贸然使用是最糟糕的了。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="ciphersuites" id="ciphersuites">加密方案和强制性高等级安全</a></h2>
+
+<ul>
+<li><a href="#realssl">仅使用SSLv2的服务器</a></li>
+<li><a href="#onlystrong">仅接受高强度加密请求的服务器</a></li>
+<li><a href="#upgradeenc">以服务器为网关的加密</a></li>
+<li><a href="#strongurl">更强的针对目录的加密需求</a></li>
+</ul>
+
+<h3><a name="realssl" id="realssl">如何建立一个仅使用SSLv2的服务器？</a></h3>
+
+    <p>可以这样建立一个仅使用SSLv2协议及其密码算法的服务器：</p>
+
+    <div class="example"><h3>httpd.conf</h3><p><code>
+      SSLProtocol -all +SSLv2<br />
+      SSLCipherSuite SSLv2:+HIGH:+MEDIUM:+LOW:+EXP<br />
+    </code></p></div>
+
+
+<h3><a name="onlystrong" id="onlystrong">如何建立一个仅接受高强度加密请求的SSL服务器？</a></h3>
+
+    <p>如下设置为仅使用最强的七种密码算法：</p>
+    <div class="example"><h3>httpd.conf</h3><p><code>
+      SSLProtocol all<br />
+      SSLCipherSuite HIGH:MEDIUM<br />
+    </code></p></div>
+
+
+<h3><a name="upgradeenc" id="upgradeenc">如何建立一个仅接受高强度加密请求的SSL服务器，而又允许对外浏览器使用更强的加密？</a></h3>
+
+    <p>这个功能被称为以服务器为网关的加密(Server Gated Cryptography[SGC])，在随mod_ssl发布的<code>README.GlobalID</code>文档中有详细说明。简单地说就是：服务器拥有一个由来自Verisign的一个特殊的CA证书签发的服务器身份证，从而在对外浏览器上实现高强度加密。其过程如下：浏览器使用对外密码进行连接，服务器返回其全局ID身份证，浏览器校验后在后继HTTP通讯产生之前提升其密码组。现在的问题是：如何允许这样的提升，而又强制性地使用高强度加密。换句话说就是：浏览器必须在开始连接时就使用高强度加密，或者提升到高强度加密，但是维持对外密码是不允许的。以下巧妙地解决了这个问题：</p>
+    <div class="example"><h3>httpd.conf</h3><p><code>
+      # 允许在初始握手阶段使用所有的密码，以允许对外服务器通过SGC功能提升密码组<br />
+      SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL<br />
+      <br />
+      &lt;Directory /usr/local/apache2/htdocs&gt;<br />
+      # 但是最终会拒绝所有没有提升密码组的浏览器<br />
+      SSLRequire %{SSL_CIPHER_USEKEYSIZE} &gt;= 128<br />
+      &lt;/Directory&gt;
+    </code></p></div>
+
+
+<h3><a name="strongurl" id="strongurl">如何建立接受所有类型密码的SSL服务器，但对特定的URL实施高强度加密？</a></h3>
+
+    <p>显然，不能使用服务器全局设置<code class="directive"><a href="../mod/mod_ssl.html#sslciphersuite">SSLCipherSuite</a></code>，它会限制密码为强类型。但是，mod_ssl允许重配置针对目录的密码组，并自动进行一个带有服重新配置的SSL参数的重协商。因此，其解决方案成了：</p>
+    <div class="example"><p><code>
+      # 在一般情况下的处理是宽松的<br />
+      SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL<br />
+      <br />
+      &lt;Location /strong/area&gt;<br />
+      # 但对于 https://hostname/strong/area/ 及其以下的内容要求高强度密码<br />
+      SSLCipherSuite HIGH:MEDIUM<br />
+      &lt;/Location&gt;
+    </code></p></div>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="accesscontrol" id="accesscontrol">客户认证和访问控制</a></h2>
+
+<ul>
+<li><a href="#allclients">简单的基于证书的客户认证</a></li>
+<li><a href="#arbitraryclients">选择性的基于证书的客户认证</a></li>
+<li><a href="#certauthenticate">特殊的基于证书的客户认证</a></li>
+<li><a href="#intranet">intranet和internet的认证</a></li>
+</ul>
+
+<h3><a name="allclients" id="allclients">在知道所有客户的情况下，如何实现基于证书的客户认证？</a></h3>
+
+    <p>如果你了解你的用户群体(比如：一个封闭的用户组)，正如在一个Intranet中，则可以使用一般的证书认证。所有要做的事情只是，建立由你自己的CA证书签发的客户证书<code>ca.crt</code> ，并依此证书校验客户。</p>
+    <div class="example"><h3>httpd.conf</h3><p><code>
+      # 要求客户端必须拥有由我们自己的CA(其证书是ca.crt)直接签名的证书<br />
+      SSLVerifyClient require<br />
+      SSLVerifyDepth 1<br />
+      SSLCACertificateFile conf/ssl.crt/ca.crt
+    </code></p></div>
+
+
+<h3><a name="arbitraryclients" id="arbitraryclients">如何针对一个特定的URL对客户实施基于证书的认证，而同时又允许任何客户访问服务器其余部分？</a></h3>
+
+    <p>这又要用到<code class="module"><a href="../mod/mod_ssl.html">mod_ssl</a></code>提供的针对目录的重配置功能：</p>
+
+    <div class="example"><h3>httpd.conf</h3><p><code>
+    SSLVerifyClient none<br />
+    SSLCACertificateFile conf/ssl.crt/ca.crt<br />
+    <br />
+    &lt;Location /secure/area&gt;<br />
+    SSLVerifyClient require<br />
+    SSLVerifyDepth 1<br />
+    &lt;/Location&gt;<br />
+    </code></p></div>
+
+
+<h3><a name="certauthenticate" id="certauthenticate">如何针对某些URL对特定的客户实施基于证书的认证，而同时又允许任何客户访问服务器其余部分？</a></h3>
+
+    <p>其关键在于对客户证书的各个组成部分进行验证，一般就是指验证 Distinguished Name (DN) 的全部或部分。有基于<code class="module"><a href="../mod/mod_auth_basic.html">mod_auth_basic</a></code>和基于<code class="directive"><a href="../mod/mod_ssl.html#sslrequire">SSLRequire</a></code>类型的两种方法以验证。第一种方法适合用于客户完全属于不同类型，并为<em>所有</em>客户建立了密码数据库的情形；第二种方法适用于客户都属于一个被编码写入DN的公共分级的一部分的情形，因为匹配客户会更容易。</p>
+
+    <p>第一种方法：</p>
+    <div class="example"><h3>httpd.conf</h3><pre>
+SSLVerifyClient      none
+&lt;Directory /usr/local/apache2/htdocs/secure/area&gt;
+
+SSLVerifyClient      require
+SSLVerifyDepth       5
+SSLCACertificateFile conf/ssl.crt/ca.crt
+SSLCACertificatePath conf/ssl.crt
+SSLOptions           +FakeBasicAuth
+SSLRequireSSL
+AuthName             "Snake Oil Authentication"
+AuthType             Basic
+AuthBasicProvider    file
+AuthUserFile         /usr/local/apache2/conf/httpd.passwd
+require              valid-user
+&lt;/Directory&gt;</pre></div>
+
+    <div class="example"><h3>httpd.passwd</h3><pre>
+/C=DE/L=Munich/O=Snake Oil, Ltd./OU=Staff/CN=Foo:xxj31ZMTZzkVA
+/C=US/L=S.F./O=Snake Oil, Ltd./OU=CA/CN=Bar:xxj31ZMTZzkVA
+/C=US/L=L.A./O=Snake Oil, Ltd./OU=Dev/CN=Quux:xxj31ZMTZzkVA</pre></div>
+
+    <p>第二种方法：</p>
+
+    <div class="example"><h3>httpd.conf</h3><pre>
+SSLVerifyClient      none
+&lt;Directory /usr/local/apache2/htdocs/secure/area&gt;
+
+  SSLVerifyClient      require
+  SSLVerifyDepth       5
+  SSLCACertificateFile conf/ssl.crt/ca.crt
+  SSLCACertificatePath conf/ssl.crt
+  SSLOptions           +FakeBasicAuth
+  SSLRequireSSL
+  SSLRequire       %{SSL_CLIENT_S_DN_O}  eq "Snake Oil, Ltd." \
+               and %{SSL_CLIENT_S_DN_OU} in {"Staff", "CA", "Dev"}
+&lt;/Directory&gt;</pre></div>
+
+
+<h3><a name="intranet" id="intranet">如何要求来自Internet的客户使用强密码的HTTPS，并对其访问Intranet站点的子区域实施或者基本的或者客户证书的认证，而同时又允许Intranet的客户进行普通的HTTP访问？</a></h3>
+
+   <p>假设Intranet客户的IP地址是192.160.1.0/24，Intranet站点子区域的URL是<code>/subarea</code> ，则可以在HTTPS虚拟主机以外这样配置(以同时作用于HTTPS和HTTP)：</p>
+
+    <div class="example"><h3>httpd.conf</h3><pre>
+SSLCACertificateFile conf/ssl.crt/company-ca.crt
+
+&lt;Directory /usr/local/apache2/htdocs&gt;
+# subarea以外的区域只允许来自Intranet的访问
+Order                deny,allow
+Deny                 from all
+Allow                from 192.168.1.0/24
+&lt;/Directory&gt;
+
+&lt;Directory /usr/local/apache2/htdocs/subarea&gt;
+# 在subarea以内，允许所有来自Intranet的访问，
+# 但对来自Internet的访问，仅允许HTTPS+Strong-Cipher+Password
+# 或者HTTPS+Strong-Cipher+Client-Certificate
+
+# 如果使用了HTTPS，则确保使用高强度加密
+# 同时允许客户以基本认证的形式认证
+SSLVerifyClient      optional
+SSLVerifyDepth       1
+SSLOptions           +FakeBasicAuth +StrictRequire
+SSLRequire           %{SSL_CIPHER_USEKEYSIZE} &gt;= 128
+
+# 强制来自Internet的客户使用HTTPS
+RewriteEngine        on
+RewriteCond          %{REMOTE_ADDR} !^192\.168\.1\.[0-9]+$
+RewriteCond          %{HTTPS} !=on
+RewriteRule          .* - [F]
+
+# 允许网络访问和基本认证
+Satisfy              any
+
+# 控制网络访问
+Order                deny,allow
+Deny                 from all
+Allow                192.168.1.0/24
+
+# HTTP基本认证
+AuthType             basic
+AuthName             "Protected Intranet Area"
+AuthBasicProvider    file
+AuthUserFile         conf/protected.passwd
+Require              valid-user
+&lt;/Directory&gt;</pre></div>
+
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

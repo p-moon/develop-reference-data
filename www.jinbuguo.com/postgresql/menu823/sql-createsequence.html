@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE SEQUENCE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createschema.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createschema.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createtable.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createtable.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATESEQUENCE"></a>CREATE SEQUENCE</h1>
+<div class="REFNAMEDIV"><a name="AEN48547"></a><h2>名称</h2>CREATE SEQUENCE&nbsp;--&nbsp;定义一个新序列发生器</div>
+<a name="AEN48550"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN48552"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE [ TEMPORARY | TEMP ] SEQUENCE <tt class="REPLACEABLE"><i>name</i></tt> [ INCREMENT [ BY ] <tt class="REPLACEABLE"><i>increment</i></tt> ]
+    [ MINVALUE <tt class="REPLACEABLE"><i>minvalue</i></tt> | NO MINVALUE ] [ MAXVALUE <tt class="REPLACEABLE"><i>maxvalue</i></tt> | NO MAXVALUE ]
+    [ START [ WITH ] <tt class="REPLACEABLE"><i>start</i></tt> ] [ CACHE <tt class="REPLACEABLE"><i>cache</i></tt> ] [ [ NO ] CYCLE ]
+    [ OWNED BY { <tt class="REPLACEABLE"><i>table</i></tt>.<tt class="REPLACEABLE"><i>column</i></tt> | NONE } ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN48562"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE SEQUENCE</tt> 将向当前数据库里增加一个新的序列号生成器。包括创建和初始化一个新的名为 <tt class="REPLACEABLE"><i>name</i></tt> 的单行表。生成器将被使用此命令的用户所有。</p>
+<p>如果给出了一个模式名，那么该序列就在给定的模式中创建的。否则它会在当前模式中创建。临时序列存在于一个特殊的模式中，因此创建临时序列的时候不能给出模式名。序列名必需和同一模式中的其它序列、表、索引、视图的名字不同。</p>
+<p>在创建序列后，你可以使用 <code class="FUNCTION">nextval</code>, <code class="FUNCTION">currval</code>, <code class="FUNCTION">setval</code> 函数操作序列。这些函数在<a href="functions-sequence.html">节9.12</a>中有详细文档。</p>
+<p>尽管你不能直接更新一个序列，但你可以使用</p>
+<pre class="PROGRAMLISTING">SELECT * FROM <tt class="REPLACEABLE"><i>name</i></tt>;</pre>
+<p>检查一个序列的参数和当前状态。特别是序列的 <tt class="LITERAL">last_value</tt> 字段显示了任意后端进程最后分配的数值。当然，如果其它进程正积极地使用 <code class="FUNCTION">nextval</code> ，这些值在被打印出来的时候可能就已经过时了。</p>
+</div>
+<div class="REFSECT1"><a name="AEN48578"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">TEMPORARY</tt> 或 <tt class="LITERAL">TEMP</tt></dt>
+<dd><p>如果声明了这个修饰词，那么该序列对象只为这个会话创建，并且在会话结束的时候自动删除。在临时序列存在的时候，除非用模式修饰的名字引用，否则同名永久序列是不可见的(在同一会话里)。</p></dd>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>将要创建的序列名(可以用模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>increment</i></tt></dt>
+<dd><p>可选子句 <tt class="LITERAL">INCREMENT BY <tt class="REPLACEABLE"><i>increment</i></tt></tt> 指定序列的步长。一个正数将生成一个递增的序列，一个负数将生成一个递减的序列。缺省值是 1 。</p></dd>
+<dt><tt class="REPLACEABLE"><i>minvalue</i></tt><br><tt class="LITERAL">NO MINVALUE</tt></dt>
+<dd><p>可选的子句 <tt class="LITERAL">MINVALUE <tt class="REPLACEABLE"><i>minvalue</i></tt></tt> 指定序列的最小值。如果没有声明这个子句或者声明了 <tt class="OPTION">NO MINVALUE</tt> ，那么递增序列的缺省为 1 ，递减序列的缺省为 -2<SUP>63</SUP>-1 。</p></dd>
+<dt><tt class="REPLACEABLE"><i>maxvalue</i></tt><br><tt class="LITERAL">NO MAXVALUE</tt></dt>
+<dd><p>可选的子句 <tt class="LITERAL">MAXVALUE <tt class="REPLACEABLE"><i>maxvalue</i></tt></tt> 指定序列的最大值。如果没有声明这个子句或者声明了 <tt class="OPTION">NO MAXVALUE</tt> ，那么递增序列的缺省为 2<SUP>63</SUP>-1 ，递减序列的缺省为 -1 。</p></dd>
+<dt><tt class="REPLACEABLE"><i>start</i></tt></dt>
+<dd><p>可选的子句 <tt class="LITERAL">START WITH <tt class="REPLACEABLE"><i>start</i></tt> </tt> 指定序列的起点。缺省初始值对于递增序列为 <tt class="REPLACEABLE"><i>minvalue</i></tt> ，对于递减序列为 <tt class="REPLACEABLE"><i>maxvalue</i></tt> 。</p></dd>
+<dt><tt class="REPLACEABLE"><i>cache</i></tt></dt>
+<dd><p>可选的子句 <tt class="LITERAL">CACHE <tt class="REPLACEABLE"><i>cache</i></tt></tt> 为快速访问而在内存里预先存储多少个序列号。最小值(也是缺省值)是 1 ，表示一次只能生成一个值，也就是说没有缓存。</p></dd>
+<dt><tt class="LITERAL">CYCLE</tt><br><tt class="LITERAL">NO CYCLE</tt></dt>
+<dd><p><tt class="LITERAL">CYCLE</tt> 选项可用于使序列到达 <tt class="REPLACEABLE"><i>maxvalue</i></tt> 或 <tt class="REPLACEABLE"><i>minvalue</i></tt> 时可循环并继续下去。也就是如果达到极限，生成的下一个数据将分别是 <tt class="REPLACEABLE"><i>minvalue</i></tt> 或 <tt class="REPLACEABLE"><i>maxvalue</i></tt> 。</p>
+<p>如果声明了 <tt class="LITERAL">NO CYCLE</tt> ，那么在序列达到其最大值之后任何对 <code class="FUNCTION">nextval</code> 的调用都强返回一个错误。如果既没有声明 <tt class="LITERAL">CYCLE</tt> 也没有声明 <tt class="LITERAL">NO CYCLE</tt> ，那么 <tt class="LITERAL">NO CYCLE</tt> 是缺省。</p></dd>
+<dt><tt class="LITERAL">OWNED BY</tt> <tt class="REPLACEABLE"><i>table</i></tt>.<tt class="REPLACEABLE"><i>column</i></tt><br><tt class="LITERAL">OWNED BY NONE</tt></dt>
+<dd><p><tt class="LITERAL">OWNED BY</tt> 选项将序列关联到一个特定的表字段上。这样，在删除那个字段或其所在表的时候将自动删除绑定的序列。指定的表和序列必须被同一个用户所拥有，并且在在同一个模式中。默认的 <tt class="LITERAL">OWNED BY NONE</tt> 表示不存在这样的关联。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN48666"></a><h2>注意</h2>
+<p>使用 <tt class="COMMAND">DROP SEQUENCE</tt> 删除一个序列。</p>
+<p>序列是基于 <tt class="TYPE">bigint</tt> 运算的，因此其范围不能超过八字节的整数范围(-9223372036854775808 到 9223372036854775807)。在一些古老的平台上可能没有对八字节整数的编译器支持，这种情况下序列使用普通的 <tt class="TYPE">integer</tt> 运算范围(-2147483648 到 +2147483647)。</p>
+<p>如果 <tt class="REPLACEABLE"><i>cache</i></tt> 大于一，并且这个序列对象将被用于多会话并发的场合，那么可能会有不可预料的结果发生。每个会话在每次访问序列对象的过程中都将分配并缓存随后的序列值，并且相应增加序列对象的 <tt class="LITERAL">last_value</tt> 。这样，同一个事务中的随后的 <tt class="REPLACEABLE"><i>cache</i></tt>-1 次 <code class="FUNCTION">nextval</code> 将只是返回预先分配的数值，而不是使用动序列对象。因此，任何在会话中分配了却没有使用的数字都将在会话结束时丢失，从而导致序列里面出现"空洞"。</p>
+<p>另外，尽管系统保证为多个会话分配独立的序列值，但是如果考虑所有会话，那么这个数值可能会丢失顺序。比如，如果 <tt class="REPLACEABLE"><i>cache</i></tt> 为 10 ，那么会话 A 保留了 1..10 并且返回 <code class="FUNCTION">nextval</code>=1 ，然后会话 B 可能会保留 11..20 然后在会话 A 生成 <tt class="LITERAL">nextval</tt>=2 之前返回 <code class="FUNCTION">nextval</code>=11 。因此，对于 <tt class="REPLACEABLE"><i>cache</i></tt> 等于一的情况，可以安全地假设 <code class="FUNCTION">nextval</code> 值是顺序生成的；而如果把 <tt class="REPLACEABLE"><i>cache</i></tt> 设置为大于一，那么你只能假设 <code class="FUNCTION">nextval</code> 值总是保持唯一，却不按顺序生成。同样，<tt class="LITERAL">last_value</tt> 将反映任何会话保留的最后数值，不管它是否曾被 <code class="FUNCTION">nextval</code> 返回。</p>
+<p>另外一个考虑是在这样的序列上执行的 <code class="FUNCTION">setval</code> 将不会被其它会话注意到，直到它们用光他们自己缓存的数值。</p>
+</div>
+<div class="REFSECT1"><a name="AEN48692"></a><h2>例子</h2>
+<p>创建一个叫 <tt class="LITERAL">serial</tt> 的递增序列，从 101 开始：</p>
+<pre class="PROGRAMLISTING">CREATE SEQUENCE serial START 101;</pre>
+<p>从此序列中选出下一个数字：</p>
+<pre class="PROGRAMLISTING">SELECT nextval('serial');
+
+ nextval
+---------
+     114</pre>
+<p>在一个 <tt class="COMMAND">INSERT</tt> 中使用此序列：</p>
+<pre class="PROGRAMLISTING">INSERT INTO distributors VALUES (nextval('serial'), 'nothing');</pre>
+<p>在一个 <tt class="COMMAND">COPY FROM</tt> 后更新序列：</p>
+<pre class="PROGRAMLISTING">BEGIN;
+COPY distributors FROM 'input_file';
+SELECT setval('serial', max(id)) FROM distributors;
+END;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN48705"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">CREATE SEQUENCE</tt> 遵循 SQL ，只有下面的例外：</p>
+<ul>
+<li><p>还不支持标准的 <tt class="LITERAL">AS &lt;数据类型&gt;</tt> 表达式</p></li>
+<li><p>使用 <code class="FUNCTION">nextval()</code> 函数而不是标准的 <tt class="COMMAND">NEXT VALUE FOR</tt> 表达式获取下一个数值</p></li>
+<li><p><tt class="LITERAL">OWNED BY</tt> 子句是 PostgreSQL 的扩展</p></li>
+</ul>
+</div>
+<div class="REFSECT1"><a name="AEN48722"></a><h2>又见</h2><a href="sql-altersequence.html"><i>ALTER SEQUENCE</i></a>, <a href="sql-dropsequence.html"><i>DROP SEQUENCE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createschema.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createtable.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE SCHEMA</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE TABLE</td></tr>
+</table>
+</div>
+</body></html>

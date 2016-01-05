@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.3. 包管理</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="kernfs.html" title="挂载虚拟内核文件系统">后退</a>
+          <p>挂载虚拟内核文件系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="chroot.html" title="进入 Chroot 环境">前进</a>
+          <p>进入 Chroot 环境</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">6.3. 包管理</h1>
+      </div>
+      <p>对于 LFS BOOK，包管理通常被请求加进去。一个包管理器允许跟踪文件的安装，使删除或升级软件包变得简单。在这一部分里，我们不会讨论或者是推荐任何一个包管理器。我们讲述的是一些流行的技术，以及他
+      们是怎么工作的。对于你来说，一个完美的包管理器可能在这些技术之中，也可能是一些技术的结合。这一部分
+      简明的描述了当升级软件包的时候会出现的几个问题。</p>
+      <p>LFS 和 BLFS 中没有涉及包管理器的几个原因有：</p>
+      <div class="itemizedlist">
+        <ul>
+          <li>
+            <p>把精力拿来做包管理器，就偏离了我们的LFS的初衷：一个Linux系统是如何构建的。</p>
+          </li>
+          <li>
+            <p>包管理有很多解决方案，每一个都有优点和缺点。任何一个都不会令其他种类的fans满意的。</p>
+          </li>
+        </ul>
+      </div>
+      <p>有一些hints是关于包管理。可以查看
+       <a href="http://www.linuxfromscratch.org/hints/downloads/files/"><i>Hints
+        subproject</i></a> 来选择一个适合你的。</p>
+      <div class="sect2">
+        <div class="titlepage">
+          <h2 class="sect2">6.3.1. 升级问题</h2>
+        </div>
+        <p>一个包管理器会使升级一个软件包到新的版本变得很简单。通常 LFS 和 BLFS 手册中的说明可以用来升级软件包。
+        这里有几点，你在升级软件包的时候应该注意的，尤其是在一个运行着的系统上。</p>
+        <div class="itemizedlist">
+          <ul>
+            <li>
+              <p>如果工具链中的一个软件包 (Glibc, GCC 或 Binutils)需要升级到一个新的次版本，重新构建LFS是比较安全的。
+              尽管你可以按照依赖关系，只是重新构建一部分的软件包。但我们并不推荐这样做。例如，如果 glibc-2.2.x 需要 升
+              级到 glibc-2.3.x,重新构建是比较安全的。对于小版本的升级，简单的重新安装通常可以正常的工作，但是不能够保证。
+              例如，从 glibc-2.3.4 升级到 glibc-2.3.5 通常不会有问题。</p>
+            </li>
+            <li>
+              <p>如果包含一个共享库的软件包升级，并且共享库的名字发生了变化。动态链接到这个库的所有的
+               包都需要重新编译链接到新的库（注意包的版本和库的名字没有关系）。例如，一个软件包 foo-1.2.3 安装了一个名为 <tt class="filename">libfoo.so.1</tt>
+               的共享库。你升级这个包到新版本 foo-1.2.4，这个新版本安装名为 <tt class="filename">libfoo.so.2</tt> 的共享库。这种情况下，所有链接到 <tt class="filename">libfoo.so.1</tt>
+               的包都需要重新编译链接到 <tt class="filename">libfoo.so.2</tt>。注意在依赖的软件包没有编译完之前，不要删除原来的库。</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="sect2">
+        <div class="titlepage">
+          <h2 class="sect2">6.3.2. 包管理技术</h2>
+        </div>
+        <p>下面是一些常用的包管理的技术。在决定安装包管理器之前，对多种包管理技术进行一下研究，找出某一种的缺点。</p>
+        <div class="sect3">
+          <div class="titlepage">
+            <div>
+              <div>
+                <h4 class="title">
+                  <a id="id3673105" name="id3673105"></a>6.3.2.1. 全部记在心里！</h4>
+              </div>
+            </div>
+          </div>
+          <p>是的，这是一种包管理的技术。一些人不需要包管理器，因为他们对包都非常熟悉，知道每一个包所安装的文件。
+          一些人也不需要包管理器，是因为当一个软件包改变时，他们重新构建整个系统。</p>
+        </div>
+        <div class="sect3">
+          <div class="titlepage">
+            <div>
+              <div>
+                <h4 class="title">
+                  <a id="id3673013" name="id3673013"></a>6.3.2.2. 分别安装到不同目录</h4>
+              </div>
+            </div>
+          </div>
+          <p>这是一种最简单的包管理方式，不需要安装额外的软件包来管理安装过程。每一个软件包安装到不同的目录下。
+          例如，包 foo-1.1 安装到 <tt class="filename">/usr/pkg/foo-1.1</tt> ，创建一个从 <tt class="filename">/usr/pkg/foo</tt>
+          指向 <tt class="filename">/usr/pkg/foo-1.1</tt> 的符号链接。当安装一个新版本 foo-1.2 时，它会安装在 <tt class="filename">/usr/pkg/foo-1.2</tt>
+          ，前面的符号链接也指向新版本。</p>
+          <p>一些环境变量，像 <tt class="envar">PATH</tt>,
+            <tt class="envar">LD_LIBRARY_PATH</tt>, <tt class="envar">MANPATH</tt>, <tt class="envar">INFOPATH</tt> 和
+            <tt class="envar">CPPFLAGS</tt> 都需要增加 <tt class="filename">/usr/pkg/foo</tt>。当软件包数量大了之后，就难于管理了。</p>
+        </div>
+        <div class="sect3">
+          <div class="titlepage">
+            <div>
+              <div>
+                <h4 class="title">
+                  <a id="id3672939" name="id3672939"></a>6.3.2.3. 符号连接风格的包管理</h4>
+              </div>
+            </div>
+          </div>
+          <p>这是前面包管理技术的一个变种。每一个包也是按照类似于前面方法进行安装。但是不是创建符号链接，
+          而是每一个都被链接到 <tt class="filename">/usr</tt> 目录。这样就不需要添加环境变量了。尽
+          管有时在安装的时候符号链接自动创建，还是有很多的是采用这种方法的。一些比较流行的有：
+          Stow，Epkg，Graft，和 Depot。</p>
+          <p>安装过程需要伪造，这样包就会认为自己被安装到了 <tt class="filename">/usr</tt> 目录，尽管实际上
+          它们安装到 <tt class="filename">/usr/pkg</tt> 目录下。以这种风格安装并不是很麻烦的事情。比如，你要
+          安装一个包 libfoo-1.1 。用下面的指令安装就不合适：</p>
+          <pre class="userinput"><kbd class="command">./configure --prefix=/usr/pkg/libfoo/1.1
+make
+make install</kbd></pre>
+          <p>安装是没有问题，但是依赖的包不能够像你想像的那样链接到 libfoo。如果你编译一个链接到 libfoo 的包，
+          你就要注意，要链接到 <tt class="filename">/usr/pkg/libfoo/1.1/lib/libfoo.so.1</tt> ，而不是
+          像你想像的那样链接到 <tt class="filename">/usr/lib/libfoo.so.1</tt>。正确的方法是使用 <tt class="envar">DESTDIR</tt> 
+          来伪造包的安装。可以这样来使用这种方法：</p>
+          <pre class="userinput"><kbd class="command">./configure --prefix=/usr
+make
+make DESTDIR=/usr/pkg/libfoo/1.1 install</kbd></pre>
+          <p>大多数的包都支持这种方法，但还是有一些不支持。对于这些不兼容的包，你可以手工安装，或许把一些有问题的包
+          安装到 <tt class="filename">/opt</tt> 可能更简单。</p>
+        </div>
+        <div class="sect3">
+          <div class="titlepage">
+            <div>
+              <div>
+                <h4 class="title">
+                  <a id="id3673142" name="id3673142"></a>6.3.2.4. 基于时间戳</h4>
+              </div>
+            </div>
+          </div>
+          <p>这种技术里，在安装包之前，会创建一个时间戳标记文件。安装之后，简单的使用的 <span><strong class="command">find</strong></span>
+          命令的某些选项就能生成一个时间戳标记文件创建之后安装的文件的日志。install-log 就是利用这种技术写的包管理器。</p>
+          <p>尽管这种方法简单，但是它有两个缺点。如果在安装的过程中，安装的文件的时间戳不是当前的时间，这些文件将不会被包管理器记录。
+          另外，这种方案只能用在一次只有一个包安装时。如果有两个包在两个终端下同时安装，那么这时的日志是不可靠的。</p>
+        </div>
+        <div class="sect3">
+          <div class="titlepage">
+            <div>
+              <div>
+                <h4 class="title">
+                  <a id="id3673075" name="id3673075"></a>6.3.2.5. 基于LD_PRELOAD</h4>
+              </div>
+            </div>
+          </div>
+          <p>这种方法下，在安装之前会有一个库被提前加载。在安装的过程中，这个库就会跟踪正在安装的包，通过给自己附加上
+          各种可执行性的动作，像 <span><strong class="command">cp</strong></span>,
+            <span><strong class="command">install</strong></span>,
+            <span><strong class="command">mv</strong></span> 。来跟踪那些修改文件系统系统调用。为了让这种方法正
+            常的工作，所有的可执行文件需要都是动态链接的且没有设置 suid 和 sgid 位。预先加载库可能会产生一些讨厌的
+            副作用。因此，建议做一些测试，来确保包管理器不会破坏任何东西，并且能够记录所有适当的文件。</p>
+        </div>
+        <div class="sect3">
+          <div class="titlepage">
+            <div>
+              <div>
+                <h4 class="title">
+                  <a id="id3672720" name="id3672720"></a>6.3.2.6. 创建包的归档</h4>
+              </div>
+            </div>
+          </div>
+          <p>在这种方案中，包被分别安装到不同的目录树下，就像符号连接风格的包管理描述的。安装之后，
+          系统就会使用安装的文件创建一个包的归档。这个档案可以在本机上安装包，甚至可以在其他机器上
+          安装包。</p>
+          <p>这种方法被大多数商业发行版的包管理器采用。例如，RPM（自然是<a href="http://lsbbook.gforge.freestandards.org/package.html#RPM"><i>Linux
+            Standard Base Specification</i></a>所必需），pkg-utils，Debian 的 apt 和 Gentoo 的 Portage 系统。
+            有一个描述在 LFS 系统中如何应用这样的包管理器的hint，参见
+            <a href="http://www.linuxfromscratch.org/hints/downloads/files/fakeroot.txt"><i>http://www.linuxfromscratch.org/hints/downloads/files/fakeroot.txt</i></a>.</p>
+        </div>
+        <div class="sect3">
+          <div class="titlepage">
+            <div>
+              <div>
+                <h4 class="title">
+                  <a id="id3673119" name="id3673119"></a>6.3.2.7. 基于用户的管理</h4>
+              </div>
+            </div>
+          </div>
+          <p>这种方案是 LFS 特有的，是由 Matthias Benkmann 提出的，可以参考 <a href="http://www.linuxfromscratch.org/hints/downloads/files/"><i>Hints
+            Project</i></a>。在这种方案里，每一个包都是以不同的用户安装到标准的目录里。通过检验 user ID 可以很容易的标识一个软件包。这种方法的特点和缺点非常复杂，这里就不描述了。详细内容参见
+            <a href="http://www.linuxfromscratch.org/hints/downloads/files/more_control_and_pkg_man.txt"><i>http://www.linuxfromscratch.org/hints/downloads/files/more_control_and_pkg_man.txt</i></a>。</p>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="kernfs.html" title="挂载虚拟内核文件系统">后退</a>
+          <p>挂载虚拟内核文件系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="chroot.html" title="进入 Chroot 环境">前进</a>
+          <p>进入 Chroot 环境</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

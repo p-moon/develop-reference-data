@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE CAST</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createaggregate.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createaggregate.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createconstraint.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createconstraint.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATECAST"></a>CREATE CAST</h1>
+<div class="REFNAMEDIV"><a name="AEN46621"></a><h2>名称</h2>CREATE CAST&nbsp;--&nbsp;定义一个用户定义的转换</div>
+<a name="AEN46624"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN46626"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE CAST (<tt class="REPLACEABLE"><i>sourcetype</i></tt> AS <tt class="REPLACEABLE"><i>targettype</i></tt>)
+    WITH FUNCTION <tt class="REPLACEABLE"><i>funcname</i></tt> (<tt class="REPLACEABLE"><i>argtypes</i></tt>)
+    [ AS ASSIGNMENT | AS IMPLICIT ]
+
+CREATE CAST (<tt class="REPLACEABLE"><i>sourcetype</i></tt> AS <tt class="REPLACEABLE"><i>targettype</i></tt>)
+    WITHOUT FUNCTION
+    [ AS ASSIGNMENT | AS IMPLICIT ]</pre>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECAST-DESCRIPTION"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE CAST</tt> 定义一个新的转换。一个转换说明如何在两个类型之间进行转换。比如：</p>
+<pre class="PROGRAMLISTING">SELECT CAST(42 AS text);</pre>
+<p>通过调用前面声明的一个函数，把整数常量 42 转换成 <tt class="TYPE">text</tt> 类型，在这个例子里是 <tt class="LITERAL">text(int4)</tt>(如果没有预先定义好合适的转换，那么这个转换将会失败)。</p>
+<p>两种类型可以是<i class="FIRSTTERM">二进制兼容的</i>，意思是它们之间可以"自由转换"而不用调用任何函数。这就需要两种类型使用同样的内部表现形式。比如，类型 <tt class="TYPE">text</tt> 和 <tt class="TYPE">varchar</tt> 是二进制兼容的。</p>
+<p>缺省时，只有在明确要求转换的情况下才调用一个转换，也就是一个明确的 <tt class="LITERAL">CAST(<tt class="REPLACEABLE"><i>x</i></tt> AS <tt class="REPLACEABLE"><i>typename</i></tt>)</tt> 或 <tt class="REPLACEABLE"><i>x</i></tt><tt class="LITERAL">::</tt><tt class="REPLACEABLE"><i>typename</i></tt> 构造。</p>
+<p>如果转换被标记为 <tt class="LITERAL">AS ASSIGNMENT</tt> ，那么在给目标数据类型的字段赋值的时候，可以隐含调用它。比如，假设 <tt class="LITERAL">foo.f1</tt> 是一个类型为 <tt class="TYPE">text</tt> 的字段，那么</p>
+<pre class="PROGRAMLISTING">INSERT INTO foo (f1) VALUES (42);</pre>
+<p>如果从 <tt class="TYPE">integer</tt> 类型到 <tt class="TYPE">text</tt> 类型的转换标记为 <tt class="LITERAL">AS ASSIGNMENT</tt> ，上面的这句就被允许，否则就不允许。通常用术语<i class="FIRSTTERM">赋值转换</i>来描述这种转换。</p>
+<p>如果转换被标记为 <tt class="LITERAL">AS IMPLICIT</tt> ，那么它就可以在任何环境里调用，不管是赋值还是在表达式的内部。比如，因为 <tt class="LITERAL">||</tt> 接受 <tt class="TYPE">text</tt> 操作数，</p>
+<pre class="PROGRAMLISTING">SELECT 'The time is ' || now();</pre>
+<p>将只有在类型 <tt class="TYPE">timestamp</tt> 到 <tt class="TYPE">text</tt> 的转换被标记为 <tt class="LITERAL">AS IMPLICIT</tt> 的时候才允许。否则就必须明确书写转换，比如</p>
+<pre class="PROGRAMLISTING">SELECT 'The time is ' || CAST(now() AS text);</pre>
+<p>通常使用术语<i class="FIRSTTERM">隐含转换</i>来描述这种类型的转换。</p>
+<p>在是否将转换标记为隐含的问题上保守一些是明智的。过于丰富的隐含转换路径会导致 PostgreSQL 选择让人奇怪的命令解析，或者是完全不能解析命令，因为存在多个可能的解析。一条好的拇指定律是，只有在同一个通用类型范畴里面的那些可以保留转换信息的类型之间才标记为可隐含调用转换。比如，从 <tt class="TYPE">int2</tt> 到 <tt class="TYPE">int4</tt> 可以合理地标记为隐含转换，但是从 <tt class="TYPE">float8</tt> 到 <tt class="TYPE">int4</tt> 也许应该标记为赋值转换。跨类型范畴的转换，比如 <tt class="TYPE">text</tt> 到 <tt class="TYPE">int4</tt> ，最好只能明确地转换。</p>
+<p>要想创建一个转换，你必须拥有源或目标数据类型。要创建一个二进制兼容的转换，你必须是超级用户。做这个限制是因为一种有问题的二进制兼容转换可以很容易摧毁服务器。</p>
+</div>
+<div class="REFSECT1"><a name="AEN46681"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>sourcetype</i></tt></dt>
+<dd><p>转换的源数据类型</p></dd>
+<dt><tt class="REPLACEABLE"><i>targettype</i></tt></dt>
+<dd><p>转换的目标数据类型</p></dd>
+<dt><tt class="REPLACEABLE"><i>funcname</i></tt>(<tt class="REPLACEABLE"><i>argtypes</i></tt>)</dt>
+<dd><p>用于执行转换的函数。这个函数名可以是用模式名修饰的。如果它没有用模式名修饰，那么该函数将从模式搜索路径中找出来。函数的结果数据类型必须匹配转换的目标类型。它的参数在下面讨论。</p></dd>
+<dt><tt class="LITERAL">WITHOUT FUNCTION</tt></dt>
+<dd><p>表示源数据类型和目标数据类型是二进制兼容的，所以不需要什么函数来执行转换。</p></dd>
+<dt><tt class="LITERAL">AS ASSIGNMENT</tt></dt>
+<dd><p>表示转换可以在赋值环境里隐含调用</p></dd>
+<dt><tt class="LITERAL">AS IMPLICIT</tt></dt>
+<dd><p>表示转换可以在任何环境里隐含调用</p></dd>
+</dl>
+</div>
+<p>转换实现函数可以有一到三个参数。第一个参数类型必须和转换的源类型相同。如果有第二个参数，那么必须是 <tt class="TYPE">integer</tt> 类型；它接收与目标类型相关联的类型修饰词，如果没有，就是 <tt class="LITERAL">-1</tt> 。如果有第三个参数，就必须是 <tt class="TYPE">boolean</tt> 类型；如果这个转换是一个明确的转换，那么它收到 <tt class="LITERAL">true</tt> ，否则收到 <tt class="LITERAL">false</tt> 。不过，很奇怪的是，SQL 规范在某些场合下要求不同的明确和隐含转换的行为。这个参数提供给那些必须实现这种行为的转换函数。不过不建议你设计此类函数。</p>
+<p>正常情况下，类型转换必须有不同的源类型和目标数据类型。不过只要它有多个参数的类型转换实现函数，就允许声明一个源类型和目标类型相同的转换。这个函数用于在系统表里表示类型相关的长度转换函数。此命名函数用于转换一个该类型的数值为其第二个参数给出的带类型修饰词的值。因为目前语法只允许某些内置的数据类型拥有类型修饰词，因此这个特性对用户定义的目标类型没有什么用，提到它只是为了完整。</p>
+<p>如果一个类型转换的源类型和目标类型不同，并且接收多于一个参数，它就表示从一种类型转换成另外一种类型只用一个步骤，并且同时实施长度转换。如果没有这样的项可用，那么转换成一个使用了类型修饰词的类型将涉及两个步骤，一个是在数据类型之间转换，另外一个是施加修饰词。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECAST-NOTES"></a><h2>注意</h2>
+<p>用 <a href="sql-dropcast.html"><i>DROP CAST</i></a> 删除用户定义的转换。</p>
+<p>请注意，如果希望能双向转换类型，那么你需要明确地定义两个方向的转换。</p>
+<p>在 PostgreSQL 7.3 之前，如果一个函数的名字和一个数据类型相同，并且返回该种数据类型，而且还接受另外一种类型的参数自动就是一个转换函数。这个传统随着模式的引入以及为了能在系统表种表示二进制兼容的转换现在已经被废弃了。内置的转换函数仍然遵循这个命名规则，但是它们现在同时也在系统表 <tt class="STRUCTNAME">pg_cast</tt> 里显示为转换。</p>
+<p>虽然不是必须的，但是还是建议你遵循旧的命名类型转换实现函数的习惯，也就是说，函数名和目标数据类型同名。许多用户习惯于使用函数风格的表示法(<tt class="REPLACEABLE"><i>typename</i></tt>(<tt class="REPLACEABLE"><i>x</i></tt>))来做数据类型转换。这种表示法恰好就是调用类型转换实现函数，这样并不会被当作一种类型转换而被特殊看待。如果你的转换函数没有按照这种传统命名，那么你就会让用户很奇怪。因为 PostgreSQL 允许同名不同参数的函数重载，因此同时存在多个从不同类型向同样类型转换的同名转换函数一点问题都没有。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>前面的段落撒了一个小小的谎：仍然有一种情况下，系统将要使用 <tt class="STRUCTNAME">pg_cast</tt> 来解析一个明显的函数调用的含义。如果函数调用 <tt class="REPLACEABLE"><i>name</i></tt>(<tt class="REPLACEABLE"><i>x</i></tt>) 并不匹配任何实际函数，但 <tt class="REPLACEABLE"><i>name</i></tt> 是一个数据类型的名字并且 <tt class="STRUCTNAME">pg_cast</tt> 显示了它是从类型 <tt class="REPLACEABLE"><i>x</i></tt> 到这种类型的一个二进制兼容的转换，那么该调用将被构造成一个明确的转换。存在这个例外就可以让二进制兼容的类型转换使用函数风格的语法调用，即使他们缺少函数也可以。</p>
+</blockquote>
+</div>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECAST-EXAMPLES"></a><h2>例子</h2>
+<p>使用函数 <tt class="LITERAL">int4(text)</tt> 创建一个从 <tt class="TYPE">text</tt> 类型到 <tt class="TYPE">int4</tt> 类型的转换：</p>
+<pre class="PROGRAMLISTING">CREATE CAST (text AS int4) WITH FUNCTION int4(text);</pre>
+<p>这个转换在系统中已经预先定义了。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECAST-COMPAT"></a><h2>兼容性</h2>
+<p>The <tt class="COMMAND">CREATE CAST</tt> 命令遵循 SQL 标准，只不过这个 SQL 没有提供二进制兼容类型或者额外的参数用于实现函数。<tt class="LITERAL">AS IMPLICIT</tt> 也是 PostgreSQL 的扩展。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATECAST-SEEALSO"></a><h2>又见</h2>
+<p><a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a>, <a href="sql-createtype.html"><i>CREATE TYPE</i></a>, <a href="sql-dropcast.html"><i>DROP CAST</i></a></p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createaggregate.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createconstraint.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE AGGREGATE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE CONSTRAINT TRIGGER</td></tr>
+</table>
+</div>
+</body></html>

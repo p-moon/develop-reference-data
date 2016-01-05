@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.6. 创建必需的文件与符号连接</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="creatingdirs.html" title="创建系统目录结构">后退</a>
+          <p>创建系统目录结构</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="linux-libc-headers.html" title="Linux-Libc-Headers-2.6.12.0">前进</a>
+          <p>Linux-Libc-Headers-2.6.12.0</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">6.6. 创建必需的文件与符号连接</h1>
+      </div>
+      <p>一些程序使用固化的路径(hard-wired paths)指向一些目前还不存在的程序上。为了兼容这些程序，可以创建一些符号链接，然后在软件安装之后用实际文件进行替代。</p>
+      <pre class="userinput"><kbd class="command">ln -sv /tools/bin/{bash,cat,grep,pwd,stty} /bin
+ln -sv /tools/bin/perl /usr/bin
+ln -sv /tools/lib/libgcc_s.so{,.1} /usr/lib
+ln -sv bash /bin/sh</kbd></pre>
+      <p>一个常规的Linux系统在<tt class="filename">/etc/mtab</tt>中有一个已挂载文件系统的列表。
+			正常情况下，这个文件在我们挂载一个新的文件系统的时候会被创建。因为我们在chroot环境下不会再挂载任何文件系统
+			，所以我们需要为那些用到<tt class="filename">/etc/mtab</tt>的程序创建一个空文件：</p>
+      <pre class="userinput"><kbd class="command">touch /etc/mtab</kbd></pre>
+      <p>为了让 root 用户可以登录而且用户名"root"可以被识别，在这里需要创建相应的 /etc/passwd 和 /etc/group 文件。</p>
+      <p>使用下面的命令创建 /etc/passwd 文件：</p>
+      <pre class="userinput"><kbd class="command">cat &gt; /etc/passwd &lt;&lt; "EOF"
+<tt class="literal">root:x:0:0:root:/root:/bin/bash</tt>
+EOF</kbd></pre>
+      <p>root 的真正密码将在后面设置("x"在这里只是一个占位符)。</p>
+      <p>下面的命令创建 /etc/group 文件：</p>
+      <pre class="userinput"><kbd class="command">cat &gt; /etc/group &lt;&lt; "EOF"
+<tt class="literal">root:x:0:
+bin:x:1:
+sys:x:2:
+kmem:x:3:
+tty:x:4:
+tape:x:5:
+daemon:x:6:
+floppy:x:7:
+disk:x:8:
+lp:x:9:
+dialout:x:10:
+audio:x:11:
+video:x:12:
+utmp:x:13:
+usb:x:14:
+cdrom:x:15:</tt>
+EOF</kbd></pre>
+      <p>这里创建的用户组并不是某个标准所要求的部分，只是因为在随后 Udev 配置将要用到而以。Linux 标准基础(LSB, Linux Standard Base, 
+<a href="http://www.linuxbase.org"><i>http://www.linuxbase.org</i></a>)
+只是推荐"root"组的 GID 为 0，另一个组"bin"的 GID 为 1 。其它所有的组名和 GID 均由系统管理员自由设定，因为比较好的软件包一般都不依赖于 GID ，而只是使用组名。</p>
+      <p>因为完整的 Glibc 在<a href="../chapter05/chapter05.html">Chapter 5</a>中已经安装，而且 /etc/passwd 和 /etc/group 文件也已创建，用户名和组名现在可以开始使用了。现在启动新的shell，驱除"I have no name!"提示符：</p>
+      <pre class="userinput"><kbd class="command">exec /tools/bin/bash --login +h</kbd></pre>
+      <p>注意这里使用了 +h 参数。这是告诉 bash 不能使用其内部哈希表查找路径。如果没有使用这个参数，则 bash 将会记住已经执行的二进制代码的路径。为了让新编译安装的二进制代码可以马上投入使用，在这一章中，我们使用 +h 关闭了此功能。</p>
+      <p>程序 login, agetty, init (还有其它一些程序) 使用一些日志文件来记录信息，比如谁在什么时候登录了系统等等。然而如果这些日志文件不存在，这些程序则无法写入。下面初始化这些日志文件，并设置适当的权限：</p>
+      <pre class="userinput"><kbd class="command">touch /var/run/utmp /var/log/{btmp,lastlog,wtmp}
+chgrp -v utmp /var/run/utmp /var/log/lastlog
+chmod -v 664 /var/run/utmp /var/log/lastlog</kbd></pre>
+      <p>/var/run/utmp 记录着现在登录的用户。/var/log/wtmp 记录所有的登录和退出。/var/log/lastlog 记录每个用户最后的登录信息。/var/log/btmp 记录错误的登录尝试。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="creatingdirs.html" title="创建系统目录结构">后退</a>
+          <p>创建系统目录结构</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="linux-libc-headers.html" title="Linux-Libc-Headers-2.6.12.0">前进</a>
+          <p>Linux-Libc-Headers-2.6.12.0</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

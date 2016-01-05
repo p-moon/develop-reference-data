@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SPI_prepare</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="spi-spi-exec.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="spi-spi-exec.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="spi-spi-getargcount.html">快进</a></td><td width="10%" align="right" valign="top"><a href="spi-spi-getargcount.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SPI-SPI-PREPARE"></a>SPI_prepare</h1>
+<div class="REFNAMEDIV"><a name="AEN42217"></a><h2>函数名</h2>SPI_prepare&nbsp;--&nbsp;为一个命令准备一个规划但不立即执行它</div>
+<a name="AEN42220"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN42222"></a><h2>原型</h2>
+<pre class="SYNOPSIS">void * SPI_prepare(const char * <tt class="PARAMETER">command</tt>, int <tt class="PARAMETER">nargs</tt>, Oid * <tt class="PARAMETER">argtypes</tt>)</pre>
+</div>
+<div class="REFSECT1"><a name="AEN42227"></a><h2>描述</h2>
+<p><code class="FUNCTION">SPI_prepare</code> 为声明的命令创建和返回一个执行规划但是不执行查询。应该只从一个已连接的过程部调用。</p>
+<p>如果相同或者类似的查询要多次重复执行，那么只进行一次查询规划应该是更好些。<code class="FUNCTION">SPI_prepare</code> 把一个命令字符串转换成一个执行计划，你可以用 <code class="FUNCTION">SPI_execute_plan</code> 多次执行它。</p>
+<p>可以把预编写的查询通用化，方法是在那些普通查询里是常量的地方书写参数(<tt class="LITERAL">$1</tt>, <tt class="LITERAL">$2</tt> 等等)。参数的数值随后在调用 <code class="FUNCTION">SPI_execute_plan</code> 的时候声明。这样就允许已准备的查询在远比没有参数时广泛得多的场合下使用。</p>
+<p><code class="FUNCTION">SPI_prepare</code> 返回的规划只能在当前过程调用中使用，因为 <code class="FUNCTION">SPI_finish</code> 释放为一个规划分配的内存。不过，一个规划可以用函数 <code class="FUNCTION">SPI_saveplan</code> 函数保存更长的时间。</p>
+</div>
+<div class="REFSECT1"><a name="AEN42242"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">const char * <tt class="PARAMETER">command</tt></tt></dt>
+<dd><p>命令字符串</p></dd>
+<dt><tt class="LITERAL">int <tt class="PARAMETER">nargs</tt></tt></dt>
+<dd><p>输入参数的个数(<tt class="LITERAL">$1</tt>, <tt class="LITERAL">$2</tt> 等等)</p></dd>
+<dt><tt class="LITERAL">Oid * <tt class="PARAMETER">argtypes</tt></tt></dt>
+<dd><p>一个指针，指向包含参数数据类型的 OID 数组</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN42266"></a><h2>返回值</h2>
+<p><code class="FUNCTION">SPI_prepare</code> 返回一个指向一个执行规划的非空指针。错误时将返回 <tt class="SYMBOL">NULL</tt> 并且 <tt class="VARNAME">SPI_result</tt> 将设置为和 <code class="FUNCTION">SPI_execute</code> 同样错误的返回值，例外是在 <tt class="PARAMETER">command</tt> 是 <tt class="SYMBOL">NULL</tt> 的时候，或者是 <tt class="PARAMETER">nargs</tt> 小于 0 或者 <tt class="PARAMETER">nargs</tt> 大于 0 并且 <tt class="PARAMETER">argtypes</tt> 是 <tt class="SYMBOL">NULL</tt> 的时候会被设置成 <tt class="SYMBOL">SPI_ERROR_ARGUMENT</tt></p>
+</div>
+<div class="REFSECT1"><a name="AEN42280"></a><h2>注意</h2>
+<p>使用参数有一个缺点：因为规划器不知道将提供给参数的数值，所以，相比普通的带着所有可见常量的命令而言，它可能会做出一个较差的规划选择。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="spi-spi-exec.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="spi-spi-getargcount.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SPI_exec</td><td width="34%" align="center" valign="top"><a href="spi-interface.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SPI_getargcount</td></tr>
+</table>
+</div>
+</body></html>

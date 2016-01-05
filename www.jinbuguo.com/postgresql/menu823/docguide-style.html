@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>风格指导</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="docguide-authoring.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="docguide.html">快退</a></td><td width="60%" align="center" valign="bottom">附录G. Documentation</td><td width="10%" align="right" valign="top"><a href="docguide.html">快进</a></td><td width="10%" align="right" valign="top"><a href="external-projects.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DOCGUIDE-STYLE">G.5. 风格指导</a></h1>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN88546">G.5.1. 参考页</a></h2>
+<p>参考页应该遵循标准的布局。这样就允许用户更快地找出自己需要的信息，并且也可以鼓励作者把一条命令的所有相关方面都记录在案。一致性不仅仅是 PostgreSQL 参考页的需求，也是操作系统和其它页面提供的东西。因此设计了下面的指导方针。它们在大多数时候是与各种操作系统建立起来的类似的风格是一致的。</p>
+<p>描述可执行命令的参考页应该包含下面的小节，并且是按照这里的顺序。不适用的小节可以忽略。额外的顶级小节应该只用在特殊的环境下；通常那些信息属于"用法"小节。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>名字(Name)</dt>
+<dd><p>这个小节是自动生成的。它包含命令名和一个半句话的摘要，介绍该命令的功能。</p></dd>
+<dt>纲要(Synopsis)</dt>
+<dd><p>这个小节包含该命令的语法图表。大纲通常不应该列出每个命令行选项；那些东西在后面做。大纲应该列出命令行的主要组件，比如应该把输入和输出文件放在哪里等。</p></dd>
+<dt>描述(Description)</dt>
+<dd><p>几个段落，用于描述该命令是做什么的。</p></dd>
+<dt>选项(Options)</dt>
+<dd><p>一个列表，描述每个命令行选项。如果有许多选项，可以用子小节。</p></dd>
+<dt>退出状态(Exit Status)</dt>
+<dd><p>如果程序用 0 表示成功，非零表示失败，那么你不需要为此写文档。如果在每个非零值的后面有不同的含义，那么在这里列出它们。</p></dd>
+<dt>用法(Usage)</dt>
+<dd><p>描述任意子语言或者程序的运行时接口。如果程序不是交互的，那么本节通常可以省略。否则，本节是用于描述所有运行时特性的地方。如果合适，可以使用子小节。</p></dd>
+<dt>环境(Environment)</dt>
+<dd><p>列出所有程序可能使用的环境变量。尽量完整；即使是那些看起来很琐碎的变量，比如 <tt class="ENVAR">SHELL</tt> 都可能让读者感兴趣。</p></dd>
+<dt>文件(Files)</dt>
+<dd><p>列出所有程序可能隐含访问的文件。也就是说，不要列出在命令行上声明的输入和输出文件。但是列出配置文件等等。</p></dd>
+<dt>诊断(Diagnostics)</dt>
+<dd><p>解释任何程序可能生成的不正常的输出。避免列出所有可能的错误信息。这样做工作量很大但没有太多实际用途。但是如果说错误信息有一种用户可以分析的标准格式，那么这里可能就是解释它的地方。</p></dd>
+<dt>注意(Notes)</dt>
+<dd><p>任何在其它地方放都不合适的东西，尤其是臭虫、实现缺陷、安全考量、兼容性问题等。</p></dd>
+<dt>例子(Examples)</dt>
+<dd><p>例子</p></dd>
+<dt>历史(History)</dt>
+<dd><p>如果在程序的历史中有一些主要的里程碑，那么可以在这里列出。通常，这个小节可以省略。</p></dd>
+<dt>又见(See Also)</dt>
+<dd><p>交叉引用，按照下面的顺序列出：其它 PostgreSQL 命令的参考页、PostgreSQL SQL命令参考页、PostgreSQL 手册的引用、其它引用页面(比如，操作系统、其它包)、其它文档。在同一组里的条目按照字母顺序列出。</p></dd>
+</dl>
+</div>
+<p>描述 SQL 命令的参考页应该包含下面的小节：名字、大纲、描述、参数、用法、诊断、注意、例子、兼容性、历史、又见。参数小节类似选项小节，但是有更多自由可以选择该命令的哪个子句可以列出。兼容性小节应该解释此命令遵循 SQL 标准的哪个扩展，或者它兼容哪种其它数据库系统。SQL 命令的"又见"小节应该在交叉引用其它程序之前列出 SQL 命令。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="docguide-authoring.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="external-projects.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">文档写作</td><td width="34%" align="center" valign="top"><a href="docguide.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">外部项目</td></tr>
+</table>
+</div>
+</body></html>

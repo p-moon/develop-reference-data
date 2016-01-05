@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_restore</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="app-pg-dumpall.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="app-pg-dumpall.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-psql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-psql.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-PGRESTORE"></a>pg_restore</h1>
+<div class="REFNAMEDIV"><a name="AEN57701"></a><h2>名称</h2>pg_restore&nbsp;--&nbsp;从 pg_dump 创建的备份文件中恢复数据库</div>
+<a name="AEN57705"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN57707"></a><h2>语法</h2>
+<p><tt class="COMMAND">pg_restore</tt> [<tt class="REPLACEABLE"><i>option</i></tt>...] [<tt class="REPLACEABLE"><i>filename</i></tt>]</p>
+</div>
+<div class="REFSECT1"><a name="APP-PGRESTORE-DESCRIPTION"></a><h2>描述</h2>
+<p><span class="APPLICATION">pg_restore</span> 用于恢复由 <a href="app-pgdump.html">pg_dump</a> 转储的任何非纯文本格式中的 PostgreSQL 数据库。它将发出必要的命令重建数据库，并把它恢复成转储时的样子。归档(备份)文件还允许 <span class="APPLICATION">pg_restore</span> 有选择地进行恢复，甚至在恢复前重新排列条目的顺序。归档的文件设计成可以在不同的硬件体系之间移植。</p>
+<p><span class="APPLICATION">pg_restore</span> 可以按照两种模式操作。如果声明了数据库名字，那么归档是直接恢复到数据库里。否则，先创建一个包含重建数据库所必须的 SQL 命令的脚本，并且写入到一个文件或者标准输出。等效于 <span class="APPLICATION">pg_dump</span> 输出纯文本格式的时候创建的那种脚本。因此，一些控制输出的选项就是模拟 <span class="APPLICATION">pg_dump</span> 的选项设置的。</p>
+<p>显然，<span class="APPLICATION">pg_restore</span> 无法恢复那些不存在归档文件中的信息；比如，如果归档是用"把数据转储为 <tt class="COMMAND">INSERT</tt> 命令"选项制作的，那么 <span class="APPLICATION">pg_restore</span> 将不能使用 <tt class="COMMAND">COPY</tt> 语句加载数据。</p>
+</div>
+<div class="REFSECT1"><a name="APP-PGRESTORE-OPTIONS"></a><h2>选项</h2>
+<p><span class="APPLICATION">pg_restore</span> 接受下列命令行参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>filename</i></tt></dt>
+<dd><p>要恢复的备份文件的位置。如果没有声明，则使用标准输入。</p></dd>
+<dt><tt class="OPTION">-a</tt><br><tt class="OPTION">--data-only</tt></dt>
+<dd><p>只恢复数据，而不恢复表模式(数据定义)</p></dd>
+<dt><tt class="OPTION">-c</tt><br><tt class="OPTION">--clean</tt></dt>
+<dd><p>创建数据库对象前先清理(删除)它们</p></dd>
+<dt><tt class="OPTION">-C</tt><br><tt class="OPTION">--create</tt></dt>
+<dd><p>在恢复数据库之前先创建它。如果出现了这个选项，和 <tt class="OPTION">-d</tt> 在一起的数据库名只是用于发出最初的 <tt class="COMMAND">CREATE DATABASE</tt> 命令。所有数据都恢复到名字出现在归档中的数据库中去。</p></dd>
+<dt><tt class="OPTION">-d <tt class="REPLACEABLE"><i>dbname</i></tt></tt><br><tt class="OPTION">--dbname=<tt class="REPLACEABLE"><i>dbname</i></tt></tt></dt>
+<dd><p>与数据库 <tt class="REPLACEABLE"><i>dbname</i></tt> 连接并且直接恢复到该数据库中。</p></dd>
+<dt><tt class="OPTION">-e</tt><br><tt class="OPTION">--exit-on-error</tt></dt>
+<dd><p>如果在向数据库发送 SQL 命令的时候碰到错误，则退出。缺省是继续执行并且在恢复结束时显示一个错误计数。</p></dd>
+<dt><tt class="OPTION">-f <tt class="REPLACEABLE"><i>filename</i></tt></tt><br><tt class="OPTION">--file=<tt class="REPLACEABLE"><i>filename</i></tt></tt></dt>
+<dd><p>指定生成的脚本的输出文件，或者出现 <tt class="OPTION">-l</tt> 选项时用于列表的文件，缺省是标准输出。</p></dd>
+<dt><tt class="OPTION">-F <tt class="REPLACEABLE"><i>format</i></tt></tt><br><tt class="OPTION">--format=<tt class="REPLACEABLE"><i>format</i></tt></tt></dt>
+<dd><p>指定备份文件的格式。因为 <span class="APPLICATION">pg_restore</span> 会自动判断格式，所以如果一定要指定的话，它可以是下面之一：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">t</tt><br><tt class="LITERAL">tar</tt></dt>
+<dd><p>备份是一个 <tt class="COMMAND">tar</tt> 归档。使用这个格式允许在恢复数据库的时候重新排序和/或把表模式元素排除出去。同时还可能在恢复的时候限制加载的数据。</p></dd>
+<dt><tt class="LITERAL">c</tt><br><tt class="LITERAL">custom</tt></dt>
+<dd><p>备份的格式是来自 <span class="APPLICATION">pg_dump</span> 的自定义格式。这是最灵活的格式，因为它允许重新对数据排序，也允许重载表模式元素。缺省时这个格式是压缩的。</p></dd>
+</dl>
+</div></dd>
+<dt><tt class="OPTION">-i</tt><br><tt class="OPTION">--ignore-version</tt></dt>
+<dd><p>忽略数据库版本检查</p></dd>
+<dt><tt class="OPTION">-I <tt class="REPLACEABLE"><i>index</i></tt></tt><br><tt class="OPTION">--index=<tt class="REPLACEABLE"><i>index</i></tt></tt></dt>
+<dd><p>只恢复命名的索引</p></dd>
+<dt><tt class="OPTION">-l</tt><br><tt class="OPTION">--list</tt></dt>
+<dd><p>列出备份的内容。这个操作的输出可以用 <tt class="OPTION">-L</tt> 选项限制和重排所恢复的项目。</p></dd>
+<dt><tt class="OPTION">-L <tt class="REPLACEABLE"><i>list-file</i></tt></tt><br><tt class="OPTION">--use-list=<tt class="REPLACEABLE"><i>list-file</i></tt></tt></dt>
+<dd><p>以它们在文件中出现的顺序只恢复在 <tt class="REPLACEABLE"><i>list-file</i></tt> 里面的元素。你可以移动各个行并且也可以通过在行开头放置 <tt class="LITERAL">;</tt> 的方式注释。例子见下文。</p></dd>
+<dt><tt class="OPTION">-n <tt class="REPLACEABLE"><i>namespace</i></tt></tt><br><tt class="OPTION">--schema=<tt class="REPLACEABLE"><i>schema</i></tt></tt></dt>
+<dd><p>只恢复指定名字的模式里面的定义和/或数据。这个选项可以和 <tt class="OPTION">-t</tt> 选项一起使用，实现只转储一个表的数据。</p></dd>
+<dt><tt class="OPTION">-O</tt><br><tt class="OPTION">--no-owner</tt></dt>
+<dd><p>不要输出设置与最初数据库对象权限匹配的命令。缺省时，<span class="APPLICATION">pg_restore</span> 发出 <tt class="COMMAND">ALTER OWNER</tt> 或 <tt class="COMMAND">SET SESSION AUTHORIZATION</tt> 语句设置创建出来的模式元素的所有者权限。如果最初的数据库连接不是由超级用户(或者是拥有所有创建出来的对象的同一个用户)发起的，那么这些语句将失败。如果使用 <tt class="OPTION">-O</tt> ，那么任何用户都可以用于初始的连接，并且这个用户将拥有所有创建出来的对象。</p></dd>
+<dt><tt class="OPTION">-P <tt class="REPLACEABLE"><i>function-name(argtype [, ...])</i></tt></tt><br><tt class="OPTION">--function=<tt class="REPLACEABLE"><i>function-name(argtype [, ...])</i></tt></tt></dt>
+<dd><p>只恢复指定的命名函数。请注意仔细拼写函数名及其参数，应该和转储的内容列表中的完全一样。</p></dd>
+<dt><tt class="OPTION">-R</tt><br><tt class="OPTION">--no-reconnect</tt></dt>
+<dd><p>这个选项已经废弃了，但是为了保持向下兼容仍然接受。</p></dd>
+<dt><tt class="OPTION">-s</tt><br><tt class="OPTION">--schema-only</tt></dt>
+<dd><p>只恢复表结构(数据定义)。不恢复数据(数据表内容)。序列的当前值也不会得到恢复。请不要和 <tt class="OPTION">--schema</tt> 选项混淆，那里使用了"模式"(schema)的其它含义。</p></dd>
+<dt><tt class="OPTION">-S <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--superuser=<tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>设置关闭触发器时声明超级用户的用户名。只有在设置了 <tt class="OPTION">--disable-triggers</tt> 的时候才有用。</p></dd>
+<dt><tt class="OPTION">-t <tt class="REPLACEABLE"><i>table</i></tt></tt><br><tt class="OPTION">--table=<tt class="REPLACEABLE"><i>table</i></tt></tt></dt>
+<dd><p>只恢复指定的表的定义和/或数据。</p></dd>
+<dt><tt class="OPTION">-T <tt class="REPLACEABLE"><i>trigger</i></tt></tt><br><tt class="OPTION">--trigger=<tt class="REPLACEABLE"><i>trigger</i></tt></tt></dt>
+<dd><p>只恢复指定的触发器</p></dd>
+<dt><tt class="OPTION">-v</tt><br><tt class="OPTION">--verbose</tt></dt>
+<dd><p>声明冗余模式</p></dd>
+<dt><tt class="OPTION">-x</tt><br><tt class="OPTION">--no-privileges</tt><br><tt class="OPTION">--no-acl</tt></dt>
+<dd><p>禁止恢复访问权限(grant/revoke 命令)</p></dd>
+<dt><tt class="OPTION">--disable-triggers</tt></dt>
+<dd><p>这个选项只有在执行仅恢复数据的时候才相关。它告诉 <span class="APPLICATION">pg_restore</span> 在加载数据的时候执行一些命令临时关闭在目标表上的触发器。如果你在表上有完整性检查或者其它触发器，而你又不希望在加载数据的时候激活它们，那么可以使用这个选项。</p>
+<p>目前，为 <tt class="OPTION">--disable-triggers</tt> 发出的命令必须以超级用户发出。因此，你应该也要用 <tt class="OPTION">-S</tt> 声明一个超级用户名，或者更好是以超级用户身份运行 <span class="APPLICATION">pg_restore</span></p></dd>
+<dt><tt class="OPTION">--use-set-session-authorization</tt></dt>
+<dd><p>输出 SQL 标准的 <tt class="COMMAND">SET SESSION AUTHORIZATION</tt> 命令，而不是 <tt class="COMMAND">ALTER OWNER</tt> 命令。这样令转储与标准兼容的更好，但是根据转储中对象的历史，这个转储可能不能恰当地恢复。</p></dd>
+<dt><tt class="OPTION">--no-data-for-failed-tables</tt></dt>
+<dd><p>缺省时，即使创建表的命令因为该表已经存在而失败了，表中的数据仍将被恢复。使用这个选项之后，这些表的数据就将跳过恢复操作。当目标数据库可能已经包含所需恢复的某些表的内容时，该选项就很有用处了。比如，用于 PostgreSQL 扩展的辅助表(例如 PostGIS)就可能已经在目标数据库中恢复过了，使用该选项就可以防止多次恢复以致重复或者覆盖了已经恢复的数据。</p>
+<p>该选项仅在直接向一个数据库中恢复的时候有效，在生成 SQL 脚本输出时无效。</p></dd>
+</dl>
+</div>
+<p><span class="APPLICATION">pg_restore</span> 还接受下面的命令行参数做为连接参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-h <tt class="REPLACEABLE"><i>host</i></tt></tt><br><tt class="OPTION">--host=<tt class="REPLACEABLE"><i>host</i></tt></tt></dt>
+<dd><p>指定运行服务器的主机名。如果数值以斜杠开头，则被用作到 Unix 域套接字的路径。缺省从 <tt class="ENVAR">PGHOST</tt> 环境变量中获取(如果设置了的话)，否则，尝试一个 Unix 域套接字连接。</p></dd>
+<dt><tt class="OPTION">-p <tt class="REPLACEABLE"><i>port</i></tt></tt><br><tt class="OPTION">--port=<tt class="REPLACEABLE"><i>port</i></tt></tt></dt>
+<dd><p>指定服务器正在侦听的 TCP 端口或本地 Unix 域套接字文件的扩展(描述符)。缺省使用 <tt class="ENVAR">PGPORT</tt> 环境变量(如果设置了的话)，否则，编译时的缺省值。</p></dd>
+<dt><tt class="OPTION">-U <tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>连接的用户名</p></dd>
+<dt><tt class="OPTION">-W</tt></dt>
+<dd><p>强制口令提示。如果服务器需要口令认证，那么这个动作应该自动发生。</p></dd>
+<dt><tt class="OPTION">-1</tt><br><tt class="OPTION">--single-transaction</tt></dt>
+<dd><p>将整个恢复过程作为一个完整的事务来执行，也就是将所有恢复命令放在 <tt class="COMMAND">BEGIN</tt>/<tt class="COMMAND">COMMIT</tt> 之间。这将保证恢复要么全部成功要么没有任何影响。该选项隐含 <tt class="OPTION">--exit-on-error</tt></p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN58013"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGHOST</tt><br><tt class="ENVAR">PGPORT</tt><br><tt class="ENVAR">PGUSER</tt></dt>
+<dd><p>缺省连接参数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="APP-PGRESTORE-DIAGNOSTICS"></a><h2>诊断</h2>
+<p>当使用 <tt class="OPTION">-d</tt> 选项声明了直接数据库连接时，<span class="APPLICATION">pg_restore</span> 在内部执行 SQL 语句。如果你运行 <span class="APPLICATION">pg_restore</span> 出了毛病，请确保你能用类似 <a href="app-psql.html"><span class="APPLICATION">psql</span></a> 这样的东西从数据库中选取信息。</p>
+</div>
+<div class="REFSECT1"><a name="APP-PGRESTORE-NOTES"></a><h2>注意</h2>
+<p>如果你的安装给 <tt class="LITERAL">template1</tt> 数据库增加了任何你自己的东西，那么请注意把 <span class="APPLICATION">pg_restore</span> 的输出恢复到一个真正空的数据库中；否则你可能会收到因为重复定义所追加的对象而造成的错误信息。要制作一个没有任何本地附属物的数据库，可以从 <tt class="LITERAL">template0</tt> 而不是 <tt class="LITERAL">template1</tt> 拷贝，比如：</p>
+<pre class="PROGRAMLISTING">CREATE DATABASE foo WITH TEMPLATE template0;</pre>
+<p><span class="APPLICATION">pg_restore</span> 的局限如下：</p>
+<ul>
+<li><p>当向一个已经存在的表恢复数据，并且还使用了 <tt class="OPTION">--disable-triggers</tt> 选项时，<span class="APPLICATION">pg_restore</span> 在插入数据前放出一些查询关闭用户表上的触发器，在数据插入完成后重新打开它们。如果恢复的中途停止，那么系统表可能处于错误状态。</p></li>
+<li><p><span class="APPLICATION">pg_restore</span> 不会为单一的表恢复大对象。如果一个归档包含大对象，那么所有大对象都将被恢复。</p></li>
+</ul>
+<p>参阅 <a href="app-pgdump.html">pg_dump</a> 的文挡获取有关 <span class="APPLICATION">pg_dump</span> 的局限的细节。</p>
+<p>一旦完成恢复，最好在每个恢复的对象上运行 <tt class="COMMAND">ANALYZE</tt> ，以便给优化器有用的统计。</p>
+</div>
+<div class="REFSECT1"><a name="APP-PGRESTORE-EXAMPLES"></a><h2>例子</h2>
+<p>假定我们已经转储了 <tt class="LITERAL">mydb</tt> 数据库到一个自定义格式的文件中：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dump -Fc mydb &gt; db.dump</kbd></pre>
+<p>删除该数据库并从转储中重建：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">dropdb mydb</kbd>
+<samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_restore -C -d postgres db.dump</kbd></pre>
+<p>在 <tt class="OPTION">-d</tt> 中指定的数据库可以是当前集群中的任意数据库；<span class="APPLICATION">pg_restore</span> 仅用该名字来为 <tt class="LITERAL">mydb</tt> 发出 <tt class="COMMAND">CREATE DATABASE</tt> 命令。使用 <tt class="OPTION">-C</tt> 可以确保数据总是会被恢复到转储文件中指定名字的数据库里面。</p>
+<p>将转储出来的数据重新加载到一个新建的数据库 <tt class="LITERAL">newdb</tt> 中：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">createdb -T template0 newdb</kbd>
+<samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_restore -d newdb db.dump</kbd></pre>
+<p>注意，这里没有使用 <tt class="OPTION">-C</tt> 选项，而是直接链接到将要恢复的数据库上。还要注意的是，我们从 <tt class="LITERAL">template0</tt> 而不是 <tt class="LITERAL">template1</tt> 创建了新数据库一确保干净。</p>
+<p>要对项目重新排序，首先必须转储归档的目录：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_restore -l db.dump &gt; db.list</kbd></pre>
+<p>这个文件由一行头和每个条目一行组成，比如。</p>
+<pre class="PROGRAMLISTING">;
+; Archive created at Fri Jul 28 22:28:36 2000
+;     dbname: mydb
+;     TOC Entries: 74
+;     Compression: 0
+;     Dump Version: 1.4-0
+;     Format: CUSTOM
+;
+;
+; Selected TOC Entries:
+;
+2; 145344 TABLE species postgres
+3; 145344 ACL species
+4; 145359 TABLE nt_header postgres
+5; 145359 ACL nt_header
+6; 145402 TABLE species_records postgres
+7; 145402 ACL species_records
+8; 145416 TABLE ss_old postgres
+9; 145416 ACL ss_old
+10; 145433 TABLE map_resolutions postgres
+11; 145433 ACL map_resolutions
+12; 145443 TABLE hs_old postgres
+13; 145443 ACL hs_old</pre>
+<p>这里分号是注释分隔符，而行开头的数字代表赋给每个项目的内部归档 ID 。</p>
+<p>文件内的行可以注释、删除和/或重新排列。比如，</p>
+<pre class="PROGRAMLISTING">10; 145433 TABLE map_resolutions postgres
+;2; 145344 TABLE species postgres
+;4; 145359 TABLE nt_header postgres
+6; 145402 TABLE species_records postgres
+;8; 145416 TABLE ss_old postgres</pre>
+<p>可以用做 <span class="APPLICATION">pg_restore</span> 的输入并且只会恢复项目 10 和 6 (以这个顺序)：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_restore -L db.list db.dump</kbd></pre>
+</div>
+<div class="REFSECT1"><a name="AEN58095"></a><h2>历史</h2>
+<p><span class="APPLICATION">pg_restore</span> 工具第一次出现在 PostgreSQL 7.1 中。</p>
+</div>
+<div class="REFSECT1"><a name="AEN58100"></a><h2>又见</h2><a href="app-pgdump.html">pg_dump</a>, <a href="app-pg-dumpall.html"><span class="APPLICATION">pg_dumpall</span></a>, <a href="app-psql.html"><span class="APPLICATION">psql</span></a>, 环境变量(<a href="libpq-envars.html">节29.12</a>)</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="app-pg-dumpall.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-psql.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><span class="APPLICATION">pg_dumpall</span></td><td width="34%" align="center" valign="top"><a href="reference-client.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><span class="APPLICATION">psql</span></td></tr>
+</table>
+</div>
+</body></html>

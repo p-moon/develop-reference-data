@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>系统初始化的 BKI 文件的结构</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="bki-commands.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="bki.html">快退</a></td><td width="60%" align="center" valign="bottom">章53. BKI 后端接口</td><td width="10%" align="right" valign="top"><a href="bki.html">快进</a></td><td width="10%" align="right" valign="top"><a href="bki-example.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="BKI-STRUCTURE">53.3. 系统初始化的 BKI 文件的结构</a></h1>
+<p><tt class="LITERAL">open</tt> 命令打开的表需要系统事先存在另外一些基本的表，在这些表存在并拥有数据之前，不能使用 <tt class="LITERAL">open</tt> 命令。这些最低限度必须存在的表是 <tt class="STRUCTNAME">pg_class</tt>, <tt class="STRUCTNAME">pg_attribute</tt>, <tt class="STRUCTNAME">pg_proc</tt>, <tt class="STRUCTNAME">pg_type</tt> 。为了允许这些表自己被填充，带 <tt class="LITERAL">bootstrap</tt> 选项的 <tt class="LITERAL">create</tt> 隐含打开所创建的表用于插入数据。</p>
+<p>同样，<tt class="LITERAL">declare index</tt> 和 <tt class="LITERAL">declare toast</tt> 命令也不能在它们所需要系统表创建并填充之前使用。</p>
+<p>因此，<tt class="FILENAME">postgres.bki</tt> 文件的结构必须是这样的：</p>
+<ol type="1">
+<li><p><tt class="LITERAL">create bootstrap</tt> 其中一个关键表</p></li>
+<li><p><tt class="LITERAL">insert</tt> 数据，这些数据至少描述这些关键表本身</p></li>
+<li><p><tt class="LITERAL">close</tt></p></li>
+<li><p>重复创建和填充其它关键表</p></li>
+<li><p><tt class="LITERAL">create</tt>(不带 <tt class="LITERAL">bootstrap</tt>)一个非关键表</p></li>
+<li><p><tt class="LITERAL">open</tt></p></li>
+<li><p><tt class="LITERAL">insert</tt> 需要的数据</p></li>
+<li><p><tt class="LITERAL">close</tt></p></li>
+<li><p>重复创建其它非关键表</p></li>
+<li><p>定义索引</p></li>
+<li><p><tt class="LITERAL">build indices</tt></p></li>
+</ol>
+<p>当然，肯定还有其它未记录文档的顺序依赖关系。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="bki-commands.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="bki-example.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">BKI 命令</td><td width="34%" align="center" valign="top"><a href="bki.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">例子</td></tr>
+</table>
+</div>
+</body></html>

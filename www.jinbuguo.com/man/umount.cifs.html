@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>umount.cifs 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>umount.cifs 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+umount.cifs(8)                                   System Administration                                  umount.cifs(8)
+
+名称
+       umount.cifs - 卸载已经挂载的通用网际文件系统(Common Internet File System)
+
+语法
+       umount.cifs {mount-point} [-nVvhfle]
+
+描述
+       这个工具是 samba(7) 软件包的一部分。
+
+       umount.cifs 用于卸载 CIFS 文件系统。
+       当它位于 /sbin 目录中时，通常由 umount(8) 命令间接调用(除非你使用了"umount -i"禁止 umount 使用帮助程序)。
+       umount.cifs 命令只能在支持 CIFS 文件系统的Linux内核上使用。
+       CIFS 协议是 SMB 协议的替代版本，它被包括 Windows 在内的几乎所有操作系统所以及 NAS(Network Attached Storage)应用和Samba服务器所支持。
+
+       umount.cifs 会断开UNC名称所对应的资源与本地 mount-point 之间的连接并释放内核的相关资源。
+       可以以 setuid root (或者更新 /etc/permissions 文件也一样)方式安装 umount.cifs 以允许非 root 用户卸载那些他们拥有写入权限的目录上的共享资源。
+       umount.cifs 工具在以下两种情况下是非必须的：①只允许root用户进行卸载的场合。②可以完全依赖 /etc/fstab 中记载的条目进行挂载和卸载。
+
+选项
+       -V
+              显示版本信息后退出
+
+       -h
+              显示帮助信息后退出
+
+       -r
+              如果卸载失败，那么就尝试以只读方式挂载。
+
+       -d
+              如果被卸载的是一个loop设备，那么同时也释放此设备。
+
+       -f
+             强制卸载(建议仅用于失去连接的服务器)
+
+       -l
+              使用延迟卸载(lazy unmount)。
+              立即将远程的CIFS资源从本地的文件树上剥离，并在该文件系统不再"busy"时清理掉所有对该文件系统的引用。
+
+       -e
+              将挂载点标记为"过期"。
+              如果一个挂载点当前并未被使用，那么第一次使用此选项卸载它将会得到 EAGAIN 错误并将此挂载点标记为"过期"。
+              该挂载点将在有任何进程访问它之前一直保持"过期"状态。
+              当第二次使用此选项再次卸载这个已经处于"过期"状态的挂载点时，该挂载点才会被真正的卸载。
+              这个选项不能和 -f 或 -l 一起使用。
+
+       -v|--verbose
+              输出执行过程中的详细调试信息。
+
+       -n|--no-mtab
+              不将卸载信息写入 /etc/mtab ，但是 /proc/mounts 依然会显示真确的信息
+
+注意
+       这个命令通常以 setuid root 方式安装(因为 root 用户本身已经可以运行 unmount)。
+       另一种使用 umount.cifs 的方式是在 /etc/fstab 中明确记录普通用户可以挂载和卸载的CIFS资源。
+
+配置
+       修改和读取 CIFS 配置、读取 CIFS 调试信息的首要途径就是 Linux 的 /proc 文件系统。
+       /proc/fs/cifs 目录中包含了许多配置和调试信息。
+       更多信息参见 Documentation/filesystems/cifs/README 文件。
+
+缺陷
+       目前 umount.cifs 并没有像 umount 一样对 /etc/mtab 文件加锁，
+       所以不要从不同的进程中并行卸载，尤其不要同时卸载 cifs 和其他类型的文件系统。
+
+       如果同一个挂载点被多次挂载，虽然 umount.cifs 实际上只卸载了该挂载点的最后一次挂载，
+       但是它也将会一次性删除 /etc/mtab 中匹配该挂载点的所有条目( /proc/mounts 文件依然会显示真确的挂载信息)。
+        /etc/mtab 中缺少相应的条目并不影响再次使用 umount.cifs 对该挂载点进行卸载。
+
+</pre>
+
+
+<hr />
+
+
+</body></html>

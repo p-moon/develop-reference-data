@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>fstrim 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>fstrim 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+FSTRIM(8)                                   System Administration                                  FSTRIM(8)
+
+名称
+       fstrim - 回收一个已挂载的文件系统上所有未使用的块
+
+语法
+       fstrim  [-a]  [-o offset]  [-l length]  [-m minimum-free-extent] [-v] mountpoint
+
+
+描述
+       fstrim 用于回收(又称为"trim")一个已挂载的文件系统上所有未使用的块。
+       这对于固态硬盘(SSD)和精简配置(thinly-provisioned)的存储设备比较有意义。
+
+       默认情况下，fstrim 将会回收文件系统上所有未使用的块。
+       但是可以通过选项限定回收的范围和大小(详见下文)。
+
+       mountpoint 参数是目标文件系统的挂载点
+
+
+选项
+       offset, length, minimum-free-extent 参数可使用 K, M, G, T, P, E, Z, Y 作为后缀，
+       分别表示：2<sup>10</sup>, 2<sup>20</sup>, 2<sup>30</sup>, 2<sup>40</sup>, 2<sup>50</sup>, 2<sup>60</sup>, 2<sup>70</sup>, 2<sup>80</sup>
+
+       -a, --all
+              回收所有已挂载文件系统上的未使用空间(包含所有支持"trim"的设备)。
+              其它选项，例如 --offset, --length, --minimum 都同时适用于所有设备。
+              而那些不支持"trim"的设备则被悄无声息的略过。
+
+       -h, --help
+              显示帮助信息后退出
+
+       -o, --offset offset
+              设置文件系统上搜索空闲块的起点，也就是仅搜索该点之后的空间。单位是字节。
+              默认值是"0"，表示从该文件系统的起始位置进行搜索。
+
+       -l, --length length
+              设置搜索长度，也就是从起点开始，在多大范围内搜索空闲块。单位是字节。
+              如果指定的长度超出了文件系统的末尾，那么将被截断到文件系统的末尾。
+              默认值是从起点一直到文件系统末尾的长度。
+
+       -m, --minimum minimum-free-extent
+              回收的最小连续空闲块尺寸，单位是字节。这个值会在内部向上取整到文件系统块尺寸的整数倍。
+              通过增大这个值，可以大幅提升在空闲块碎片特别严重的设备上的回收效率。
+              但是所有尺寸小于此值的连续空闲块都将被忽略(不回收)。从而导致回收不完全。
+              默认值是"0"表示回收所有空闲块。
+
+       -v, --verbose
+              啰嗦模式。输出回收过程中的详细信息。
+
+
+返回值
+       0      全部成功
+
+       1      失败
+
+       32     全部失败。仅供 -a 选项使用。
+
+       64     部分成功，部分失败。仅供 -a 选项使用。
+
+参见
+       mount(8)
+
+
+util-linux                                      November 2010                                      FSTRIM(8)
+
+</pre>
+
+
+<hr />
+
+
+</body></html>

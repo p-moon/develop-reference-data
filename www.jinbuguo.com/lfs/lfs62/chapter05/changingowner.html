@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.32. 改变所有者</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="stripping.html" title="清理系统">后退</a>
+          <p>清理系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../part3.html" title="构建 LFS 系统">前进</a>
+          <p>构建 LFS 系统</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">5.32. 改变所有者</h1>
+      </div>
+      <div class="note">
+        <div class="admonhead">
+          <img alt="[Note]" src="../images/note.png" />
+          <h3 class="admontitle">注意</h3>
+        </div>
+        <div class="admonbody">
+          <p>本书剩余部分的命令必须以 <tt class="systemitem">root</tt> 用户登陆后执行而不再使用 <tt class="systemitem">lfs</tt> 用户了。同样，有必要再一次检查 <tt class="systemitem">root</tt> 用户环境下的 <tt class="envar">$LFS</tt> 环境变量是否被正确的设置了。</p>
+        </div>
+      </div>
+      <p>目前，<tt class="filename">$LFS/tools</tt> 目录的所有者是仅存在于宿主环境中的 <tt class="systemitem">lfs</tt> 用户。如果保留该目录，那么该目录内文件的所有者的 user ID 就没有对应的账号。这会带来安全上的问题，在以后创建一个用户帐号的时候，如果该用户帐号的 user ID 刚好与目录 <tt class="filename">$LFS/tools</tt> 所有者的 user ID 相同，那么该目录下的文件就会面临被恶意操作的危险。</p>
+      <p>为了避免这个问题，在后面建立 LFS 系统的时候，在创建 <tt class="filename">/etc/passwd</tt> 文件时添加与宿主系统的 user ID 和 group ID相同的 <tt class="systemitem">lfs</tt> 用户。另外一个更好的办法是通过下面的指令把 <tt class="filename">$LFS/tools</tt> 目录以及其中文件的所有者改为 <tt class="systemitem">root</tt> 用户：</p>
+      <pre class="userinput"><kbd class="command">chown -R root:root $LFS/tools</kbd></pre>
+      <p>虽然在 LFS 系统完成的时候，可以把 <tt class="filename">$LFS/tools</tt> 目录删除，但是它还可以再用来建立多个<span class="emphasis"><em>相同版本</em></span>的 LFS 系统，所以很多人会选择保留该目录。如何以最好的方法备份 <tt class="filename">$LFS/tools</tt> 目录取决于个人喜好，我们把这个任务留给读者作为练习。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="stripping.html" title="清理系统">后退</a>
+          <p>清理系统</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../part3.html" title="构建 LFS 系统">前进</a>
+          <p>构建 LFS 系统</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>字符集支持</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="locale.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="charset.html">快退</a></td><td width="60%" align="center" valign="bottom">章21. 区域</td><td width="10%" align="right" valign="top"><a href="charset.html">快进</a></td><td width="10%" align="right" valign="top"><a href="maintenance.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="MULTIBYTE">21.2. 字符集支持</a></h1><a name="AEN23692"></a>
+<p>PostgreSQL 能够以各种字符集存储文本，比如 ISO-8859 系列和 EUC(扩展 Unix 编码)、UTF-8 、Mule 国际编码。所有字符集都可以在服务器上透明地使用。如果你使用了来自其它数据源的扩展函数，那么它取决于他们是否正确地书写了代码。缺省的字符集是在使用 <tt class="COMMAND">initdb</tt> 初始化数据库集群的时候选择的。在你创建数据库的时候是可以覆盖这个缺省的。因此，你可以有多个数据库，每个都有不同的字符集。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="MULTIBYTE-CHARSET-SUPPORTED">21.2.1. 支持的字符集编码</a></h2>
+<p><a href="multibyte.html#CHARSET-TABLE">表21-1</a> 显示了可以用在服务器的字符集。</p>
+<div class="TABLE"><a name="CHARSET-TABLE"></a>
+<p><b>表21-1. PostgreSQL 服务器字符集</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>描述</th><th>语言</th><th>服务端?</th><th>字节/字符</th><th>别名</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">BIG5</tt></td><td>大五码</td><td>繁体中文</td><td>No</td><td>1-2</td><td><tt class="LITERAL">WIN950</tt>, <tt class="LITERAL">Windows950</tt></td></tr>
+<tr><td><tt class="LITERAL">EUC_CN</tt></td><td>扩展UNIX代码-CN</td><td>简体中文</td><td>Yes</td><td>1-3</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">EUC_JP</tt></td><td>扩展UNIX代码-JP</td><td>日文</td><td>Yes</td><td>1-3</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">EUC_KR</tt></td><td>扩展UNIX代码-KR</td><td>韩文</td><td>Yes</td><td>1-3</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">EUC_TW</tt></td><td>扩展UNIX代码-TW</td><td>繁体中文，台湾</td><td>Yes</td><td>1-3</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">GB18030</tt></td><td>国标码</td><td>中文</td><td>No</td><td>1-2</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">GBK</tt></td><td>扩展国标码</td><td>简体中文</td><td>No</td><td>1-2</td><td><tt class="LITERAL">WIN936</tt>, <tt class="LITERAL">Windows936</tt></td></tr>
+<tr><td><tt class="LITERAL">ISO_8859_5</tt></td><td>ISO 8859-5, ECMA 113</td><td>拉丁/西里尔语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">ISO_8859_6</tt></td><td>ISO 8859-6, ECMA 114</td><td>拉丁/阿拉伯语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">ISO_8859_7</tt></td><td>ISO 8859-7, ECMA 118</td><td>拉丁/希腊语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">ISO_8859_8</tt></td><td>ISO 8859-8, ECMA 121</td><td>拉丁/希伯莱语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">JOHAB</tt></td><td>JOHAB</td><td>韩语</td><td>Yes</td><td>1-3</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">KOI8</tt></td><td>KOI8-R(U)</td><td>西里尔语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">KOI8R</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN1</tt></td><td>ISO 8859-1, ECMA 94</td><td>西欧语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ISO88591</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN2</tt></td><td>ISO 8859-2, ECMA 94</td><td>中欧语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ISO88592</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN3</tt></td><td>ISO 8859-3, ECMA 94</td><td>南欧语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ISO88593</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN4</tt></td><td>ISO 8859-4, ECMA 94</td><td>北欧语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ISO88594</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN5</tt></td><td>ISO 8859-9, ECMA 128</td><td>土耳其语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ISO88599</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN6</tt></td><td>ISO 8859-10, ECMA 144</td><td>日耳曼语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ISO885910</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN7</tt></td><td>ISO 8859-13</td><td>波罗的海语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ISO885913</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN8</tt></td><td>ISO 8859-14</td><td>凯尔特语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ISO885914</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN9</tt></td><td>ISO 8859-15</td><td>带有欧洲语系和语调的 LATIN1</td><td>Yes</td><td>1</td><td>ISO885915</td></tr>
+<tr><td><tt class="LITERAL">LATIN10</tt></td><td>ISO 8859-16, ASRO SR 14111</td><td>罗马尼亚语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ISO885916</tt></td></tr>
+<tr><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td>Mule 国际编码</td><td>多语种 Emacs</td><td>Yes</td><td>1-4</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">SJIS</tt></td><td>Shift JIS</td><td>日语</td><td>No</td><td>1-2</td><td><tt class="LITERAL">Mskanji</tt>, <tt class="LITERAL">ShiftJIS</tt>, <tt class="LITERAL">WIN932</tt>, <tt class="LITERAL">Windows932</tt></td></tr>
+<tr><td><tt class="LITERAL">SQL_ASCII</tt></td><td>未声明(见文本)</td><td><span class="emphasis"><i class="EMPHASIS">任意</i></span></td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">UHC</tt></td><td>统一韩语编码</td><td>韩语</td><td>No</td><td>1-2</td><td><tt class="LITERAL">WIN949</tt>, <tt class="LITERAL">Windows949</tt></td></tr>
+<tr><td><tt class="LITERAL">UTF8</tt></td><td>Unicode, 8-bit</td><td><span class="emphasis"><i class="EMPHASIS">全部</i></span></td><td>Yes</td><td>1-4</td><td><tt class="LITERAL">Unicode</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN866</tt></td><td>Windows CP866</td><td>西里尔语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ALT</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN874</tt></td><td>Windows CP874</td><td>泰国语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">WIN1250</tt></td><td>Windows CP1250</td><td>中欧语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">WIN1251</tt></td><td>Windows CP1251</td><td>西里尔语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">WIN</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1252</tt></td><td>Windows CP1252</td><td>西欧语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">WIN1253</tt></td><td>Windows CP1253</td><td>希腊语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">WIN1254</tt></td><td>Windows CP1254</td><td>土耳其语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">WIN1255</tt></td><td>Windows CP1255</td><td>希伯来语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">WIN1256</tt></td><td>Windows CP1256</td><td>阿拉伯语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">WIN1257</tt></td><td>Windows CP1257</td><td>波罗的语</td><td>Yes</td><td>1</td><td>&nbsp;</td></tr>
+<tr><td><tt class="LITERAL">WIN1258</tt></td><td>Windows CP1258</td><td>越南语</td><td>Yes</td><td>1</td><td><tt class="LITERAL">ABC</tt>, <tt class="LITERAL">TCVN</tt>, <tt class="LITERAL">TCVN5712</tt>, <tt class="LITERAL">VSCII</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p>并非所有API都支持上面列出的编码。比如，PostgreSQL JDBC驱动就不支持 <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">LATIN6</tt>, <tt class="LITERAL">LATIN8</tt>, <tt class="LITERAL">LATIN10</tt> 。</p>
+<p><tt class="LITERAL">SQL_ASCII</tt> 设置与其它设置表现得相当不同。如果服务器字符集是 <tt class="LITERAL">SQL_ASCII</tt> ，服务器把字节值 0-127 的数值根据 ASCII 标准解析，而字节值 128-255 的则当作未解析的字符。如果设置为 <tt class="LITERAL">SQL_ASCII</tt> 就不会有编码转换。因此，这个设置基本不用来声明所使用的编码，因为这个声明会忽略编码。在大多数情况下，如果你使用了任何非 ASCII 数据，那么使用 <tt class="LITERAL">SQL_ASCII</tt> 设置都是不明智的，因为 PostgreSQL 会无法帮助你转换或者校验非 ASCII 字符。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN24084">21.2.2. 设置字符集</a></h2>
+<p><tt class="COMMAND">initdb</tt> 为一个 PostgreSQL 集群定义缺省的字符集，比如：</p>
+<pre class="SCREEN">initdb -E EUC_JP</pre>
+<p>把缺省字符集设置为 <tt class="LITERAL">EUC_JP</tt>(用于日文的扩展 Unix 编码)。如果你喜欢用长选项声明的话，可以用 <tt class="OPTION">--encoding</tt> 代替 <tt class="OPTION">-E</tt> 选项。如果没有给出 <tt class="OPTION">-E</tt> 或 <tt class="OPTION">--encoding</tt> 选项，<tt class="COMMAND">initdb</tt> 将基于制定的区域或者缺省区域试图判断合适的编码。</p>
+<p>你可以创建一个有着不同编码的数据库：</p>
+<pre class="SCREEN">createdb -E EUC_KR korean</pre>
+<p>将创建一个使用 <tt class="LITERAL">EUC_KR</tt> 字符集的名字叫 <tt class="LITERAL">korean</tt> 的数据库。另外一种实现方法是使用 SQL 命令：</p>
+<pre class="PROGRAMLISTING">CREATE DATABASE korean WITH ENCODING 'EUC_KR';</pre>
+<p>数据库的编码是存储在 <tt class="LITERAL">pg_database</tt> 系统表中的。你可以用 <tt class="COMMAND">psql</tt> 的 <tt class="OPTION">-l</tt> 选项或 <tt class="COMMAND">\l</tt> 命令列出这些编码。</p>
+<pre class="SCREEN">$ <kbd class="USERINPUT">psql -l</kbd>
+            List of databases
+   Database    |  Owner  |   Encoding    
+---------------+---------+---------------
+ euc_cn        | t-ishii | EUC_CN
+ euc_jp        | t-ishii | EUC_JP
+ euc_kr        | t-ishii | EUC_KR
+ euc_tw        | t-ishii | EUC_TW
+ mule_internal | t-ishii | MULE_INTERNAL
+ postgres      | t-ishii | EUC_JP
+ regression    | t-ishii | SQL_ASCII
+ template1     | t-ishii | EUC_JP
+ test          | t-ishii | EUC_JP
+ utf8          | t-ishii | UTF8
+(9 rows)</pre>
+<div class="IMPORTANT">
+<blockquote class="IMPORTANT">
+<p><b>【重要】</b>虽然你可以给一个数据库声明你需要的任何编码，但选择一个与你选择的区域不一致的编码还是不妥的做法。<tt class="LITERAL">LC_COLLATE</tt> 和 <tt class="LITERAL">LC_CTYPE</tt> 设置暗示一个特定的编码，与区域相关的操作(比如排序)在不兼容的编码里很有可能产生错误的解析。</p>
+<p>因为这些区域设置都是由 <tt class="COMMAND">initdb</tt> 冻结的，所以在不同的数据库里使用不同的编码更多是理论而不是现实。这些机制很有可能在将来版本的 PostgreSQL 得到改进。</p>
+<p>一个安全使用多种编码的方法是在 <tt class="COMMAND">initdb</tt> 的时候把区域设置为 <tt class="LITERAL">C</tt> 或 <tt class="LITERAL">POSIX</tt> ，这样就关闭了任何实际的区域敏感性。</p>
+</blockquote>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN24118">21.2.3. 服务器和客户端之间的自动字符集转换</a></h2>
+<p>PostgreSQL 支持在服务器和前端之间的自动编码转换。转换信息在系统表 <tt class="LITERAL">pg_conversion</tt> 中存储。PostgreSQL 带着一些预定义的转换。它们在<a href="multibyte.html#MULTIBYTE-TRANSLATION-TABLE">表21-2</a>中列出。你可以使用 SQL 命令 <tt class="COMMAND">CREATE CONVERSION</tt> 创建一个新的转换。</p>
+<div class="TABLE"><a name="MULTIBYTE-TRANSLATION-TABLE"></a>
+<p><b>表21-2. 客户/服务器字符集转换</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>服务器字符集</th><th>可用客户端字符集</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">BIG5</tt></td><td><span class="emphasis"><i class="EMPHASIS">不支持做服务器端编码</i></span></td></tr>
+<tr><td><tt class="LITERAL">EUC_CN</tt></td><td><span class="emphasis"><i class="EMPHASIS">EUC_CN</i></span>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">EUC_JP</tt></td><td><span class="emphasis"><i class="EMPHASIS">EUC_JP</i></span>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">SJIS</tt>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">EUC_KR</tt></td><td><span class="emphasis"><i class="EMPHASIS">EUC_KR</i></span>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">EUC_TW</tt></td><td><span class="emphasis"><i class="EMPHASIS">EUC_TW</i></span>, <tt class="LITERAL">BIG5</tt>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">GB18030</tt></td><td><span class="emphasis"><i class="EMPHASIS">不支持做服务器端编码</i></span></td></tr>
+<tr><td><tt class="LITERAL">GBK</tt></td><td><span class="emphasis"><i class="EMPHASIS">不支持做服务器端编码</i></span></td></tr>
+<tr><td><tt class="LITERAL">ISO_8859_5</tt></td><td><span class="emphasis"><i class="EMPHASIS">ISO_8859_5</i></span>, <tt class="LITERAL">KOI8</tt>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt>, <tt class="LITERAL">WIN866</tt>, <tt class="LITERAL">WIN1251</tt></td></tr>
+<tr><td><tt class="LITERAL">ISO_8859_6</tt></td><td><span class="emphasis"><i class="EMPHASIS">ISO_8859_6</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">ISO_8859_7</tt></td><td><span class="emphasis"><i class="EMPHASIS">ISO_8859_7</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">ISO_8859_8</tt></td><td><span class="emphasis"><i class="EMPHASIS">ISO_8859_8</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">JOHAB</tt></td><td><span class="emphasis"><i class="EMPHASIS">JOHAB</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">KOI8</tt></td><td><span class="emphasis"><i class="EMPHASIS">KOI8</i></span>, <tt class="LITERAL">ISO_8859_5</tt>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt>, <tt class="LITERAL">WIN866</tt>, <tt class="LITERAL">WIN1251</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN1</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN1</i></span>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN2</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN2</i></span>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt>, <tt class="LITERAL">WIN1250</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN3</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN3</i></span>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN4</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN4</i></span>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN5</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN5</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN6</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN6</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN7</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN7</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN8</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN8</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN9</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN9</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">LATIN10</tt></td><td><span class="emphasis"><i class="EMPHASIS">LATIN10</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><span class="emphasis"><i class="EMPHASIS">MULE_INTERNAL</i></span>, <tt class="LITERAL">BIG5</tt>, <tt class="LITERAL">EUC_CN</tt>, <tt class="LITERAL">EUC_JP</tt>, <tt class="LITERAL">EUC_KR</tt>, <tt class="LITERAL">EUC_TW</tt>, <tt class="LITERAL">ISO_8859_5</tt>, <tt class="LITERAL">KOI8</tt>, <tt class="LITERAL">LATIN1</tt> to <tt class="LITERAL">LATIN4</tt>, <tt class="LITERAL">SJIS</tt>, <tt class="LITERAL">WIN866</tt>, <tt class="LITERAL">WIN1250</tt>, <tt class="LITERAL">WIN1251</tt></td></tr>
+<tr><td><tt class="LITERAL">SJIS</tt></td><td><span class="emphasis"><i class="EMPHASIS">不支持做服务器端编码</i></span></td></tr>
+<tr><td><tt class="LITERAL">SQL_ASCII</tt></td><td><span class="emphasis"><i class="EMPHASIS">任意(不会发生编码转换)</i></span></td></tr>
+<tr><td><tt class="LITERAL">UHC</tt></td><td><span class="emphasis"><i class="EMPHASIS">不支持做服务器端编码</i></span></td></tr>
+<tr><td><tt class="LITERAL">UTF8</tt></td><td><span class="emphasis"><i class="EMPHASIS">所有支持的编码</i></span></td></tr>
+<tr><td><tt class="LITERAL">WIN866</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN866</i></span>, <tt class="LITERAL">ISO_8859_5</tt>, <tt class="LITERAL">KOI8</tt>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt>, <tt class="LITERAL">WIN1251</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN874</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN874</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1250</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN1250</i></span>, <tt class="LITERAL">LATIN2</tt>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1251</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN1251</i></span>, <tt class="LITERAL">ISO_8859_5</tt>, <tt class="LITERAL">KOI8</tt>, <tt class="LITERAL">MULE_INTERNAL</tt>, <tt class="LITERAL">UTF8</tt>, <tt class="LITERAL">WIN866</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1252</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN1252</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1253</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN1253</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1254</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN1254</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1255</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN1255</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1256</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN1256</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1257</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN1257</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">WIN1258</tt></td><td><span class="emphasis"><i class="EMPHASIS">WIN1258</i></span>, <tt class="LITERAL">UTF8</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p>要想打开自动字符集转换功能，你必须告诉 PostgreSQL 你想在客户端使用的字符集(编码)。你可以用好几种方法实现这个目的。</p>
+<ul>
+<li><p>用 <span class="APPLICATION">psql</span> 里的 <tt class="COMMAND">\encoding</tt> 命令。<tt class="COMMAND">\encoding</tt> 允许你动态修改客户端编码。比如，把编码改变为 <tt class="LITERAL">SJIS</tt> ，键入：</p>
+<pre class="PROGRAMLISTING">\encoding SJIS</pre></li>
+<li><p>使用 <span class="APPLICATION">libpq</span> 函数。<tt class="COMMAND">\encoding</tt> 在做此用途的时候实际上是调用了 <code class="FUNCTION">PQsetClientEncoding()</code> 函数。</p>
+<pre class="SYNOPSIS">int PQsetClientEncoding(PGconn *<tt class="REPLACEABLE"><i>conn</i></tt>, const char *<tt class="REPLACEABLE"><i>encoding</i></tt>);</pre>
+<p>这里的 <tt class="REPLACEABLE"><i>conn</i></tt> 是一个与服务器的连接，<tt class="REPLACEABLE"><i>encoding</i></tt> 是你想用的编码。如果编码设置成功它返回 0 ，否则返回 -1 。本次连接的当前编码可以用下面函数显示：</p>
+<pre class="SYNOPSIS">int PQclientEncoding(const PGconn *<tt class="REPLACEABLE"><i>conn</i></tt>);</pre>
+<p>请注意它只返回编码的 ID ，而不是像 <tt class="LITERAL">EUC_JP</tt> 这样的编码符号字符串。要把编码 ID 转换为编码符号，你可以用：</p>
+<pre class="SYNOPSIS">char *pg_encoding_to_char(int <tt class="REPLACEABLE"><i>encoding_id</i></tt>);</pre></li>
+<li><p>可以用 SQL 命令 <tt class="COMMAND">SET client_encoding TO</tt> 设置客户端编码：</p>
+<pre class="PROGRAMLISTING">SET CLIENT_ENCODING TO '<tt class="REPLACEABLE"><i>value</i></tt>';</pre>
+<p>你还可以把 SQL 语法里的 <tt class="LITERAL">SET NAMES</tt> 用于这个目的：</p>
+<pre class="PROGRAMLISTING">SET NAMES '<tt class="REPLACEABLE"><i>value</i></tt>';</pre>
+<p>查询当前客户端编码：</p>
+<pre class="PROGRAMLISTING">SHOW client_encoding;</pre>
+<p>返回缺省编码：</p>
+<pre class="PROGRAMLISTING">RESET client_encoding;</pre></li>
+<li><p>使用 <tt class="ENVAR">PGCLIENTENCODING</tt> 。如果在客户端的环境里定义了 <tt class="ENVAR">PGCLIENTENCODING</tt> 环境变量，那么在与服务器进行连接时将自动选择客户端编码。这个编码随后可以用上面谈到的任何其它方法覆盖。</p></li>
+<li><p>使用 <a href="runtime-config-client.html#GUC-CLIENT-ENCODING">client_encoding</a> 配置变量。如果在 <tt class="VARNAME">client_encoding</tt> 里设置了该变量，那么在与服务器建立了连接之后，这个客户端编码将自动选定。这个设置随后可以被上面提到的其它方法覆盖。</p></li>
+</ul>
+<p>假如无法进行特定的字符转换，比如，你选的服务器编码是 <tt class="LITERAL">EUC_JP</tt> 而客户端是 <tt class="LITERAL">LATIN1</tt> ，那么有些日文字符不能转换成 <tt class="LITERAL">LATIN1</tt> 。这时将报告错误。</p>
+<p>如果客户端字符集定义成了 <tt class="LITERAL">SQL_ASCII</tt> ，那么编码转换会被关闭，不管服务器的字符集是什么都一样。和服务器一样，除非你的工作环境全部是 ASCII 数据，否则使用 <tt class="LITERAL">SQL_ASCII</tt> 是不明智的。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN24452">21.2.4. 进一步阅读</a></h2>
+<p>下面是学习各种类型的编码系统的好地方。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><a href="http://www.i18ngurus.com/docs/984813247.html" target="_top">http://www.i18ngurus.com/docs/984813247.html</a></dt>
+<dd><p>一整套有关字符集，编码以及代码页的文档。</p></dd>
+<dt><a href="ftp://ftp.ora.com/pub/examples/nutshell/ujip/doc/cjk.inf" target="_top">ftp://ftp.ora.com/pub/examples/nutshell/ujip/doc/cjk.inf</a></dt>
+<dd><p>详细地解释了第3.2节出现的 <tt class="LITERAL">EUC_JP</tt>, <tt class="LITERAL">EUC_CN</tt>, <tt class="LITERAL">EUC_KR</tt>, <tt class="LITERAL">EUC_TW</tt> 编码。</p></dd>
+<dt><a href="http://www.unicode.org/" target="_top">http://www.unicode.org/</a></dt>
+<dd><p>Unicode 的主页。</p></dd>
+<dt>RFC 2044</dt>
+<dd><p>UTF-8 的定义。</p></dd>
+</dl>
+</div>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="locale.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="maintenance.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">区域支持</td><td width="34%" align="center" valign="top"><a href="charset.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">日常数据库维护工作</td></tr>
+</table>
+</div>
+</body></html>

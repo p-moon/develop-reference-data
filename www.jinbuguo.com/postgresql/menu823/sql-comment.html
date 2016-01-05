@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>COMMENT</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-cluster.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-cluster.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-commit.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-commit.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-COMMENT"></a>COMMENT</h1>
+<div class="REFNAMEDIV"><a name="AEN45809"></a><h2>名称</h2>COMMENT&nbsp;--&nbsp;定义或者改变一个对象的评注</div>
+<a name="AEN45812"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN45814"></a><h2>语法</h2>
+<pre class="SYNOPSIS">COMMENT ON
+{
+  TABLE <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  COLUMN <tt class="REPLACEABLE"><i>table_name</i></tt>.<tt class="REPLACEABLE"><i>column_name</i></tt> |
+  AGGREGATE <tt class="REPLACEABLE"><i>agg_name</i></tt> (<tt class="REPLACEABLE"><i>agg_type</i></tt> [, ...] ) |
+  CAST (<tt class="REPLACEABLE"><i>sourcetype</i></tt> AS <tt class="REPLACEABLE"><i>targettype</i></tt>) |
+  CONSTRAINT <tt class="REPLACEABLE"><i>constraint_name</i></tt> ON <tt class="REPLACEABLE"><i>table_name</i></tt> |
+  CONVERSION <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  DATABASE <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  DOMAIN <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  FUNCTION <tt class="REPLACEABLE"><i>func_name</i></tt> ( [ [ <tt class="REPLACEABLE"><i>argmode</i></tt> ] [ <tt class="REPLACEABLE"><i>argname</i></tt> ] <tt class="REPLACEABLE"><i>argtype</i></tt> [, ...] ] ) |
+  INDEX <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  LARGE OBJECT <tt class="REPLACEABLE"><i>large_object_oid</i></tt> |
+  OPERATOR <tt class="REPLACEABLE"><i>op</i></tt> (<tt class="REPLACEABLE"><i>leftoperand_type</i></tt>, <tt class="REPLACEABLE"><i>rightoperand_type</i></tt>) |
+  OPERATOR CLASS <tt class="REPLACEABLE"><i>object_name</i></tt> USING <tt class="REPLACEABLE"><i>index_method</i></tt> |
+  [ PROCEDURAL ] LANGUAGE <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  ROLE <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  RULE <tt class="REPLACEABLE"><i>rule_name</i></tt> ON <tt class="REPLACEABLE"><i>table_name</i></tt> |
+  SCHEMA <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  SEQUENCE <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  TABLESPACE <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  TRIGGER <tt class="REPLACEABLE"><i>trigger_name</i></tt> ON <tt class="REPLACEABLE"><i>table_name</i></tt> |
+  TYPE <tt class="REPLACEABLE"><i>object_name</i></tt> |
+  VIEW <tt class="REPLACEABLE"><i>object_name</i></tt>
+} IS <tt class="REPLACEABLE"><i>'text'</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN45851"></a><h2>描述</h2>
+<p><tt class="COMMAND">COMMENT</tt> 存储一个数据库对象的评注。</p>
+<p>要修改一个评注，为同一个对象发出一条新的 <tt class="COMMAND">COMMENT</tt> 命令即可。每个对象只存储一条评注。要删除评注，在文本字符串的位置写上 <tt class="LITERAL">NULL</tt> 即可。当删除对象时，评注自动被删除掉。</p>
+<p>评注可以用 <span class="APPLICATION">psql</span> 命令 <tt class="COMMAND">\dd</tt>, <tt class="COMMAND">\d+</tt>, <tt class="COMMAND">\l+</tt> 检索。其它希望检索评注的用户接口可以建筑在 <span class="APPLICATION">psql</span> 使用的同样的内置函数 <code class="FUNCTION">obj_description</code>, <code class="FUNCTION">col_description</code>, <code class="FUNCTION">shobj_description</code> 上(参见<a href="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">表9-44</a>)。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45868"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>object_name</i></tt><br><tt class="REPLACEABLE"><i>table_name.column_name</i></tt><br><tt class="REPLACEABLE"><i>agg_name</i></tt><br><tt class="REPLACEABLE"><i>constraint_name</i></tt><br><tt class="REPLACEABLE"><i>func_name</i></tt><br><tt class="REPLACEABLE"><i>op</i></tt><br><tt class="REPLACEABLE"><i>rule_name</i></tt><br><tt class="REPLACEABLE"><i>trigger_name</i></tt></dt>
+<dd><p>要加入评注的对象名称。表、聚集、域、函数、索引、操作符、操作符类、序列、类型、视图，名字可以有模式修饰。</p></dd>
+<dt><tt class="REPLACEABLE"><i>agg_type</i></tt></dt>
+<dd><p>聚集函数操作的参数类型，要引用一个零参数聚集函数，可以使用 <tt class="LITERAL">*</tt> 代替输入数据类型列表。</p></dd>
+<dt><tt class="REPLACEABLE"><i>sourcetype</i></tt></dt>
+<dd><p>类型转换的源数据类型</p></dd>
+<dt><tt class="REPLACEABLE"><i>targettype</i></tt></dt>
+<dd><p>类型转换的目标数据类型</p></dd>
+<dt><tt class="REPLACEABLE"><i>argmode</i></tt></dt>
+<dd><p>函数参数的模式： <tt class="LITERAL">IN</tt>(缺省), <tt class="LITERAL">OUT</tt>, <tt class="LITERAL">INOUT</tt> 。请注意 <tt class="COMMAND">COMMENT ON FUNCTION</tt> 实际上不会注意 <tt class="LITERAL">OUT</tt> 参数，因为只要有输入参数就可以判断函数的身份了。因此，只要列出 <tt class="LITERAL">IN</tt> 和 <tt class="LITERAL">INOUT</tt> 参数就足够了。</p></dd>
+<dt><tt class="REPLACEABLE"><i>argname</i></tt></dt>
+<dd><p>函数参数的名字。请注意 <tt class="COMMAND">COMMENT ON FUNCTION</tt> 实际上并不关心参数名，因为只要有参数的数据类型就可以判断函数的身份。</p></dd>
+<dt><tt class="REPLACEABLE"><i>argtype</i></tt></dt>
+<dd><p>如果有的话，是函数参数的数据类型(可以用模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>large_object_oid</i></tt></dt>
+<dd><p>大对象的 OID</p></dd>
+<dt><tt class="LITERAL">PROCEDURAL</tt></dt>
+<dd><p>这个字没有任何用处</p></dd>
+<dt><tt class="REPLACEABLE"><i>text</i></tt></dt>
+<dd><p>新的评注，以字符串文本的方式写；如果是 <tt class="LITERAL">NULL</tt> 则删除评注。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN45946"></a><h2>注意</h2>
+<p>目前评注没有安全机制：任何连接到某数据库上的用户都可以看到所有该数据库对象的评注(尽管只有超级用户可以修改不属于他的对象的评注)。共享对象(比如数据库、角色、表空间)的评注是全局存储的，链接到任何数据库的任何用户都可以看到它们。因此，不要在评注里存放安全敏感地信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45949"></a><h2>例子</h2>
+<p>给表 <tt class="LITERAL">mytable</tt> 加评注：</p>
+<pre class="PROGRAMLISTING">COMMENT ON TABLE mytable IS 'This is my table.';</pre>
+<p>再删除它：</p>
+<pre class="PROGRAMLISTING">COMMENT ON TABLE mytable IS NULL;</pre>
+<p>其它一些例子：</p>
+<pre class="PROGRAMLISTING">COMMENT ON AGGREGATE my_aggregate (double precision) IS 'Computes sample variance';
+COMMENT ON CAST (text AS int4) IS 'Allow casts from text to int4';
+COMMENT ON COLUMN my_table.my_column IS 'Employee ID number';
+COMMENT ON CONVERSION my_conv IS 'Conversion to UTF8';
+COMMENT ON DATABASE my_database IS 'Development Database';
+COMMENT ON DOMAIN my_domain IS 'Email Address Domain';
+COMMENT ON FUNCTION my_function (timestamp) IS 'Returns Roman Numeral';
+COMMENT ON INDEX my_index IS 'Enforces uniqueness on employee ID';
+COMMENT ON LANGUAGE plpython IS 'Python support for stored procedures';
+COMMENT ON LARGE OBJECT 346344 IS 'Planning document';
+COMMENT ON OPERATOR ^ (text, text) IS 'Performs intersection of two texts';
+COMMENT ON OPERATOR - (NONE, text) IS 'This is a prefix operator on text';
+COMMENT ON OPERATOR CLASS int4ops USING btree IS '4 byte integer operators for btrees';
+COMMENT ON ROLE my_role IS 'Administration group for finance tables';
+COMMENT ON RULE my_rule ON my_table IS 'Logs updates of employee records';
+COMMENT ON SCHEMA my_schema IS 'Departmental data';
+COMMENT ON SEQUENCE my_sequence IS 'Used to generate primary keys';
+COMMENT ON TABLE my_schema.my_table IS 'Employee Information';
+COMMENT ON TABLESPACE my_tablespace IS 'Tablespace for indexes';
+COMMENT ON TRIGGER my_trigger ON my_table IS 'Used for RI';
+COMMENT ON TYPE complex IS 'Complex number data type';
+COMMENT ON VIEW my_view IS 'View of departmental costs';</pre>
+</div>
+<div class="REFSECT1"><a name="AEN45957"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">COMMENT</tt> 命令。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-cluster.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-commit.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CLUSTER</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">COMMIT</td></tr>
+</table>
+</div>
+</body></html>

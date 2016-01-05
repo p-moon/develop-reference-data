@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_depend</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-database.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-description.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-DEPEND">43.16. <tt class="STRUCTNAME">pg_depend</tt></a></h1><a name="AEN63407"></a>
+<p><tt class="STRUCTNAME">pg_depend</tt> 表记录数据库对象之间的依赖关系。这个信息允许 <tt class="COMMAND">DROP</tt> 命令找出哪些其它对象必须由 <tt class="COMMAND">DROP CASCADE</tt> 删除，或者是在 <tt class="COMMAND">DROP RESTRICT</tt> 的情况下避免删除。</p>
+<p>这个表的功能类似 <a href="catalog-pg-shdepend.html"><tt class="STRUCTNAME">pg_shdepend</tt></a> ，用于记录那些在数据库集群之间共享的对象之间的依赖性关系。</p>
+<div class="TABLE"><a name="AEN63417"></a>
+<p><b>表43-16. <tt class="STRUCTNAME">pg_depend</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">classid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-class.html"><tt class="STRUCTNAME">pg_class</tt></a>.oid</tt></td><td>有倚赖对象所在系统表的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">objid</tt></td><td><tt class="TYPE">oid</tt></td><td>任何 OID 属性</td><td>指定的有依赖对象的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">objsubid</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>对于表字段，这个是该属性的字段数(<tt class="STRUCTFIELD">objid</tt> 和 <tt class="STRUCTFIELD">classid</tt> 引用表本身)。对于所有其它对象类型，目前这个字段是零。</td></tr>
+<tr><td><tt class="STRUCTFIELD">refclassid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-class.html"><tt class="STRUCTNAME">pg_class</tt></a>.oid</tt></td><td>被引用对象所在的系统表的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">refobjid</tt></td><td><tt class="TYPE">oid</tt></td><td>任意 OID 属性</td><td>指定的被引用对象的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">refobjsubid</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td>对于表字段，这个是该字段的字段号(<tt class="STRUCTFIELD">refobjid</tt> 和 <tt class="STRUCTFIELD">refclassid</tt> 引用表本身)。对于所有其它对象类型，目前这个字段是零。</td></tr>
+<tr><td><tt class="STRUCTFIELD">deptype</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td>一个定义这个依赖关系特定语义的代码。见下文。</td></tr>
+</tbody>
+</table>
+</div>
+<p>在所有情况下，一个 <tt class="STRUCTNAME">pg_depend</tt> 记录表示被引用的对象不能在有依赖的对象被删除前删除。不过，这里还有几种由 <tt class="STRUCTFIELD">deptype</tt> 定义的情况：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="SYMBOL">DEPENDENCY_NORMAL</tt> (<tt class="LITERAL">n</tt>)</dt>
+<dd><p>独立创建的对象之间的一般关系。有倚赖的对象可以在不影响被引用对象的情况下删除。被引用对象只有在声明了 <tt class="LITERAL">CASCADE</tt> 的情况下删除，这时有依赖的对象也被删除。例子：一个表字段对其数据类型有一般依赖关系。</p></dd>
+<dt><tt class="SYMBOL">DEPENDENCY_AUTO</tt> (<tt class="LITERAL">a</tt>)</dt>
+<dd><p>有依赖对象可以和被引用对象分别删除，并且如果删除了被引用对象则应该被自动删除(不管是 <tt class="LITERAL">RESTRICT</tt> 或 <tt class="LITERAL">CASCADE</tt> 模式)。例子：一个表上面的命名约束是在该表上的自动依赖关系，因此如果删除了表，它也会被删除。</p></dd>
+<dt><tt class="SYMBOL">DEPENDENCY_INTERNAL</tt> (<tt class="LITERAL">i</tt>)</dt>
+<dd><p>有依赖的对象是作为被引用对象的一部分创建的，实际上只是它的内部实现的一部分。<tt class="COMMAND">DROP</tt> 有依赖对象是不能直接允许的(将告诉用户发出一条删除被引用对象的 <tt class="COMMAND">DROP</tt>)。一个对被引用对象的 <tt class="COMMAND">DROP</tt> 将传播到有依赖对象，不管是否声明了 <tt class="COMMAND">CASCADE</tt> 。例子：一个创建来强制外键约束的触发器在该约束的 <tt class="STRUCTNAME">pg_constraint</tt> 记录上是标记为内部依赖的。</p></dd>
+<dt><tt class="SYMBOL">DEPENDENCY_PIN</tt> (<tt class="LITERAL">p</tt>)</dt>
+<dd><p>没有有依赖对象；这种类型的记录标志着系统本身依赖于被引用对象，因此这个对象决不能被删除。这种类型的记录只有在 <tt class="COMMAND">initdb</tt> 的时候创建。有依赖对象的字段里是零。</p></dd>
+</dl>
+</div>
+<p>将来可能还会有其它依赖的风格。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-database.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-description.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_database</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_description</tt></td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.59. 再次清理系统</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="aboutdebug.html" title="关于调试符号">后退</a>
+          <p>关于调试符号</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="revisedchroot.html" title="最终的清理">前进</a>
+          <p>最终的清理</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">6.59. 再次清理系统</h1>
+      </div>
+      <p>如果编译此系统的用户不是一个程序员并且不打算在系统软件上做任何调试工作，系统大小可以通过从二进制包和库文件中删除调试链接削减大约 90 MB 的空间，这样做的代价是您以后将不能随时调试系统。</p>
+      <p>大多数人可以毫无困难地凭经验使用命令提示。但是，很容易因为一个打字错误就被报告新系统不能使用，因此在运行 <span><strong class="command">strip</strong></span> 命令前，对系统当前数据做一个备份是一个不错的主意。</p>
+      <p>在执行清理命令之前，请特别注意确保正在运行的二进制文件不被清理。如果您不确定是否用户是进入在虚根环境（<a href="chroot.html" title="6.4. 进入 Chroot 环境">节 6.4,
+        "进入 Chroot 环境"</a>）下操作，请首先退出虚根环境：</p>
+      <pre class="userinput"><kbd class="command">logout</kbd></pre>
+      <p>接着用下面的命令再次进入：</p>
+      <pre class="userinput"><kbd class="command">chroot $LFS /tools/bin/env -i \
+    HOME=/root TERM=$TERM PS1='\u:\w\$ ' \
+    PATH=/bin:/usr/bin:/sbin:/usr/sbin \
+    /tools/bin/bash --login</kbd></pre>
+      <p>现在二进制文件和库文件能安全地被清理了：</p>
+      <pre class="userinput"><kbd class="command">/tools/bin/find /{,usr/}{bin,lib,sbin} -type f \
+  -exec /tools/bin/strip --strip-debug '{}' ';'</kbd></pre>
+      <p>很多文件将被报告说不能识别它们的文件格式，这些警告可以安全地忽略。这些警告只是表明那些文件是脚本而不是二进制文件。</p>
+      <p>如果硬盘空间非常紧张，这个 <em class="parameter"><tt>--strip-all</tt></em> 选项可以被用在二进制文件目录 <tt class="filename">/{,usr/}{bin,sbin}</tt> 中以获得更多的空间。不要在库文件里使用这个参数，因为这个参数将会破坏库文件。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="aboutdebug.html" title="关于调试符号">后退</a>
+          <p>关于调试符号</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="revisedchroot.html" title="最终的清理">前进</a>
+          <p>最终的清理</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

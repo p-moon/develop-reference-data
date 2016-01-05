@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>数据库角色和权限</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="runtime-config-short.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime-config.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="managing-databases.html">快进</a></td><td width="10%" align="right" valign="top"><a href="database-roles.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="USER-MANAG"></a>章18. 数据库角色和权限</h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>18.1. <a href="database-roles.html">数据库角色</a></dt>
+<dt>18.2. <a href="role-attributes.html">角色属性</a></dt>
+<dt>18.3. <a href="privileges.html">权限</a></dt>
+<dt>18.4. <a href="role-membership.html">角色成员</a></dt>
+<dt>18.5. <a href="perm-functions.html">函数和触发器</a></dt>
+</dl>
+</div>
+<p>PostgreSQL 使用<i class="FIRSTTERM">角色</i>的概念管理数据库访问权限。根据角色自身的设置不同，一个角色可以看做是一个数据库用户，或者一组数据库用户。角色可以拥有数据库对象(比如表)以及可以把这些对象上的权限赋予其它角色，以控制谁拥有访问哪些对象的权限。另外，我们也可以把一个角色的<i class="FIRSTTERM">成员</i>权限赋予其它角色，这样就允许成员角色使用它被赋予成员权限的角色的权限。</p>
+<p>角色的概念替换了"用户"和"组"。在 PostgreSQL 版本 8.1 之前，用户和组是独立类型的记录，但现在它们只是角色。任何角色都可以是一个用户、一个组、或者两者。</p>
+<p>本章描述如何创建和管理角色，以及介绍权限系统。更多各种各样数据库对象和其权限效果的信息可以在<a href="ddl.html">章5</a>找到。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="runtime-config-short.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="database-roles.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">短选项</td><td width="34%" align="center" valign="top"><a href="admin.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">数据库角色</td></tr>
+</table>
+</div>
+</body></html>

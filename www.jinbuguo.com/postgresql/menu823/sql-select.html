@@ -1,0 +1,326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SELECT</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-savepoint.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-savepoint.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-selectinto.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-selectinto.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-SELECT"></a>SELECT</h1>
+<div class="REFNAMEDIV"><a name="AEN53577"></a><h2>名称</h2>SELECT&nbsp;--&nbsp;从表或视图中取出若干行</div>
+<a name="AEN53580"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN53582"></a><h2>语法</h2>
+<pre class="SYNOPSIS">SELECT [ ALL | DISTINCT [ ON ( <tt class="REPLACEABLE"><i>expression</i></tt> [, ...] ) ] ]
+    * | <tt class="REPLACEABLE"><i>expression</i></tt> [ AS <tt class="REPLACEABLE"><i>output_name</i></tt> ] [, ...]
+    [ FROM <tt class="REPLACEABLE"><i>from_item</i></tt> [, ...] ]
+    [ WHERE <tt class="REPLACEABLE"><i>condition</i></tt> ]
+    [ GROUP BY <tt class="REPLACEABLE"><i>expression</i></tt> [, ...] ]
+    [ HAVING <tt class="REPLACEABLE"><i>condition</i></tt> [, ...] ]
+    [ { UNION | INTERSECT | EXCEPT } [ ALL ] <tt class="REPLACEABLE"><i>select</i></tt> ]
+    [ ORDER BY <tt class="REPLACEABLE"><i>expression</i></tt> [ ASC | DESC | USING <tt class="REPLACEABLE"><i>operator</i></tt> ] [, ...] ]
+    [ LIMIT { <tt class="REPLACEABLE"><i>count</i></tt> | ALL } ]
+    [ OFFSET <tt class="REPLACEABLE"><i>start</i></tt> ]
+    [ FOR { UPDATE | SHARE } [ OF <tt class="REPLACEABLE"><i>table_name</i></tt> [, ...] ] [ NOWAIT ] [...] ]
+
+这里的 <tt class="REPLACEABLE"><i>from_item</i></tt> 可以是：
+
+    [ ONLY ] <tt class="REPLACEABLE"><i>table_name</i></tt> [ * ] [ [ AS ] <tt class="REPLACEABLE"><i>alias</i></tt> [ ( <tt class="REPLACEABLE"><i>column_alias</i></tt> [, ...] ) ] ]
+    ( <tt class="REPLACEABLE"><i>select</i></tt> ) [ AS ] <tt class="REPLACEABLE"><i>alias</i></tt> [ ( <tt class="REPLACEABLE"><i>column_alias</i></tt> [, ...] ) ]
+    <tt class="REPLACEABLE"><i>function_name</i></tt> ( [ <tt class="REPLACEABLE"><i>argument</i></tt> [, ...] ] ) [ AS ] <tt class="REPLACEABLE"><i>alias</i></tt> [ ( <tt class="REPLACEABLE"><i>column_alias</i></tt> [, ...] | <tt class="REPLACEABLE"><i>column_definition</i></tt> [, ...] ) ]
+    <tt class="REPLACEABLE"><i>function_name</i></tt> ( [ <tt class="REPLACEABLE"><i>argument</i></tt> [, ...] ] ) AS ( <tt class="REPLACEABLE"><i>column_definition</i></tt> [, ...] )
+    <tt class="REPLACEABLE"><i>from_item</i></tt> [ NATURAL ] <tt class="REPLACEABLE"><i>join_type</i></tt> <tt class="REPLACEABLE"><i>from_item</i></tt> [ ON <tt class="REPLACEABLE"><i>join_condition</i></tt> | USING ( <tt class="REPLACEABLE"><i>join_column</i></tt> [, ...] ) ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN53617"></a><h2>描述</h2>
+<p><tt class="COMMAND">SELECT</tt> 将从零个或更多表中返回记录行。<tt class="COMMAND">SELECT</tt> 通常的处理如下：</p>
+<ol type="1">
+<li><p>计算列出在 <tt class="LITERAL">FROM</tt> 中的所有元素(<tt class="LITERAL">FROM</tt> 列表中的每个元素都是一个实际的或虚拟的表)。如果在 <tt class="LITERAL">FROM</tt> 列表里声明了多个元素，那么他们就交叉连接在一起(参见下面的 <a href="sql-select.html#SQL-FROM"><i><i>FROM</i> 子句</i></a>)。</p></li>
+<li><p>如果声明了 <tt class="LITERAL">WHERE</tt> 子句，那么在输出中消除所有不满足条件的行。参见下面的 <a href="sql-select.html#SQL-WHERE"><i><i>WHERE</i> 子句</i></a>。</p></li>
+<li><p>如果声明了 <tt class="LITERAL">GROUP BY</tt> 子句，输出就分成匹配一个或多个数值的不同组里。如果出现了 <tt class="LITERAL">HAVING</tt> 子句，那么它消除那些不满足给出条件的组。参见下面的 <a href="sql-select.html#SQL-GROUPBY"><i><i>GROUP BY</i> 子句</i></a> 和 <a href="sql-select.html#SQL-HAVING"><i><i>HAVING</i> 子句</i></a>。</p></li>
+<li><p>实际输出行将使用 <tt class="COMMAND">SELECT</tt> 输出表达式针对每一个选中的行进行计算。参见下面的 <a href="sql-select.html#SQL-SELECT-LIST"><i><i>SELECT</i> 列表</i></a>。</p></li>
+<li><p>使用 <tt class="LITERAL">UNION</tt>, <tt class="LITERAL">INTERSECT</tt>, <tt class="LITERAL">EXCEPT</tt> 可以把多个 <tt class="COMMAND">SELECT</tt> 语句的输出合并成一个结果集。<tt class="LITERAL">UNION</tt> 操作符返回两个结果集的并集。<tt class="LITERAL">INTERSECT</tt> 操作符返回两个结果集的交集。<tt class="LITERAL">EXCEPT</tt> 操作符返回在第一个结果集对第二个结果集的差集。不管哪种情况，重复的行都被删除，除非声明了 <tt class="LITERAL">ALL</tt> 。参阅下面的 <a href="sql-select.html#SQL-UNION"><i><i>UNION</i> 子句</i></a>、<a href="sql-select.html#SQL-INTERSECT"><i><i>INTERSECT</i> 子句</i></a>、<a href="sql-select.html#SQL-EXCEPT"><i><i>EXCEPT</i> 子句</i></a>。</p></li>
+<li><p>如果声明了 <tt class="LITERAL">ORDER BY</tt> 子句，那么返回的行将按照指定的顺序排序。如果没有给出 <tt class="LITERAL">ORDER BY</tt> ，那么数据行是按照系统认为可以最快生成的顺序给出的。参阅下面的 <a href="sql-select.html#SQL-ORDERBY"><i><i>ORDER BY</i> 子句</i></a>。</p></li>
+<li><p><tt class="LITERAL">DISTINCT</tt> 从结果中删除那些重复的行。<tt class="LITERAL">DISTINCT ON</tt> 删除那些匹配所有指定表达式的行。<tt class="LITERAL">ALL</tt>(缺省)将返回所有候选行，包括重复的。参阅下面的 <a href="sql-select.html#SQL-DISTINCT"><i><i>DISTINCT</i> 子句</i></a>。</p></li>
+<li><p>如果给出了 <tt class="LITERAL">LIMIT</tt> 或 <tt class="LITERAL">OFFSET</tt> 子句，那么 <tt class="COMMAND">SELECT</tt> 语句只返回结果行的一个子集。参阅下面的 <a href="sql-select.html#SQL-LIMIT"><i><i>LIMIT</i> 子句</i></a>。</p></li>
+<li><p>如果声明了 <tt class="LITERAL">FOR UPDATE</tt> 或 <tt class="LITERAL">FOR SHARE</tt> 子句，那么 <tt class="COMMAND">SELECT</tt> 语句对并发的更新锁住选定的行。参阅下面的 <a href="sql-select.html#SQL-FOR-UPDATE-SHARE"><i><i>FOR UPDATE</i>/<i>FOR SHARE</i> 子句</i></a>。</p></li>
+</ol>
+<p>你必须有 <tt class="LITERAL">SELECT</tt> 权限用来从表中读取数值。使用 <tt class="LITERAL">FOR UPDATE</tt> 或 <tt class="LITERAL">FOR SHARE</tt> 还要求 <tt class="LITERAL">UPDATE</tt> 权限。</p>
+</div>
+<div class="REFSECT1"><a name="AEN53684"></a><h2>参数</h2>
+<div class="REFSECT2"><a name="SQL-FROM"></a><h3><tt class="LITERAL">FROM</tt> 子句</h3>
+<p><tt class="LITERAL">FROM</tt> 子句为 <tt class="COMMAND">SELECT</tt> 声明一个或者多个源表。如果声明了多个源表，那么结果就是所有源表的笛卡儿积(交叉连接)。但是通常会添加一些条件，把返回行限制成笛卡儿积的一个小的子集。</p>
+<p><tt class="LITERAL">FROM</tt> 子句可以包括下列元素：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>table_name</i></tt></dt>
+<dd><p>一个现存的表或视图的名字(可以有模式修饰)。如果声明了 <tt class="LITERAL">ONLY</tt> ，则只扫描该表；否则，该表和所有其派生表(如果有的话)都被扫描。可以在表名后面跟一个 <tt class="LITERAL">*</tt> 表示扫所有其后代表，但在目前的版本里，这是缺省特性。缺省的特性可以通过修改配置选项 <a href="runtime-config-compatible.html#GUC-SQL-INHERITANCE">sql_inheritance</a> 来改变。</p></dd>
+<dt><tt class="REPLACEABLE"><i>alias</i></tt></dt>
+<dd><p>为那些包含别名的 <tt class="LITERAL">FROM</tt> 项目取的别名。别名用于缩写或者在自连接中消除歧义(自连接中同一个表将扫描多次)。如果提供了别名，那么它就会完全隐藏表或者函数的实际名字；比如，如果给出 <tt class="LITERAL">FROM foo AS f</tt> ，那么 <tt class="COMMAND">SELECT</tt> 剩下的东西必须把这个 <tt class="LITERAL">FROM</tt> 项按照 <tt class="LITERAL">f</tt> 而不是 <tt class="LITERAL">foo</tt> 引用。如果写了别名，也可以提供一个字段别名列表，这样可以替换表中一个或者多个字段的名字。</p></dd>
+<dt><tt class="REPLACEABLE"><i>select</i></tt></dt>
+<dd><p>可以在 <tt class="LITERAL">FROM</tt> 子句里出现一个子 <tt class="COMMAND">SELECT</tt> 。它的输出作用好像是为这条 <tt class="COMMAND">SELECT</tt> 命令在其生存期里创建一个临时表。请注意这个子 <tt class="COMMAND">SELECT</tt> 必须用园括弧包围。并且<span class="emphasis"><i class="EMPHASIS">必须</i></span>给它一个别名。当然，<a href="sql-values.html"><i>VALUES</i></a> 同样也可以在这里使用。</p></dd>
+<dt><tt class="REPLACEABLE"><i>function_name</i></tt></dt>
+<dd><p>函数(特别是那些返回结果集的函数)调用可以出现在 <tt class="LITERAL">FROM</tt> 子句里。这么做就好像在这个 <tt class="COMMAND">SELECT</tt> 命令的生命期中，把函数的输出创建为一个临时表一样。当然也可以使用别名。如果写了别名，还可以写一个字段别名列表，为函数返回的复合类型的一个或多个属性提供名字替换。如果函数定义为返回 <tt class="TYPE">record</tt> 类型，那么必须出现一个 <tt class="LITERAL">AS</tt> 关键字或者别名，后面跟着一个形如 <tt class="LITERAL">( <tt class="REPLACEABLE"><i>column_name</i></tt> <tt class="REPLACEABLE"><i>data_type</i></tt> [<span class="OPTIONAL">, ...</span>] )</tt> 的字段定义列表。这个字段定义列表必须匹配函数返回的字段的实际数目和类型。</p></dd>
+<dt><tt class="REPLACEABLE"><i>join_type</i></tt></dt>
+<dd><p>下列之一</p>
+<ul>
+<li><p><tt class="LITERAL">[ INNER ] JOIN</tt></p></li>
+<li><p><tt class="LITERAL">LEFT [ OUTER ] JOIN</tt></p></li>
+<li><p><tt class="LITERAL">RIGHT [ OUTER ] JOIN</tt></p></li>
+<li><p><tt class="LITERAL">FULL [ OUTER ] JOIN</tt></p></li>
+<li><p><tt class="LITERAL">CROSS JOIN</tt></p></li>
+</ul>
+<p>必须为 <tt class="LITERAL">INNER</tt> 和 <tt class="LITERAL">OUTER</tt> 连接类型声明一个连接条件，也就是 <tt class="LITERAL">NATURAL</tt>, <tt class="LITERAL">ON <tt class="REPLACEABLE"><i>join_condition</i></tt></tt>, <tt class="LITERAL">USING (<tt class="REPLACEABLE"><i>join_column</i></tt> [, ...])</tt> 之一。它们的含义见下文，对于 <tt class="LITERAL">CROSS JOIN</tt> 而言，这些子句都不能出现。</p>
+<p>一个 <tt class="LITERAL">JOIN</tt> 子句组合两个 <tt class="LITERAL">FROM</tt> 项。必要时使用圆括弧以决定嵌套的顺序。如果没有圆括弧，<tt class="LITERAL">JOIN</tt> 从左向右嵌套。在任何情况下，<tt class="LITERAL">JOIN</tt> 都比逗号分隔的 <tt class="LITERAL">FROM</tt> 项绑定得更紧。</p>
+<p><tt class="LITERAL">CROSS JOIN</tt> 和 <tt class="LITERAL">INNER JOIN</tt> 生成一个简单的笛卡儿积，和你在 <tt class="LITERAL">FROM</tt> 的顶层列出两个项的结果相同。<tt class="LITERAL">CROSS JOIN</tt> 等效于 <tt class="LITERAL">INNER JOIN ON (TRUE)</tt> ，也就是说，没有被条件删除的行。这种连接类型只是符号上的方便，因为它们和你用简单的 <tt class="LITERAL">FROM</tt> 和 <tt class="LITERAL">WHERE</tt> 的效果一样。</p>
+<p><tt class="LITERAL">LEFT OUTER JOIN</tt> 返回笛卡儿积中所有符合连接条件的行，再加上左表中通过连接条件没有匹配右表行的那些行。这样，左边的行将扩展成生成表的全长，方法是在那些右表对应的字段位置填上 NULL 。请注意，只在计算匹配的时候，才使用 <tt class="LITERAL">JOIN</tt> 子句的条件，外层的条件是在计算完毕之后施加的。</p>
+<p>相应的，<tt class="LITERAL">RIGHT OUTER JOIN</tt> 返回所有内连接的结果行，加上每个不匹配的右边行(左边用 NULL 扩展)。这只是一个符号上的便利，因为总是可以把它转换成一个 <tt class="LITERAL">LEFT OUTER JOIN</tt> ，只要把左边和右边的输入对掉一下即可。</p>
+<p><tt class="LITERAL">FULL OUTER JOIN</tt> 返回所有内连接的结果行，加上每个不匹配的左边行(右边用 NULL 扩展)，再加上每个不匹配的右边行(左边用 NULL 扩展)。</p></dd>
+<dt><tt class="LITERAL">ON <tt class="REPLACEABLE"><i>join_condition</i></tt></tt></dt>
+<dd><p>一个生成 <tt class="TYPE">boolean</tt> 类型结果的表达式(类似 <tt class="LITERAL">WHERE</tt> 子句)，限定连接中那些行是匹配的。</p></dd>
+<dt><tt class="LITERAL">USING (<tt class="REPLACEABLE"><i>join_column</i></tt> [, ...])</tt></dt>
+<dd><p>一个形如 <tt class="LITERAL">USING ( a, b, ... )</tt> 的子句，是 <tt class="LITERAL">ON left_table.a = right_table.a AND left_table.b = right_table.b ...</tt> 的缩写。同样，<tt class="LITERAL">USING</tt> 蕴涵着每对等效字段中只有一个包含在连接输出中，而不是两个都输出的意思。</p></dd>
+<dt><tt class="LITERAL">NATURAL</tt></dt>
+<dd><p><tt class="LITERAL">NATURAL</tt> 是一个 <tt class="LITERAL">USING</tt> 列表的缩写，这个列表说的是两个表中同名的字段。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT2"><a name="SQL-WHERE"></a><h3><tt class="LITERAL">WHERE</tt> 子句</h3>
+<p>可选的 <tt class="LITERAL">WHERE</tt> 条件有如下常见的形式：</p>
+<pre class="SYNOPSIS">WHERE <tt class="REPLACEABLE"><i>condition</i></tt></pre>
+<p>这里 <tt class="REPLACEABLE"><i>condition</i></tt> 可以是任意生成类型为 <tt class="TYPE">boolean</tt> 的表达式。任何不满足这个条件的行都会从输出中删除。如果一个行的数值代入到条件中计算出来的结果为真，那么该行就算满足条件。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-GROUPBY"></a><h3><tt class="LITERAL">GROUP BY</tt> 子句</h3>
+<p>可选的 <tt class="LITERAL">GROUP BY</tt> 子句的一般形式</p>
+<pre class="SYNOPSIS">GROUP BY <tt class="REPLACEABLE"><i>expression</i></tt> [, ...]</pre>
+<p>它将把所有在组合表达式上拥有相同值的行压缩成一行。<tt class="REPLACEABLE"><i>expression</i></tt> 可以是一个输入字段名字，或者是一个输出字段(<tt class="COMMAND">SELECT</tt> 列表项)的名字或序号，或者也可以是任意输入字段组成的表达式。在有歧义的情况下，一个 <tt class="LITERAL">GROUP BY</tt> 的名字将被解释成输入字段的名字，而不是输出字段的名字。</p>
+<p>如果使用了聚集函数，那么就会对每组中的所有行进行计算并生成一个单独的值(而如果没有 <tt class="LITERAL">GROUP BY</tt> ，那么聚集将对选出来的所有行计算出一个单独的值)。如果出现了 <tt class="LITERAL">GROUP BY</tt> ，那么 <tt class="COMMAND">SELECT</tt> 列表表达式中再引用那些没有分组的字段就是非法的，除非放在聚集函数里，因为对于未分组的字段，可能会返回多个数值。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-HAVING"></a><h3><tt class="LITERAL">HAVING</tt> 子句</h3>
+<p>可选的 <tt class="LITERAL">HAVING</tt> 子句有如下形式：</p>
+<pre class="SYNOPSIS">HAVING <tt class="REPLACEABLE"><i>condition</i></tt></pre>
+<p>这里 <tt class="REPLACEABLE"><i>condition</i></tt> 与为 <tt class="LITERAL">WHERE</tt> 子句里声明的相同。</p>
+<p><tt class="LITERAL">HAVING</tt> 去除了一些不满足条件的组行。它与 <tt class="LITERAL">WHERE</tt> 不同：<tt class="LITERAL">WHERE</tt> 在使用 <tt class="LITERAL">GROUP BY</tt> 之前过滤出单独的行，而 <tt class="LITERAL">HAVING</tt> 过滤由 <tt class="LITERAL">GROUP BY</tt> 创建的行。在 <tt class="REPLACEABLE"><i>condition</i></tt> 里引用的每个字段都必须无歧义地引用一个分组的行，除非引用出现在一个聚集函数里。</p>
+<p><tt class="LITERAL">HAVING</tt> 的出现把查询变成一个分组的查询，即使没有 <tt class="LITERAL">GROUP BY</tt> 子句也这样。这一点和那些包含聚集函数但没有 <tt class="LITERAL">GROUP BY</tt> 子句的查询里发生的事情是一样的。所有选取的行都被认为会形成一个单一的组，而 <tt class="COMMAND">SELECT</tt> 列表和 <tt class="LITERAL">HAVING</tt> 子句只能从聚集函数里面引用表的字段。这样的查询在 <tt class="LITERAL">HAVING</tt> 条件为真的时候将发出一个行，如果为非真，则返回零行。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-SELECT-LIST"></a><h3><tt class="COMMAND">SELECT</tt> 列表</h3>
+<p><tt class="COMMAND">SELECT</tt> 列表(在 <tt class="LITERAL">SELECT</tt> 和 <tt class="LITERAL">FROM</tt> 关键字之间的部分)声明组成 <tt class="COMMAND">SELECT</tt> 语句的输出行的表达式。这些表达式可以(并且通常也会)引用在 <tt class="LITERAL">FROM</tt> 子句里面计算出来的字段。通过使用子句 <tt class="LITERAL">AS <tt class="REPLACEABLE"><i>output_name</i></tt></tt> 可以为输出字段取个别名。这个别名通常用于输出字段的显示。它也可以用于在 <tt class="LITERAL">ORDER BY</tt> 和 <tt class="LITERAL">GROUP BY</tt> 子句中引用字段值，但是不能在 <tt class="LITERAL">WHERE</tt> 或 <tt class="LITERAL">HAVING</tt> 子句中使用；在那里你必须使用表达式本身。</p>
+<p>除了表达式，也可以在输出列表中使用 <tt class="LITERAL">*</tt> 表示所有字段。还可以用 <tt class="LITERAL"><tt class="REPLACEABLE"><i>table_name</i></tt>.*</tt> 作为来自该表的所有字段的缩写。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-UNION"></a><h3><tt class="LITERAL">UNION</tt> 子句</h3>
+<p><tt class="LITERAL">UNION</tt> 子句的一般形式是：</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>select_statement</i></tt> UNION [ ALL ] <tt class="REPLACEABLE"><i>select_statement</i></tt></pre>
+<p>这里的 <tt class="REPLACEABLE"><i>select_statement</i></tt> 是任意没有 <tt class="LITERAL">ORDER BY</tt>, <tt class="LITERAL">LIMIT</tt>, <tt class="LITERAL">FOR UPDATE</tt>, <tt class="LITERAL">FOR SHARE</tt> 子句的 <tt class="COMMAND">SELECT</tt> 语句。如果用圆括弧包围，<tt class="LITERAL">ORDER BY</tt> 和 <tt class="LITERAL">LIMIT</tt> 可以附着在子表达式里。如果没有圆括弧，这些子句将交给 <tt class="LITERAL">UNION</tt> 的结果使用，而不是给它们右边的输入表达式。</p>
+<p><tt class="LITERAL">UNION</tt> 操作符计算那些涉及到的所有 <tt class="COMMAND">SELECT</tt> 语句返回的行的结果联合。一个行如果至少在两个结果集中的一个里面出现，那么它就会在这两个结果集的集合联合中。两个作为 <tt class="LITERAL">UNION</tt> 直接操作数的 <tt class="COMMAND">SELECT</tt> 必须生成相同数目的字段，并且对应的字段必须有兼容的数据类型。</p>
+<p>缺省的 <tt class="LITERAL">UNION</tt> 结果不包含任何重复的行，除非声明了 <tt class="LITERAL">ALL</tt> 子句。<tt class="LITERAL">ALL</tt> 制止了消除重复的动作。因此，<tt class="LITERAL">UNION ALL</tt> 通常比 <tt class="LITERAL">UNION</tt> 明显要快，可能的情况下尽量使用 <tt class="LITERAL">ALL</tt> 。</p>
+<p>同一个 <tt class="COMMAND">SELECT</tt> 语句中的多个 <tt class="LITERAL">UNION</tt> 操作符是从左向右计算的，除非用圆括弧进行了标识。</p>
+<p>目前，<tt class="LITERAL">FOR UPDATE</tt> 和 <tt class="LITERAL">FOR SHARE</tt> 不能在 <tt class="LITERAL">UNION</tt> 的结果或输入中声明。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-INTERSECT"></a><h3><tt class="LITERAL">INTERSECT</tt> 子句</h3>
+<p><tt class="LITERAL">INTERSECT</tt> 子句的一般形式是：</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>select_statement</i></tt> INTERSECT [ ALL ] <tt class="REPLACEABLE"><i>select_statement</i></tt></pre>
+<p><tt class="REPLACEABLE"><i>select_statement</i></tt> 是任何不带 <tt class="LITERAL">ORDER BY</tt>, <tt class="LITERAL">LIMIT</tt>, <tt class="LITERAL">FOR UPDATE</tt>, <tt class="LITERAL">FOR SHARE</tt> 子句的 <tt class="COMMAND">SELECT</tt> 语句。</p>
+<p><tt class="LITERAL">INTERSECT</tt> 计算涉及的 <tt class="COMMAND">SELECT</tt> 语句返回的行集合的交集。如果一个行在两个结果集中都出现，那么它就在两个结果集的交集中。</p>
+<p><tt class="LITERAL">INTERSECT</tt> 的结果不包含任何重复行，除非你声明了 <tt class="LITERAL">ALL</tt> 选项。用了 <tt class="LITERAL">ALL</tt> 以后，一个在左边的表里有 <tt class="REPLACEABLE"><i>m</i></tt> 个重复而在右边表里有 <tt class="REPLACEABLE"><i>n</i></tt> 个重复的行将出现 min(<tt class="REPLACEABLE"><i>m</i></tt>, <tt class="REPLACEABLE"><i>n</i></tt>) 次。</p>
+<p>除非用圆括号指明顺序，同一个 <tt class="COMMAND">SELECT</tt> 语句中的多个 <tt class="LITERAL">INTERSECT</tt> 操作符是从左向右计算的。<tt class="LITERAL">INTERSECT</tt> 比 <tt class="LITERAL">UNION</tt> 绑定得更紧，也就是说 <tt class="LITERAL">A UNION B INTERSECT C</tt> 将理解成 <tt class="LITERAL">A UNION (B INTERSECT C)</tt> ，除非你用圆括弧声明。</p>
+<p>目前，不能给 <tt class="LITERAL">INTERSECT</tt> 的结果或者任何 <tt class="LITERAL">INTERSECT</tt> 的输入声明 <tt class="LITERAL">FOR UPDATE</tt> 和 <tt class="LITERAL">FOR SHARE</tt> 。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-EXCEPT"></a><h3><tt class="LITERAL">EXCEPT</tt> 子句</h3>
+<p><tt class="LITERAL">EXCEPT</tt> 子句有如下的通用形式：</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>select_statement</i></tt> EXCEPT [ ALL ] <tt class="REPLACEABLE"><i>select_statement</i></tt></pre>
+<p><tt class="REPLACEABLE"><i>select_statement</i></tt> 是任何没有 <tt class="LITERAL">ORDER BY</tt>, <tt class="LITERAL">LIMIT</tt>, <tt class="LITERAL">FOR UPDATE</tt>, <tt class="LITERAL">FOR SHARE</tt> 子句的 <tt class="COMMAND">SELECT</tt> 表达式。</p>
+<p><tt class="LITERAL">EXCEPT</tt> 操作符计算存在于左边 <tt class="COMMAND">SELECT</tt> 语句的输出而不存在于右边 <tt class="COMMAND">SELECT</tt> 语句输出的行。</p>
+<p><tt class="LITERAL">EXCEPT</tt> 的结果不包含任何重复的行，除非声明了 <tt class="LITERAL">ALL</tt> 选项。使用 <tt class="LITERAL">ALL</tt> 时，一个在左边表中有 <tt class="REPLACEABLE"><i>m</i></tt> 个重复而在右边表中有 <tt class="REPLACEABLE"><i>n</i></tt> 个重复的行将在结果中出现 max(<tt class="REPLACEABLE"><i>m</i></tt>-<tt class="REPLACEABLE"><i>n</i></tt>,0) 次。</p>
+<p>除非用圆括弧指明顺序，否则同一个 <tt class="COMMAND">SELECT</tt> 语句中的多个 <tt class="LITERAL">EXCEPT</tt> 操作符是从左向右计算的。<tt class="LITERAL">EXCEPT</tt> 和 <tt class="LITERAL">UNION</tt> 的绑定级别相同。</p>
+<p>目前，不能给 <tt class="LITERAL">EXCEPT</tt> 的结果或者任何 <tt class="LITERAL">EXCEPT</tt> 的输入声明 <tt class="LITERAL">FOR UPDATE</tt> 或 <tt class="LITERAL">FOR SHARE</tt> 子句。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-ORDERBY"></a><h3><tt class="LITERAL">ORDER BY</tt> 子句</h3>
+<p>可选的 <tt class="LITERAL">ORDER BY</tt> 子句有下面的一般形式：</p>
+<pre class="SYNOPSIS">ORDER BY <tt class="REPLACEABLE"><i>expression</i></tt> [ ASC | DESC | USING <tt class="REPLACEABLE"><i>operator</i></tt> ] [, ...]</pre>
+<p><tt class="REPLACEABLE"><i>expression</i></tt> 可以是一个输出字段(<tt class="COMMAND">SELECT</tt> 列表项)的名字或者序号，或者也可以是用输入字段的数值组成的任意表达式。</p>
+<p><tt class="LITERAL">ORDER BY</tt> 子句导致结果行根据指定的表达式进行排序。如果根据最左边的表达式，两行的结果相同，那么就根据下一个表达式进行比较，依此类推。如果对于所有声明的表达式他们都相同，那么按随机顺序返回。</p>
+<p>序数指的是字段按顺序(从左到右)的位置。这个特性可以对没有唯一名称的字段进行排序。这不是必须的，因为总是可以通过 <tt class="LITERAL">AS</tt> 子句给一个要计算的字段赋予一个名称。</p>
+<p>在 <tt class="LITERAL">ORDER BY</tt> 里还可以使用任意表达式，包括那些没有出现在 <tt class="COMMAND">SELECT</tt> 结果列表里面的字段。因此下面的语句现在是合法的：</p>
+<pre class="PROGRAMLISTING">SELECT name FROM distributors ORDER BY code;</pre>
+<p>这个特性的一个局限就是应用于 <tt class="LITERAL">UNION</tt>, <tt class="LITERAL">INTERSECT</tt>, <tt class="LITERAL">EXCEPT</tt> 查询的 <tt class="LITERAL">ORDER BY</tt> 子句只能在一个输出字段名或者数字上声明，而不能在一个表达式上声明。</p>
+<p>请注意如果一个 <tt class="LITERAL">ORDER BY</tt> 表达式是一个简单名称，同时匹配结果字段和输入字段，<tt class="LITERAL">ORDER BY</tt> 将把它解释成结果字段名称。这和 <tt class="LITERAL">GROUP BY</tt> 在同样情况下做的选择正相反。这样的不一致是由 SQL 标准强制的。</p>
+<p>可以给 <tt class="LITERAL">ORDER BY</tt> 子句里每个字段加一个可选的 <tt class="LITERAL">ASC</tt>(升序，缺省)或 <tt class="LITERAL">DESC</tt>(降序)关键字。还可以在 <tt class="LITERAL">USING</tt> 子句里声明一个排序操作符来实现排序。<tt class="LITERAL">ASC</tt> 等效于使用 <tt class="LITERAL">USING &lt;</tt> 而 <tt class="LITERAL">DESC</tt> 等效于使用 <tt class="LITERAL">USING &gt;</tt> 。但是一个用户定义类型的创建者可以明确定义缺省的排序顺序，并且可以使用其他名称的操作符。</p>
+<p>NULL 被认为比其他值都大。换句话说，升序排序时，NULL 排在末尾，而降序排序时 NULL 排在开头。</p>
+<p>字符类型的数据是按照区域相关的字符集顺序排序的，这个区域是在数据库集群初始化的时候建立的。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-DISTINCT"></a><h3><tt class="LITERAL">DISTINCT</tt> 子句</h3>
+<p>如果声明了 <tt class="LITERAL">DISTINCT</tt> ，那么就从结果集中删除所有重复的行(每个有重复的组都保留一行)。<tt class="LITERAL">ALL</tt> 声明相反的作用：所有行都被保留(这是缺省)。</p>
+<p><tt class="LITERAL">DISTINCT ON ( <tt class="REPLACEABLE"><i>expression</i></tt> [, ...] )</tt> 只保留那些在给出的表达式上运算出相同结果的行集合中的第一行。<tt class="LITERAL">DISTINCT ON</tt> 表达式是使用与 <tt class="LITERAL">ORDER BY</tt> 相同的规则进行解释的。请注意，除非使用了 <tt class="LITERAL">ORDER BY</tt> 来保证需要的行首先出现，否则，"第一行"是不可预测的。比如，</p>
+<pre class="PROGRAMLISTING">SELECT DISTINCT ON (location) location, time, report
+    FROM weather_reports
+    ORDER BY location, time DESC;</pre>
+<p>为每个地点检索最近的天气报告。但是如果没有使用 <tt class="LITERAL">ORDER BY</tt> 来强制对每个地点的时间值进行降序排序，那么就会得到每个地点的不知道什么时候的报告。</p>
+<p><tt class="LITERAL">DISTINCT ON</tt> 表达式必须匹配最左边的 <tt class="LITERAL">ORDER BY</tt> 表达式。<tt class="LITERAL">ORDER BY</tt> 子句将通常包含额外的表达式来判断每个 <tt class="LITERAL">DISTINCT ON</tt> 组里面需要的行的优先级。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-LIMIT"></a><h3><tt class="LITERAL">LIMIT</tt> 子句</h3>
+<p><tt class="LITERAL">LIMIT</tt> 子句由两个独立的子句组成：</p>
+<pre class="SYNOPSIS">LIMIT { <tt class="REPLACEABLE"><i>count</i></tt> | ALL }
+OFFSET <tt class="REPLACEABLE"><i>start</i></tt></pre>
+<p><tt class="REPLACEABLE"><i>count</i></tt> 声明返回的最大行数，而 <tt class="REPLACEABLE"><i>start</i></tt> 声明开始返回行之前忽略的行数。如果两个都指定了，那么在开始计算 <tt class="REPLACEABLE"><i>count</i></tt> 个返回行之前将先跳过 <tt class="REPLACEABLE"><i>start</i></tt> 行。</p>
+<p>使用 <tt class="LITERAL">LIMIT</tt> 的一个好习惯是使用一个 <tt class="LITERAL">ORDER BY</tt> 子句把结果行限制成一个唯一的顺序。否则你会得到无法预料的结果子集，你可能想要第十行到第二十行，除非你声明 <tt class="LITERAL">ORDER BY</tt> ，否则你不知道什么顺序。</p>
+<p>查询优化器在生成查询规划时会把 <tt class="LITERAL">LIMIT</tt> 考虑进去，所以你很有可能因给出的 <tt class="LITERAL">LIMIT</tt> 和 <tt class="LITERAL">OFFSET</tt> 值不同而得到不同的规划(生成不同的行序)。因此用不同的 <tt class="LITERAL">LIMIT</tt>/<tt class="LITERAL">OFFSET</tt> 值选择不同的查询结果的子集<span class="emphasis"><i class="EMPHASIS">将不会产生一致的结果</i></span>，除非你用 <tt class="LITERAL">ORDER BY</tt> 强制生成一个可预计的结果顺序。这可不是 bug ；这是 SQL 生来的特点，因为除非用了 <tt class="LITERAL">ORDER BY</tt> 约束顺序，SQL 不保证查询生成的结果有任何特定的顺序。</p>
+</div>
+<div class="REFSECT2"><a name="SQL-FOR-UPDATE-SHARE"></a><h3><tt class="LITERAL">FOR UPDATE</tt>/<tt class="LITERAL">FOR SHARE</tt> 子句</h3>
+<p><tt class="LITERAL">FOR UPDATE</tt> 子句的形式如下：</p>
+<pre class="SYNOPSIS">FOR UPDATE [ OF <tt class="REPLACEABLE"><i>table_name</i></tt> [, ...] ] [ NOWAIT ]</pre>
+<p>很相近的 <tt class="LITERAL">FOR SHARE</tt> 子句的形式如下：</p>
+<pre class="SYNOPSIS">FOR SHARE [ OF <tt class="REPLACEABLE"><i>table_name</i></tt> [, ...] ] [ NOWAIT ]</pre>
+<p><tt class="LITERAL">FOR UPDATE</tt> 令那些被 <tt class="COMMAND">SELECT</tt> 检索出来的行被锁住，就像要更新一样。这样就避免它们在当前事务结束前被其它事务修改或者删除；也就是说，其它企图 <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">SELECT FOR UPDATE</tt> 这些行的事务将被阻塞，直到当前事务结束。同样，如果一个来自其它事务的 <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">SELECT FOR UPDATE</tt> 已经锁住了某个或某些选定的行，<tt class="COMMAND">SELECT FOR UPDATE</tt> 将等到那些事务结束，并且将随后锁住并返回更新的行(或者不返回行，如果行已经被删除)。更多的讨论参阅<a href="mvcc.html">章12</a>。</p>
+<p>为了避免操作等待其它事务提交，使用 <tt class="LITERAL">NOWAIT</tt> 选项。如果被选择的行不能立即被锁住，那么 <tt class="COMMAND">SELECT FOR UPDATE NOWAIT</tt> 将会立即汇报一个错误，而不是等待。请注意，<tt class="LITERAL">NOWAIT</tt> 只适用于行级别的锁，要求的表级锁 <tt class="LITERAL">ROW SHARE</tt> 仍然以通常的方法进行(参阅 <a href="mvcc.html">章12</a>)。如果需要申请表级别的锁同时又不等待，那么你可以使用 <a href="sql-lock.html"><i>LOCK</i></a> 的 <tt class="LITERAL">NOWAIT</tt> 选项。</p>
+<p><tt class="LITERAL">FOR SHARE</tt> 的行为类似，只是它在每个检索出来的行上要求一个共享锁，而不是一个排它锁。一个共享锁阻塞其它事务在这些行上执行 <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">SELECT FOR UPDATE</tt> 却不阻止他们执行 <tt class="COMMAND">SELECT FOR SHARE</tt> 。</p>
+<p>如果在 <tt class="LITERAL">FOR UPDATE</tt> 或 <tt class="LITERAL">FOR SHARE</tt> 中明确指定了表名字，那么将只有这些指定的表被锁定，其他在 <tt class="COMMAND">SELECT</tt> 中使用的表将不会被锁定。一个其后不带表列表的 <tt class="LITERAL">FOR UPDATE</tt> 或 <tt class="LITERAL">FOR SHARE</tt> 子句将锁定该命令中所有使用的表。如果 <tt class="LITERAL">FOR UPDATE</tt> 或 <tt class="LITERAL">FOR SHARE</tt> 应用于一个视图或者子查询，它同样将锁定所有该视图或子查询中使用到的表。</p>
+<p>多个 <tt class="LITERAL">FOR UPDATE</tt> 和 <tt class="LITERAL">FOR SHARE</tt> 子句可以用于为不同的表指定不同的锁定模式。如果一个表出同时出现(或隐含同时出现)在 <tt class="LITERAL">FOR UPDATE</tt> 和 <tt class="LITERAL">FOR SHARE</tt> 子句中，那么将按照 <tt class="LITERAL">FOR UPDATE</tt> 处理。类似的，如果影响一个表的任意子句中出现了 <tt class="LITERAL">NOWAIT</tt> ，那么该表将按照 <tt class="LITERAL">NOWAIT</tt> 处理。</p>
+<p><tt class="LITERAL">FOR UPDATE</tt> 和 <tt class="LITERAL">FOR SHARE</tt> 不能在那些无法使用独立的表行清晰标识返回行的环境里；比如，它不能和聚集一起使用。</p>
+<div class="CAUTION">
+<table class="CAUTION" border="1" width="100%">
+<tr><td align="CENTER"><b>警告</b></td></tr>
+<tr><td align="LEFT"><p>不要先锁定一个行然后在随后的保存点或 PL/pgSQL 异常块中修改它。因为如果后来回滚的话将导致这个快丢失。例如，</p>
+<pre class="PROGRAMLISTING">BEGIN;
+SELECT * FROM mytable WHERE key = 1 FOR UPDATE;
+SAVEPOINT s;
+UPDATE mytable SET ... WHERE key = 1;
+ROLLBACK TO s;</pre>
+<p><tt class="COMMAND">ROLLBACK</tt> 之后，该行将被解锁，而不是返回其上一个保存点状态(被锁定但未被修改)。如果一个在当前事务中锁定的行被更新或删除，或者一个共享锁被升级为排它锁，这种情况就可能会出现。在这两种情况下，先前的锁状态将被遗忘。如果事务后来回滚到一个介于最初锁命令和后来变更了锁状态之间的某个点，那么该行将表现得好像根本没有被锁定一样。这个实现上的缺陷可能在将来的 PostgreSQL 版本中得到修补。</p></td></tr>
+</table>
+</div>
+<div class="CAUTION">
+<table class="CAUTION" border="1" width="100%">
+<tr><td align="CENTER"><b>警告</b></td></tr>
+<tr><td align="LEFT"><p>一个<tt class="COMMAND">SELECT</tt> 命令可以同时使用 <tt class="LITERAL">LIMIT</tt> 和 <tt class="LITERAL">FOR UPDATE/SHARE</tt> ，这种情况下，它返回的行数可能比 <tt class="LITERAL">LIMIT</tt> 声明的少。这是因为 <tt class="LITERAL">LIMIT</tt> 先生效。命令选取指定数目的数据行，但是可能会在其中一行或多行上获取锁的时候被阻塞。但 <tt class="LITERAL">SELECT</tt> 的阻塞被解除后，该行可能已经被删除或者更新了，因此不再满足查询的 <tt class="LITERAL">WHERE</tt> 条件，在这种情况下，不会返回它。</p></td></tr>
+</table>
+</div>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN54147"></a><h2>例子</h2>
+<p>将表 <tt class="LITERAL">films</tt> 和表 <tt class="LITERAL">distributors</tt> 连接在一起：</p>
+<pre class="PROGRAMLISTING">SELECT f.title, f.did, d.name, f.date_prod, f.kind
+    FROM distributors d, films f
+    WHERE f.did = d.did
+
+       title       | did |     name     | date_prod  |   kind
+-------------------+-----+--------------+------------+----------
+ The Third Man     | 101 | British Lion | 1949-12-23 | Drama
+ The African Queen | 101 | British Lion | 1951-08-11 | Romantic
+ ...</pre>
+<p>统计用 <tt class="LITERAL">kind</tt> 分组的每组电影的长度(<tt class="LITERAL">len</tt>)总和：</p>
+<pre class="PROGRAMLISTING">SELECT kind, sum(len) AS total FROM films GROUP BY kind;
+
+   kind   | total
+----------+-------
+ Action   | 07:34
+ Comedy   | 02:58
+ Drama    | 14:28
+ Musical  | 06:42
+ Romantic | 04:38</pre>
+<p>统计用 <tt class="LITERAL">kind</tt> 分组的每组电影的长度(<tt class="LITERAL">len</tt>)总和不足五小时的组：</p>
+<pre class="PROGRAMLISTING">SELECT kind, sum(len) AS total
+    FROM films
+    GROUP BY kind
+    HAVING sum(len) &lt; interval '5 hours';
+
+   kind   | total
+----------+-------
+ Comedy   | 02:58
+ Romantic | 04:38</pre>
+<p>下面两个例子是根据第二列(<tt class="LITERAL">name</tt>)的内容对单独的结果排序的经典的方法：</p>
+<pre class="PROGRAMLISTING">SELECT * FROM distributors ORDER BY name;
+SELECT * FROM distributors ORDER BY 2;
+
+ did |       name
+-----+------------------
+ 109 | 20th Century Fox
+ 110 | Bavaria Atelier
+ 101 | British Lion
+ 107 | Columbia
+ 102 | Jean Luc Godard
+ 113 | Luso films
+ 104 | Mosfilm
+ 103 | Paramount
+ 106 | Toho
+ 105 | United Artists
+ 111 | Walt Disney
+ 112 | Warner Bros.
+ 108 | Westward</pre>
+<p>下面这个例子演示如何获得表 <tt class="LITERAL">distributors</tt> 和 <tt class="LITERAL">actors</tt> 的连接，只将每个表中以字母 W 开头的取出来。因为只取了不重复的行，所以关键字 <tt class="LITERAL">ALL</tt> 被省略了：</p>
+<pre class="PROGRAMLISTING">distributors:               actors:
+ did |     name              id |     name
+-----+--------------        ----+----------------
+ 108 | Westward               1 | Woody Allen
+ 111 | Walt Disney            2 | Warren Beatty
+ 112 | Warner Bros.           3 | Walter Matthau
+ ...                         ...
+
+SELECT distributors.name
+    FROM distributors
+    WHERE distributors.name LIKE 'W%'
+UNION
+SELECT actors.name
+    FROM actors
+    WHERE actors.name LIKE 'W%';
+
+      name
+----------------
+ Walt Disney
+ Walter Matthau
+ Warner Bros.
+ Warren Beatty
+ Westward
+ Woody Allen</pre>
+<p>这个例子显示了如何在 <tt class="LITERAL">FROM</tt> 子句中使用函数，包括带有和不带字段定义列表的。</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION distributors(int) RETURNS SETOF distributors AS $$
+    SELECT * FROM distributors WHERE did = $1;
+$$ LANGUAGE SQL;
+
+SELECT * FROM distributors(111);
+ did |    name
+-----+-------------
+ 111 | Walt Disney
+
+CREATE FUNCTION distributors_2(int) RETURNS SETOF record AS $$
+    SELECT * FROM distributors WHERE did = $1;
+$$ LANGUAGE SQL;
+
+SELECT * FROM distributors_2(111) AS (f1 int, f2 text);
+ f1  |     f2
+-----+-------------
+ 111 | Walt Disney</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54172"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">SELECT</tt> 语句和 SQL 标准兼容。但是还有一些扩展和一些缺少的特性。</p>
+<div class="REFSECT2"><a name="AEN54176"></a><h3>省略 <tt class="LITERAL">FROM</tt> 子句</h3>
+<p>PostgreSQL 允许在一个查询里省略 <tt class="LITERAL">FROM</tt> 子句。它的最直接用途就是计算简单的常量表达式的结果：</p>
+<pre class="PROGRAMLISTING">SELECT 2+2;
+
+ ?column?
+----------
+        4</pre>
+<p>其它有些 SQL 数据库不能这么做，除非引入一个单行的伪表做为 <tt class="COMMAND">SELECT</tt> 的数据源。</p>
+<p>请注意，如果没有声明 <tt class="LITERAL">FROM</tt> 子句，那么查询不能引用任何数据库表。比如，下面的查询是非法的：</p>
+<pre class="PROGRAMLISTING">SELECT distributors.* WHERE distributors.name = 'Westward';</pre>
+<p>PostgreSQL 8.1 之前的版本支持这种形式的查询，为查询里引用的每个表都增加一个隐含的条目到 <tt class="LITERAL">FROM</tt> 子句中。现在这个不再是缺省的行为了，因为它和 SQL 标准不兼容，并且被认为太容易导致错误了。为了兼容那些依赖这个行为的应用，可以打开 <a href="runtime-config-compatible.html#GUC-ADD-MISSING-FROM">add_missing_from</a> 配置参数。</p>
+</div>
+<div class="REFSECT2"><a name="AEN54191"></a><h3><tt class="LITERAL">AS</tt> 关键字</h3>
+<p>在 SQL 标准里，可选的 <tt class="LITERAL">AS</tt> 关键字是多余的，可以忽略掉而不对语句产生任何影响。PostgreSQL 分析器在重命名输出字段时需要这个关键字，因为类型扩展的特性会在这种情况下导致歧义。不过，<tt class="LITERAL">AS</tt> 在 <tt class="LITERAL">FROM</tt> 项里是可选的。</p>
+</div>
+<div class="REFSECT2"><a name="AEN54199"></a><h3><tt class="LITERAL">GROUP BY</tt> 和 <tt class="LITERAL">ORDER BY</tt> 里可用的名字空间</h3>
+<p>在 SQL-92 标准里，<tt class="LITERAL">ORDER BY</tt> 子句只能使用结果字段名或者编号，而 <tt class="LITERAL">GROUP BY</tt> 子句只能用基于输入字段名的表达式。PostgreSQL 对这两个子句都进行了扩展，允许另外一种选择(但是如果存在歧义，则使用标准的解释)。PostgreSQL 还允许两个子句声明任意的表达式。请注意在表达式中出现的名字总是被当作输入字段名，而不是结果字段名。</p>
+<p>SQL:1999 以及之后的一个略微不同的定义并不能和 SQL-92 完全向前兼容。不过，在大多数情况下，PostgreSQL 将把一个 <tt class="LITERAL">ORDER BY</tt> 或 <tt class="LITERAL">GROUP BY</tt> 表达式解析成为 SQL:1999 制定的那样。</p>
+</div>
+<div class="REFSECT2"><a name="AEN54212"></a><h3>非标准子句</h3>
+<p><tt class="LITERAL">DISTINCT ON</tt>, <tt class="LITERAL">LIMIT</tt>, <tt class="LITERAL">OFFSET</tt> 子句都没有在 SQL 标准中定义。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-savepoint.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-selectinto.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SAVEPOINT</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SELECT INTO</td></tr>
+</table>
+</div>
+</body></html>

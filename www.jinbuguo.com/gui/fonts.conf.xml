@@ -1,0 +1,822 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+
+<!-- ========================== 第一部分 目录设置 =================================== -->
+
+<!-- 字体目录 -->
+<dir>/opt/fonts/core</dir>
+<!-- <dir>/opt/fonts/ext</dir> -->
+
+<!-- 缓存目录 -->
+<cachedir>/var/cache/fontconfig</cachedir>
+
+<!-- 额外的配置目录 -->
+<!-- <include>/etc/fonts/conf.d</include> -->
+
+<!-- ========================== 第二部分 杂项设置 =================================== -->
+
+<config>
+	<blank><!-- 空白字符 -->
+		<int>0x0020</int><int>0x00A0</int><int>0x00AD</int><int>0x034F</int>
+		<int>0x0600</int><int>0x0601</int><int>0x0602</int><int>0x0603</int>
+		<int>0x06DD</int><int>0x070F</int><int>0x115F</int><int>0x1160</int>
+		<int>0x1680</int><int>0x17B4</int><int>0x17B5</int><int>0x180E</int>
+		<range><int>0x2000</int><int>0x200F</int></range>
+		<range><int>0x2028</int><int>0x202F</int></range>
+		<range><int>0x205F</int><int>0x2063</int></range>
+		<range><int>0x206A</int><int>0x206F</int></range>
+		<int>0x2800</int><int>0x3000</int><int>0x3164</int><int>0xFEFF</int>
+		<int>0xFFA0</int><int>0xFFF9</int><int>0xFFFA</int><int>0xFFFB</int>
+	</blank>
+	<!-- 每小时扫描一次配置文件与字体的变化 -->
+	<rescan><int>3600</int></rescan>
+</config>
+
+<!-- ========================== 第三部分 扫描阶段 =================================== -->
+
+<!-- 规范化已安装核心字体的属性(西文字族名改为类名，中文字族名改为"zhXXX") -->
+<match target="scan">
+	<test name="family"><string>Migu 1M</string></test>
+	<edit name="family"><string>Monospace</string></edit>
+	<edit name="lang"><langset><string>en</string></langset></edit>
+	<edit name="charset">
+		<charset>
+			<!-- 基本拉丁(ASCII) -->
+			<range><int>0x0020</int><int>0x007E</int></range>
+			<!-- 拉丁-1增补 + 拉丁扩展A/B -->
+			<range><int>0x00A0</int><int>0x0181</int></range>
+			<int>0x0186</int><int>0x0189</int><int>0x018A</int>
+			<range><int>0x018E</int><int>0x0194</int></range>
+			<range><int>0x0198</int><int>0x019B</int></range>
+			<range><int>0x019D</int><int>0x01A1</int></range>
+			<range><int>0x01AF</int><int>0x01B1</int></range>
+			<range><int>0x01B3</int><int>0x01B6</int></range>
+			<range><int>0x01BF</int><int>0x01E3</int></range>
+			<range><int>0x01E6</int><int>0x01ED</int></range>
+			<range><int>0x01EF</int><int>0x01F5</int></range>
+			<range><int>0x01F7</int><int>0x01FF</int></range>
+			<range><int>0x0218</int><int>0x021F</int></range>
+			<range><int>0x0230</int><int>0x0233</int></range>
+			<int>0x0237</int><int>0x023D</int>
+			<!-- 国际音标 + 空格调整字母 -->
+			<range><int>0x0250</int><int>0x02FF</int></range>
+			<!-- 希腊语 -->
+			<range><int>0x0372</int><int>0x0375</int></range>
+			<int>0x037A</int><int>0x037E</int><int>0x038C</int>
+			<range><int>0x0384</int><int>0x038A</int></range>
+			<range><int>0x038E</int><int>0x03A1</int></range>
+			<range><int>0x03A3</int><int>0x03E1</int></range>
+			<!-- 西里尔语 -->
+			<range><int>0x0400</int><int>0x045F</int></range>
+			<int>0x0462</int><int>0x0463</int>
+			<range><int>0x0472</int><int>0x0475</int></range>
+			<int>0x0480</int><int>0x0481</int><int>0x0490</int><int>0x0491</int>
+			<int>0x04AE</int><int>0x04AF</int><int>0x04E8</int><int>0x04E9</int>
+			<!-- 货币符号 -->
+			<int>0x20A1</int><range><int>0x20A8</int><int>0x20AC</int></range>
+			<range><int>0x20AF</int><int>0x20B3</int></range><int>0x20B5</int>
+			<!-- 字母符号 -->
+			<int>0x2103</int><int>0x2113</int><int>0x2116</int><int>0x211E</int>
+			<int>0x2121</int><int>0x2122</int><int>0x2126</int><int>0x2127</int>
+			<!-- 数字形式(罗马) -->
+			<range><int>0x2160</int><int>0x216B</int></range>
+			<range><int>0x2170</int><int>0x217B</int></range>
+			<!-- 箭头 -->
+			<range><int>0x2190</int><int>0x2199</int></range>
+			<range><int>0x21B0</int><int>0x21B5</int></range>
+			<range><int>0x21C4</int><int>0x21CA</int></range>
+			<range><int>0x21D0</int><int>0x21D9</int></range>
+			<range><int>0x21E4</int><int>0x21ED</int></range>
+			<!-- 控制图片 -->
+			<range><int>0x2400</int><int>0x2426</int></range>
+			<!-- 带圈的字母与数字 -->
+			<range><int>0x2460</int><int>0x2473</int></range>
+			<range><int>0x24D0</int><int>0x24FF</int></range>
+			<range><int>0x2776</int><int>0x2793</int></range>
+			<!-- 数学乘号 + 拉丁扩展C -->
+			<int>0x2A2F</int><int>0x2C71</int><int>0x2C7D</int>
+			<!-- 平假名 + 片假名 + 片假名语音扩展 -->
+			<range><int>0x3041</int><int>0x3096</int></range>
+			<range><int>0x3099</int><int>0x30FF</int></range>
+			<range><int>0x31F0</int><int>0x31FF</int></range>
+			<!-- 拉丁扩展D -->
+			<int>0xA78B</int><int>0xA78C</int>
+			<!-- 拉丁组合字 -->
+			<range><int>0xFB00</int><int>0xFB04</int></range>
+			<!-- 字节顺序标记 -->
+			<int>0xFEFF</int>
+		</charset>
+	</edit>
+</match>
+<match target="scan">
+	<test name="family"><string>Noto Sans</string></test>
+	<edit name="family"><string>Sans</string></edit>
+	<edit name="lang"><langset><string>en</string></langset></edit>
+	<edit name="charset">
+		<charset>
+			<!-- 基本拉丁(ASCII) -->
+			<range><int>0x0020</int><int>0x007E</int></range>
+			<!-- 拉丁-1/A/B + 国际音标 + 空格调整字母 + 组合变音标记 -->
+			<range><int>0x00A0</int><int>0x036F</int></range>
+			<!-- 希腊语 + 西里尔语 -->
+			<int>0x0374</int><int>0x0375</int><int>0x038C</int>
+			<range><int>0x037A</int><int>0x037E</int></range>
+			<range><int>0x0384</int><int>0x038A</int></range>
+			<range><int>0x038E</int><int>0x03A1</int></range>
+			<range><int>0x03A3</int><int>0x03CE</int></range>
+			<range><int>0x03D0</int><int>0x0527</int></range>
+			<!-- 音标扩展增补 + 组合变音标记补充 + 拉丁扩展附加 -->
+			<range><int>0x1D00</int><int>0x1DCA</int></range>
+			<range><int>0x1DFE</int><int>0x1E9B</int></range>
+			<int>0x1E9E</int>
+			<range><int>0x1EA0</int><int>0x1EF9</int></range>
+			<!-- 货币符号 -->
+			<range><int>0x20A0</int><int>0x20A9</int></range>
+			<range><int>0x20AB</int><int>0x20B5</int></range>
+			<int>0x20B9</int><int>0x20BA</int>
+			<!-- 拉丁扩展C -->
+			<range><int>0x2C60</int><int>0x2C6D</int></range>
+			<range><int>0x2C71</int><int>0x2C77</int></range>
+			<!-- 修饰语调字母 + 拉丁扩展D -->
+			<range><int>0xA717</int><int>0xA721</int></range>
+			<range><int>0xA788</int><int>0xA78C</int></range>
+			<!-- 拉丁组合字 -->
+			<range><int>0xFB01</int><int>0xFB04</int></range>
+			<!-- 组合半角标记 -->
+			<range><int>0xFE20</int><int>0xFE23</int></range>
+			<!-- 字节顺序标记 + 特殊标记 -->
+			<int>0xFEFF</int><int>0xFFFC</int><int>0xFFFD</int>
+		</charset>
+	</edit>
+</match>
+<match target="scan">
+	<test name="family"><string>Tinos</string></test>
+	<edit name="family"><string>Serif</string></edit>
+	<edit name="lang"><langset><string>en</string></langset></edit>
+	<edit name="charset">
+		<charset>
+			<!-- 基本拉丁(ASCII) -->
+			<range><int>0x0020</int><int>0x007E</int></range>
+			<!-- 拉丁-1/A/B + 国际音标 + 空格调整字母 + 组合变音标记 -->
+			<range><int>0x00A0</int><int>0x036F</int></range>
+			<!-- 希腊语 + 西里尔语 -->
+			<int>0x0374</int><int>0x0375</int><int>0x038C</int>
+			<range><int>0x037A</int><int>0x037E</int></range>
+			<range><int>0x0384</int><int>0x038A</int></range>
+			<range><int>0x038E</int><int>0x03A1</int></range>
+			<range><int>0x03A3</int><int>0x03CE</int></range>
+			<range><int>0x03D0</int><int>0x0513</int></range>
+			<range><int>0x051A</int><int>0x051D</int></range>
+			<!-- 音标扩展增补 + 组合变音标记补充 + 拉丁扩展附加 -->
+			<range><int>0x1D00</int><int>0x1DCA</int></range>
+			<range><int>0x1DFE</int><int>0x1E9B</int></range>
+			<int>0x1E9E</int>
+			<range><int>0x1EA0</int><int>0x1EF9</int></range>
+			<!-- 货币符号 -->
+			<range><int>0x20A0</int><int>0x20B5</int></range>
+			<!-- 拉丁扩展C -->
+			<range><int>0x2C60</int><int>0x2C6D</int></range>
+			<range><int>0x2C71</int><int>0x2C77</int></range>
+			<!-- 修饰语调字母 + 拉丁扩展D -->
+			<range><int>0xA717</int><int>0xA721</int></range>
+			<range><int>0xA788</int><int>0xA78C</int></range>
+			<!-- 拉丁组合字 -->
+			<int>0xFB01</int><int>0xFB02</int>
+			<!-- 组合半角标记 -->
+			<range><int>0xFE20</int><int>0xFE23</int></range>
+		</charset>
+	</edit>
+</match>
+<match target="scan">
+	<test name="postscriptname"><string>NotoSansHans-DemiLight</string></test>
+	<edit name="family"><string>zhHei</string></edit>
+	<edit name="style"><string>Regular</string></edit>
+	<edit name="lang"><langset><string>zh-cn</string></langset></edit>
+</match>
+<match target="scan">
+	<test name="postscriptname"><string>NotoSansHans-Bold</string></test>
+	<edit name="family"><string>zhHei</string></edit>
+	<edit name="lang"><langset><string>zh-cn</string></langset></edit>
+</match>
+<match target="scan">
+	<test name="postscriptname"><string>AdobeSongStd-Light</string></test>
+	<edit name="family"><string>zhSong</string></edit>
+	<edit name="style"><string>Regular</string></edit>
+	<edit name="weight"><int>80</int></edit>
+	<edit name="lang"><langset><string>zh-cn</string></langset></edit>
+</match>
+<match target="scan">
+	<test name="postscriptname"><string>AdobeFangsongStd-Regular</string></test>
+	<edit name="family"><string>zhFangSong</string></edit>
+	<edit name="style"><string>Regular</string></edit>
+	<edit name="lang"><langset><string>zh-cn</string></langset></edit>
+</match>
+<match target="scan">
+	<test name="postscriptname"><string>AdobeKaitiStd-Regular</string></test>
+	<edit name="family"><string>zhKai</string></edit>
+	<edit name="style"><string>Regular</string></edit>
+	<edit name="lang"><langset><string>zh-cn</string></langset></edit>
+</match>
+<match target="scan">
+	<test name="postscriptname"><string>SegoeUISymbol</string></test>
+	<edit name="family"><string>zzFailBack</string><string>zzSymbol</string></edit>
+	<edit name="familylang"><string>en</string><string>en</string></edit>
+	<edit name="style"><string>Regular</string></edit>
+	<edit name="lang"><langset><string>none</string></langset></edit>
+</match>
+<match target="scan">
+	<test name="postscriptname"><string>NotoSansKR-DemiLight</string></test>
+	<edit name="family"><string>zzFailBack</string><string>zzKorean</string></edit>
+	<edit name="familylang"><string>en</string><string>en</string></edit>
+	<edit name="style"><string>Regular</string></edit>
+	<edit name="lang"><langset><string>ko</string></langset></edit>
+</match>
+<match target="scan">
+	<test name="postscriptname"><string>NotoSansKR-Bold</string></test>
+	<edit name="family"><string>zzFailBack</string><string>zzKorean</string></edit>
+	<edit name="familylang"><string>en</string><string>en</string></edit>
+	<edit name="lang"><langset><string>ko</string></langset></edit>
+</match>
+
+<!-- ========================== 第四部分 匹配阶段 =================================== -->
+
+<!-- 第一步，替换所有未安装的常见字体：西文替换为对应的字体类，中文替换为"西文字体类+zhXXX"，保持原有绑定不变 -->
+<alias binding="same"><family>mono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Consolas</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Courier</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Courier New</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Fixedsys</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Lucida Console</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Terminal</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Lucida Sans Typewriter</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Andale Mono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Menlo</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Monaco</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Andale Mono WT</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Biwidth</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Bitstream Vera Sans Mono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Cousine</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>DejaVu Sans Mono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Droid Sans Mono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Fira Mono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Fixed</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>FreeMono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Inconsolata</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Liberation Mono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Luxi Mono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Nimbus Mono L</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Source Code Pro</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Terminus</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Ubuntu Mono</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Unibit</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>Unifont</family><prefer><family>Monospace</family></prefer></alias>
+<alias binding="same"><family>sans serif</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>sans-serif</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Arial</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Arial Black</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Calibri</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Candara</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Century Gothic</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Copperplate Gothic</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Corbel</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Franklin Gothic Medium</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Impact</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Lucida Sans Unicode</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Microsoft Sans Serif</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>MS Sans Serif</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>News Gothic MT</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Segoe</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Segoe UI</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Tahoma</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Trebuchet MS</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Verdana</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Arial Narrow</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Arial Unicode MS</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Franklin Gothic Bold</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Franklin Gothic Heavy</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Gill Sans MT</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Haettenschweiler</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Lucida Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Tw Cen MT</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Avenir</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Avenir Next</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Avenir Next Condensed</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Charcoal</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Chicago</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Futura</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Geneva</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Gill Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Helvetica</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Helvetica Neue</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Lucida Grande</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Optima</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Thonburi</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Andika</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Akzidenz-Grotesk</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Arev Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Arimo</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Bitstream Vera Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Cantarell</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Carlito</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>DejaVu Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>DejaVu Sans Condensed</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Droid Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Droid Sans Fallback</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Fira Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>FreeSans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Frutiger</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Frutiger Linotype</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Gadget</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Gotham</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Liberation Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Liberation Sans Narrow</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Linux Biolinum</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Luxi Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Myriad</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Myriad Pro</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Nimbus Sans L</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Noto Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Noto Sans UI</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Open Sans</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Roboto</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Roboto Condensed</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Source Sans Pro</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Ubuntu</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Ubuntu Condensed</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Univers</family><prefer><family>Sans</family></prefer></alias>
+<alias binding="same"><family>Book Antiqua</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Calisto MT</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Cambria</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Constantia</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Gabriola</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Georgia</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>MS Serif</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Palatino Linotype</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Sitka</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Sitka Banner</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Sitka Display</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Sitka Heading</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Sitka Small</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Sitka Subheading</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Sitka Text</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Times New Roman</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Baskerville Old Face</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Bell MT</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Bodoni MT</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Bookman Old Style</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Californian FB</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Centaur</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Century</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Century Schoolbook</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Cooper Black</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Elephant</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Garamond</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Goudy Old Style</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>High Tower Text</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Lucida Bright</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Lucida Fax</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Perpetua</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Rockwell</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Baskerville</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Big Caslon</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Didot</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Hoefler Text</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>New York</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Palatino</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Times</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Bitstream Charter</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Bitstream CyberBase</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Bitstream Cyberbit</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Bitstream Vera Serif</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Century Schoolbook L</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Charis SIL</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Code2000</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Code2001</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>DejaVu Serif</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>DejaVu Serif Condensed</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Droid Serif</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>FreeSerif</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Gentium</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Junicode</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Liberation Serif</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Linux Libertine</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Luxi Serif</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>New Athena Unicode</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Nimbus Roman No9 L</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Noto Serif</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Old Standard TT</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Source Serif Pro</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Tinos</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Utopia</family><prefer><family>Serif</family></prefer></alias>
+<alias binding="same"><family>Source Han Sans</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Source Han Sans CN</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Source Han Sans SC</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Source Han Sans TC</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Source Han Sans TWHK</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>思源黑体</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>思源黑體</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>思源黑体 CN</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>思源黑體 TWHK</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Noto Sans CJK</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Noto Sans CJK Simplified Chinese</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Noto Sans CJK Traditional Chinese</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Noto Sans S Chinese</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Noto Sans T Chinese</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Hiragino Sans GB</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>冬青黑體簡體中文</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>冬青黑体简体中文</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Adobe Heiti Std</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Adobe 黑体 Std</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Adobe Fan Heiti Std</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Adobe 繁黑體 Std</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Hei</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>LiHei Pro</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>STHeiti</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>SimHei</family><prefer><family>Monospace</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>黑体</family><prefer><family>Monospace</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Heiti TC</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>黑體-繁</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>黑体-繁</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Heiti SC</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>黑體-簡</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>黑体-简</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>STXihei</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>华文细黑</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Lantinghei SC</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>蘭亭黑-簡</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>兰亭黑-简</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Lantinghei TC</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>蘭亭黑-繁</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>兰亭黑-繁</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Microsoft JhengHei</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Microsoft JhengHei UI</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>微軟正黑體</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Microsoft YaHei</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Microsoft YaHei UI</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>微软雅黑</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>WenQuanYi Bitmap Song</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>WenQuanYi Micro Hei</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驛微米黑</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驿微米黑</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>WenQuanYi Micro Hei Mono</family><prefer><family>Monospace</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驛等寬微米黑</family><prefer><family>Monospace</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驿等宽微米黑</family><prefer><family>Monospace</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>WenQuanYi Zen Hei</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驛正黑</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驿正黑</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>WenQuanYi Zen Hei Mono</family><prefer><family>Monospace</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驛等寬正黑</family><prefer><family>Monospace</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驿等宽正黑</family><prefer><family>Monospace</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>WenQuanYi Zen Hei Sharp</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驛點陣正黑</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>文泉驿点阵正黑</family><prefer><family>Sans</family><family>zhHei</family></prefer></alias>
+<alias binding="same"><family>Adobe Song Std</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>Adobe 宋体 Std</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>Adobe Ming Std</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>Adobe 明體 Std</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PL UMing CN</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PL UMing HK</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PL UMing TW</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PL UMing TW MBE</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>Apple LiSung</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>GB18030 Bitmap</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>LiSong Pro</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>Ming(for ISO10646)</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>STSong</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>华文宋体</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>STZhongsong</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>华文中宋</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>SimSun</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>宋体</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>NSimSun</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>新宋体</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>SimSun-ExtB</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>SimSun-18030</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>宋体-18030</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>NSimSun-18030</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>新宋体-18030</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>Songti SC</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>宋體-簡</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>宋体-简</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>Songti TC</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>宋體-繁</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>宋体-繁</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PLBaosong2GBK Light</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>文鼎ＰＬ报宋二GBK</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PL SungtiL GB</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>文鼎ＰＬ简报宋</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PLMingU20 Light</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>文鼎ＰＬ明體U20-L</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PL Mingti2L Big5</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>文鼎ＰＬ細上海宋</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PL ShanHeiSun Uni</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>文鼎PL细上海宋Uni</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>文鼎PL細上海宋Uni</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PL New Sung</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>文鼎ＰＬ新宋</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>AR PL New Sung Mono</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>文鼎ＰＬ新宋 Mono</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>MingLiU</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>細明體</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>MingLiU-ExtB</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>細明體-ExtB</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>PMingLiU</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>新細明體</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>PMingLiU-ExtB</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>新細明體-ExtB</family><prefer><family>Serif</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>MingLiU_HKSCS</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>細明體_HKSCS</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>MingLiU_HKSCS-ExtB</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>細明體_HKSCS-ExtB</family><prefer><family>Monospace</family><family>zhSong</family></prefer></alias>
+<alias binding="same"><family>Adobe Fangsong Std</family><prefer><family>Serif</family><family>zhFangSong</family></prefer></alias>
+<alias binding="same"><family>Adobe 仿宋 Std</family><prefer><family>Serif</family><family>zhFangSong</family></prefer></alias>
+<alias binding="same"><family>FangSong_GB2312</family><prefer><family>Monospace</family><family>zhFangSong</family></prefer></alias>
+<alias binding="same"><family>仿宋_GB2312</family><prefer><family>Monospace</family><family>zhFangSong</family></prefer></alias>
+<alias binding="same"><family>FangSong</family><prefer><family>Monospace</family><family>zhFangSong</family></prefer></alias>
+<alias binding="same"><family>仿宋</family><prefer><family>Monospace</family><family>zhFangSong</family></prefer></alias>
+<alias binding="same"><family>STFangsong</family><prefer><family>Serif</family><family>zhFangSong</family></prefer></alias>
+<alias binding="same"><family>华文仿宋</family><prefer><family>Serif</family><family>zhFangSong</family></prefer></alias>
+<alias binding="same"><family>Adobe Kaiti Std</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>Adobe 楷体 Std</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>AR PL UKai CN</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>AR PL UKai HK</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>AR PL UKai TW</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>AR PL UKai TW MBE</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>BiauKai</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>Kai</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>DFKai-SB</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>標楷體</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>STKaiti</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>华文楷体</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>KaiTi</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>楷体</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>Kaiti SC</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>楷體-簡</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>楷体-简</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>Kaiti TC</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>楷體-繁</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>楷体-繁</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>SimKai</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>KaiTi_GB2312</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>楷体_GB2312</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>AR PL KaitiM GB</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>文鼎ＰＬ简中楷</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>AR PL New Kai</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>文鼎ＰＬ新中楷</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>AR PL KaitiM Big5</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>文鼎ＰＬ中楷</family><prefer><family>Monospace</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>AR PL ZenKai Uni</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<alias binding="same"><family>文鼎PL中楷Uni</family><prefer><family>Serif</family><family>zhKai</family></prefer></alias>
+<!-- 第二步，剔除列表头部不可识别的字体(仅对firefox)，重复5次，确保剔除干净，为后面补全"zhXXX"与设置"isDengKuan"标记打基础 -->
+<match>
+	<test name="prgname"><string>firefox</string></test>
+	<test qual="first" name="family" compare="not_contains"><string>@font-face:</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Monospace</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Sans</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Serif</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhHei</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhFangSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhKai</string></test>
+	<edit name="family" mode="delete"></edit>
+</match>
+<match>
+	<test name="prgname"><string>firefox</string></test>
+	<test qual="first" name="family" compare="not_contains"><string>@font-face:</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Monospace</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Sans</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Serif</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhHei</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhFangSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhKai</string></test>
+	<edit name="family" mode="delete"></edit>
+</match>
+<match>
+	<test name="prgname"><string>firefox</string></test>
+	<test qual="first" name="family" compare="not_contains"><string>@font-face:</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Monospace</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Sans</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Serif</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhHei</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhFangSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhKai</string></test>
+	<edit name="family" mode="delete"></edit>
+</match>
+<match>
+	<test name="prgname"><string>firefox</string></test>
+	<test qual="first" name="family" compare="not_contains"><string>@font-face:</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Monospace</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Sans</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Serif</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhHei</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhFangSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhKai</string></test>
+	<edit name="family" mode="delete"></edit>
+</match>
+<match>
+	<test name="prgname"><string>firefox</string></test>
+	<test qual="first" name="family" compare="not_contains"><string>@font-face:</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Monospace</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Sans</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>Serif</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhHei</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhFangSong</string></test>
+	<test qual="first" name="family" compare="not_eq"><string>zhKai</string></test>
+	<edit name="family" mode="delete"></edit>
+</match>
+<!-- 第三步，如果不存在任何西文字体类，那么追加一个默认的西文字体类(弱绑定) -->
+<match>
+	<test name="family" qual="all" compare="not_eq"><string>Monospace</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>Sans</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>Serif</string></test>
+	<edit name="family" mode="append_last"><string>Sans</string></edit>
+</match>
+<!-- 第四步，如果不存在任何核心中文(zhXXX)，那么根据西文字体类补上对应的"zhXXX"(弱绑定) -->
+<match>
+	<test name="family" qual="all" compare="not_eq"><string>zhHei</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhSong</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhFangSong</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhKai</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>Serif</string></test><!-- 没有Serif -->
+	<edit name="family" mode="append_last"><string>zhHei</string></edit><!-- 那么仅有Monospace与Sans -->
+</match>
+<match>
+	<test name="family" qual="all" compare="not_eq"><string>zhHei</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhSong</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhFangSong</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhKai</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>Monospace</string></test><!-- 没有Monospace -->
+	<test name="family" qual="all" compare="not_eq"><string>Sans</string></test><!-- 并且没有Sans -->
+	<edit name="family" mode="append_last"><string>zhSong</string></edit><!-- 那么仅有Serif -->
+</match>
+<!-- 继续第四步，如果"family"列表中依然没有"zhXXX"，那就表示出现了Monospace,Sans与Serif混杂的情况。那么根据列表第一项决定对应的"zhXXX"(弱绑定) -->
+<match>
+	<test name="family" qual="all" compare="not_eq"><string>zhHei</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhSong</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhFangSong</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhKai</string></test>
+	<test name="family" qual="first"><string>Serif</string></test><!-- 第一项是Serif -->
+	<edit name="family" mode="append_last"><string>zhSong</string></edit>
+</match>
+<match>
+	<test name="family" qual="all" compare="not_eq"><string>zhHei</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhSong</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhFangSong</string></test>
+	<test name="family" qual="all" compare="not_eq"><string>zhKai</string></test>
+	<!-- 如果依然没有"zhXXX"，那就表示列表第一项是Monospace,Sans或无法识别(例如"@font-face:*") -->
+	<edit name="family" mode="append_last"><string>zhHei</string></edit>
+</match>
+<!-- 最后一步，在列表结尾补上韩文与符号字体(弱绑定) -->
+<match>
+	<edit name="family" mode="append_last"><string>zzKorean</string><string>zzSymbol</string></edit>
+</match>
+
+<!-- 设置其他属性 -->
+<match>
+	<!-- 设置合理的像素密度，确保pt与px之间能够合理转换 -->
+	<edit name="dpi"><double>96</double></edit>
+
+	<!-- 确保弱绑定西文字体优先于弱绑定中文字体 -->
+	<edit name="lang"><string>en</string></edit>
+
+	<!-- 设置等宽标记 -->
+	<edit name="isDengKuan"><eq><name>family</name><string>Monospace</string></eq></edit>
+</match>
+
+<!-- ========================== 第五部分 渲染阶段 =================================== -->
+
+<!-- 第一步，设置默认的渲染参数 -->
+<match target="font">
+	<!-- 修整像素大小(小于10px的调整到10px，否则四舍五入到整数) -->
+	<edit name="pixelsize">
+		<if>
+			<less><name>pixelsize</name><double>10</double></less>
+			<int>10</int>
+			<round><name>pixelsize</name></round>
+		</if>
+	</edit>
+
+	<!-- 开启抗锯齿(smooth) -->
+	<edit name="antialias"><bool>true</bool></edit>
+
+	<!-- 优先使用内嵌微调，同时默认开足微调 -->
+	<edit name="hinting"><bool>true</bool></edit>
+	<edit name="autohint"><bool>false</bool></edit>
+	<!-- 依个人喜好,你也可能喜欢默认"hintslight"(此时可将下面的"第七步"全部注释掉) -->
+	<edit name="hintstyle"><const>hintfull</const></edit>
+
+	<!-- LCD特征设置 -->
+	<edit name="rgba"><const>rgb</const></edit>
+	<edit name="lcdfilter"><const>lcddefault</const></edit>
+
+	<!-- 禁用内嵌点阵 -->
+	<edit name="embeddedbitmap"><bool>false</bool></edit>
+
+	<!-- 禁用合成粗体 -->
+	<edit name="embolden"><bool>false</bool></edit>
+</match>
+<!-- 第二步，为没有原生斜体的字体使用合成斜体 -->
+<match target="font">
+	<test name="slant" compare="eq"><const>roman</const></test>
+	<test name="slant" compare="not_eq" target="pattern"><const>roman</const></test>
+	<edit name="slant"><const>oblique</const></edit>
+	<edit name="matrix">
+		<times>
+			<name>matrix</name>
+			<matrix>
+				<double>1</double><double>0.2</double>
+				<double>0</double><double>1</double>
+			</matrix>
+		</times>
+	</edit>
+</match>
+<!-- 第三步，为没有原生粗体的字体使用合成粗体 -->
+<match target="font">
+	<test name="weight" compare="less"><int>105</int></test>
+	<test name="weight" compare="more" target="pattern"><int>105</int></test>
+	<edit name="weight"><const>bold</const></edit>
+	<edit name="embolden"><bool>true</bool></edit>
+</match>
+<!-- 第四步，标记"视觉大小"(原本的标称值)是否为奇数，为接下来修正等宽条件下的"标称大小"做准备 -->
+<match target="font">
+	<edit name="isOddPx">
+		<eq>
+			<round><divide><plus><name>pixelsize</name><double>0.5</double></plus><double>2</double></divide></round>
+			<ceil><divide><plus><name>pixelsize</name><double>0.5</double></plus><double>2</double></divide></ceil>
+		</eq>
+	</edit>
+</match>
+<!-- 第五步，修正合成粗体的"标称大小"，尽力确保其"视觉大小"与原本的标称值一致 -->
+<match target="font">
+	<test name="embolden"><bool>true</bool></test>
+	<!-- 标称大小=视觉大小-trunc((视觉大小+13.5)/25) -->
+	<edit name="pixelsize">
+		<minus>
+			<name>pixelsize</name>
+			<trunc><divide><plus><name>pixelsize</name><double>13.5</double></plus><double>25</double></divide></trunc>
+		</minus>
+	</edit>
+</match>
+<!-- 第六步，在等宽条件下，为确保中西文对齐，进一步修正"标称大小"(也会影响"视觉大小") -->
+<match target="font">
+	<test name="isDengKuan"><bool>true</bool></test>
+	<!-- 如果"视觉大小"是奇数 -->
+	<test name="isOddPx"><bool>true</bool></test>
+	<!-- 那么上调为偶像素，因为Monospace在奇像素下总是大一级显示 -->
+	<edit name="pixelsize"><plus><name>pixelsize</name><int>1</int></plus></edit>
+</match>
+<!-- 第六步续，进一步专门处理等宽条件下"标称大小"为11px,12px的合成粗体 -->
+<match target="font">
+	<test name="isDengKuan"><bool>true</bool></test>
+	<test name="embolden"><bool>true</bool></test>
+	<test name="pixelsize" compare="more"><double>10.5</double></test>
+	<test name="pixelsize" compare="less"><double>12.5</double></test>
+	<!-- 统一调整为12px常规体，只有这样才能对齐 -->
+	<edit name="pixelsize"><int>12</int></edit>
+	<edit name="embolden"><bool>false</bool></edit>
+	<edit name="weight"><int>80</int></edit>
+</match>
+<!-- 第七步，针对每个字体单独调整渲染参数 -->
+<match target="font">
+	<test name="family"><string>Monospace</string></test>
+	<edit name="hintstyle"><const>hintslight</const></edit>
+</match>
+<match target="font">
+	<test name="family"><string>Sans</string></test>
+	<edit name="hintstyle">
+		<if>
+			<or>
+				<eq><name>pixelsize</name><int>10</int></eq>
+				<eq><name>pixelsize</name><int>12</int></eq>
+			</or>
+			<const>hintslight</const>
+			<const>hintfull</const>
+		</if>
+	</edit>
+</match>
+<match target="font">
+	<test name="family"><string>Serif</string></test>
+	<test name="pixelsize"><int>10</int></test>
+	<test name="slant"><int>0</int></test>
+	<edit name="hintstyle"><const>hintslight</const></edit>
+</match>
+<match target="font">
+	<test name="family"><string>zhHei</string></test>
+	<edit name="hintstyle"><const>hintslight</const></edit>
+</match>
+<match target="font">
+	<test name="postscriptname" compare="contains"><string>NotoSansKR</string></test>
+	<edit name="hintstyle"><const>hintslight</const></edit>
+</match>
+<!-- 最后，删除等宽标记与奇偶标记 -->
+<match target="font">
+	<edit name="isDengKuan" mode="delete"></edit>
+	<edit name="isOddPx" mode="delete"></edit>
+</match>
+
+</fontconfig>

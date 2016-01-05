@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>e2fsck 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>e2fsck 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+E2FSCK(8)                                  System Manager's Manual                                 E2FSCK(8)
+
+名称
+       e2fsck - 检查 Linux ext2/ext3/ext4 文件系统
+
+语法
+       e2fsck  [ -pcnydfkvtDFV ] [ -b superblock ] [ -B blocksize ] [ -l|-L bad_blocks_file ]
+               [ -C fd ] [ -j external-journal ] [ -E extended_options ]  device
+
+描述
+       e2fsck 用于检查 ext2/ext3/ext4 系列文件系统。对于带有日志的 ext3/ext4 文件系统来说，
+       如果系统的不恰当关闭(例如掉电)并未造成文件系统错误，在重放日志中的已提交事物之后，
+       文件系统就可以被标记为"正确无误"了。因此，对于日志型文件系统，e2fsck 通常只需要重放日志后退出即可。
+       不过在少数情况下，超级块会明确指示需要 e2fsck 做更深入的检查。
+
+       device 是将要被检查的文件系统所在的设备(例如 /dev/sdc1)
+
+       一般说来在已挂载的文件系统上运行 e2fsck 是危险的，唯一的例外是使用了 -n 且没有使用 -c, -l, -L 选项的时候。
+       不过，即便如此，此时的检查结果也是不可信的。所以归根结底一句话：不要在已挂载的分区上使用 e2fsck 。
+       当 e2fsck 询问是否要对一个已挂载的文件系统进行检查时，你应当总是回答"no"，除非你是文件系统专家。
+
+选项
+       -b superblock
+              使用这里指定的 superblock 代替默认的超级块。一般用于主超级块被破坏的场合。
+              备份超级块的位置取决于文件系统的块尺寸。块尺寸为 1k 的，备份超级块位于 block 8193 ；
+              块尺寸为 2k 的，备份超级块位于 block 16384 ；块尺寸为 4k 的，备份超级块位于 block 32768 。
+
+              可以通过 -n 选项打印出超级块的位置，从而确定是否存在额外的备份超级块。
+              注意：-b 选项的参数必须精确符合 -n 选项打印出的超级块位置。
+
+              如果指定了替代超级块并且文件系统并未处于只读状态，e2fsck 能够确保在检查完成之后，正确更新主超级块。
+
+       -B blocksize
+              通常，e2fsck 将会自己尝试确定超级块的尺寸，但偶尔会出错。这个选项可以用来强制指定超级块的尺寸。
+              如果未找到超级块，e2fsck 将会返回一个错误信号。
+
+       -c     要求 e2fsck 使用 badblocks(8) 工具来进行一次只读扫描，并将发现的坏块标记为不可用状态。
+              如果这个选项被指定了两次，那么将使用"读-写"模式进行坏块测试。
+
+       -C fd  要求 e2fsck 将进度信息写入文件描述符(fd)，主要用于调用 e2fsck 的程序监视检查进度。
+              如果 fd 是个负数，那么将使用其绝对值并且隐去进度信息。随后可以再向 e2fsck 进程发送 SIGUSR1 信号开启。
+              如果 fd 是 0 ，那么 e2fsck 将会打印出进度条，前提是 e2fsck 必须运行在可视化的控制台或终端上。
+
+       -d     打印调试输出。仅供调试 e2fsck 自身之用。
+
+       -D     对文件系统上的所有目录进行最优化：或者对这些目录进行重新索引，或者排序并压缩小型目录，或使用传统的线性目录。
+
+              即使没有使用 -D 选项，e2fsck 有时候也会优化某些目录。-D 的目的在于强制优化所有目录。
+              不过在实践中，很少需要使用此选项。
+
+              -D 选项还会检测同目录下重名的目录项，这个动作在未指定 -D 的情况下一般是不执行的(因为比较耗时)。
+
+       -E extended_options
+              设置 e2fsck 的扩展选项。这些扩展选项之间使用逗号分隔，并且其中的选项还可以使用等号(=)接受参数。
+              目前可以接受的选项如下：
+
+                   ea_ver=extended_attribute_version
+                          指定文件系统的扩展属性块格式版本。可选值是1或2(默认)。
+
+                   journal_only
+                          除了重放日志之外，不进行任何进一步的检查。
+
+                   fragcheck
+                          在 pass 1 阶段，打印出文件系统上所有文件碎片的详细报告。
+
+                   discard
+                          如果在完成全部检查之后(pass 5)没有发现任何错误，那么就释放所有无用的文件块和inode块。
+                          这对于SSD(固态硬盘)和sparse/thin-provision设备(CONFIG_DM_THIN_PROVISIONING)很有益处。
+                          由于 e2fsck 并不总能返现所有问题，所以使用此选项有可能会让你失去将来手动恢复数据的机会。
+
+                   nodiscard
+                          与 discard 选项相反，不释放任何无用的文件块和inode块。这是默认值。
+
+       -f     即使文件系统看上去没有问题也强制检查一遍。
+
+       -F     在开始检查之前强制刷新该设备的缓冲区。仅对 e2fsck 耗时测试(time trial)时才有实际意义。
+
+       -j external-journal
+              设置存放此文件系统外部日志的路径。
+
+       -k     与 -c 选项连用，以保留坏块列表中所有的坏块，并且将 badblocks(8) 工具发现的所有坏块都添加到坏块列表中去。
+
+       -l filename
+              将 filename 中列出的块编号添加到文件系统的坏块列表中去，格式与 badblocks(8) 的输出格式相同。
+              注意，因为块编号(block number)与文件系统的块尺寸(blocksize)紧密相关，
+              所以，必须告诉 badblocks(8) 准确的文件系统块尺寸，才能得到正确的块编号。
+              建议将此选项与 -c 选项连用，因为这可以确保向 badblocks(8) 传递正确的参数。
+
+       -L filename
+              用 filename 中列出的块编号覆盖文件系统的坏块列表。
+              此选项与 -l 类似，不同之处在于执行的是覆盖操作而不是追加操作。
+
+       -n     以只读方式打开文件系统，并且强制对所有问题的回答都是'no'，从而允许 e2fsck 以非交互方式操作。
+              该选项不能与 -p 或 -y 选项同时使用。
+
+       -p     自动修复所有发现的可安全修复的错误。
+              如果某个错误必须要人工干预才能修复，那么 e2fsck 将打印出问题的详细描述，
+              并在退出码中包含数字4的比特位(参见"退出代码"小节)。
+              这个选项常用于系统的启动脚本，并且不能与 -n 或 -y 选项一起使用。
+
+       -t     打印出 e2fsck 执行时间统计信息。如果连续使用两次，则会为每个阶段(pass)都显示执行时间统计信息。
+
+       -v     啰嗦模式。也就是打印出检查过程的详细信息。
+
+       -V     显示版本信息后退出
+
+       -y     对所有问题都强制使用'yes'进行回答，这样就允许 e2fsck 以非交互方式操作。
+              该选项不能与 -p 或 -y 选项同时使用。
+
+退出代码
+       退出代码可以是下面的数字的比特位叠加
+            0    - 没有错误
+            1    - 文件系统错误已被纠正
+            2    - 文件系统错误已被纠正，但必须重启系统
+            4    - 有未修正的文件系统错误
+            8    - 操作错误
+            16   - 用法或者语法错误
+            32   - 被用户中途取消操作
+            128  - 共享库错误
+
+信号
+       可以向 e2fsck 发送的信号及其效果。
+
+       SIGUSR1
+              要求 e2fsck 开始显示进度条或输出进度信息(参见 -C 选项)
+
+       SIGUSR2
+              要求 e2fsck 停止显示进度条或输出进度信息(参见 -C 选项)
+
+参见
+       e2fsck.conf(5), badblocks(8), dumpe2fs(8), debugfs(8), e2image(8), mke2fs(8), tune2fs(8)
+
+
+
+E2fsprogs version 1.42.9                        December 2013                                      E2FSCK(8)
+
+</pre>
+
+
+<hr />
+
+
+</body></html>

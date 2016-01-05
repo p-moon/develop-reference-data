@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>开发 PL/pgSQL 的一些提示</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plpgsql-overview.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plpgsql.html">快退</a></td><td width="60%" align="center" valign="bottom">章37. PL/pgSQL - SQL 过程语言</td><td width="10%" align="right" valign="top"><a href="plpgsql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plpgsql-structure.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLPGSQL-DEVELOPMENT-TIPS">37.2. 开发 PL/pgSQL 的一些提示</a></h1>
+<p>用 PL/pgSQL 做开发的一个好方法是简单地使用文本编辑器创建函数，然后在另外一个控制台里，用 <span class="APPLICATION">psql</span> 加载这些函数。如果你用这种方法，那么用 <tt class="COMMAND">CREATE OR REPLACE FUNCTION</tt> 写函数是个好主意。这样，重读文件就可以更新函数定义。比如：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION testfunc(integer) RETURNS integer AS $$
+          ....
+$$ LANGUAGE plpgsql;</pre>
+<p>在运行 <span class="APPLICATION">psql</span> 的时候，可以用下面命令加载或者重载函数定义文件</p>
+<pre class="PROGRAMLISTING">\i filename.sql</pre>
+<p>然后马上发出 SQL 命令测试该函数。</p>
+<p>另外一个开发 PL/pgSQL 程序的好方法是使用一种支持过程语言开发的 GUI 工具。比如 <span class="APPLICATION">PgAccess</span> ，当然还有其它的。这些工具通常提供了一些很有用的功能，比如逃逸单引号使得重建和调试函数更简单等。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="PLPGSQL-QUOTE-TIPS">37.2.1. Handling of Quotation Marks</a></h2>
+<p>PL/pgSQL 函数的代码都是在 <tt class="COMMAND">CREATE FUNCTION</tt> 里以一个字符串文本的方式声明的。如果你用两边包围单引号的常规方式写字符串文本，那么任何函数体内的单引号都必须写双份；类似的是反斜杠也必须双份。双份引号非常乏味，在更复杂的场合下，代码可能会让人难以理解，因为你很容易发现自己需要半打甚至更多相连的引号。建议你用"美元符界定"的字符串文本来写函数体。(参阅<a href="sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING">节4.1.2.2</a>)。使用美元符界定的时候，你从不需要对任何引号写双份，只需要为每层引号包围嵌套选择一个不同的美元符号包围分隔符即可。比如，你可能这么写 <tt class="COMMAND">CREATE FUNCTION</tt> 命令</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION testfunc(integer) RETURNS integer AS $PROC$
+          ....
+$PROC$ LANGUAGE plpgsql;</pre>
+<p>在这个函数体中，可以在 SQL 命令里使用单引号包围文本字符串，用 <tt class="LITERAL">$$</tt> 分隔那些 SQL 命令的片断。如果你需要对包含 <tt class="LITERAL">$$</tt> 的文本进行引号包围，可以使用 <tt class="LITERAL">$Q$</tt> 等等。</p>
+<p>下表展示了不使用美元符界定的时候该如何写单引号。把美元符引号之前的引号包围的代码转换成某种可以理解的形式时，应该会用得上。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>1 个单引号</dt>
+<dd><p>开始/结束函数体，比如：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION foo() RETURNS integer AS '
+          ....
+' LANGUAGE plpgsql;</pre>
+<p>在函数体内部的任何位置，问号都<span class="emphasis"><i class="EMPHASIS">必须</i></span>成对出现。</p></dd>
+<dt>2 个单引号</dt>
+<dd><p>对于函数体内的字符串文本，比如：</p>
+<pre class="PROGRAMLISTING">a_output := ''Blah'';
+SELECT * FROM users WHERE f_name=''foobar'';</pre>
+<p>在美元符界定的方法里，你只要写</p>
+<pre class="PROGRAMLISTING">a_output := 'Blah';
+SELECT * FROM users WHERE f_name='foobar';</pre>
+<p>两种情况都是 PL/pgSQL 分析器期望看到的东西。</p></dd>
+<dt>4 个单引号</dt>
+<dd><p>如果你在函数体中的字符串里面需要一个单引号，比如：</p>
+<pre class="PROGRAMLISTING">a_output := a_output || '' AND name LIKE ''''foobar'''' AND xyz''</pre>
+<p><tt class="LITERAL">a_output</tt> 的值将是 <tt class="LITERAL">AND name LIKE 'foobar' AND xyz</tt></p>
+<p>使用美元符界定的方法应该这样写</p>
+<pre class="PROGRAMLISTING">a_output := a_output || $$ AND name LIKE 'foobar' AND xyz$$</pre>
+<p>注意，这样的美元符界定的分隔符并不是只有 <tt class="LITERAL">$$</tt></p></dd>
+<dt>6 个单引号</dt>
+<dd><p>如果一个在函数体中的字符串内的单引号与该字符串常量结尾前后相连，比如：</p>
+<pre class="PROGRAMLISTING">a_output := a_output || '' AND name LIKE ''''foobar''''''</pre>
+<p><tt class="LITERAL">a_output</tt> 的值将是 <tt class="LITERAL">AND name LIKE 'foobar'</tt></p>
+<p>用美元符界定的方法则为是</p>
+<pre class="PROGRAMLISTING">a_output := a_output || $$ AND name LIKE 'foobar'$$</pre></dd>
+<dt>10 个单引号</dt>
+<dd><p>如果你想要在字符串常量里有两个单引号(它们在一起是 8 个了)，并且这两个单引号和该字符串常量的结尾相连(又加 2 个)。可能只有在写一个生成其它函数的函数的时候，像<a href="plpgsql-porting.html#PLPGSQL-PORTING-EX2">例37-6</a>里那样，才需要这么干。比如：</p>
+<pre class="PROGRAMLISTING">a_output := a_output || '' if v_'' || 
+    referrer_keys.kind || '' like '''''''''' 
+    || referrer_keys.key_string || '''''''''' 
+    then return ''''''  || referrer_keys.referrer_type 
+    || ''''''; end if;''; </pre>
+<p><tt class="LITERAL">a_output</tt> 的值将是</p>
+<pre class="PROGRAMLISTING">if v_... like ''...'' then return ''...''; end if;</pre>
+<p>使用美元符界定的方法应该这样写</p>
+<pre class="PROGRAMLISTING">a_output := a_output || $$ if v_$$ || referrer_keys.kind || $$ like '$$
+    || referrer_keys.key_string || $$'
+    then return '$$  || referrer_keys.referrer_type 
+    || $$'; end if;$$; </pre>
+<p>假设我们只需要在 <tt class="LITERAL">a_output</tt> 里放单引号，因为在使用前它会被重新引号包围。</p></dd>
+</dl>
+</div>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plpgsql-overview.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plpgsql-structure.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">概述</td><td width="34%" align="center" valign="top"><a href="plpgsql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">Structure of PL/pgSQL</td></tr>
+</table>
+</div>
+</body></html>

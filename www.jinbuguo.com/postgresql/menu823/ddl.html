@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>数据定义</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-expressions.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-syntax.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="dml.html">快进</a></td><td width="10%" align="right" valign="top"><a href="ddl-basics.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="DDL"></a>章5. 数据定义</h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>5.1. <a href="ddl-basics.html">表的基本概念</a></dt>
+<dt>5.2. <a href="ddl-default.html">缺省值</a></dt>
+<dt>5.3. <a href="ddl-constraints.html">约束</a></dt>
+<dd><dl>
+<dt>5.3.1. <a href="ddl-constraints.html#AEN1998">检查约束</a></dt>
+<dt>5.3.2. <a href="ddl-constraints.html#AEN2032">非空约束</a></dt>
+<dt>5.3.3. <a href="ddl-constraints.html#AEN2058">唯一约束</a></dt>
+<dt>5.3.4. <a href="ddl-constraints.html#AEN2080">主键</a></dt>
+<dt>5.3.5. <a href="ddl-constraints.html#DDL-CONSTRAINTS-FK">外键</a></dt>
+</dl></dd>
+<dt>5.4. <a href="ddl-system-columns.html">系统字段</a></dt>
+<dt>5.5. <a href="ddl-alter.html">修改表</a></dt>
+<dd><dl>
+<dt>5.5.1. <a href="ddl-alter.html#AEN2275">增加字段</a></dt>
+<dt>5.5.2. <a href="ddl-alter.html#AEN2291">删除字段</a></dt>
+<dt>5.5.3. <a href="ddl-alter.html#AEN2302">增加约束</a></dt>
+<dt>5.5.4. <a href="ddl-alter.html#AEN2311">删除约束</a></dt>
+<dt>5.5.5. <a href="ddl-alter.html#AEN2326">改变字段的缺省值</a></dt>
+<dt>5.5.6. <a href="ddl-alter.html#AEN2336">修改字段的数据类型</a></dt>
+<dt>5.5.7. <a href="ddl-alter.html#AEN2346">重命名字段</a></dt>
+<dt>5.5.8. <a href="ddl-alter.html#AEN2353">重命名表</a></dt>
+</dl></dd>
+<dt>5.6. <a href="ddl-priv.html">权限</a></dt>
+<dt>5.7. <a href="ddl-schemas.html">模式</a></dt>
+<dd><dl>
+<dt>5.7.1. <a href="ddl-schemas.html#DDL-SCHEMAS-CREATE">创建模式</a></dt>
+<dt>5.7.2. <a href="ddl-schemas.html#DDL-SCHEMAS-PUBLIC">Public 模式</a></dt>
+<dt>5.7.3. <a href="ddl-schemas.html#DDL-SCHEMAS-PATH">模式搜索路径</a></dt>
+<dt>5.7.4. <a href="ddl-schemas.html#DDL-SCHEMAS-PRIV">模式和权限</a></dt>
+<dt>5.7.5. <a href="ddl-schemas.html#DDL-SCHEMAS-CATALOG">系统表模式</a></dt>
+<dt>5.7.6. <a href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS">使用方式</a></dt>
+<dt>5.7.7. <a href="ddl-schemas.html#DDL-SCHEMAS-PORTABILITY">移植性</a></dt>
+</dl></dd>
+<dt>5.8. <a href="ddl-inherit.html">继承</a></dt>
+<dt>5.9. <a href="ddl-partitioning.html">分区</a></dt>
+<dd><dl>
+<dt>5.9.1. <a href="ddl-partitioning.html#DDL-PARTITIONING-OVERVIEW">概述</a></dt>
+<dt>5.9.2. <a href="ddl-partitioning.html#DDL-PARTITIONING-IMPLEMENTATION">实现分区</a></dt>
+<dt>5.9.3. <a href="ddl-partitioning.html#DDL-PARTITIONING-MANAGING-PARTITIONS">管理分区</a></dt>
+<dt>5.9.4. <a href="ddl-partitioning.html#DDL-PARTITIONING-CONSTRAINT-EXCLUSION">分区和约束排除</a></dt>
+<dt>5.9.5. <a href="ddl-partitioning.html#DDL-PARTITIONING-CAVEATS">警告</a></dt>
+</dl></dd>
+<dt>5.10. <a href="ddl-others.html">其它数据库对象</a></dt>
+<dt>5.11. <a href="ddl-depend.html">依赖性跟踪</a></dt>
+</dl>
+</div>
+<p>本章介绍如何创建一个保存数据的数据库结构。在关系型数据库里，裸数据是存储在表中的，因此本章的大部分内容都将用于介绍如何创建表以及如何修改他们，以及在控制表中存储的数据上有什么可以获得的特性。随后，我们讨论表是如何组织成模式的，以及如何给表赋予权限。最后，我们将简单查看一下影响数据存储的其它因素，比如继承、视图、函数、触发器。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-expressions.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="ddl-basics.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">值表达式</td><td width="34%" align="center" valign="top"><a href="sql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">表的基本概念</td></tr>
+</table>
+</div>
+</body></html>

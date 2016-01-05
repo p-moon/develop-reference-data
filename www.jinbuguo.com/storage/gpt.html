@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; color:#600; }
+table { vertical-align:middle; border:solid 1px #111; border-collapse:collapse; margin:4px; background:#fff; }
+caption, th { font-weight:bold; }
+th, td { border:solid 1px #999; padding:4px; }
+</style>
+<title>GPT 分区详解 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>GPT 分区详解</h1><h2 id="auth_name">作者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文作者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文作者不保证作品内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留作者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文作者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于作者水平有限，因此不能保证作品内容准确无误。如果你发现了作品中的错误(哪怕是错别字也好)，请来信指出，任何提高作品质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+<h2>保护MBR</h2>
+<p><strong>保护MBR</strong>包含一个DOS分区表(LBA0)，只包含一个类型值为0xEE的分区项，在小于2TB的磁盘上，大小为整个磁盘；在更大的磁盘上，它的大小固定为2TB。它的作用是阻止不能识别GPT分区的磁盘工具试图对其进行格式化等操作，所以该扇区被称为“保护MBR”。实际上，EFI根本不使用这个分区表。</p>
+<img src="GPT.gif" />
+<h2>EFI部分</h2>
+<p>EFI部分又可以分为4个区域：EFI信息区(GPT头)、分区表、GPT分区、备份区域。</p>
+<dl>
+<dt>EFI信息区(GPT头)</dt>
+<dd>起始于磁盘的LBA1，通常也只占用这个单一扇区。其作用是定义分区表的位置和大小。GPT头还包含头和分区表的校验和，这样就可以及时发现错误。</dd>
+<dt>分区表</dt>
+<dd>分区表区域包含分区表项。这个区域由GPT头定义，一般占用磁盘LBA2～LBA33扇区。分区表中的每个分区项由起始地址、结束地址、类型值、名字、属性标志、GUID值组成。分区表建立后，128位的GUID对系统来说是唯一的。</dd>
+<dt>GPT分区</dt>
+<dd>最大的区域，由分配给分区的扇区组成。这个区域的起始和结束地址由GPT头定义。</dd>
+<dt>备份区</dt>
+<dd>备份区域位于磁盘的尾部，包含GPT头和分区表的备份。它占用GPT结束扇区和EFI结束扇区之间的33个扇区。其中最后一个扇区用来备份1号扇区的EFI信息，其余的32个扇区用来备份LBA2～LBA33扇区的分区表。</dd>
+</dl>
+
+<h2>EFI信息区数据结构</h2>
+<p>EFI信息区位于磁盘的1号扇区(LBA1)，也称为GPT头。其具体结构如下表所示</p>
+<table>
+<caption>EFI信息区结构</caption>
+<tr><th>相对字节偏移量<br />(十六进制)</th><th>字节数</th><th>说明[整数皆以little endian方式表示]</th></tr>
+<tr><td>00～07</td><td>8</td><td>GPT头签名“45 46 49 20 50 41 52 54”(ASCII码为“EFI PART”)</td></tr>
+<tr><td>08～0B</td><td>4</td><td>版本号，目前是1.0版，其值是“00 00 01 00”</td></tr>
+<tr><td>0C～0F</td><td>4</td><td>GPT头的大小(字节数)，通常为“5C 00 00 00”(0x5C)，也就是92字节。</td></tr>
+<tr><td>10～13</td><td>4</td><td>GPT头CRC校验和(计算时把这个字段本身看做零值)</td></tr>
+<tr><td>14～17</td><td>4</td><td>保留，必须为“00 00 00 00”</td></tr>
+<tr><td>18～1F</td><td>8</td><td>EFI信息区(GPT头)的起始扇区号，通常为“01 00 00 00 00 00 00 00”，也就是LBA1。</td></tr>
+<tr><td>20～27</td><td>8</td><td>EFI信息区(GPT头)备份位置的扇区号，也就是EFI区域结束扇区号。通常是整个磁盘最末一个扇区。</td></tr>
+<tr><td>28～2F</td><td>8</td><td>GPT分区区域的起始扇区号，通常为“22 00 00 00 00 00 00 00”(0x22)，也即是LBA34。</td></tr>
+<tr><td>30～37</td><td>8</td><td>GPT分区区域的结束扇区号，通常是倒数第34扇区。</td></tr>
+<tr><td>38～47</td><td>16</td><td>磁盘GUID(全球唯一标识符,与UUID是同义词)</td></tr>
+<tr><td>48～4F</td><td>8</td><td>分区表起始扇区号，通常为“02 00 00 00 00 00 00 00”(0x02)，也就是LBA2。</td></tr>
+<tr><td>50～53</td><td>4</td><td>分区表总项数，通常限定为“80 00 00 00”(0x80)，也就是128个。</td></tr>
+<tr><td>54～57</td><td>4</td><td>每个分区表项占用字节数，通常限定为“80 00 00 00”(0x80)，也就是128字节。</td></tr>
+<tr><td>58～5B</td><td>4</td><td>分区表CRC校验和</td></tr>
+<tr><td>5C～*</td><td>*</td><td>保留，通常是全零填充</td></tr>
+</table>
+
+<h2>分区项</h2>
+<table>
+<caption>分区项结构</caption>
+<tr><th>相对字节偏移量<br />(十六进制)</th><th>字节数</th><th>说明[整数皆以little endian方式表示]</th></tr>
+<tr><td>00～0F</td><td>16</td><td>用GUID表示的分区类型</td></tr>
+<tr><td>10～1F</td><td>16</td><td>用GUID表示的分区唯一标示符</td></tr>
+<tr><td>20～27</td><td>8</td><td>该分区的起始扇区，用LBA值表示。</td></tr>
+<tr><td>28～2F</td><td>8</td><td>该分区的结束扇区(包含)，用LBA值表示，通常是奇数。</td></tr>
+<tr><td>30～37</td><td>8</td><td>该分区的属性标志</td></tr>
+<tr><td>38～7F</td><td>72</td><td>UTF-16LE编码的人类可读的分区名称，最大32个字符。</td></tr>
+</table>
+<p>注意，扇区尺寸不能假定为512字节，也就是说，一个扇区内可能存放4个以上的分区项，也可能只存放一个分区项的一部分。也就是说，除了头两个扇区(LBA 0 和 LBA 1)之外，GPT规范仅定义了数据结构的尺寸，而不关心使用多少个扇区进行存储。</p>
+<table>
+<caption>分区类型</caption>
+<tr><th>相关操作系统</th><th>GUID[little endian]</th><th>含义</th></tr>
+<tr><td>None</td><td>00000000-0000-0000-0000-000000000000</td><td>未使用</td></tr>
+<tr><td>None</td><td>024DEE41-33E7-11D3-9D69-0008C781F39F</td><td>MBR分区表</td></tr>
+<tr><td>None</td><td>C12A7328-F81F-11D2-BA4B-00A0C93EC93B</td><td>EFI系统分区[EFI System partition (ESP)]</td></tr>
+<tr><td>None</td><td>21686148-6449-6E6F-744E-656564454649</td><td>BIOS引导分区，其对应的ASCII字符串是"Hah!IdontNeedEFI"。</td></tr>
+<tr><td>None</td><td>D3BFE2DE-3DAF-11DF-BA40-E3A556D89593</td><td>Intel Fast Flash (iFFS) partition (for Intel Rapid Start technology)</td></tr>
+<tr><td>Windows</td><td>E3C9E316-0B5C-4DB8-817D-F92DF00215AE</td><td>微软保留分区</td></tr>
+<tr><td>Windows</td><td>EBD0A0A2-B9E5-4433-87C0-68B6B72699C7</td><td>基本数据分区</td></tr>
+<tr><td>Windows</td><td>DE94BBA4-06D1-4D40-A16A-BFD50179D6AC</td><td>Windows恢复环境</td></tr>
+<tr><td>Linux</td><td>0FC63DAF-8483-4772-8E79-3D69D8477DE4</td><td>数据分区。Linux曾经使用和Windows基本数据分区相同的GUID。<br>这个新的GUID是由 GPT fdisk 和 GNU Parted 开发者根据Linux传统的"8300"分区代码发明的。</td></tr>
+<tr><td>Linux</td><td>44479540-F297-41B2-9AF7-D131D5F0458A</td><td>x86根分区 (/) 这是systemd的发明，可用于无fstab时的自动挂载</td></tr>
+<tr><td>Linux</td><td>4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709</td><td>x86-64根分区 (/) 这是systemd的发明，可用于无fstab时的自动挂载</td></tr>
+<tr><td>Linux</td><td>3B8F8425-20E0-4F3B-907F-1A25A76F98E8</td><td>Server Data (/srv) 这是systemd的发明，可用于无fstab时的自动挂载</td></tr>
+<tr><td>Linux</td><td>933AC7E1-2EB4-4F13-B844-0E14E2AEF915</td><td>HOME分区 (/home) 这是systemd的发明，可用于无fstab时的自动挂载</td></tr>
+<tr><td>Linux</td><td>0657FD6D-A4AB-43C4-84E5-0933C84B4F4F</td><td>交换分区(swap) 不是systemd的发明，但同样可用于无fstab时的自动挂载</td></tr>
+<tr><td>Linux</td><td>A19D880F-05FC-4D3B-A006-743F0F84911E</td><td>RAID分区</td></tr>
+<tr><td>Linux</td><td>E6D6D379-F507-44C2-A23C-238F2A3DF928</td><td>逻辑卷管理器(LVM)分区</td></tr>
+<tr><td>Linux</td><td>8DA63339-0007-60C0-C436-083AC8230908</td><td>保留</td></tr>
+</table>
+<p>Microsoft还进一步对分区的属性进行了细分：低位4字节表示与分区类型无关的属性，高位4字节表示与分区类型有关的属性。Microsoft目前使用了下列属性：</p>
+<table>
+<caption>分区属性</caption>
+<tr><th>Bit</th><th>解释</th></tr>
+<tr><td align="right">0</td><td>系统分区(磁盘分区工具必须将此分区保持原样，不得做任何修改)</td></tr>
+<tr><td align="right">1</td><td>EFI隐藏分区(EFI不可见分区)</td></tr>
+<tr><td align="right">2</td><td>传统的BIOS的可引导分区标志</td></tr>
+<tr><td align="right">60</td><td>只读</td></tr>
+<tr><td align="right">62</td><td>隐藏</td></tr>
+<tr><td align="right">63</td><td>不自动挂载，也就是不自动分配盘符</td></tr>
+</table>
+
+<hr />
+
+
+
+</body></html>

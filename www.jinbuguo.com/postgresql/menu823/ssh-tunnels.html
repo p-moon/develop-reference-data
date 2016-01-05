@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>用 SSH 隧道进行安全 TCP/IP 连接</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="ssl-tcp.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime.html">快退</a></td><td width="60%" align="center" valign="bottom">章16. 操作系统环境</td><td width="10%" align="right" valign="top"><a href="runtime.html">快进</a></td><td width="10%" align="right" valign="top"><a href="runtime-config.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="SSH-TUNNELS"></a>16.8. 用 <span class="APPLICATION">SSH</span> 隧道进行安全 TCP/IP 连接</h1><a name="AEN19536"></a>
+<p>我们可以使用 <span class="APPLICATION">SSH</span> 对 PostgreSQL 服务器和客户端之间的网络连接进行加密。经过适当处理后，这样做可以获得一个足够安全的网络连接。即使是没有 SSL 的客户端上也如此。</p>
+<p>首先确认 <span class="APPLICATION">SSH</span> 正在和 PostgreSQL 服务器的同一台机器上正确地运行，而且你可以通过某个用户用 <tt class="COMMAND">ssh</tt> 登录。然后你可以用下面这样的命令从客户端的机器上建立一个安全通道：</p>
+<pre class="PROGRAMLISTING">ssh -L 3333:foo.com:5432 joe@foo.com</pre>
+<p><tt class="OPTION">-L</tt> 参数的第一个数字(3333)是你这端通道的端口号，可以自由选择。第二个数字(5432)是通道的远端，也就是服务器使用的端口号。在两个端口号之间的名称或者 IP 地址是你准备连接的数据库服务器。为了使用这个通道与数据库服务器连接，你在本机于端口 3333 连接：</p>
+<pre class="PROGRAMLISTING">psql -h localhost -p 3333 postgres</pre>
+<p>对于数据库服务器而言，它会把你当做真正的用户 <tt class="LITERAL">joe@foo.com</tt> 并且使用为这个用户和主机设置的认证手段进行认证。请注意，服务器不会认为连接是 SSL 加密的，因为实际上在 <span class="APPLICATION">SSH</span> 服务器和 PostgreSQL 服务器之间是没有加密的。只要它们在同一台机器上，这么做并不会导致任何安全漏洞。</p>
+<p>为了保证能够成功地建立通道，你必须被允许作为 <tt class="LITERAL">joe@foo.com</tt> 通过 <tt class="COMMAND">ssh</tt> 建立连接，就像你使用 <tt class="COMMAND">ssh</tt> 建立终端会话一样。</p>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b>还有几种不同的产品可以提供安全的通道，所使用的过程类似我们刚刚描述的过程。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="ssl-tcp.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="runtime-config.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">用 SSL 进行安全的 TCP/IP 连接</td><td width="34%" align="center" valign="top"><a href="runtime.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">服务器配置</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SPI_getargcount</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="spi-spi-prepare.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="spi-spi-prepare.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="spi-spi-getargtypeid.html">快进</a></td><td width="10%" align="right" valign="top"><a href="spi-spi-getargtypeid.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SPI-SPI-GETARGCOUNT"></a>SPI_getargcount</h1>
+<div class="REFNAMEDIV"><a name="AEN42286"></a><h2>函数名</h2>SPI_getargcount&nbsp;--&nbsp;返回一个 <code class="FUNCTION">SPI_prepare</code> 准备的已准备好规划需要的参数个数</div>
+<a name="AEN42290"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN42292"></a><h2>原型</h2>
+<pre class="SYNOPSIS">int SPI_getargcount(void * <tt class="PARAMETER">plan</tt>)</pre>
+</div>
+<div class="REFSECT1"><a name="AEN42295"></a><h2>描述</h2>
+<p><code class="FUNCTION">SPI_getargcount</code> 返回执行一个 <code class="FUNCTION">SPI_prepare</code> 准备的已准备好规划需要的参数个数</p>
+</div>
+<div class="REFSECT1"><a name="AEN42300"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">void * <tt class="PARAMETER">plan</tt></tt></dt>
+<dd><p>执行规划(<code class="FUNCTION">SPI_prepare</code> 返回的)</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN42310"></a><h2>返回值</h2>
+<p><tt class="PARAMETER">plan</tt> 的预期参数个数，如果 <tt class="PARAMETER">plan </tt> 是 <tt class="SYMBOL">NULL</tt> 则返回 <tt class="SYMBOL">SPI_ERROR_ARGUMENT</tt></p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="spi-spi-prepare.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="spi-spi-getargtypeid.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SPI_prepare</td><td width="34%" align="center" valign="top"><a href="spi-interface.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SPI_getargtypeid</td></tr>
+</table>
+</div>
+</body></html>

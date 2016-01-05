@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CLUSTER</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-close.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-close.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-comment.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-comment.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CLUSTER"></a>CLUSTER</h1>
+<div class="REFNAMEDIV"><a name="AEN45722"></a><h2>名称</h2>CLUSTER&nbsp;--&nbsp;根据一个索引对某个表群集</div>
+<a name="AEN45725"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN45727"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CLUSTER <tt class="REPLACEABLE"><i>indexname</i></tt> ON <tt class="REPLACEABLE"><i>tablename</i></tt>
+CLUSTER <tt class="REPLACEABLE"><i>tablename</i></tt>
+CLUSTER</pre>
+</div>
+<div class="REFSECT1"><a name="AEN45732"></a><h2>描述</h2>
+<p><tt class="COMMAND">CLUSTER</tt> 指示 PostgreSQL 基于索引 <tt class="REPLACEABLE"><i>indexname</i></tt> 的度量对表 <tt class="REPLACEABLE"><i>tablename</i></tt> 进行存储群集。索引必须已经在表 <tt class="REPLACEABLE"><i>tablename</i></tt> 上定义。</p>
+<p>当对一个表群集后，该表的物理存储将基于索引信息进行。群集是一次性操作：当表将来被更新之后，更改的内容不会被群集。也就是说，系统不会试图按照索引顺序对更新过的记录重新群集。如果需要，可以通过周期性地手工执行该命令的方法重新群集。</p>
+<p>在对一个表群集之后，PostgreSQL 会记忆在哪个索引上建立了群集。<tt class="COMMAND">CLUSTER <tt class="REPLACEABLE"><i>tablename</i></tt></tt> 的形式就在表以前群集的同一个索引上重新群集。</p>
+<p>没有任何参数的 <tt class="COMMAND">CLUSTER</tt> 将导致当前数据库里调用用户的所有表都被群集(如果是超级用户的话则所有表都被群集)，不过不包括禁止群集的表。这种形式的 <tt class="COMMAND">CLUSTER</tt> 不能在一个事务或者函数里面调用。</p>
+<p>在对一个表进行群集的时候，会在其上请求一个 <tt class="LITERAL">ACCESS EXCLUSIVE</tt> 锁。这样就避免了在 <tt class="COMMAND">CLUSTER</tt> 完成之前执行任何其它的数据库操作(包括读写)。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45751"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>indexname</i></tt></dt>
+<dd><p>一个索引名称</p></dd>
+<dt><tt class="REPLACEABLE"><i>tablename</i></tt></dt>
+<dd><p>准备群集的表的名称(可能有模式修饰)</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN45764"></a><h2>注意</h2>
+<p>如果你只是随机的访问表中的行，那么表中数据的实际存储顺序是无关紧要的。但是，如果对某些数据的访问多于其它数据，而且有一个索引将这些数据分组，那么将从使用 <tt class="COMMAND">CLUSTER</tt> 中获益。如果从一个表中请求一定索引范围的值，或者是一个索引值对应多行，<tt class="COMMAND">CLUSTER</tt> 也会有助于应用，因为如果索引标识出第一匹配行所在的存储页，所有其它行也可能已经在同一个存储页里了，这样便节省了磁盘访问的时间，加速了查询。</p>
+<p>在这个群集的操作过程中，系统先创建一个按照索引顺序建立的表的临时拷贝。同时也建立表上的每个索引的临时拷贝。因此，需要磁盘上有足够的剩余空间，至少是表大小和索引大小的和。</p>
+<p>因为 <tt class="COMMAND">CLUSTER</tt> 记忆群集信息，可以在第一次的时候手工对表进行群集，然后设置一个类似 <tt class="COMMAND">VACUUM</tt> 的时间，这样就可以周期地自动对表进行群集操作。</p>
+<p>因为规划器记录着有关表的排序的统计，所以建议在新近群集的表上运行 <a href="sql-analyze.html"><i>ANALYZE</i></a> 。否则，规划器可能会选择很差劲的查询规划。</p>
+<p>还有另外一种群集数据的方法。<tt class="COMMAND">CLUSTER</tt> 命令将原表按你声明的索引重新排列。这个动作在操作大表时可能会很慢，因为每一行都按索引顺序取出，所以如果表没有排序，那么整个表就是随机存放在各个页面里的，因而每移动一行都要进行一次磁盘页面操作。PostgreSQL 有一个缓冲，但一个大表的主体是不可能都放到缓冲去的。这种对表群集的另外方法是</p>
+<pre class="PROGRAMLISTING">CREATE TABLE <tt class="REPLACEABLE"><i>newtable</i></tt> AS
+    SELECT * FROM <tt class="REPLACEABLE"><i>table</i></tt> ORDER BY <tt class="REPLACEABLE"><i>columnlist</i></tt>;</pre>
+<p>这个用法使用排序代码来创建一个需要的顺序，在对未排序的数据操作时速度通常比索引扫描快得多。然后你可以删除旧表，用 <tt class="COMMAND">ALTER TABLE ... RENAME</tt> 将 <tt class="REPLACEABLE"><i>newtable</i></tt> 改成旧表名，并且重建该表的所有索引。但是，这个方法不保留 OID 、约束、外键关系、赋予的权限、以及其它附属的属性，所有这些属性都必须手工重建。令一个不利之处是这种方法需要一个与原表大小相同的临时排序文件，所以所需磁盘空间将三倍于原表大小。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45785"></a><h2>例子</h2>
+<p>按照雇员的 <tt class="LITERAL">emp_ind</tt> 属性对 <tt class="LITERAL">employees</tt> 表群集：</p>
+<pre class="PROGRAMLISTING">CLUSTER emp_ind ON emp;</pre>
+<p>使用以前用过的同一个索引对 <tt class="LITERAL">employees</tt> ：</p>
+<pre class="PROGRAMLISTING">CLUSTER emp;</pre>
+<p>对以前群集过的所有表进行群集：</p>
+<pre class="PROGRAMLISTING">CLUSTER;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN45796"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">CLUSTER</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45800"></a><h2>又见</h2><a href="app-clusterdb.html"><i><i>clusterdb</i></i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-close.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-comment.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CLOSE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">COMMENT</td></tr>
+</table>
+</div>
+</body></html>

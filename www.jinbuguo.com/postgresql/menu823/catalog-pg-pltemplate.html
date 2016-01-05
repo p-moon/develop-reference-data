@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_pltemplate</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-operator.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-proc.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-PLTEMPLATE">43.26. <tt class="STRUCTNAME">pg_pltemplate</tt></a></h1><a name="AEN64238"></a>
+<p><tt class="STRUCTNAME">pg_pltemplate</tt> 为过程语言存储"模板"信息。一个语言的模板允许该语言可以在某个数据库里使用简单的 <tt class="COMMAND">CREATE LANGUAGE</tt> 命令创建，而不需要声明实现细节。</p>
+<p>和许多系统表不一样，<tt class="STRUCTNAME">pg_pltemplate</tt> 是在集群里的所有数据库之间共享的：每个集群只有一个 <tt class="STRUCTNAME">pg_pltemplate</tt> 的拷贝，而不是每个数据库一个。这样就允许这些信息在需要时每个数据库都可以访问。</p>
+<div class="TABLE"><a name="AEN64247"></a>
+<p><b>表43-26. <tt class="STRUCTNAME">pg_pltemplate</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>描述</th><td>&nbsp;</td></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">tmplname</tt></td><td><tt class="TYPE">name</tt></td><td>这个模板所应用的语言的名字</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">tmpltrusted</tt></td><td><tt class="TYPE">boolean</tt></td><td>如果语言被认为是可信的，则为真</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">tmplhandler</tt></td><td><tt class="TYPE">text</tt></td><td>调用处理器函数的名字</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">tmplvalidator</tt></td><td><tt class="TYPE">text</tt></td><td>校验函数的名字，如果没有则为 NULL</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">tmpllibrary</tt></td><td><tt class="TYPE">text</tt></td><td>实现语言的共享库的路径</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">tmplacl</tt></td><td><tt class="TYPE">aclitem[]</tt></td><td>模板的访问权限(未使用)</td><td>&nbsp;</td></tr>
+</tbody>
+</table>
+</div>
+<p>目前还没有任何命令可以用于操作过程语言模板；要修改内置的信息，超级用户必须使用普通的 <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">UPDATE</tt> 命令修改该表。将来版本的 PostgreSQL 有可能提供一些命令来修改这些内容，以便更清晰些。</p>
+<p>在实现的时候，<tt class="STRUCTFIELD">tmplacl</tt> 字段将提供对模板自身的访问控制(也就是使用它创建一个语言的权限)，而不是对那些从模板创建的语言的访问控制。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-operator.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-proc.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_operator</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_proc</tt></td></tr>
+</table>
+</div>
+</body></html>

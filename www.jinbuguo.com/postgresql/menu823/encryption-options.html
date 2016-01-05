@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>加密选项</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="server-shutdown.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime.html">快退</a></td><td width="60%" align="center" valign="bottom">章16. 操作系统环境</td><td width="10%" align="right" valign="top"><a href="runtime.html">快进</a></td><td width="10%" align="right" valign="top"><a href="ssl-tcp.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="ENCRYPTION-OPTIONS">16.6. 加密选项</a></h1><a name="AEN19440"></a>
+<p>PostgreSQL 提供了几个不同级别的加密，并且在保护数据库服务器不受数据窃贼、不道德管理员、不安全网络等因素泄漏的方面提供很高的灵活性。加密可能也是保护一些诸如医疗记录和财务交易等敏感数据的要求。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>口令存储加密</dt>
+<dd><p>缺省的时候，数据库用户的口令以 MD5 散列的方式存储，所以管理员无法判断赋予用户的实际口令。如果 MD5 加密用于客户端认证，那么未加密的口令甚至都不可能临时出现在服务器上，因为客户端在透过网络发送之前，就先用 MD5 加密了。</p></dd>
+<dt>为指定的字段加密</dt>
+<dd><p><tt class="FILENAME">/contrib</tt> 函数库 <code class="FUNCTION">pgcrypto</code> 允许对某些字段进行加密存储。这个功能在某些数据是敏感的情况下有用。客户端提供解密的密钥，然后数据在服务器端解密，然后发送给客户端。</p>
+<p>在数据解密和数据在服务器与客户端之间传递时，解密数据和解密密钥将会在服务器端存在短暂的一段时间。这就给那些可以完全访问数据库服务器的人提供了一个短暂的截获密钥和数据的时间，这样的人一般是数据库管理员。</p></dd>
+<dt>数据库分区加密</dt>
+<dd><p>在 Linux 上，加密可以在使用"回环设备"(loopback device)挂载的文件系统上面进行。这样就可以把磁盘上整个文件分区都加密，然后由操作系统解密。在 FreeBSD 上，等效的设施叫 GEOM 基本磁盘加密(GEOM Base Disk Encryption)，或者 gbde 。</p>
+<p>这个机制避免了在整个计算机或者磁盘驱动器被窃的情况下，未加密的数据被从驱动器中读取。它无法防止在文件系统被挂载的时候的攻击，因为在挂载之后，操作系统提供数据的解密视图。不过，要想挂载文件系统，你需要有一些方法把解密密钥传递给操作系统，有时候这个密钥就存储在挂载该磁盘的主机的某个地方。</p></dd>
+<dt>跨网络加密口令</dt>
+<dd><p><tt class="LITERAL">MD5</tt> 认证方法在客户端将口令发给服务器之前双重加密之。第一次 MD5 加密是基于用户名的，然后在连接数据库的时候，用服务器发送的随机盐粒再次加密。这个双重加密的数值就是从网络传递给服务器的数值。双重加密不仅可以避免口令泄漏，还可以避免稍后其它的连接使用同样的加密口令连接数据库(回放攻击)。</p></dd>
+<dt>透过网络加密数据</dt>
+<dd><p>SSL 连接加密所有透过网络发送的数据：口令、查询、返回的数据。<tt class="FILENAME">pg_hba.conf</tt> 文件允许管理员声明哪些主机可以使用不加密的连接(<tt class="LITERAL">host</tt>)，以及哪些主机需要使用 SSL 加密的连接(<tt class="LITERAL">hostssl</tt>)。我们可以使用 <span class="APPLICATION">Stunnel</span> 或 <span class="APPLICATION">SSH</span> 加密数据传输。</p></dd>
+<dt>SSL 主机认证</dt>
+<dd><p>客户端和主机都可以提供 SSL 键字和证书给对方。这么做需要在两边都进行一些额外的配置工作，但是这种方式提供了比简单使用用户名和口令更强的身份认证的手段。它避免一个计算机装作是服务器，然后读取客户端口令，只要时间长得足够读取客户端发送的口令就行了。它还避免了"中间人"攻击(在客户端和服务器之间有台计算机，读取然后将所有数据在客户端和服务器之间传递)。</p></dd>
+<dt>客户端加密</dt>
+<dd><p>如果系统管理员是不可信的，那么客户端加密数据也是必要的；这种情况下，未加密的数据从来不会在数据库服务器上出现。数据在发送给服务器之前加密，而数据库结果必须在客户端使用之前解密。</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="server-shutdown.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="ssl-tcp.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">关闭服务器</td><td width="34%" align="center" valign="top"><a href="runtime.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">用 SSL 进行安全的 TCP/IP 连接</td></tr>
+</table>
+</div>
+</body></html>

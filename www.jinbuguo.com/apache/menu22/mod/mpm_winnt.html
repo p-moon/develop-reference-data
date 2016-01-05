@@ -1,0 +1,54 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>winnt(MPM) － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache MPM winnt</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>专门为Windows NT优化过的MPM</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>MPM</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>mpm_winnt_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mpm_winnt.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>该多路处理模块(MPM)是Windows NT上的默认值。它使用一个单独的父进程产生一个单独的子进程，在这个子进程中轮流产生多个线程来处理请求。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="Win32DisableAcceptEx" id="Win32DisableAcceptEx">Win32DisableAcceptEx</a> <a name="win32disableacceptex" id="win32disableacceptex">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>使用accept()代替AcceptEx()接受网络链接</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>Win32DisableAcceptEx</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>AcceptEx()</code>是默认的，使用这个指令将禁用它。</td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>MPM</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mpm_winnt</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.49 及以后的版本中可用</td></tr>
+</table>
+    <p><code>AcceptEx()</code>是一个微软的WinSock2 API ，通过使用BSD风格的<code>accept()</code> API提供了性能改善。一些流行的Windows产品，比如防病毒软件或虚拟专用网络软件，会干扰<code>AcceptEx()</code>的正确操作。如果你遇到类似于如下的错误：</p>
+
+    <div class="example"><p><code>
+        [error] (730038)An operation was attempted on something that is
+        not a socket.: winnt_accept: AcceptEx failed. Attempting to recover.
+    </code></p></div>
+
+    <p>你就需要使用这个指令来禁止使用<code>AcceptEx()</code> 。</p>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

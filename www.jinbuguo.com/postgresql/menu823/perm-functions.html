@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>函数和触发器</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="role-membership.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="user-manag.html">快退</a></td><td width="60%" align="center" valign="bottom">章18. 数据库角色和权限</td><td width="10%" align="right" valign="top"><a href="user-manag.html">快进</a></td><td width="10%" align="right" valign="top"><a href="managing-databases.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PERM-FUNCTIONS">18.5. 函数和触发器</a></h1>
+<p>函数和触发器允许用户向后端服务器插入代码，这样其它用户可以在无意识的情况下执行这些代码。因此，两种机制都可以让用户相当隐蔽地给别人设置"木马"，唯一的有效防护就是严格控制谁可以定义函数。</p>
+<p>后端服务器里面运行的函数都是以数据库服务器守护进程的操作系统权限运行的。如果所使用的编程语言允许无检查的内存访问，那么修改服务器的内部数据结构也是可能的。因此，除了其它问题外，这样的函数可以绕过任何系统访问控制。允许这样访问的函数语言都被认为是"不可信的"，PostgreSQL 只允许超级用户使用这样的语言书写函数。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="role-membership.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="managing-databases.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">角色成员</td><td width="34%" align="center" valign="top"><a href="user-manag.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">管理数据库</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>DROP ROLE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-drop-owned.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-drop-owned.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-droprule.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-droprule.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-DROPROLE"></a>DROP ROLE</h1>
+<div class="REFNAMEDIV"><a name="AEN51065"></a><h2>名称</h2>DROP ROLE&nbsp;--&nbsp;删除一个数据库角色</div>
+<a name="AEN51068"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN51070"></a><h2>语法</h2>
+<pre class="SYNOPSIS">DROP ROLE [ IF EXISTS ] <tt class="REPLACEABLE"><i>name</i></tt> [, ...]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN51073"></a><h2>描述</h2>
+<p><tt class="COMMAND">DROP ROLE</tt> 删除指定的角色。要删除一个超级用户角色，你自己必须也是一个超级用户；要删除非超级用户角色，你必须有 <tt class="LITERAL">CREATEROLE</tt> 权限。</p>
+<p>不能删除仍然被集群中的任意数据库引用的角色，如果想删除它，会抛出一个错误。在删除一个角色之前，你必须删除它拥有的所有对象(或者重新赋予他们新的所有者)，并且撤销赋予该角色的任何权限。<a href="sql-reassign-owned.html"><i>REASSIGN OWNED</i></a> 和 <a href="sql-drop-owned.html"><i>DROP OWNED</i></a> 命令可以达到这个目的。</p>
+<p>不过，没有必要删除涉及该角色的角色成员关系；<tt class="COMMAND">DROP ROLE</tt> 自动撤销目标角色在任何其它角色里面的成员关系，以及其它角色在目标角色里的成员关系。其它角色不会被删除，也不会受到其它影影响。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51083"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">IF EXISTS</tt></dt>
+<dd><p>如果指定的角色不存在，那么发出一个 notice 而不是抛出一个错误。</p></dd>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>要删除的角色名字</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN51096"></a><h2>注意</h2>
+<p>PostgreSQL 包含了一个 <a href="app-dropuser.html"><i><i>dropuser</i></i></a> 程序，有着和这个命令相同的功能(实际上，它调用这个命令)，但是它可以从命令行上运行。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51101"></a><h2>例子</h2>
+<p>删除一个角色：</p>
+<pre class="PROGRAMLISTING">DROP ROLE jonathan;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN51105"></a><h2>兼容性</h2>
+<p>SQL 标准定义了 <tt class="COMMAND">DROP ROLE</tt> ，但它只允许每次删除一个角色，并且它声明了和 PostgreSQL 使用的不同的权限要求。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51110"></a><h2>又见</h2><a href="sql-createrole.html"><i>CREATE ROLE</i></a>, <a href="sql-alterrole.html"><i>ALTER ROLE</i></a>, <a href="sql-set-role.html"><i>SET ROLE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-drop-owned.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-droprule.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">DROP OWNED</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">DROP RULE</td></tr>
+</table>
+</div>
+</body></html>

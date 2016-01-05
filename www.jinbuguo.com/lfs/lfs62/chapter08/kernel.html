@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>8.3. Linux-2.6.16.27</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第八章 使 LFS 系统能够启动</h3>
+      </div>
+
+  <ul class="headerlinks">
+    <li class="prev"> <a accesskey="p" href="fstab.html" title="创建 /etc/fstab 文件">后退</a>
+      <p>创建 /etc/fstab 文件</p>
+    </li>
+    <li class="next"> <a accesskey="n" href="grub.html" title="使 LFS 系统能够启动">前进</a>
+      <p>使 LFS 系统能够启动</p>
+    </li>
+    <li class="up"><a accesskey="u" href="chapter08.html" title="第八章 使 LFS 系统能够启动">上一级</a></li>
+    <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+  </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">8.3. Linux-2.6.16.27</h1>
+      </div>
+
+  <div class="package">
+    <p>Linux 内核软件包包含内核源代码及其头文件。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">1.5 - 3 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">310 - 350 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">8.3.1. 安装 kernel</h2>
+        </div>
+
+    <p>编译内核包含几个步骤——配置、编译和安装。阅读内核源码树里的 <tt class="filename">README</tt> 文件可选择不同于本书的其他配置内核方法。</p>
+        <p>预先设定情况下，当在 UTF-8 键盘模式里，键没反应，是Linux 内核发生的字节顺序错误 。同样，在 UTF-8 模式起作用的情况下，有一个不能拷贝和粘贴非ASCII的特征。用发布的补丁可修复：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../linux-2.6.16.27-utf8_input-1.patch</kbd></pre>
+        <p>运行下面的命令准备编译：</p>
+        <pre class="userinput"><kbd class="command">make mrproper</kbd></pre>
+
+    <p>这能保证内核树绝对干净。内核开放团队推荐每次编译内核之前都运行这个命令。不要相信解压后的源码树就是干净的。</p>
+        <p>用菜单形式界面的配置内核。BLFS 有一些关于配置内核必备条件的细节，不在 LFS 包里，在<a href="http://www.linuxfromscratch.org/blfs/view/svn/longindex.html#kernel-config-index"><i>http://www.linuxfromscratch.org/blfs/view/svn/longindex.html#kernel-config-index</i></a>:</p>
+        <pre class="userinput"><kbd class="command">make menuconfig</kbd></pre>
+		<p>本文译者也有一篇文章，<a href="http://www.jinbuguo.com/kernel/longterm-3_10-options.html">《Linux-3.10-x86_64 内核配置选项简介》</a>，介绍了几乎每一个内核选项。对于使用 VMware 虚拟机的读者，这里还有一份基于 2.6.24 内核的 <a href="http://lamp.linux.gov.cn/miniLAPP/patchs/linux-2.6.24-config.txt">.config</a> 文件可供参考(切忌照搬照抄,因为这样是行不通的)。</p>
+        <p>选择 <span><strong class="command">make
+          oldconfig</strong></span> 在同样情况下，可能会更适合。阅读 <tt class="filename">README</tt> 可获取更多信息。</p>
+
+    <p>如果愿意，你可以跳过内核配置，直接复制内核配置文件<tt class="filename">.config</tt>,从主机系统(如果可用)解压到<tt class="filename">linux-2.6.16.27</tt>目录。当然，我们不推荐这个方式。通常探究所有配置菜单项，再根据需要创建内核是最佳的。
+    </p>
+        <p>编译内核镜像和模块：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>如果使用内核模块，<tt class="filename">/etc/modprobe.conf</tt> 文件是必须的。有关模块和内核配置的信息在
+          <a href="../chapter07/udev.html" title="7.4. LFS 系统的设备和模块处理">
+          7.4, "LFS 系统的设备和模块处理"</a>
+          ，还有<tt class="filename">linux-2.6.16.27/Documentation</tt>目录中的内核文档。同样，引起注意的可能还有
+          <tt class="filename">modprobe.conf(5)</tt> 。</p>
+
+    <p>安装模块，如果内核配置使用它们<kbd>：</kbd></p>
+        <pre class="userinput"><kbd class="command">make modules_install</kbd></pre>
+        <p>内核编译完成后，增加步骤完成安装是必须的。一些文件需要拷贝副本到
+          <tt class="filename">/boot</tt> 目录。</p>
+        <p>内核镜像的路径，根据不同的平台可能会改变，下面的命令假定在x86架构上：</p>
+        <pre class="userinput"><kbd class="command">cp -v arch/i386/boot/bzImage /boot/lfskernel-2.6.16.27</kbd></pre>
+        <p><tt class="filename">System.map</tt> 是一个内核的符号文件
+         。它映射每个内核API函数的入口，以及内核在运行中内核数据结构的地址。 运行下面这个命令安装这个文件：</p>
+        <pre class="userinput"><kbd class="command">cp -v System.map /boot/System.map-2.6.16.27</kbd></pre>
+        <p>内核配置文件 <tt class="filename">.config</tt>
+          产生于<span><strong class="command">make
+          menuconfig</strong></span> 这个步骤，包含所有的内核配置选择被编译。一个好主意是保留这个文件以备将来参考：</p>
+        <pre class="userinput"><kbd class="command">cp -v .config /boot/config-2.6.16.27</kbd></pre>
+
+    <p>安装Linux内核文档：
+<pre class="userinput"><kbd class="command">install -d /usr/share/doc/linux-2.6.16.27 &amp;&amp;
+cp -r Documentation/* /usr/share/doc/linux-2.6.16.27</kbd></pre>
+        <p>有一点重要提示，内核源码目录的所有者不是  <span class="emphasis"><em>root</em></span>。只要是用 <span class="emphasis"><em>root</em></span> (类似我们在
+         chroot环境里)，解压出来的文件不是计算机上的用户和组 ID，对于其他包这不是问题，在安装后被删除源码树。但是，Linux源码通常保留很长时间。因为
+          碰巧有一个用户 ID 和这个软件打包者的用户组 ID 相同，那么他可以拥有对内核源码的写权限。</p>
+        <p>如果这个内核源码准备保留，在<tt class="filename">linux-2.6.16.27</tt> 目录运行
+          <span><strong class="command">chown -R 0:0</strong></span> ，确保所有文件的属主是
+          <span class="emphasis"><em>root</em></span>.</p>
+        <div class="warning">
+          <div class="admonhead">
+            <img alt="[Warning]" src="../images/warning.png" />
+            <h3 class="admontitle">警告</h3>
+          </div>
+          <div class="admonbody">
+
+        <p>一些内核文档推荐建立一个<tt class="filename">/usr/src/linux</tt>
+          的链接指向内核源码目录。这个是对2.6版本内核的要求，而且在 LFS 系统上 <span class="emphasis"><em>不允许</em></span>
+          ，它会导致你可能在完成LFS系统构建后，再安装其他软件包出现错误。</p>
+            <p>同样，系统的 <tt class="filename">include</tt>目录下的头文件应该 <span class="emphasis"><em>永远</em></span> 保持Glibc编译后的版本，
+              和 Linux-Libc-Headers 包相同，所以应该要 <span class="emphasis"><em>决不</em></span> 替换内核的头文件。</p>
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-kernel" name="contents-kernel"></a>
+          <h2 class="sect2">8.3.2. Linux 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的文件：</span></strong>
+              <span class="seg">config-2.6.16.27, lfskernel-2.6.16.27, System.map-2.6.16.27</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3703760" name="id3703760"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td>
+                  <a id="config" name="config"></a><span class="term"><tt class="filename">config-2.6.16.27</tt></span>
+                </td>
+                <td>
+                  <p>包含所有内核配置选择后的项</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <a id="lfskernel" name="lfskernel"></a><span class="term"><tt class="filename">lfskernel-2.6.16.27</tt></span>
+                </td>
+                <td>
+                  <p> Linux 系统的引擎。当启动计算机时，内核是操作系统装载的第一个部分，它检测并初始化所有的电脑硬件的组件，然后将这些设备以文件树的形式存放使得其它软件可以访问，并且能让单个 CPU 成为多任务处理机器能力，可以同时运行许多程序。</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <a id="System.map" name="System.map"></a><span class="term"><tt class="filename">System.map-2.6.16.27</tt></span>
+                </td>
+                <td>
+                  <p>显示地址和符号的文件；它映射内核里所有函数和数据结构的入口和地址。</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+
+  <ul>
+    <li class="prev"> <a accesskey="p" href="fstab.html" title="创建 /etc/fstab 文件">后退</a>
+      <p>创建 /etc/fstab 文件</p>
+    </li>
+    <li class="next"> <a accesskey="n" href="grub.html" title="使 LFS 系统能够启动">前进</a>
+      <p>使 LFS 系统能够启动</p>
+    </li>
+    <li class="up"><a accesskey="u" href="chapter08.html" title="第八章 使 LFS 系统能够启动">上一级</a></li>
+    <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+    </li>
+  </ul>
+    </div>
+</body></html>

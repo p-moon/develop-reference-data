@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.57. Vim-7.0</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="util-linux.html" title="Util-linux-2.12r">后退</a>
+          <p>Util-linux-2.12r</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="aboutdebug.html" title="关于调试符号">前进</a>
+          <p>关于调试符号</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.57. Vim-7.0</h1>
+      </div>
+      <div class="package">
+        <p>Vim 软件包包含一个强大的文本编辑器。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.4 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">47.4 MB</span>
+            </div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="admonhead">
+            <img alt="[Tip]" src="../images/tip.png" />
+            <h3 class="admontitle">Alternatives to Vim</h3>
+          </div>
+          <div class="admonbody">
+            <p>如果你更喜欢使用其他的编辑器，比如Emacs, Joe, Nano，请参考这里：<a href="http://www.linuxfromscratch.org/blfs/view/svn/postlfs/editors.html"><i>http://www.linuxfromscratch.org/blfs/view/svn/postlfs/editors.html</i></a> 获取安装方法。</p>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.57.1. 安装 Vim</h2>
+        </div>
+        <p>首先，将 <tt class="filename">vim-7.0.tar.bz2</tt> 和 <tt class="filename">vim-7.0-lang.tar.gz</tt>(可选) 解包到同一个目录下。然后应用几个patch来修正一些 Vim-7.0 的bug：</p></p><pre class="userinput"><kbd class="command">patch -Np1 -i ../vim-7.0-fixes-7.patch</kbd></pre>
+        <p>这个版本的 Vim 会安装翻译过的 man 手册，并把它们放到 Man-DB 搜索不到的目录下。给 vim 打补丁来使其安装到可搜索目录里面，并允许Man-DB在运行的时候转换成希望的格式：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../vim-7.0-mandir-1.patch</kbd></pre>
+        <p>因为上面的patch中的一个，导致通过Http来下载拼写文件时候会出现问题。开发者解决了这个问题，应用下面的patch就可以解决：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../vim-7.0-spellfile-1.patch</kbd></pre>
+        <p>最后把配置文件 <tt class="filename">vimrc</tt> 的默认位置修改到 <tt class="filename">/etc</tt> 目录中：</p>
+        <pre class="userinput"><kbd class="command">echo '#define SYS_VIMRC_FILE "/etc/vimrc"' &gt;&gt; src/feature.h</kbd></pre>
+        <p>为编译 Vim 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr --enable-multibyte</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--enable-multibyte</tt></em></span>
+            </dt>
+            <dd>
+              <p>我们强烈推荐你启用该选项(虽然它是可选的)，因为它使得 Vim 可以支持使用多字节字符编码的文件，在一个使用多字节字符集的 locale 上，这是必需的。另外该选项还有助于编辑在默认使用 UTF-8 字符集的其它 Linux 发行版(如 Fedora Core)上创建的文本文件。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make test</tt></strong> 。 注意，Vim 的测试套件会输出一大堆混乱的二进制字符到屏幕上，有时会把当前的终端设置搞乱，所以可以考虑将其输出重定向到一个日志文件。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <p>在 UTF-8 的 locale 下，<span><strong class="command">vimtutor</strong></span> 程序会将教程从 ISO-8859-1 转化为 UTF-8。如果一些教程不是 ISO-8859-1 编码的，将会导致不可读。如果你解压了 <tt class="filename">vim-7.0-lang.tar.gz</tt> 包，并打算使用  UTF-8 的 locale，删除非ISO-8859-1编码的教程。英文版本的教程将会被安装：</p>
+        <pre class="userinput"><kbd class="command">rm -f /usr/share/vim/vim70/tutor/tutor.{gr,pl,ru,sk}
+rm -f /usr/share/vim/vim70/tutor/tutor.??.*</kbd></pre>
+        <p>许多用户习惯于使用 <span><strong class="command">vi</strong></span> 而不是 <span><strong class="command">vim</strong></span> ，下面的命令为适应这种习惯创建一个二进制文件以及man文档的符号链接：</p>
+        <pre class="userinput"><kbd class="command">ln -sv vim /usr/bin/vi
+for L in "" fr it pl ru; do
+    ln -sv vim.1 /usr/share/man/$L/man1/vi.1
+done</kbd></pre>
+        <p>默认情况下，Vim的文档被安装在 <tt class="filename">/usr/share/vim</tt> 目录下。下面的符号链接允许通过 <tt class="filename">/usr/share/doc/vim-7.0</tt> 来访问，使其与其他软件包的文档保持一致：</p>
+        <pre class="userinput"><kbd class="command">ln -sv ../vim/vim70/doc /usr/share/doc/vim-7.0</kbd></pre>
+        <p>如果您计划在您的 LFS 系统上安装 X Window 系统，那么您可能必须在安装 X 之后重新编译 Vim 。Vim 有带有图形用户接口的版本，但需要安装 X 和其它一些库。要了解更多关于这方面的信息请参考 Vim 的安装手册和 BLFS 中有关 Vim 安装指导的页面： <a href="http://www.linuxfromscratch.org/blfs/view/svn/postlfs/editors.html#postlfs-editors-vim"><i>http://www.linuxfromscratch.org/blfs/view/svn/postlfs/editors.html#postlfs-editors-vim</i></a>.</p>
+      </div>
+      <div class="configuration">
+        <div class="titlepage">
+          <a id="conf-vim" name="conf-vim"></a>
+          <h2 class="sect2">6.57.2. 配置 Vim</h2>
+        </div>
+        <p>在默认情况下，<span><strong class="command">vim</strong></span> 是以与 vi 兼容的模式运行，这可能对使用过其它文本编辑器的人来说感到陌生。有些人可能喜欢这种模式，但是我们强烈建议使用 vim 模式运行 vim 。下面的配置文件明确的设置了"<span class="quote">nocompatible</span>"模式(也可以改用"<span class="quote">compatible</span>"模式)，这是必要的，因为如果要改变或覆盖其它设置，必须要在这个设置之后。使用下面的命令创建一个默认的 <span><strong class="command">vim</strong></span> 配置文件：</p>
+        <pre class="userinput"><kbd class="command">cat &gt; /etc/vimrc &lt;&lt; "EOF"
+<tt class="literal">" Begin /etc/vimrc
+
+set nocompatible
+set backspace=2
+syntax on
+if (&amp;term =="iterm") || (&amp;term =="putty")
+  set background=dark
+endif
+
+" End /etc/vimrc</tt>
+EOF</kbd></pre>
+        <p><em class="parameter"><tt>set nocompatible</tt></em> 将使 <span><strong class="command">vim</strong></span> 以比默认的 vi 兼容模式功能更强的方式运行。你可以去掉"<span class="quote">no</span>"来保持默认的 <span><strong class="command">vi</strong></span> 模式。<em class="parameter"><tt>set backspace=2</tt></em> 让退格键能跨行、自动缩进、插入。<em class="parameter"><tt>syntax on</tt></em> 打开了 vim 的语法高亮功能。最后，带有 <em class="parameter"><tt>set background=dark</tt></em> 的 <span class="emphasis"><em>if</em></span> 语句纠正了 <span><strong class="command">vim</strong></span> 对于终端背景颜色的猜测。对于那些使用黑色背景的用户这是一个较好的配色方案。</p>
+        <p>使用下面的命令可以得到其它可以使用的选项的说明文档：</p>
+        <pre class="userinput"><kbd class="command">vim -c ':options'</kbd></pre>
+        <div class="note">
+          <div class="admonhead">
+            <img alt="[Note]" src="../images/note.png" />
+            <h3 class="admontitle">注意</h3>
+          </div>
+          <div class="admonbody"> 
+            <p>默认情况下，Vim仅会安装英文的拼写检查文件。要安装你熟悉的语言的拼写检查文件，从 <a href="ftp://ftp.vim.org/pub/vim/runtime/spell/"><i>ftp://ftp.vim.org/pub/vim/runtime/spell/</i></a> 下载与你的语言相关的 <tt class="filename">*.spl</tt> 文件和  <tt class="filename">*.sug</tt> 文件（可选），以及字符解码器。把它们保存到 <tt class="filename">/usr/share/vim/vim70/spell/</tt> 目录下。</p>
+            <p>要使用这些拼写检查文件，在 <tt class="filename">/etc/vimrc</tt> 里面需要配置一些选项，例如：</p>
+            <pre class="userinput"><kbd class="command">set spelllang=en,ru
+set spell</kbd></pre>
+            <p>要获取更多的信息，可以查看上面 URL 上的 README 文件。</p>
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-vim" name="contents-vim"></a>
+          <h2 class="sect2">6.57.3. Vim 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">efm_filter.pl,
+              efm_perl.pl, ex(→vim), less.sh, mve.awk, pltags.pl,
+              ref, rview(→vim), rvim(→vim), shtags.pl,
+              tcltags, vi(→vim), view(→vim), vim, vim132,
+              vim2html.pl, vimdiff(→vim), vimm, vimspell.sh,
+              vimtutor, xxd</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3698381" name="id3698381"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="efm_filter.pl" name="efm_filter.pl"></a><span class="term"><span><strong class="command">efm_filter.pl</strong></span></span></td>
+                <td><p>能读取 <span><strong class="command">vim</strong></span> 产生的错误的一个过滤器</p></td>
+              </tr>
+              <tr>
+                <td><a id="efm_perl.pl" name="efm_perl.pl"></a><span class="term"><span><strong class="command">efm_perl.pl</strong></span></span></td>
+                <td><p>将 perl 解释器的错误信息重新格式化以用于 <span><strong class="command">vim</strong></span> 的"<span class="quote">quickfix</span>"模式。</p></td>
+              </tr>
+              <tr>
+                <td><a id="ex" name="ex"></a><span class="term"><span><strong class="command">ex</strong></span></span></td>
+                <td><p>以 ex 模式启动 <span><strong class="command">vim</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="less.sh" name="less.sh"></a><span class="term"><span><strong class="command">less.sh</strong></span></span></td>
+                <td><p>用 less.vim 起动 <span><strong class="command">vim</strong></span> 的脚本</p></td>
+              </tr>
+              <tr>
+                <td><a id="mve.awk" name="mve.awk"></a><span class="term"><span><strong class="command">mve.awk</strong></span></span></td>
+                <td><p>处理 <span><strong class="command">vim</strong></span> 错误信息</p></td>
+              </tr>
+              <tr>
+                <td><a id="pltags.pl" name="pltags.pl"></a><span class="term"><span><strong class="command">pltags.pl</strong></span></span></td>
+                <td><p>为 Perl 代码建立一个标记文件，以用于 <span><strong class="command">vim</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="ref" name="ref"></a><span class="term"><span><strong class="command">ref</strong></span></span></td>
+                <td><p>检查参数的拼写错误</p></td>
+              </tr>
+              <tr>
+                <td><a id="rview" name="rview"></a><span class="term"><span><strong class="command">rview</strong></span></span></td>
+                <td><p>一个 <span><strong class="command">view</strong></span> 的限制版，它不能启动任何 shell 命令并且 <span><strong class="command">view</strong></span> 不能被挂起。</p></td>
+              </tr>
+              <tr>
+                <td><a id="rvim" name="rvim"></a><span class="term"><span><strong class="command">rvim</strong></span></span></td>
+                <td><p>一个 <span><strong class="command">vim</strong></span> 的限制版。它不能启动任何 shell 命令并且 <span><strong class="command">vim</strong></span> 不能被挂起。</p></td>
+              </tr>
+              <tr>
+                <td><a id="shtags.pl" name="shtags.pl"></a><span class="term"><span><strong class="command">shtags.pl</strong></span></span></td>
+                <td><p>为 perl 代码产生一个标志文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="tcltags" name="tcltags"></a><span class="term"><span><strong class="command">tcltags</strong></span></span></td>
+                <td><p>为 TCL 代码产生一个标志文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="view" name="view"></a><span class="term"><span><strong class="command">view</strong></span></span></td>
+                <td><p>以只读模式启动 <span><strong class="command">vim</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="vi" name="vi"></a><span class="term"><span><strong class="command">vi</strong></span></span></td>
+                <td><p> <span><strong class="command">vim</strong></span> 的一个链接</p></td>
+              </tr>
+              <tr>
+                <td><a id="vim" name="vim"></a><span class="term"><span><strong class="command">vim</strong></span></span></td>
+                <td><p>编辑器</p></td>
+              </tr>
+              <tr>
+                <td><a id="vim132" name="vim132"></a><span class="term"><span><strong class="command">vim132</strong></span></span></td>
+                <td><p>在132列模式下的终端中起动 <span><strong class="command">vim</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="vim2html.pl" name="vim2html.pl"></a><span class="term"><span><strong class="command">vim2html.pl</strong></span></span></td>
+                <td><p>将 vim 文档转化为 HTML 格式</p></td>
+              </tr>
+              <tr>
+                <td><a id="vimdiff" name="vimdiff"></a><span class="term"><span><strong class="command">vimdiff</strong></span></span></td>
+                <td><p>使用  <span><strong class="command">vim</strong></span> 同时编辑一个文档的 2 或 3 个版本并显示他们的区别使用  <span><strong class="command">vim</strong></span> 同时编辑一个文档的 2 或 3 个版本并显示他们的区别</p></td>
+              </tr>
+              <tr>
+                <td><a id="vimm" name="vimm"></a><span class="term"><span><strong class="command">vimm</strong></span></span></td>
+                <td><p>在一个远端终端上开启 DEC 定位输入模式</p></td>
+              </tr>
+              <tr>
+                <td><a id="vimspell.sh" name="vimspell.sh"></a><span class="term"><span><strong class="command">vimspell.sh</strong></span></span></td>
+                <td><p>检查文件拼写并产生一个需要在 <span><strong class="command">vim</strong></span> 中强调的语法报告。这个脚本需要 LFS 和 BLFS 都不提供的旧的 Unix <span><strong class="command">spell</strong></span> 命令</p></td>
+              </tr>
+              <tr>
+                <td><a id="vimtutor" name="vimtutor"></a><span class="term"><span><strong class="command">vimtutor</strong></span></span></td>
+                <td><p>教你使用 <span><strong class="command">vim</strong></span> 的基本操作和命令</p></td>
+              </tr>
+              <tr>
+                <td><a id="xxd" name="xxd"></a><span class="term"><span><strong class="command">xxd</strong></span></span></td>
+                <td><p>生成十六进制转储或者做相反的工作，因此它能给二进制文件打补丁。</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="util-linux.html" title="Util-linux-2.12r">后退</a>
+          <p>Util-linux-2.12r</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="aboutdebug.html" title="关于调试符号">前进</a>
+          <p>关于调试符号</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

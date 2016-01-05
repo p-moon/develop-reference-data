@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>声明</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plpgsql-structure.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plpgsql.html">快退</a></td><td width="60%" align="center" valign="bottom">章37. PL/pgSQL - SQL 过程语言</td><td width="10%" align="right" valign="top"><a href="plpgsql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plpgsql-expressions.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLPGSQL-DECLARATIONS">37.4. 声明</a></h1>
+<p>所有在块里使用的变量都必须在一个块的声明段里声明。唯一的例外是一个 <tt class="LITERAL">FOR</tt> 循环里的循环变量是在一个整数范围内迭代的，被自动声明为整数变量。</p>
+<p>PL/pgSQL 变量可以使用任意的 SQL 数据类型，比如 <tt class="TYPE">integer</tt>, <tt class="TYPE">varchar</tt>, <tt class="TYPE">char</tt> 等等。</p>
+<p>下面是一些变量声明的例子：</p>
+<pre class="PROGRAMLISTING">user_id integer;
+quantity numeric(5);
+url varchar;
+myrow tablename%ROWTYPE;
+myfield tablename.columnname%TYPE;
+arow RECORD;</pre>
+<p>一个变量声明的一般性语法是：</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>name</i></tt> [<span class="OPTIONAL">CONSTANT</span>] <tt class="REPLACEABLE"><i>type</i></tt> [<span class="OPTIONAL">NOT NULL</span>] [<span class="OPTIONAL">{ DEFAULT | := } <tt class="REPLACEABLE"><i>expression</i></tt></span>];</pre>
+<p>如果给出了 <tt class="LITERAL">DEFAULT</tt> 子句，那么它声明了在进入该块的时候赋予该变量的初始值。如果没有给出 <tt class="LITERAL">DEFAULT</tt> 子句，那么该变量初始化为 NULL 。<tt class="LITERAL">CONSTANT</tt> 选项避免了该变量被赋值，这样其数值在该块的范围内保持常量。如果声明了 <tt class="LITERAL">NOT NULL</tt> ，那么赋予 <tt class="LITERAL">NOT NULL</tt> 数值将导致一个运行时错误。所以所有声明为 <tt class="LITERAL">NOT NULL</tt> 的变量还必须声明一个非空的缺省值。</p>
+<p>缺省值是在每次进入该块的时候计算的。因此，如果把 <tt class="LITERAL">now()</tt> 赋予一个类型为 <tt class="TYPE">timestamp</tt> 的变量会令变量拥有函数实际调用的时间，而不是函数预编译的时间。例如：</p>
+<pre class="PROGRAMLISTING">quantity integer DEFAULT 32;
+url varchar := 'http://mysite.com';
+user_id CONSTANT integer := 10;</pre>
+<div class="SECT2"><h2 class="SECT2"><a name="PLPGSQL-DECLARATION-ALIASES">37.4.1. 函数参数的别名</a></h2>
+<p>传递给函数的参数都是用 <tt class="LITERAL">$1</tt>, <tt class="LITERAL">$2</tt> 等等这样的标识符。为了增加可读性，可以为 <tt class="LITERAL">$<tt class="REPLACEABLE"><i>n</i></tt></tt> 参数名声明别名。然后别名或者数字标识符都可以指向参数值。</p>
+<p>有两种创建别名的方法，比较好的是在 <tt class="COMMAND">CREATE FUNCTION</tt> 命令里给出参数名，比如：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION sales_tax(subtotal real) RETURNS real AS $$
+BEGIN
+    RETURN subtotal * 0.06;
+END;
+$$ LANGUAGE plpgsql;</pre>
+<p>另外一个方法，是 PostgreSQL 8.0 以前的唯一的方法，是明确地声明为别名，使用声明语法</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>name</i></tt> ALIAS FOR $<tt class="REPLACEABLE"><i>n</i></tt>;</pre>
+<p>这个风格的同一个例子看起来像下面这样</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION sales_tax(real) RETURNS real AS $$
+DECLARE
+    subtotal ALIAS FOR $1;
+BEGIN
+    RETURN subtotal * 0.06;
+END;
+$$ LANGUAGE plpgsql;</pre>
+<p>更多例子：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION instr(varchar, integer) RETURNS integer AS $$
+DECLARE
+    v_string ALIAS FOR $1;
+    index ALIAS FOR $2;
+BEGIN
+    -- 这里放一些使用 v_string 和 index 的计算
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE FUNCTION concat_selected_fields(in_t sometablename) RETURNS text AS $$
+BEGIN
+    RETURN in_t.f1 || in_t.f3 || in_t.f5 || in_t.f7;
+END;
+$$ LANGUAGE plpgsql;</pre>
+<p>如果一个 PL/pgSQL 函数声明中含有输出参数，那么就会给予输出参数 <tt class="LITERAL">$<tt class="REPLACEABLE"><i>n</i></tt></tt> 的名字以及可选的别名，方法和其它正常输入参数一样。一个输出参数实际上是初始值为 NULL 的变量；在函数执行的过程中，应该给它赋值。该参数的最后数值是返回的东西。比如，销售额-税费的例子也可以这么做：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION sales_tax(subtotal real, OUT tax real) AS $$
+BEGIN
+    tax := subtotal * 0.06;
+END;
+$$ LANGUAGE plpgsql;</pre>
+<p>请注意忽略了 <tt class="LITERAL">RETURNS real</tt> ，当然也可以包含它，不过这样就显得多余了。</p>
+<p>输出参数在返回多个数值的时候非常有用。一个简单的例子是：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION sum_n_product(x int, y int, OUT sum int, OUT prod int) AS $$
+BEGIN
+    sum := x + y;
+    prod := x * y;
+END;
+$$ LANGUAGE plpgsql;</pre>
+<p>正如在<a href="xfunc-sql.html#XFUNC-OUTPUT-PARAMETERS">节33.4.3</a>里面讨论的，这样做实际上为函数的结果创建了一个匿名的记录类型。如果给出一个 <tt class="LITERAL">RETURNS</tt> 子句，那么它就必须使用 <tt class="LITERAL">RETURNS record</tt> 。</p>
+<p>如果将 PL/pgSQL 函数的返回类型声明为多态类型(<tt class="TYPE">anyelement</tt> 或 <tt class="TYPE">anyarray</tt>)，那么就会创建一个特殊的 <tt class="LITERAL">$0</tt> 参数，它的数据类型是函数的实际返回类型，和从实际输入类型的推导类型一样(参阅<a href="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC">节33.2.5</a>)。这样就允许函数像<a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-TYPE">节37.4.2</a>里显示的那样访问它的实际返回类型。<tt class="LITERAL">$0</tt> 初始化为空，并且可以被函数修改，所以，如果需要，它可以用于保存返回值，虽然这并非必须。<tt class="LITERAL">$0</tt> 还可以给予一个别名。比如，这个函数可以在任何有 <tt class="LITERAL">+</tt> 操作符的数据类型上运转：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION add_three_values(v1 anyelement, v2 anyelement, v3 anyelement)
+RETURNS anyelement AS $$
+DECLARE
+    result ALIAS FOR $0;
+BEGIN
+    result := v1 + v2 + v3;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql;</pre>
+<p>定义一个或者多个参数为 <tt class="TYPE">anyelement</tt> 或 <tt class="TYPE">anyarray</tt> 也可以实现同样的效果。在这种情况下，特殊的参数 <tt class="LITERAL">$0</tt> 不会使用；输出参数自己起这个作用。比如：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION add_three_values(v1 anyelement, v2 anyelement, v3 anyelement,
+                                 OUT sum anyelement)
+AS $$
+BEGIN
+    sum := v1 + v2 + v3;
+END;
+$$ LANGUAGE plpgsql;</pre>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="PLPGSQL-DECLARATION-TYPE">37.4.2. 拷贝类型</a></h2>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>variable</i></tt>%TYPE</pre>
+<p><tt class="LITERAL">%TYPE</tt> 提供一个变量或者表字段的数据类型。你可以用这个声明将要保存数据库数值的变量。比如，假如你在 <tt class="LITERAL">users</tt> 表里面有一个 <tt class="LITERAL">user_id</tt> 字段。要声明一个和 <tt class="LITERAL">users.user_id</tt> 类型相同的变量，可以这样写：</p>
+<pre class="PROGRAMLISTING">user_id users.user_id%TYPE;</pre>
+<p>通过使用 <tt class="LITERAL">%TYPE</tt> ，你无需知道引用的结构的数据类型，并且，最重要的是，如果被引用项的数据类型在将来变化了(比如把 <tt class="LITERAL">user_id</tt> 的类型从 <tt class="TYPE">integer</tt> 改成 <tt class="TYPE">real</tt>)，也不需要修改函数定义。</p>
+<p><tt class="LITERAL">%TYPE</tt> 对多态函数特别有用，因为内部变量的数据类型可能在不同调用中不一样。可以通过给函数的参数或者结果占位符附加 <tt class="LITERAL">%TYPE</tt> 的方法来创建合适的变量。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="PLPGSQL-DECLARATION-ROWTYPES">37.4.3. 行类型</a></h2>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>name</i></tt> <tt class="REPLACEABLE"><i>table_name</i></tt><tt class="LITERAL">%ROWTYPE</tt>;
+<tt class="REPLACEABLE"><i>name</i></tt> <tt class="REPLACEABLE"><i>composite_type_name</i></tt>;</pre>
+<p>一个复合类型变量叫做<i class="FIRSTTERM">行</i>变量(或者 <i class="FIRSTTERM">row-type</i> 变量)。这样的一个变量可以保存一次 <tt class="COMMAND">SELECT</tt> 或 <tt class="COMMAND">FOR</tt> 命令结果的完整一行，只要命令的字段集匹配该变量声明的类型。行数值的字段使用点表示法访问，比如 <tt class="LITERAL">rowvar.field</tt> 。</p>
+<p>行变量可以声明为和一个现有的表或者视图的行类型相同，方法是使用 <tt class="REPLACEABLE"><i>table_name</i></tt><tt class="LITERAL">%ROWTYPE</tt> 表示法；或者你也可以声明它的类型是一个复合类型的名字。因为每个表都有一个相关联的同名数据类型，在 PostgreSQL 里实在是无所谓你写不写 <tt class="LITERAL">%ROWTYPE</tt> 。但是有 <tt class="LITERAL">%ROWTYPE</tt> 的形式移植性更好。</p>
+<p>函数的参数可以是复合类型(表的完整行)。这个时候，对应的标识符 <tt class="LITERAL">$<tt class="REPLACEABLE"><i>n</i></tt></tt> 将是一个行变量，并且可以从中选取字段，比如 <tt class="LITERAL">$1.user_id</tt> 。</p>
+<p>在一个行类型的变量中，只可以访问用户定义的表中行的属性，不包括 OID 或者其它系统属性(因为该行可能来自一个视图)。该行类型的数据域继承表中像 <tt class="TYPE">char(<tt class="REPLACEABLE"><i>n</i></tt>)</tt> 这种类型字段的尺寸和精度。</p>
+<p>这里是一个使用复合类型的例子。<tt class="STRUCTNAME">table1</tt> 和 <tt class="STRUCTNAME">table2</tt> 是现有的表，至少包含代码中提到的字段：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION merge_fields(t_row table1) RETURNS text AS $$
+DECLARE
+    t2_row table2%ROWTYPE;
+BEGIN
+    SELECT * INTO t2_row FROM table2 WHERE ... ;
+    RETURN t_row.f1 || t2_row.f3 || t_row.f5 || t2_row.f7;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT merge_fields(t.*) FROM table1 t WHERE ... ;</pre>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="PLPGSQL-DECLARATION-RECORDS">37.4.4. 记录类型</a></h2>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>name</i></tt> RECORD;</pre>
+<p>纪录变量类似行类型变量，但是它们没有预定义的结构。它们在 <tt class="COMMAND">SELECT</tt> 或 <tt class="COMMAND">FOR</tt> 命令中获取实际的行结构。一个行变量的子结构可以在每次赋值的时候改变。这样做的一个结果是：在一个记录变量被赋予数值之前，它没有子结构，并且任何对其中的数据域进行访问的企图都将产生一个运行时错误。</p>
+<p>请注意，<tt class="LITERAL">RECORD</tt> 不是真正的数据类型，只是一个占位符。还应该意识到在把一个 PL/pgSQL 函数声明为返回 <tt class="TYPE">record</tt> 类型的时候，它和一个记录变量的概念并不完全相同，即使这个函数可能使用一个记录变量保存它的结果也如此。在这两种情况下书写函数的时候，实际的行结构都是未知的，但是对于返回 <tt class="TYPE">record</tt> 的函数来说，实际的结构是在调用它的查询被分析的时候决定的，而行变量可以在运行中改变其行结构。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="PLPGSQL-DECLARATION-RENAMING-VARS">37.4.5. <tt class="LITERAL">RENAME</tt></a></h2>
+<pre class="SYNOPSIS">RENAME <tt class="REPLACEABLE"><i>oldname</i></tt> TO <tt class="REPLACEABLE"><i>newname</i></tt>;</pre>
+<p>可以用 <tt class="LITERAL">RENAME</tt> 声明修改一个变量、记录、行的名字。如果 <tt class="VARNAME">NEW</tt> 或 <tt class="VARNAME">OLD</tt> 在个触发器过程里被另外一个名字引用，那么这个东西就很有用。又见 <tt class="LITERAL">ALIAS</tt> 。</p>
+<p>例子：</p>
+<pre class="PROGRAMLISTING">RENAME id TO user_id;
+RENAME this_var TO that_var;</pre>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b> <tt class="LITERAL">RENAME</tt> 在 PostgreSQL 7.3 里好像有问题。修补这个毛病的优先级比较低，因为 <tt class="LITERAL">ALIAS</tt> 覆盖了大多数 <tt class="LITERAL">RENAME</tt> 的实际用途。</p>
+</blockquote>
+</div>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plpgsql-structure.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plpgsql-expressions.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Structure of PL/pgSQL</td><td width="34%" align="center" valign="top"><a href="plpgsql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">表达式</td></tr>
+</table>
+</div>
+</body></html>

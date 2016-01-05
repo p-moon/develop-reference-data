@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>TOAST</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="storage-file-layout.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="storage.html">快退</a></td><td width="60%" align="center" valign="bottom">章52. 数据库物理存储</td><td width="10%" align="right" valign="top"><a href="storage.html">快进</a></td><td width="10%" align="right" valign="top"><a href="storage-page-layout.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="STORAGE-TOAST">52.2. TOAST</a></h1><a name="AEN69446"></a><a name="AEN69448"></a>
+<p>本节提供超大尺寸字段存储技术(TOAST, The Oversized-Attribute Storage Technique)的一个概述。</p>
+<p>因为 PostgreSQL 的页面大小是固定的(通常是 8Kb)，并且不允许行跨越多个页面，因此不可能直接存储非常大的字段值。为了突破这个限制，大的字段值被压缩和/或打碎成多个物理行。这些事情对用户都是透明的，只是在后端代码上有一些小的影响。这个技术的昵称是 TOAST("切片面包之后最好的东西")。</p>
+<p>只有一部分数据类型支持 TOAST(没必要在那些不可能生成大的字段值的数据类型强制这种额外开销)。要支持TOAST，数据类型必须有变长(<i class="FIRSTTERM">varlena</i>)表现形式，这个时候，任何存储的数值的头 32 位都是存储着以字节记的数值的总长度(包括长度本身)。TOAST 并不约束剩下的表现形式。所有支持 TOAST 的数据类型之 C 级别的函数都必须仔细处理 TOAST 的输入值。也就是通常是在对一个输入值做任何事情之前调用 <code class="FUNCTION">PG_DETOAST_DATUM</code> ；但是在某些情况下也存在更高效的方法。</p>
+<p>TOAST 使用变长长度字的最高两个二进制位，这样就把任何可以 TOAST 的数据类型的逻辑长度限制在了 1GB(2<SUP>30</SUP>-1 字节)之内。。如果两个位都是零，那么数值是该数据类型一个普通的未 TOAST 的值。如果设置了其中一个位，那么表示该数值被压缩过，使用前必须先解压缩。如果设置了另外一个位，则表示该数值是在线外存储的。这个时候，该值剩下的部分只是一个指针，而正确的数值必须在其它地方查找。如果两个位都设置了，那么这个线外数据也被压缩过了。不管哪种情况，长度字里剩下的低位都表示数据的实际尺寸，而不是解压缩或者从线外数据抓过来之后的逻辑尺寸。</p>
+<p>如果一个表中有任何一个字段是可以 TOAST 的，那么该表将有一个关联的 TOAST 表，其 OID 存储在表的 <tt class="STRUCTNAME">pg_class</tt>.<tt class="STRUCTFIELD">reltoastrelid</tt> 记录里，线外 TOAST 过的数值保存在 TOAST 表里，下面有更详细的描述。</p>
+<p>这里使用的压缩技术是非常简单并且非常快速的 LZ 族压缩技巧。参阅 <tt class="FILENAME">src/backend/utils/adt/pg_lzcompress.c</tt> 获取细节。</p>
+<p>线外数据被分裂成(如果压缩过，在压缩之后)最多 <tt class="LITERAL">TOAST_MAX_CHUNK_SIZE</tt> (缺省 2000 ，略小于 <tt class="LITERAL">BLCKSZ/4</tt>)字节的块，每个块都作为独立的行在 TOAST 表里为所属表存储。每个 TOAST 表都有 <tt class="STRUCTFIELD">chunk_id</tt> 字段(一个表示特定 TOAST 值的 OID)、<tt class="STRUCTFIELD">chunk_seq</tt>(一个序列号，存储该块在数值中的位置)、<tt class="STRUCTFIELD">chunk_data</tt>(该块实际的数据)。在 <tt class="STRUCTFIELD">chunk_id</tt> 和 <tt class="STRUCTFIELD">chunk_seq</tt> 上有一个唯一索引，提供对数值的快速检索。因此，一个表示线外 TOAST 值的指针数据需要存储要查阅的 TOAST 的 OID 和特定数值的 OID(它的 <tt class="STRUCTFIELD">chunk_id</tt>)。为了方便，指针数据还存储逻辑数据的尺寸(原始的未压缩的数据长度)以及实际存储的尺寸(如果使用了压缩，则两者不同)。加上头部的长度字，一个 TOAST 指针数据的总尺寸是 20 字节，不管它代表的数值的实际长度是多大。</p>
+<p>TOAST 代码只有在准备向某表中存储超过 <tt class="LITERAL">BLCKSZ/4</tt> 字节(通常是 2KB)的行的时候才会触发。TOAST 代码将压缩和/或线外存储字段值，直到数值比 <tt class="LITERAL">BLCKSZ/4</tt> 字节短，或者无法得到更好的结果的时候才停止。在一个 UPDATE 操作过程中，未改变的字段的数值通常原样保存；所以，如果 UPDATE 一个带有线外数据的行时，如果线外数据值没有变化，那么将不会有 TOAST 开销存在。</p>
+<p>TOAST 代码识别四种不同的存储可 TOAST 字段的策略：</p>
+<ul>
+<li><p><tt class="LITERAL">PLAIN</tt> 避免压缩或者线外存储。这只是对那些不能 TOAST 的数据类型才有可能。</p></li>
+<li><p><tt class="LITERAL">EXTENDED</tt> 允许压缩和线外存储。这是大多数可以 TOAST 的数据类型的缺省。首先将企图进行压缩，如果行仍然太大，那么则进行线外存储。</p></li>
+<li><p><tt class="LITERAL">EXTERNAL</tt> 允许线外存储，但是不许压缩。这将令那些在 <tt class="TYPE">text</tt> 和 <tt class="TYPE">bytea</tt> 字段上的子字符串操作更快(代价是增加了存储空间)，因此这些操作是经过优化的：如果线外数据没有压缩，那么它们只会去抓取需要的部分。</p></li>
+<li><p><tt class="LITERAL">MAIN</tt> 允许压缩，但不允许线外存储。实际上，在这样的字段上仍然会进行线外存储，但只是作为没有办法把数据行变得更小的情况下的最后的手段。</p></li>
+</ul>
+<p>每个可以 TOAST 的数据类型都为该数据类型的字段声明一个缺省策略，但是特定表的字段的存储策略可以用 <tt class="COMMAND">ALTER TABLE SET STORAGE</tt> 修改。</p>
+<p>这个方法比那些更直接的方法，比如允许行数值直接跨越多个页面，有更多优点。假设查询通常是用相对比较短的键值进行匹配的，那么大多数执行器的工作都将使用主行记录完成。TOAST 过的属性的大体积数值只是在把结果集发送给客户端的时候才抽出来(如果选择了它的话)。因此，主表要小得多，并且它的大部分行都存储在共享缓冲区里，因此就可以不需要任何线外存储。排序集也缩小了，并且排序将更多地在内存里完成。一个小测试表明，一个用于保存 HTML 页面以及它们的 URL 的表，包括 TOAST 表在内，存储将近一半大小的裸数据，而主表只包含全部数据的 10%(URL 和一些小的 HTML 页面)。与在一个非 TOAST 的对比表里面存储(把全部 HTML 页面裁剪成 7KB 以匹配页面大小)，没有任何运行时的区别。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="storage-file-layout.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="storage-page-layout.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">数据库文件布局</td><td width="34%" align="center" valign="top"><a href="storage.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">数据库分页文件</td></tr>
+</table>
+</div>
+</body></html>

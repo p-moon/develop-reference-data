@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>标准 Unix 工具</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="monitoring.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="monitoring.html">快退</a></td><td width="60%" align="center" valign="bottom">章25. 监控数据库的活动</td><td width="10%" align="right" valign="top"><a href="monitoring.html">快进</a></td><td width="10%" align="right" valign="top"><a href="monitoring-stats.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="MONITORING-PS">25.1. 标准 Unix 工具</a></h1><a name="AEN25515"></a>
+<p>PostgreSQL 在大多数平台上修改 <tt class="COMMAND">ps</tt> 输出的命令标题，这样我们就很容易找出某个服务器进程。一个简单的显示如下</p>
+<pre class="SCREEN">$ ps auxww | grep ^postgres
+postgres   960  0.0  1.1  6104 1480 pts/1    SN   13:17   0:00 postgres -i
+postgres   963  0.0  1.1  7084 1472 pts/1    SN   13:17   0:00 postgres: writer process
+postgres   965  0.0  1.1  6152 1512 pts/1    SN   13:17   0:00 postgres: stats collector process   
+postgres   998  0.0  2.3  6532 2992 pts/1    SN   13:18   0:00 postgres: tgl runbug 127.0.0.1 idle
+postgres  1003  0.0  2.4  6532 3128 pts/1    SN   13:19   0:00 postgres: tgl regression [local] SELECT waiting
+postgres  1016  0.1  2.4  6532 3080 pts/1    SN   13:19   0:00 postgres: tgl regression [local] idle in transaction</pre>
+<p>调用 <tt class="COMMAND">ps</tt> 的方法因平台的不同而略有不同，显示出来的细节也有一些区别。这个例子来自一个最近的 Linux 系统。这里显示出来的第一个进程是主服务器进程。显示的命令参数和启动它的命令行参数相同。下面是由主服务器进程自动调用的两个统计收集器后台进程，如果你设置了系统不启动统计收集器，那么它们不会出现。剩下的都是一个个处理客户连接的服务器进程，每个这样的进程都用下面的形式显示：</p>
+<pre class="SCREEN">postgres: <tt class="REPLACEABLE"><i>user</i></tt> <tt class="REPLACEABLE"><i>database</i></tt> <tt class="REPLACEABLE"><i>host</i></tt> <tt class="REPLACEABLE"><i>activity</i></tt></pre>
+<p>在该客户端连接的生命期中，user, database, host(连接源主机)都保持不变，但是活跃性指示符会变化。活跃性可以是 <tt class="LITERAL">idle</tt>(等待客户端的命令)、<tt class="LITERAL">idle in transaction</tt>(在一个 <tt class="COMMAND">BEGIN</tt> 块里等待用户)、或者一个命令类型名，比如 <tt class="LITERAL">SELECT</tt> 。同样，如果当前正在等待一个其它服务器进程持有的锁的时候，会在信息后面附加 <tt class="LITERAL">waiting</tt> 。在上面的例子中，我们可以推出：进程 1003 正在等待 1016 完成其事务，这样才能释放一些锁或者其它什么东西</p>
+<p>如果关闭了 <a href="runtime-config-statistics.html#GUC-UPDATE-PROCESS-TITLE">update_process_title</a> 那么活跃性指示符将不会变化，并且进程标题仅在新进程被启动的时候设置一次。在某些平台上这样做可以节省每个命令的开销，但在其它平台上却没有这种差异。</p>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b>Solaris 需要特别的处理。你必需使用 <tt class="COMMAND">/usr/ucb/ps</tt> 而不是 <tt class="COMMAND">/bin/ps</tt> 。你还必需使用两个 <tt class="OPTION">w</tt> 标志，而不是一个。另外，你最初调用 <tt class="COMMAND">postgres</tt> 时用到的命令行在 <tt class="COMMAND">ps</tt> 状态显示中必须比 <tt class="COMMAND">ps</tt> 给每个服务器进程显示的短。如果没满足这三个条件，那么 <tt class="COMMAND">ps</tt> 为每个服务器进程输出的将是最初的 <tt class="COMMAND">postgres</tt> 的命令行。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="monitoring.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="monitoring-stats.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">监控数据库的活动</td><td width="34%" align="center" valign="top"><a href="monitoring.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">统计收集器</td></tr>
+</table>
+</div>
+</body></html>

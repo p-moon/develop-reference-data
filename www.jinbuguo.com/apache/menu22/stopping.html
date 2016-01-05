@@ -1,0 +1,110 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="./style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="./style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="./style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>停止和重启 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page">
+<div id="page-header"><p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="./images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="./images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="./index.html">版本2.2</a></div>
+
+<div id="translation-info">　　 <a href="./translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>停止和重启</h1>
+
+
+    <p>本文档叙述了在类Unix系统上如何停止和重启Apache 。 Windows NT/2000/XP/2003的用户请参见<a href="platform/windows.html#winsvc">以服务方式运行Apache</a> ，Windows 9x/ME用户则参见<a href="platform/windows.html#wincons">在控制台中运行Apache</a> 。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="introduction" id="introduction">简介</a></h2>
+
+    <p>为了停止或者重新启动Apache ，你必须向正在运行的<code class="program"><a href="./programs/httpd.html">httpd</a></code>进程发送信号。有两种发送信号的方法。第一种方法是直接使用UNIX的<code>kill</code>命令向运行中的进程发送信号。你也许你会注意到你的系统里运行着很多<code class="program"><a href="./programs/httpd.html">httpd</a></code>进程。但你不应该直接对它们中的任何一个发送信号，而只要对已经在<code class="directive"><a href="./mod/mpm_common.html#pidfile">PidFile</a></code>中记载下了自身PID的父进程发送信号。也就是说，你不必对父进程以外的任何进程发送信号。你可以向父进程发送三种信号：<code><a href="#term">TERM</a></code>、<code><a href="#hup">HUP</a></code>、<code><a href="#graceful">USR1</a></code> ，我们过一会儿再进行详细的说明。</p>
+
+    <p>你可以用下面这样的命令来向父进程发送信号：</p>
+
+<div class="example"><p><code>kill -TERM `cat /usr/local/apache2/logs/httpd.pid`</code></p></div>
+
+    <p>第二种方法是使用下面将要描述的<code class="program"><a href="./programs/httpd.html">httpd</a></code>二进制可执行文件的 <code>-k</code> 命令行选项：<code>stop</code>、<code>restart</code>、<code>graceful</code>、<code>graceful-stop</code> 。不过我们推荐你使用<code class="program"><a href="./programs/apachectl.html">apachectl</a></code>控制脚本来向<code class="program"><a href="./programs/httpd.html">httpd</a></code>二进制可执行文件传递这些选项。</p>
+
+    <p>当你向<code class="program"><a href="./programs/httpd.html">httpd</a></code>发送信号后，你可以这样来读取它的进行过程：</p>
+
+<div class="example"><p><code>tail -f /usr/local/apache2/logs/error_log</code></p></div>
+
+    <p>你可以修改这些示例以适应你的<code class="directive"><a href="./mod/core.html#serverroot">ServerRoot</a></code>和<code class="directive"><a href="./mod/mpm_common.html#pidfile">PidFile</a></code>设置。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="term" id="term">立即停止</a></h2>
+
+<dl><dt>信号：TERM</dt>
+<dd><code>apachectl -k stop</code></dd>
+</dl>
+
+    <p>发送<code>TERM</code>或<code>stop</code>信号到父进程可以使它立刻杀死所有子进程。这将花费一些时间来杀死所有子进程。然后父进程自己也退出。所有进行中的请求将被强行中止，而且不再接受其它请求。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="graceful" id="graceful">优雅重启</a></h2>
+
+<dl><dt>信号：USR1</dt>
+<dd><code>apachectl -k graceful</code></dd>
+</dl>
+
+    <p><code>USR1</code>或<code>graceful</code>信号使得父进程<em>建议</em>子进程在完成它们现在的请求后退出(如果他们没有进行服务，将会立刻退出)。父进程<em>重新读入</em>配置文件并重新打开日志文件。每当一个子进程死掉，父进程立刻用新的配置文件产生一个新的子进程并立刻开始伺服新的请求。</p>
+
+    <p>重启代码的设计能够确保MPM进程控制指令的正常运作，也就是在重启过程中确保有适当数量的进程和线程以响应客户端的请求。它是这样<code class="directive"><a href="./mod/mpm_common.html#startservers">StartServers</a></code>的：如果在一秒钟以后还没有新创建<code class="directive"><a href="./mod/mpm_common.html#startservers">StartServers</a></code>个子进程，则创建出足够完成现在任务的子进程个数。因此，代码除了保有能够维持服务器的现有负载数量的子进程外，也确保<code class="directive"><a href="./mod/mpm_common.html#startservers">StartServers</a></code>按你的意愿运作。</p>
+
+    <p>使用<code class="module"><a href="./mod/mod_status.html">mod_status</a></code>的用户会注意到在<code>USR1</code>信号发出后，服务器的统计信息<strong>没有</strong>被清零。代码被写成既能将你服务器无法伺服新请求的时间降至最少(这些请求将被操作系统放到队列里，使得它们不会丢失)，又能遵从你的参数优化。为了做到这一点，它将在重新生成子进程的过程中，在<em>scoreboard</em>上保存所有子进程的状态。</p>
+
+    <p><code class="module"><a href="./mod/mod_status.html">mod_status</a></code>还会将那些在优雅重启前就已经开始而没有结束伺服请求的子进程用一个"<code>G</code>"来标志。</p>
+
+    <p>目前，日志滚动脚本还无法使用<code>USR1</code>来确定所有写入预重启日志的子进程都已结束。我们建议你在发出了<code>USR1</code>信号后等待一个适当的时间，然后再对旧的日志做处理。比如说如果对于一个窄带用户来说，大部分的点击处理将在10分钟之内完成，那么你应该在处理旧的日志前等待15分钟。</p>
+
+    <div class="note">如果Apache重启时发现配置文件有误，那么父进程将不会重启，而是报错并退出。在优雅重启的情况下，它将在处理中的子进程存在的情况下维持它的存在(就是那些被要求在处理完它们的请求后"优雅退出"的子进程)。如果你要重启服务器，这将导致一些问题：它将不能绑定到它的监听端口。在执行重启之前，你可以用 <code>-t</code> 命令行参数来检查配置文件语法的正确性(参见<code class="program"><a href="./programs/httpd.html">httpd</a></code>)。但这仍然不能保证服务器一定可以正确的重启。为了从语法和语义两方面检查配置文件，你可以用一个非root用户来启动<code class="program"><a href="./programs/httpd.html">httpd</a></code>。如果没有错误，它将尝试去打开套接字和日志文件，继而因没有root权限而失败(或是因为现在运行的<code class="program"><a href="./programs/httpd.html">httpd</a></code>已经绑定了这些端口)。如果是因为其他原因那么就可能是一个配置文件产生的错误，你就应当在进行优雅重启之前改正这个错误。</div>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="hup" id="hup">立即重启</a></h2>
+
+<dl><dt>信号：HUP</dt>
+<dd><code>apachectl -k restart</code></dd>
+</dl>
+
+    <p>向父进程发送<code>HUP</code>或<code>restart</code>信号会使它象收到<code>TERM</code>信号一样杀掉所有的子进程，不同之处在于父进程本身并不退出。它重新读入配置文件、重新打开日志文件。然后产生一系列新的子进程来继续服务。</p>
+
+    <p>使用<code class="module"><a href="./mod/mod_status.html">mod_status</a></code>的用户会注意到在<code>HUP</code>信号发出后，服务器统计信息会被清零。</p>
+
+	<div class="note">如果你重启时配置文件有误，那么父进程将不会重启，而是报错并退出。参见上文中避免的方法。</div>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="gracefulstop" id="gracefulstop">优雅停止</a></h2>
+
+<dl><dt>信号：WINCH</dt>
+<dd><code>apachectl -k graceful-stop</code></dd>
+</dl>
+
+    <p><code>WINCH</code>或<code>graceful-stop</code>信号使得父进程<em>建议</em>子进程在完成它们现在的请求后退出(如果他们没有进行服务，将会立刻退出)。然后父进程删除<code class="directive"><a href="./mod/mpm_common.html#pidfile">PidFile</a></code>并停止在所有端口上的监听。父进程仍然继续运行并监视正在处理请求的子进程，一旦所有子进程完成任务并退出或者超过由<code class="directive"><a href="./mod/mpm_common.html#gracefulshutdowntimeout">GracefulShutdownTimeout</a></code>指令规定的时间，父进程将会退出。在超时的情况下，所有子进程都将接收到<code>TERM</code>信号并被强制退出。</p>
+    
+    <p>在"优雅"状态下，<code>TERM</code>信号将会立即中止父进程和所有子进程。由于<code class="directive"><a href="./mod/mpm_common.html#pidfile">PidFile</a></code>已经被删除，你将无法使用<code>apachectl</code>或<code>httpd</code>发送该信号。</p>
+
+    <div class="note"><p><code>graceful-stop</code>允许你同时运行多个相同配置的<code class="program"><a href="./programs/httpd.html">httpd</a></code>实例。这在对Apache进行平滑升级的时候是一个非常有用的特性。不过它在某些配置的情况下同样可能会导致死锁和竞争条件。</p> 
+
+    <p>必须注意确保诸如<code class="directive"><a href="./mod/core.html#lockfile">Lockfile</a></code>和<code class="directive"><a href="./mod/mod_cgid.html#scriptsock">ScriptSock</a></code>之类的磁盘文件包含服务器的PID ，并且能够安全的共存。然而如果一个配置指令、第三方模块或持久CGI使用任何磁盘锁或状态文件，必须注意确保多个<code class="program"><a href="./programs/httpd.html">httpd</a></code>运行实例之间不会争抢文件。</p> 
+
+    <p>你还必须防止潜在的竞争条件，比如使用<code class="program"><a href="./programs/rotatelogs.html">rotatelogs</a></code>风格的管道日志。运行中的多个<code class="program"><a href="./programs/rotatelogs.html">rotatelogs</a></code>实例企图同时滚动同一个日志文件可能会导致互相破坏对方的日志文件。</p></div>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="race" id="race">附录：信号和竞争条件</a></h2>
+
+    <p>在Apache 1.2b9 之前，有很多关于重启和死亡信号的<em>竞争条件。</em>关于竞争条件的一个简单描述是：一个时间敏感的问题，如果一些事情在不适当的时间或以不恰当的顺序发生，它将作出你不期望的反应；如果同样的事情在恰当的时间发生，则不会出现异常。凭借那些拥有"正确"特性设置的体系结构，我们尽量避免了它们的出现。但值得注意的是，仍然有一些竞争条件存在于这样的体系结构中。</p>
+
+    <p>使用物理磁盘的<code class="directive"><a href="./mod/mpm_common.html#scoreboardfile">ScoreBoardFile</a></code>就有损坏ScoreBoard的潜在危险。这将发生在"bind: Address already in use"(<code>HUP</code>之后)或"long lost child came home!"(<code>USR1</code>之后)时。前者是一个致命错误，而后者则会使服务器丢失ScoreBoard的一个记录。所以我们建议多使用优雅重启，偶尔使用硬重启。这些问题很难解决，但幸运的是大多数结构并不需要ScoreBoard文件。而如果你需要这样的结构，你可以参考<code class="directive"><a href="./mod/mpm_common.html#scoreboardfile">ScoreBoardFile</a></code>文档。</p>
+
+    <p>当每个子进程在一个HTTP的持续连接(KeepAlive)中涉及到第二个并发的请求时，所有的结构都会或多或少存在竞争状态的问题。它将在读取了请求而没有读取任何请求头之后立刻退出。这个修复对于1.2来说来得太晚了。但因为持续连接的客户端已经考虑到网络延时和服务器超时会造成类似的情况，所以理论上说，这不是一个太大的问题。而实际上似乎也没有任何影响：在一个测试案例中服务器在一秒之内被重启了20次，而客户端却成功的浏览了网站，而且没有任何破损的图片或空文档。</p>
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="./translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p></div>
+</body></html>

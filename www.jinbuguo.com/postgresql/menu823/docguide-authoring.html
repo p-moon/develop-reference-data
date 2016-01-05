@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>文档写作</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="docguide-build.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="docguide.html">快退</a></td><td width="60%" align="center" valign="bottom">附录G. Documentation</td><td width="10%" align="right" valign="top"><a href="docguide.html">快进</a></td><td width="10%" align="right" valign="top"><a href="docguide-style.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DOCGUIDE-AUTHORING">G.4. 文档写作</a></h1>
+<p>SGML 和 DocBook 没有受到过多的开放源码写作工具的影响。最常用的工具集是带有合适编辑模式的 Emacs/Xemacs 编辑器。在一些系统上这些工具在典型的完全安装时是一并安装的。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN88505">G.4.1. Emacs/PSGML</a></h2>
+<p>PSGML 是最常用和最强大的编辑 SGML 文档的工具。如果正确的做了配置，它将允许你使用 <span class="APPLICATION">Emacs</span> 插入标签和检查标记一致性。你也可以把它用于 HTML。看看 <a href="http://www.lysator.liu.se/projects/about_psgml.html" target="_top">PSGML 站点</a> 获取下载、安装指导、详细文档。</p>
+<p>关于 PSGML 有一件比较重要的事情要注意：它的作者假设你的主 SGML DTD 目录是 <tt class="FILENAME">/usr/local/lib/sgml</tt> 。如果你像本文的例子那样放在 <tt class="FILENAME">/usr/local/share/sgml</tt> ，就得补偿这个问题，要么是设置 <tt class="ENVAR">SGML_CATALOG_FILES</tt> 环境变量，要么是自定义你的 PSGML 安装(它的手册告诉你怎么做)。</p>
+<p>把下面这几行放到你的 <tt class="FILENAME">~/.emacs</tt> 环境文件里(根据你的系统调整路径名)：</p>
+<pre class="PROGRAMLISTING">; ********** for SGML mode (psgml)
+
+(setq sgml-omittag t)
+(setq sgml-shorttag t)
+(setq sgml-minimize-attributes nil)
+(setq sgml-always-quote-attributes t)
+(setq sgml-indent-step 1)
+(setq sgml-indent-data t)
+(setq sgml-parent-document nil)
+(setq sgml-default-dtd-file "./reference.ced")
+(setq sgml-exposed-tags nil)
+(setq sgml-catalog-files '("/usr/local/share/sgml/catalog"))
+(setq sgml-ecat-files nil)
+
+(autoload 'sgml-mode "psgml" "Major mode to edit SGML files." t )</pre>
+<p>并且在同一个文件里增加一条记录，把 SGML 加入自动模式别名的定义中(<tt class="VARNAME">auto-mode-alist</tt>)：</p>
+<pre class="PROGRAMLISTING">(setq
+  auto-mode-alist
+  '(("\\.sgml$" . sgml-mode)
+   ))</pre>
+<p>PostgreSQL 的发布版包含一个已经分析好了的 DTD 定义文件 <tt class="FILENAME">reference.ced</tt> 。当使用 PSGML 时，有一个让自己在这些分离的文件上干活方便些的办法：就是你在编辑它们的时候插入合适的 <tt class="LITERAL">DOCTYPE</tt> 定义。例如，如果你在这个源文件上干活，这是一个附录章节，因此你将通过把第一行标记成像下面的样子从而把这个文档声明为一个 DocBook 文档的"附录"：</p>
+<pre class="PROGRAMLISTING">&lt;!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook V4.2//EN"&gt;</pre>
+<p>这意味着任何或所有读取 SGML 的软件将能正确读取这份文件，并且我可以用 <tt class="COMMAND">nsgmls -s docguide.sgml</tt> 校验此文档(不过你在制作整个文档集的时候要把这行拿走)。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN88536">G.4.2. 其它 Emacs 模式</a></h2>
+<p>GNU Emacs 带有不同的 SGML 模式，不过并不像 PSGML 那么强大，但是它比较少让人混淆的东西而且比较小巧。同样，它也提供语法高亮(字体锁)，也是很有帮助的。</p>
+<p>Norm Walsh 提供一个用于 DocBook 的 <a href="http://nwalsh.com/emacs/docbookide/index.html" target="_top">major mode</a> ，也有字体锁和一些可以减少击键的特性。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="docguide-build.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="docguide-style.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">制作文档</td><td width="34%" align="center" valign="top"><a href="docguide.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">风格指导</td></tr>
+</table>
+</div>
+</body></html>

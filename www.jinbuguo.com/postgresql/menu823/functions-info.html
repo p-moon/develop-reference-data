@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>系统信息函数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-srf.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="functions-admin.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-INFO">9.19. 系统信息函数</a></h1>
+<p><a href="functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">表9-40</a>显示了几个抽取会话及系统信息的函数。</p>
+<div class="TABLE"><a name="FUNCTIONS-INFO-SESSION-TABLE"></a>
+<p><b>表9-40. 会话信息函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">current_database</code>()</tt></td><td><tt class="TYPE">name</tt></td><td>当前数据库的名字</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">current_schema</code>()</tt></td><td><tt class="TYPE">name</tt></td><td>当前模式的名字</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">current_schemas</code>(<tt class="TYPE">boolean</tt>)</tt></td><td><tt class="TYPE">name[]</tt></td><td>搜索路径中的模式名字</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">current_user</code></tt></td><td><tt class="TYPE">name</tt></td><td>当前执行环境下的用户名</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">inet_client_addr</code>()</tt></td><td><tt class="TYPE">inet</tt></td><td>连接的远端地址</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">inet_client_port</code>()</tt></td><td><tt class="TYPE">int</tt></td><td>连接的远端端口</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">inet_server_addr</code>()</tt></td><td><tt class="TYPE">inet</tt></td><td>连接的本地地址</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">inet_server_port</code>()</tt></td><td><tt class="TYPE">int</tt></td><td>连接的本地端口</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_my_temp_schema</code>()</tt></td><td><tt class="TYPE">oid</tt></td><td>会话的临时模式的 OID ，不存在则为 0</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_is_other_temp_schema</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>是否为另一个会话的临时模式?</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_postmaster_start_time</code>()</tt></td><td><tt class="TYPE">timestamp with time zone</tt></td><td>服务器启动时间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">session_user</code></tt></td><td><tt class="TYPE">name</tt></td><td>会话用户名</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">user</code></tt></td><td><tt class="TYPE">name</tt></td><td>等价于 <code class="FUNCTION">current_user</code></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">version</code>()</tt></td><td><tt class="TYPE">text</tt></td><td>PostgreSQL 版本信息</td></tr>
+</tbody>
+</table>
+</div>
+<a name="AEN14365"></a><a name="AEN14368"></a><a name="AEN14371"></a>
+<p><code class="FUNCTION">session_user</code> 通常是连接当前数据库的初始用户，不过超级用户可以用 <a href="sql-set-session-authorization.html"><i>SET SESSION AUTHORIZATION</i></a> 修改这个设置。<code class="FUNCTION">current_user</code> 是用于权限检查的用户标识。通常，它总是等于会话用户，但是可以通过 <a href="sql-set-role.html"><i>SET ROLE</i></a> 改变它。在函数执行的过程中随着属性 <tt class="LITERAL">SECURITY DEFINER</tt> 的改变，其值也会改变。用 Unix 术语来说，会话用户是"真实用户"，而当前用户是"有效用户"。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b><code class="FUNCTION">current_user</code>, <code class="FUNCTION">session_user</code>, <code class="FUNCTION">user</code> 在 SQL 里有特殊的语法：调用时结尾不能跟园括号。</p>
+</blockquote>
+</div>
+<p><code class="FUNCTION">current_schema</code> 返回在搜索路径前端的模式名字(如果搜索路径为空则返回 NULL)。如果创建表或者其它命名对象时没有声明目标模式，那么它将是用于这些对象的模式。<code class="FUNCTION">current_schemas(boolean)</code> 返回一个搜索路径中所有模式名字的数组。布尔选项决定像 <tt class="LITERAL">pg_catalog</tt> 这样隐含包含的系统模式是否包含在返回的搜索路径中。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>搜索路径可以通过运行时设置更改。命令是：</p>
+<pre class="PROGRAMLISTING">SET search_path TO <tt class="REPLACEABLE"><i>schema</i></tt> [<span class="OPTIONAL">, <tt class="REPLACEABLE"><i>schema</i></tt>, ...</span>]</pre>
+</blockquote>
+</div>
+<a name="AEN14398"></a><a name="AEN14400"></a><a name="AEN14402"></a><a name="AEN14404"></a>
+<p><code class="FUNCTION">inet_client_addr</code> 返回当前客户端的IP地址，而 <code class="FUNCTION">inet_client_port</code> 则返回当前客户端的端口号。<code class="FUNCTION">inet_server_addr</code> 返回服务器接收当前连接用的 IP 地址，而 <code class="FUNCTION">inet_server_port</code> 返回接收当前连接的端口号。如果是通过 Unix-domain socket 连接的，那么所有这些函数都返回 NULL 。</p>
+<a name="AEN14411"></a><a name="AEN14413"></a>
+<p><code class="FUNCTION">pg_my_temp_schema</code> 返回当前会话的临时模式 OID ，如果不存在的话则返回 0(因为没有创建任何临时表)。<code class="FUNCTION">pg_is_other_temp_schema</code> 返回给定的 OID 是否为其它会话的临时模式 OID ，这个函数是有实用价值的，比如，在显示一个目录的时候排除掉其它会话的临时表。</p>
+<a name="AEN14418"></a>
+<p><code class="FUNCTION">pg_postmaster_start_time</code> 返回服务器启动时的 <tt class="TYPE">timestamp with time zone</tt> 。</p>
+<a name="AEN14423"></a>
+<p><code class="FUNCTION">version</code> 返回一个描述 PostgreSQL 服务器版本信息的字符串。</p>
+<a name="AEN14428"></a>
+<p><a href="functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">表9-41</a>列出那些允许用户在程序里查询对象访问权限的函数。参阅<a href="ddl-priv.html">节5.6</a>获取更多有关权限的信息。</p>
+<div class="TABLE"><a name="FUNCTIONS-INFO-ACCESS-TABLE"></a>
+<p><b>表9-41. 访问权限查询函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_database_privilege</code>(<tt class="PARAMETER">user</tt>, <tt class="PARAMETER">database</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问数据库的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_database_privilege</code>(<tt class="PARAMETER">database</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>当前用户是否有访问数据库的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_function_privilege</code>(<tt class="PARAMETER">user</tt>, <tt class="PARAMETER">function</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问函数的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_function_privilege</code>(<tt class="PARAMETER">function</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问函数的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_language_privilege</code>(<tt class="PARAMETER">user</tt>, <tt class="PARAMETER">language</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问语言的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_language_privilege</code>(<tt class="PARAMETER">language</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问语言的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_schema_privilege</code>(<tt class="PARAMETER">user</tt>, <tt class="PARAMETER">schema</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问模式的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_schema_privilege</code>(<tt class="PARAMETER">schema</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问模式的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_table_privilege</code>(<tt class="PARAMETER">user</tt>, <tt class="PARAMETER">table</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问表的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_table_privilege</code>(<tt class="PARAMETER">table</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问表的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_tablespace_privilege</code>(<tt class="PARAMETER">user</tt>, <tt class="PARAMETER">tablespace</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问表空间的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">has_tablespace_privilege</code>(<tt class="PARAMETER">tablespace</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问表空间的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_has_role</code>(<tt class="PARAMETER">user</tt>, <tt class="PARAMETER">role</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问角色的权限</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_has_role</code>(<tt class="PARAMETER">role</tt>, <tt class="PARAMETER">privilege</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>指定用户是否有访问角色的权限</td></tr>
+</tbody>
+</table>
+</div>
+<a name="AEN14576"></a><a name="AEN14578"></a><a name="AEN14580"></a><a name="AEN14582"></a><a name="AEN14584"></a><a name="AEN14586"></a><a name="AEN14588"></a>
+<p><code class="FUNCTION">has_database_privilege</code> 检查一个用户是否能以特定方式访问一个数据库。它可能的参数类似 <code class="FUNCTION">has_table_privilege</code> 。权限类型必须是 <tt class="LITERAL">CREATE</tt>, <tt class="LITERAL">CONNECT</tt>, <tt class="LITERAL">TEMPORARY</tt>, <tt class="LITERAL">TEMP</tt>(等价于 <tt class="LITERAL">TEMPORARY</tt>)之一。</p>
+<p><code class="FUNCTION">has_function_privilege</code> 检查一个用户是否能以特定方式访问一个函数。它可能的参数类似 <code class="FUNCTION">has_table_privilege</code> 。我们声明一个函数用的是文本字符串而不是 OID ，允许的输入和 <tt class="TYPE">regprocedure</tt> 数据类型一样(参阅<a href="datatype-oid.html">节8.12</a>)。权限类型必须是 <tt class="LITERAL">EXECUTE</tt> 。一个例子如下：</p>
+<pre class="PROGRAMLISTING">SELECT has_function_privilege('joeuser', 'myfunc(int, text)', 'execute');</pre>
+<p><code class="FUNCTION">has_language_privilege</code> 检查一个用户是否能以特定方式访问一个过程语言。它可能的参数类似 <code class="FUNCTION">has_table_privilege</code> 。权限类型必须是 <tt class="LITERAL">USAGE</tt> 。</p>
+<p><code class="FUNCTION">has_schema_privilege</code> 检查一个用户是否能以特定方式访问一个模式。它可能的参数类似 <code class="FUNCTION">has_table_privilege</code> 。权限类型必须是 <tt class="LITERAL">CREATE</tt> 或 <tt class="LITERAL">USAGE</tt> 。</p>
+<p><code class="FUNCTION">has_table_privilege</code> 检查一个用户是否能以特定方式访问一个表。用户可以通过名字或者 OID(<tt class="LITERAL">pg_authid.oid</tt>)来声明，如果省略该参数，则使用 <code class="FUNCTION">current_user</code> 。该表可以通过名字或者 OID 声明。因此，实际上有六种 <code class="FUNCTION">has_table_privilege</code> 变体，我们可以通过它们的参数数目和类型来区分它们。如果用名字声明，那么在必要时可以用模式进行修饰。所希望的权限类型是用一个文本字符串来声明的，必须是 <tt class="LITERAL">SELECT</tt>, <tt class="LITERAL">INSERT</tt>, <tt class="LITERAL">UPDATE</tt>, <tt class="LITERAL">DELETE</tt>, <tt class="LITERAL">REFERENCES</tt>, <tt class="LITERAL">TRIGGER</tt> 之一。当然，字符串的大小写没什么关系。例如：</p>
+<pre class="PROGRAMLISTING">SELECT has_table_privilege('myschema.mytable', 'select');</pre>
+<p><code class="FUNCTION">has_tablespace_privilege</code> 检查一个用户是否能以特定方式访问一个表空间。它可能的参数类似 <code class="FUNCTION">has_table_privilege</code> 。权限类型必须是 <tt class="LITERAL">CREATE</tt> 。</p>
+<p><code class="FUNCTION">pg_has_role</code> 检查一个用户是否能以特定方式访问一个角色。它可能的参数类似 <code class="FUNCTION">has_table_privilege</code> 。权限类型必须是 <tt class="LITERAL">MEMBER</tt> 或 <tt class="LITERAL">USAGE</tt> 。<tt class="LITERAL">MEMBER</tt> 表示是角色中的直接或间接成员关系(也就是 <tt class="COMMAND">SET ROLE</tt> 的权限)，而 <tt class="LITERAL">USAGE</tt> 表示角色的权限是否无需 <tt class="COMMAND">SET ROLE</tt> 即可立即生效。</p>
+<p>要评估一个用户是否在权限上持有赋权选项，给权限键字附加 <tt class="LITERAL">WITH GRANT OPTION</tt> 即可，比如：<tt class="LITERAL">'UPDATE WITH GRANT OPTION'</tt> 。</p>
+<p><a href="functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">表9-42</a>显示了那些判断一个对象是否在当前模式搜索路径中<i class="FIRSTTERM">可见</i>的函数。如果一个表所在的模式在搜索路径中，并且没有同名的表出现在搜索路径的更靠前的地方，那么就说这个表是可见的。它等效于表可以不带明确模式修饰进行引用。比如，要列出所有可见表的名字：</p>
+<pre class="PROGRAMLISTING">SELECT relname FROM pg_class WHERE pg_table_is_visible(oid);</pre>
+<div class="TABLE"><a name="FUNCTIONS-INFO-SCHEMA-TABLE"></a>
+<p><b>表9-42. 模式可见性查询函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_conversion_is_visible</code>(<tt class="PARAMETER">conversion_oid</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>该转换是否在搜索路径中可见</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_function_is_visible</code>(<tt class="PARAMETER">function_oid</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>该函数是否在搜索路径中可见</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_operator_is_visible</code>(<tt class="PARAMETER">operator_oid</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>该操作符是否在搜索路径中可见</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_opclass_is_visible</code>(<tt class="PARAMETER">opclass_oid</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>该操作符类是否在搜索路径中可见</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_table_is_visible</code>(<tt class="PARAMETER">table_oid</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>该表是否在搜索路径中可见</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_type_is_visible</code>(<tt class="PARAMETER">type_oid</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>该类型(域)是否在搜索路径中可见</td></tr>
+</tbody>
+</table>
+</div>
+<a name="AEN14703"></a><a name="AEN14705"></a><a name="AEN14707"></a><a name="AEN14709"></a><a name="AEN14711"></a><a name="AEN14713"></a>
+<p><code class="FUNCTION">pg_table_is_visible</code> 还可用于视图、索引、序列。<code class="FUNCTION">pg_type_is_visible</code> 还可用于域。对于函数和操作符，如果在搜索路径中没有名字相同并且<span class="emphasis"><i class="EMPHASIS">参数的数据类型也相同</i></span>的对象出现在路径中更靠前的位置，那么该对象就是可见的。对于操作符类，则要同时考虑名字和相关的索引访问方法。</p>
+<p>所有这些函数都需要使用 OID 来标识要被检查的对象。如果你想通过名字测试对象，那么使用 OID 别名类型(<tt class="TYPE">regclass</tt>, <tt class="TYPE">regtype</tt>, <tt class="TYPE">regprocedure</tt>, <tt class="TYPE">regoperator</tt>)将会很方便。例如：</p>
+<pre class="PROGRAMLISTING">SELECT pg_type_is_visible('myschema.widget'::regtype);</pre>
+<p>请注意用这种方法测试一个未经修饰的名字没什么意义，因为如果一个名字可以被识别，那它首先必须是可见的。</p>
+<a name="AEN14731"></a><a name="AEN14733"></a><a name="AEN14735"></a><a name="AEN14737"></a><a name="AEN14739"></a><a name="AEN14741"></a><a name="AEN14743"></a><a name="AEN14745"></a><a name="AEN14747"></a><a name="AEN14749"></a>
+<p><a href="functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">表9-43</a>列出了从系统表中抽取信息的函数。</p>
+<div class="TABLE"><a name="FUNCTIONS-INFO-CATALOG-TABLE"></a>
+<p><b>表9-43. 系统表信息函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">format_type</code>(<tt class="PARAMETER">type_oid</tt>, <tt class="PARAMETER">typemod</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>获取一个数据类型的 SQL 名称</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_constraintdef</code>(<tt class="PARAMETER">constraint_oid</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>获取一个约束的定义</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_constraintdef</code>(<tt class="PARAMETER">constraint_oid</tt>, <tt class="PARAMETER">pretty_bool</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>获取一个约束的定义</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_expr</code>(<tt class="PARAMETER">expr_text</tt>, <tt class="PARAMETER">relation_oid</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>反编译一个表达式的内部形式，假设其中的任何 Var 都引用第二个参数指出的关系</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_expr</code>(<tt class="PARAMETER">expr_text</tt>, <tt class="PARAMETER">relation_oid</tt>, <tt class="PARAMETER">pretty_bool</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>反编译一个表达式的内部形式，假设其中的任何 Var 都引用第二个参数指出的关系</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_indexdef</code>(<tt class="PARAMETER">index_oid</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>为索引获取 <tt class="COMMAND">CREATE INDEX</tt> 命令</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_indexdef</code>(<tt class="PARAMETER">index_oid</tt>, <tt class="PARAMETER">column_no</tt>, <tt class="PARAMETER">pretty_bool</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>为索引获取 <tt class="COMMAND">CREATE INDEX</tt> 命令，如果 <tt class="PARAMETER">column_no</tt> 不为零，则只获取一个索引字段的定义。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_ruledef</code>(<tt class="PARAMETER">rule_oid</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>为规则获取 <tt class="COMMAND">CREATE RULE</tt> 命令</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_ruledef</code>(<tt class="PARAMETER">rule_oid</tt>, <tt class="PARAMETER">pretty_bool</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>为规则获取 <tt class="COMMAND">CREATE RULE</tt> 命令</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_serial_sequence</code>(<tt class="PARAMETER">table_name</tt>, <tt class="PARAMETER">column_name</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>获取一个 <tt class="TYPE">serial</tt> 或 <tt class="TYPE">bigserial</tt> 字段使用的序列名字</td></tr>
+<tr><td><code class="FUNCTION">pg_get_triggerdef</code>(<tt class="PARAMETER">trigger_oid</tt>)</td><td><tt class="TYPE">text</tt></td><td>为触发器获取 <tt class="COMMAND">CREATE [ CONSTRAINT ] TRIGGER</tt> 命令</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_userbyid</code>(<tt class="PARAMETER">roleid</tt>)</tt></td><td><tt class="TYPE">name</tt></td><td>获取给定 ID 的角色名</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_viewdef</code>(<tt class="PARAMETER">view_name</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>为视图获取底层的 <tt class="COMMAND">SELECT</tt> 命令(<span class="emphasis"><i class="EMPHASIS">已废弃</i></span>)</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_viewdef</code>(<tt class="PARAMETER">view_name</tt>, <tt class="PARAMETER">pretty_bool</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>为视图获取底层的 <tt class="COMMAND">SELECT</tt> 命令(<span class="emphasis"><i class="EMPHASIS">已废弃</i></span>)</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_viewdef</code>(<tt class="PARAMETER">view_oid</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>为视图获取底层的 <tt class="COMMAND">SELECT</tt> 命令</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_get_viewdef</code>(<tt class="PARAMETER">view_oid</tt>, <tt class="PARAMETER">pretty_bool</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>为视图获取底层的 <tt class="COMMAND">SELECT</tt> 命令</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_tablespace_databases</code>(<tt class="PARAMETER">tablespace_oid</tt>)</tt></td><td><tt class="TYPE">setof oid</tt></td><td>获取在指定的表空间有元素的数据库 OID 集合</td></tr>
+</tbody>
+</table>
+</div>
+<p><code class="FUNCTION">format_type</code> 通过某个数据类型的类型 OID 以及可能的类型修饰词返回其 SQL 名称。如果不知道具体的修饰词，那么在类型修饰词的位置传入 NULL 。</p>
+<p><code class="FUNCTION">pg_get_constraintdef</code>, <code class="FUNCTION">pg_get_indexdef</code>, <code class="FUNCTION">pg_get_ruledef</code>, <code class="FUNCTION">pg_get_triggerdef</code> 分别从一个视图、规则、索引、触发器、约束上重新构造创建它们的命令(反编译的重新构造，而不是该命令的原文)。<code class="FUNCTION">pg_get_expr</code> 反编译一个独立表达式的内部形式，比如一个字段的缺省值。在检查系统表的内容的时候很有用。<code class="FUNCTION">pg_get_viewdef</code> 重新构造出定义视图的 <tt class="COMMAND">SELECT</tt> 查询。这些函数大多数都有两个变种，其中一个是"适合打印"的结果。这种格式更容易读，但是缺省的格式更有可能被将来的 PostgreSQL 版本用同样的方法解释；如果是用于转储，那么尽可能避免使用"适合打印"的格式。给 <tt class="PARAMETER">pretty_bool</tt> 参数传递 <tt class="LITERAL">false</tt> 生成的结果和那个没有这个参数的变种生成的结果是完全一样。</p>
+<p><code class="FUNCTION">pg_get_serial_sequence</code> 抓取与一个字段相关的序列名字，如果没有任何序列与给定的字段相关则返回 NULL 。这个名字经过了合适的格式化，可以传递给序列函数(参阅<a href="functions-sequence.html">节9.12</a>)。这种相关性可以通过 <tt class="COMMAND">ALTER SEQUENCE OWNED BY</tt> 修改或删除。其实将这个函数命名为 <code class="FUNCTION">pg_get_owned_sequence</code> 或许更为妥当，因为这个名字反映了它通常用于 <tt class="TYPE">serial</tt> 或 <tt class="TYPE">bigserial</tt> 字段的事实。</p>
+<p><code class="FUNCTION">pg_get_userbyid</code> 通过角色的 OID 抽取对应的用户名。</p>
+<p><code class="FUNCTION">pg_tablespace_databases</code> 允许检查一个表空间的状况，它返回在该表空间中保存了对象的数据库 OID 集合。如果这个函数返回数据行，那么该表空间就是非空的，因此不能删除。要显示该表空间中的特定对象，你需要把 <code class="FUNCTION">pg_tablespace_databases</code> 返回的数据库标识与 <tt class="STRUCTNAME">pg_class</tt> 表连接进行查询。</p>
+<a name="AEN14948"></a><a name="AEN14950"></a><a name="AEN14952"></a><a name="AEN14954"></a>
+<p><a href="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">表9-44</a>显示的函数将原来用 <a href="sql-comment.html"><i>COMMENT</i></a> 命令存储的评注抽取出来。如果没有找到，则返回 NULL 。</p>
+<div class="TABLE"><a name="FUNCTIONS-INFO-COMMENT-TABLE"></a>
+<p><b>表9-44. 注释信息函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">col_description</code>(<tt class="PARAMETER">table_oid</tt>, <tt class="PARAMETER">column_number</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>获取一个表字段的评注</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">obj_description</code>(<tt class="PARAMETER">object_oid</tt>, <tt class="PARAMETER">catalog_name</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>获取一个数据库对象的评注</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">obj_description</code>(<tt class="PARAMETER">object_oid</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>获取一个数据库对象的评注(<span class="emphasis"><i class="EMPHASIS">已废弃</i></span>)</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">shobj_description</code>(<tt class="PARAMETER">object_oid</tt>, <tt class="PARAMETER">catalog_name</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>获取一个共享数据库对象的评注</td></tr>
+</tbody>
+</table>
+</div>
+<p><code class="FUNCTION">col_description</code> 返回一个表中字段的评注，它是通过表 OID 和字段号来声明的。<code class="FUNCTION">obj_description</code> 不能用于表字段，因为字段没有自己的 OID 。</p>
+<p>带有两个参数的 <code class="FUNCTION">obj_description</code> 返回一个数据库对象的评注，该对象是通过其 OID 和其所属的系统表名字声明的。比如，<tt class="LITERAL">obj_description(123456,'pg_class')</tt> 将返回 OID 为 12345 的表的评注。只带一个参数的 <code class="FUNCTION">obj_description</code> 只要求对象 OID ，现在已经废弃了，因为我们不再保证 OID 在不同的系统表之间是唯一的，因此可能会返回错误的评注。</p>
+<p><code class="FUNCTION">shobj_description</code> 和 <code class="FUNCTION">obj_description</code> 差不多，不同之处仅在于前者用于共享对象。一些系统表是通用于集群中所有数据库的全局表，因此这些表的评注也是全局存储的。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-srf.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="functions-admin.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">返回集合的函数</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">系统管理函数</td></tr>
+</table>
+</div>
+</body></html>

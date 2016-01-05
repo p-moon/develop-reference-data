@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>4.4. 设置工作环境</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第四章 最后的准备工作</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="addinguser.html" title="添加 LFS 用户">后退</a>
+          <p>添加 LFS 用户</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="aboutsbus.html" title="关于 SBU">前进</a>
+          <p>关于 SBU</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter04.html" title="第四章 最后的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">4.4. 设置工作环境</h1>
+      </div>
+      <p>通过给 <span><strong class="command">bash</strong></span> shell 创建两个新的启动文件来设置一个良好的工作环境。用 <span class="emphasis"><em>lfs</em></span> 用户登录，输入下面的命令来创建一个新的 <tt class="filename">.bash_profile</tt> 文件：</p>
+      <pre class="userinput"><kbd class="command">cat &gt; ~/.bash_profile &lt;&lt; "EOF"
+<tt class="literal">exec env -i HOME=$HOME TERM=$TERM PS1='\u:\w\$ ' /bin/bash</tt>
+EOF</kbd></pre>
+      <p>作为 <span class="emphasis"><em>lfs</em></span> 用户登录的时候，初始 shell 通常是一个<span class="emphasis"><em>登陆</em></span>shell(<span class="emphasis"><em>login</em></span> shell)，它会首先读取宿主系统的 <tt class="filename">/etc/profile</tt> 文件(可能包含一些设置和环境变量)，然后继续读取 <tt class="filename">.bash_profile</tt> 文件来完成登录初始化。<tt class="filename">.bash_profile</tt> 文件中的 <span><strong class="command">exec env -i.../bin/bash</strong></span> 命令用完全空的环境来取代当前的环境（除了继承 <tt class="envar">HOME</tt>, <tt class="envar">TERM</tt>, <tt class="envar">PS1</tt> 变量外）。这样能保证我们的编译环境不会被宿主系统中不必要的或者有潜在危险的环境变量所影响，从而确保获得一个干净的工作环境。</p>
+      <p>另一个新的 shell 实例是<span class="emphasis"><em>非登陆</em></span>shell(<span class="emphasis"><em>non-login</em></span> shell)，它不读取 <tt class="filename">/etc/profile</tt> 或 <tt class="filename">.bash_profile</tt> 文件，而是读取 <tt class="filename">.bashrc</tt> 文件。现在创建 <tt class="filename">.bashrc</tt> 文件：</p>
+      <pre class="userinput"><kbd class="command">cat &gt; ~/.bashrc &lt;&lt; "EOF"
+<tt class="literal">set +h
+umask 022
+LFS=/mnt/lfs
+LC_ALL=POSIX
+PATH=/tools/bin:/bin:/usr/bin
+export LFS LC_ALL PATH</tt>
+EOF</kbd></pre>
+      <p> <span><strong class="command">set +h</strong></span> 命令关闭 <span><strong class="command">bash</strong></span> 的 hash 功能，hash 通常是一个有用的特性：<span><strong class="command">bash</strong></span> 使用一个 hash 表来记录可执行文件的完整路径，以避免为了找到同一个可执行文件而反复搜索 <tt class="envar">PATH</tt> 里的目录。然而，新工具装好之后就要立即使用，通过关闭 hash 功能，当要运行程序的时候，shell 将总是搜索 <tt class="envar">PATH</tt> 里的目录，这样新工具一编译好，shell 就可以在 <tt class="filename">$LFS/tools</tt> 目录里找到，而不是执行所记忆的其它地方的旧版本程序。</p>
+      <p>将用户文件创建掩码(umask)设为 022 ，使得新创建的文件和目录只有所有者可写，其他用户只能读取和运行(<tt class="function">open(2)</tt> 系统调用的默认模式是新文件权限 644，新目录权限 755)。</p>
+      <p><tt class="envar">LFS</tt> 环境变量应该设为所选择的挂载点。</p>
+      <p><tt class="envar">LC_ALL</tt> 环境变量控制着某些程序的本地化，使其显示的信息遵循指定国家的惯例。如果宿主系统使用的 Glibc 版本低于 2.2.4，将 <tt class="envar">LC_ALL</tt> 环境变量设置为"<span class="quote">POSIX</span>"或"<span class="quote">C</span>"以外的值(在本章中)可能会在您退出虚根环境后再想返回的时候出现问题。请把 <tt class="envar">LC_ALL</tt> 设置为"<span class="quote">POSIX</span>"或"<span class="quote">C</span>"(这两者是等价的)以确保在虚根环境中的所有东西都像预期的那样正常工作。</p>
+      <p>通过把 <tt class="filename">/tools/bin</tt> 放在 <tt class="envar">PATH</tt> 的最前面，<a href="../chapter05/chapter05.html">第五章</a>中所有的程序安装好后，就可以立即被 shell 运行。将这一点和关闭 hash 功能结合起来，预防了宿主系统的旧程序在不该运行的时候却被运行了的风险。</p>
+      <p>最后，为了完全准备好编译临时工具的工作环境，导入刚刚创建的 profile 文件：</p>
+      <pre class="userinput"><kbd class="command">source ~/.bash_profile</kbd></pre>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="addinguser.html" title="添加 LFS 用户">后退</a>
+          <p>添加 LFS 用户</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="aboutsbus.html" title="关于 SBU">前进</a>
+          <p>关于 SBU</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter04.html" title="第四章 最后的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

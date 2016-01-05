@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>START TRANSACTION</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-show.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-show.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-truncate.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-truncate.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-START-TRANSACTION"></a>START TRANSACTION</h1>
+<div class="REFNAMEDIV"><a name="AEN54814"></a><h2>名称</h2>START TRANSACTION&nbsp;--&nbsp;开始一个事务块</div>
+<a name="AEN54817"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN54819"></a><h2>语法</h2>
+<pre class="SYNOPSIS">START TRANSACTION [ <tt class="REPLACEABLE"><i>transaction_mode</i></tt> [, ...] ]
+
+这里的 <tt class="REPLACEABLE"><i>transaction_mode</i></tt> 是下列之一：
+
+    ISOLATION LEVEL { SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED }
+    READ WRITE | READ ONLY</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54823"></a><h2>描述</h2>
+<p>这条命令开始一个新的事务块。如果声明了隔离级别或者读写模式，那么新事务就使用这个特性，如同执行了 <a href="sql-set-transaction.html"><i>SET TRANSACTION</i></a> 一样。它和 <a href="sql-begin.html"><i>BEGIN</i></a> 命令等价。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54828"></a><h2>参数</h2>
+<p>参阅 <a href="sql-set-transaction.html"><i>SET TRANSACTION</i></a> 获取有关这个语句参数含义的信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54832"></a><h2>兼容性</h2>
+<p>在标准里，没必要声明 <tt class="COMMAND">START TRANSACTION</tt> 来开始一个事务块：任何 SQL 语句都隐含地开始一个事务块。PostgreSQL 的行为可以认为是隐含地在每条没有跟在 <tt class="COMMAND">START TRANSACTION</tt> 或 <tt class="COMMAND">BEGIN</tt> 的命令后面自动发出一条 <tt class="COMMAND">COMMIT</tt> ，因此这个行为常被称作"自动提交"。其它关系数据库系统可能也提供自动提交的特性。</p>
+<p>SQL 标准要求在相连的 <tt class="REPLACEABLE"><i>transaction_modes</i></tt> 之间有逗号，但是出于历史原因，PostgreSQL 允许省略这个逗号。</p>
+<p>又见 <a href="sql-set-transaction.html"><i>SET TRANSACTION</i></a> 的兼容性小节。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54846"></a><h2>又见</h2><a href="sql-begin.html"><i>BEGIN</i></a>, <a href="sql-commit.html"><i>COMMIT</i></a>, <a href="sql-rollback.html"><i>ROLLBACK</i></a>, <a href="sql-savepoint.html"><i>SAVEPOINT</i></a>, <a href="sql-set-transaction.html"><i>SET TRANSACTION</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-show.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-truncate.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SHOW</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">TRUNCATE</td></tr>
+</table>
+</div>
+</body></html>

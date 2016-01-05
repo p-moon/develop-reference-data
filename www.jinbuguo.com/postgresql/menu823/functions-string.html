@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>字符串函数和操作符</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-math.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="functions-binarystring.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-STRING">9.4. 字符串函数和操作符</a></h1>
+<p>本节描述了用于检查和操作字符串数值的函数和操作符。在这个环境中的字符串包括所有 <tt class="TYPE">character</tt>, <tt class="TYPE">character varying</tt>, <tt class="TYPE">text</tt> 类型的值。除非另外说明，所有下面列出的函数都可以处理这些类型，不过要小心的是，在使用 <tt class="TYPE">character</tt> 类型的时候，需要注意自动填充的潜在影响。通常这里描述的函数也能用于非字符串类型，我们只要先把那些数据转化为字符串表现形式就可以了。有些函数还可以处理位串类型。</p>
+<p>SQL 定义了一些字符串函数，它们有指定的语法(用特定的关键字而不是逗号来分隔参数)。详情请见<a href="functions-string.html#FUNCTIONS-STRING-SQL">表9-5</a>，这些函数也用正常的函数调用语法实现了(参阅<a href="functions-string.html#FUNCTIONS-STRING-OTHER">表9-6</a>)。</p>
+<a name="AEN7225"></a><a name="AEN7227"></a><a name="AEN7229"></a><a name="AEN7231"></a><a name="AEN7233"></a><a name="AEN7235"></a><a name="AEN7237"></a><a name="AEN7239"></a><a name="AEN7241"></a><a name="AEN7243"></a>
+<div class="TABLE"><a name="FUNCTIONS-STRING-SQL"></a>
+<p><b>表9-5. SQL 字符串函数和操作符</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col><col>
+<thead>
+<tr><th>函数</th><th>返回类型</th><th>描述</th><th>例子</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><tt class="PARAMETER">string</tt> <tt class="LITERAL">||</tt> <tt class="PARAMETER">string</tt></tt></td><td><tt class="TYPE">text</tt></td><td>字符串连接<a name="AEN7266"></a></td><td><tt class="LITERAL">'Post' || 'greSQL'</tt></td><td><tt class="LITERAL">PostgreSQL</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">bit_length</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>字符串里二进制位的个数</td><td><tt class="LITERAL">bit_length('jose')</tt></td><td><tt class="LITERAL">32</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">char_length</code>(<tt class="PARAMETER">string</tt>)</tt> 或 <tt class="LITERAL"><code class="FUNCTION">character_length</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>字符串中的字符个数<a name="AEN7296"></a><a name="AEN7299"></a></td><td><tt class="LITERAL">char_length('jose')</tt></td><td><tt class="LITERAL">4</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">convert</code>(<tt class="PARAMETER">string</tt> using <tt class="PARAMETER">conversion_name</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>使用指定的转换名字改变编码。转换可以通过 <tt class="COMMAND">CREATE CONVERSION</tt> 定义。当然系统里有一些预定义的转换名字。参阅<a href="functions-string.html#CONVERSION-NAMES">表9-7</a>获取可用的转换名。</td><td><tt class="LITERAL">convert('PostgreSQL' using iso_8859_1_to_utf8)</tt></td><td>UTF8编码的 <tt class="LITERAL">'PostgreSQL'</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">lower</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把字符串转化为小写</td><td><tt class="LITERAL">lower('TOM')</tt></td><td><tt class="LITERAL">tom</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">octet_length</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>字符串中的字节数</td><td><tt class="LITERAL">octet_length('jose')</tt></td><td><tt class="LITERAL">4</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">overlay</code>(<tt class="PARAMETER">string</tt> placing <tt class="PARAMETER">string</tt> from <tt class="TYPE">int</tt> [<span class="OPTIONAL">for <tt class="TYPE">int</tt></span>])</tt></td><td><tt class="TYPE">text</tt></td><td>替换子字符串</td><td><tt class="LITERAL">overlay('Txxxxas' placing 'hom' from 2 for 4)</tt></td><td><tt class="LITERAL">Thomas</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">position</code>(<tt class="PARAMETER">substring</tt> in <tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>指定的子字符串的位置</td><td><tt class="LITERAL">position('om' in 'Thomas')</tt></td><td><tt class="LITERAL">3</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">substring</code>(<tt class="PARAMETER">string</tt> [<span class="OPTIONAL">from <tt class="TYPE">int</tt></span>] [<span class="OPTIONAL">for <tt class="TYPE">int</tt></span>])</tt></td><td><tt class="TYPE">text</tt></td><td>抽取子字符串</td><td><tt class="LITERAL">substring('Thomas' from 2 for 3)</tt></td><td><tt class="LITERAL">hom</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">substring</code>(<tt class="PARAMETER">string</tt> from <tt class="REPLACEABLE"><i>pattern</i></tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>抽取匹配 POSIX 正则表达式的子字符串。参见<a href="functions-matching.html">节9.7</a>获取更多关于模式匹配的信息。</td><td><tt class="LITERAL">substring('Thomas' from '...$')</tt></td><td><tt class="LITERAL">mas</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">substring</code>(<tt class="PARAMETER">string</tt> from <tt class="REPLACEABLE"><i>pattern</i></tt> for <tt class="REPLACEABLE"><i>escape</i></tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>抽取匹配 SQL 正则表达式的子字符串。参见<a href="functions-matching.html">节9.7</a>获取更多关于模式匹配的信息。</td><td><tt class="LITERAL">substring('Thomas' from '%#"o_a#"_' for '#')</tt></td><td><tt class="LITERAL">oma</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">trim</code>([<span class="OPTIONAL">leading | trailing | both</span>] [<span class="OPTIONAL"><tt class="PARAMETER">characters</tt></span>] from <tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>从字符串 <tt class="PARAMETER">string</tt> 的开头/结尾/两边删除只包含 <tt class="PARAMETER">characters</tt> 中字符(缺省是一个空白)的最长的字符串</td><td><tt class="LITERAL">trim(both 'x' from 'xTomxx')</tt></td><td><tt class="LITERAL">Tom</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">upper</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把字符串转化为大写</td><td><tt class="LITERAL">upper('tom')</tt></td><td><tt class="LITERAL">TOM</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p>还有额外的字符串操作函数可以用，它们在<a href="functions-string.html#FUNCTIONS-STRING-OTHER">表9-6</a>列出。它们有些在内部用于实现<a href="functions-string.html#FUNCTIONS-STRING-SQL">表9-5</a>列出的 SQL 标准字符串函数。</p>
+<a name="AEN7454"></a><a name="AEN7456"></a><a name="AEN7458"></a><a name="AEN7460"></a><a name="AEN7462"></a><a name="AEN7464"></a><a name="AEN7466"></a><a name="AEN7468"></a><a name="AEN7470"></a><a name="AEN7472"></a><a name="AEN7474"></a><a name="AEN7476"></a><a name="AEN7478"></a><a name="AEN7480"></a><a name="AEN7482"></a><a name="AEN7484"></a><a name="AEN7486"></a><a name="AEN7488"></a><a name="AEN7490"></a><a name="AEN7492"></a><a name="AEN7494"></a><a name="AEN7496"></a>
+<div class="TABLE"><a name="FUNCTIONS-STRING-OTHER"></a>
+<p><b>表9-6. 其它字符串函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col><col>
+<thead>
+<tr><th>函数</th><th>返回类型</th><th>描述</th><th>例子</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">ascii</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>参数第一个字符的 ASCII 码</td><td><tt class="LITERAL">ascii('x')</tt></td><td><tt class="LITERAL">120</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">btrim</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt> [<span class="OPTIONAL">, <tt class="PARAMETER">characters</tt> <tt class="TYPE">text</tt></span>])</tt></td><td><tt class="TYPE">text</tt></td><td>从 <tt class="PARAMETER">string</tt> 开头和结尾删除只包含 <tt class="PARAMETER">characters</tt> 中字符(缺省是空白)的最长字符串</td><td><tt class="LITERAL">btrim('xyxtrimyyx', 'xy')</tt></td><td><tt class="LITERAL">trim</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">chr</code>(<tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>给出 ASCII 码的字符</td><td><tt class="LITERAL">chr(65)</tt></td><td><tt class="LITERAL">A</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">convert</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt>, [<span class="OPTIONAL"><tt class="PARAMETER">src_encoding</tt> <tt class="TYPE">name</tt>,</span>] <tt class="PARAMETER">dest_encoding</tt> <tt class="TYPE">name</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把原来编码为 <tt class="PARAMETER">src_encoding</tt> 的字符串转换为 <tt class="PARAMETER">dest_encoding</tt> 编码(如果省略了 <tt class="PARAMETER">src_encoding</tt> 将使用数据库编码)</td><td><tt class="LITERAL">convert( 'text_in_utf8', 'UTF8', 'LATIN1')</tt></td><td>以ISO 8859-1编码表示的 <tt class="LITERAL">text_in_utf8</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">decode</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">type</tt> <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">bytea</tt></td><td>把早先用 <code class="FUNCTION">encode</code> 编码的 <tt class="PARAMETER">string</tt> 里面的二进制数据解码。参数类型和 <code class="FUNCTION">encode</code> 相同。</td><td><tt class="LITERAL">decode('MTIzAAE=', 'base64')</tt></td><td><tt class="LITERAL">123\000\001</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">encode</code>(<tt class="PARAMETER">data</tt> <tt class="TYPE">bytea</tt>, <tt class="PARAMETER">type</tt> <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把二进制数据编码为只包含 ASCII 形式的数据。支持的类型有：<tt class="LITERAL">base64</tt>, <tt class="LITERAL">hex</tt>, <tt class="LITERAL">escape</tt></td><td><tt class="LITERAL">encode( E'123\\000\\001', 'base64')</tt></td><td><tt class="LITERAL">MTIzAAE=</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">initcap</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把每个单词的第一个子母转为大写，其它的保留小写。单词是一系列字母数字组成的字符，用非字母数字分隔。</td><td><tt class="LITERAL">initcap('hi THOMAS')</tt></td><td><tt class="LITERAL">Hi Thomas</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">length</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td><tt class="PARAMETER">string</tt> 中字符的数目</td><td><tt class="LITERAL">length('jose')</tt></td><td><tt class="LITERAL">4</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">lpad</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">length</tt> <tt class="TYPE">int</tt> [<span class="OPTIONAL">, <tt class="PARAMETER">fill</tt> <tt class="TYPE">text</tt></span>])</tt></td><td><tt class="TYPE">text</tt></td><td>通过填充字符 <tt class="PARAMETER">fill</tt>(缺省时为空白)，把 <tt class="PARAMETER">string</tt> 填充为 <tt class="PARAMETER">length</tt> 长度。如果 <tt class="PARAMETER">string</tt> 已经比 <tt class="PARAMETER">length</tt> 长则将其尾部截断。</td><td><tt class="LITERAL">lpad('hi', 5, 'xy')</tt></td><td><tt class="LITERAL">xyxhi</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">ltrim</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt> [<span class="OPTIONAL">, <tt class="PARAMETER">characters</tt> <tt class="TYPE">text</tt></span>])</tt></td><td><tt class="TYPE">text</tt></td><td>从字符串 <tt class="PARAMETER">string</tt> 的开头删除只包含 <tt class="PARAMETER">characters</tt> 中字符(缺省是一个空白)的最长的字符串。</td><td><tt class="LITERAL">ltrim('zzzytrim', 'xyz')</tt></td><td><tt class="LITERAL">trim</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">md5</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>计算 <tt class="PARAMETER">string</tt> 的MD5散列，以十六进制返回结果。</td><td><tt class="LITERAL">md5('abc')</tt></td><td><tt class="LITERAL">900150983cd24fb0 d6963f7d28e17f72</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_client_encoding</code>()</tt></td><td><tt class="TYPE">name</tt></td><td>当前客户端编码名称</td><td><tt class="LITERAL">pg_client_encoding()</tt></td><td><tt class="LITERAL">SQL_ASCII</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">quote_ident</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>返回适用于 SQL 语句的标识符形式(使用适当的引号进行界定)。只有在必要的时候才会添加引号(字符串包含非标识符字符或者会转换大小写的字符)。嵌入的引号被恰当地写了双份。</td><td><tt class="LITERAL">quote_ident('Foo bar')</tt></td><td><tt class="LITERAL">"Foo bar"</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">quote_literal</code>(<tt class="PARAMETER">string</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>返回适用于在 SQL 语句里当作文本使用的形式。嵌入的引号和反斜杠被恰当地写了双份。</td><td><tt class="LITERAL">quote_literal( 'O\'Reilly')</tt></td><td><tt class="LITERAL">'O''Reilly'</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">regexp_replace</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">pattern</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">replacement</tt> <tt class="TYPE">text</tt> [,<tt class="PARAMETER">flags</tt> <tt class="TYPE">text</tt>])</tt></td><td><tt class="TYPE">text</tt></td><td>替换匹配 POSIX 正则表达式的子字符串。参见<a href="functions-matching.html">节9.7</a>以获取更多模式匹配的信息。</td><td><tt class="LITERAL">regexp_replace('Thomas', '.[mN]a.', 'M')</tt></td><td><tt class="LITERAL">ThM</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">repeat</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">number</tt> <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>将 <tt class="PARAMETER">string</tt> 重复 <tt class="PARAMETER">number</tt> 次</td><td><tt class="LITERAL">repeat('Pg', 4)</tt></td><td><tt class="LITERAL">PgPgPgPg</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">replace</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">from</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">to</tt> <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把字符串 <tt class="PARAMETER">string</tt> 里出现地所有子字符串 <tt class="PARAMETER">from</tt> 替换成子字符串 <tt class="PARAMETER">to</tt></td><td><tt class="LITERAL">replace( 'abcdefabcdef', 'cd', 'XX')</tt></td><td><tt class="LITERAL">abXXefabXXef</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">rpad</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">length</tt> <tt class="TYPE">int</tt> [<span class="OPTIONAL">, <tt class="PARAMETER">fill</tt> <tt class="TYPE">text</tt></span>])</tt></td><td><tt class="TYPE">text</tt></td><td>使用填充字符 <tt class="PARAMETER">fill</tt>(缺省时为空白)，把 <tt class="PARAMETER">string</tt> 填充到 <tt class="PARAMETER">length</tt> 长度。如果 <tt class="PARAMETER">string</tt> 已经比 <tt class="PARAMETER">length</tt> 长则将其从尾部截断。</td><td><tt class="LITERAL">rpad('hi', 5, 'xy')</tt></td><td><tt class="LITERAL">hixyx</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">rtrim</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt> [<span class="OPTIONAL">, <tt class="PARAMETER">characters</tt> <tt class="TYPE">text</tt></span>])</tt></td><td><tt class="TYPE">text</tt></td><td>从字符串 <tt class="PARAMETER">string</tt> 的结尾删除只包含 <tt class="PARAMETER">characters</tt> 中字符(缺省是个空白)的最长的字符串。</td><td><tt class="LITERAL">rtrim('trimxxxx', 'x')</tt></td><td><tt class="LITERAL">trim</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">split_part</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">delimiter</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">field</tt> <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>根据 <tt class="PARAMETER">delimiter</tt> 分隔 <tt class="PARAMETER">string</tt> 返回生成的第 <tt class="PARAMETER">field</tt> 个子字符串(1为基)。</td><td><tt class="LITERAL">split_part('abc~@~def~@~ghi', '~@~', 2)</tt></td><td><tt class="LITERAL">def</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">strpos</code>(<tt class="PARAMETER">string</tt>, <tt class="PARAMETER">substring</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>指定的子字符串的位置。和 <tt class="LITERAL">position(<tt class="PARAMETER">substring</tt> in <tt class="PARAMETER">string</tt>)</tt> 一样，不过参数顺序相反。</td><td><tt class="LITERAL">strpos('high', 'ig')</tt></td><td><tt class="LITERAL">2</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">substr</code>(<tt class="PARAMETER">string</tt>, <tt class="PARAMETER">from</tt> [<span class="OPTIONAL">, <tt class="PARAMETER">count</tt></span>])</tt></td><td><tt class="TYPE">text</tt></td><td>抽取子字符串。和 <tt class="LITERAL">substring(<tt class="PARAMETER">string</tt> from <tt class="PARAMETER">from</tt> for <tt class="PARAMETER">count</tt>)</tt> 一样</td><td><tt class="LITERAL">substr('alphabet', 3, 2)</tt></td><td><tt class="LITERAL">ph</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_ascii</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt> [<span class="OPTIONAL">, <tt class="PARAMETER">encoding</tt> <tt class="TYPE">text</tt></span>])</tt></td><td><tt class="TYPE">text</tt></td><td>把 <tt class="PARAMETER">string</tt> 从其它编码转换为 ASCII (仅支持 <tt class="LITERAL">LATIN1</tt>, <tt class="LITERAL">LATIN2</tt>, <tt class="LITERAL">LATIN9</tt>, <tt class="LITERAL">WIN1250</tt> 编码)。</td><td><tt class="LITERAL">to_ascii('Karel')</tt></td><td><tt class="LITERAL">Karel</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">to_hex</code>(<tt class="PARAMETER">number</tt> <tt class="TYPE">int</tt> 或 <tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把 <tt class="PARAMETER">number</tt> 转换成十六进制表现形式</td><td><tt class="LITERAL">to_hex(2147483647)</tt></td><td><tt class="LITERAL">7fffffff</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">translate</code>(<tt class="PARAMETER">string</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">from</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">to</tt> <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把在 <tt class="PARAMETER">string</tt> 中包含的任何匹配 <tt class="PARAMETER">from</tt> 中字符的字符转化为对应的在 <tt class="PARAMETER">to</tt> 中的字符</td><td><tt class="LITERAL">translate('12345', '14', 'ax')</tt></td><td><tt class="LITERAL">a23x5</tt></td></tr>
+</tbody>
+</table>
+</div>
+<div class="TABLE"><a name="CONVERSION-NAMES"></a>
+<p><b>表9-7. 内置的转换</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>转换名<a name="AEN7942" href="#FTN.AEN7942"><span class="footnote">[a]</span></a></th><th>源编码</th><th>目的编码</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">ascii_to_mic</tt></td><td><tt class="LITERAL">SQL_ASCII</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">ascii_to_utf8</tt></td><td><tt class="LITERAL">SQL_ASCII</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">big5_to_euc_tw</tt></td><td><tt class="LITERAL">BIG5</tt></td><td><tt class="LITERAL">EUC_TW</tt></td></tr>
+<tr><td><tt class="LITERAL">big5_to_mic</tt></td><td><tt class="LITERAL">BIG5</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">big5_to_utf8</tt></td><td><tt class="LITERAL">BIG5</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_cn_to_mic</tt></td><td><tt class="LITERAL">EUC_CN</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_cn_to_utf8</tt></td><td><tt class="LITERAL">EUC_CN</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_jp_to_mic</tt></td><td><tt class="LITERAL">EUC_JP</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_jp_to_sjis</tt></td><td><tt class="LITERAL">EUC_JP</tt></td><td><tt class="LITERAL">SJIS</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_jp_to_utf8</tt></td><td><tt class="LITERAL">EUC_JP</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_kr_to_mic</tt></td><td><tt class="LITERAL">EUC_KR</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_kr_to_utf8</tt></td><td><tt class="LITERAL">EUC_KR</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_tw_to_big5</tt></td><td><tt class="LITERAL">EUC_TW</tt></td><td><tt class="LITERAL">BIG5</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_tw_to_mic</tt></td><td><tt class="LITERAL">EUC_TW</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">euc_tw_to_utf8</tt></td><td><tt class="LITERAL">EUC_TW</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">gb18030_to_utf8</tt></td><td><tt class="LITERAL">GB18030</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">gbk_to_utf8</tt></td><td><tt class="LITERAL">GBK</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_10_to_utf8</tt></td><td><tt class="LITERAL">LATIN6</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_13_to_utf8</tt></td><td><tt class="LITERAL">LATIN7</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_14_to_utf8</tt></td><td><tt class="LITERAL">LATIN8</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_15_to_utf8</tt></td><td><tt class="LITERAL">LATIN9</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_16_to_utf8</tt></td><td><tt class="LITERAL">LATIN10</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_1_to_mic</tt></td><td><tt class="LITERAL">LATIN1</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_1_to_utf8</tt></td><td><tt class="LITERAL">LATIN1</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_2_to_mic</tt></td><td><tt class="LITERAL">LATIN2</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_2_to_utf8</tt></td><td><tt class="LITERAL">LATIN2</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_2_to_windows_1250</tt></td><td><tt class="LITERAL">LATIN2</tt></td><td><tt class="LITERAL">WIN1250</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_3_to_mic</tt></td><td><tt class="LITERAL">LATIN3</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_3_to_utf8</tt></td><td><tt class="LITERAL">LATIN3</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_4_to_mic</tt></td><td><tt class="LITERAL">LATIN4</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_4_to_utf8</tt></td><td><tt class="LITERAL">LATIN4</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_5_to_koi8_r</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td><td><tt class="LITERAL">KOI8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_5_to_mic</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_5_to_utf8</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_5_to_windows_1251</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td><td><tt class="LITERAL">WIN1251</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_5_to_windows_866</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td><td><tt class="LITERAL">WIN866</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_6_to_utf8</tt></td><td><tt class="LITERAL">ISO_8859_6</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_7_to_utf8</tt></td><td><tt class="LITERAL">ISO_8859_7</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_8_to_utf8</tt></td><td><tt class="LITERAL">ISO_8859_8</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">iso_8859_9_to_utf8</tt></td><td><tt class="LITERAL">LATIN5</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">johab_to_utf8</tt></td><td><tt class="LITERAL">JOHAB</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">koi8_r_to_iso_8859_5</tt></td><td><tt class="LITERAL">KOI8</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td></tr>
+<tr><td><tt class="LITERAL">koi8_r_to_mic</tt></td><td><tt class="LITERAL">KOI8</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">koi8_r_to_utf8</tt></td><td><tt class="LITERAL">KOI8</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">koi8_r_to_windows_1251</tt></td><td><tt class="LITERAL">KOI8</tt></td><td><tt class="LITERAL">WIN1251</tt></td></tr>
+<tr><td><tt class="LITERAL">koi8_r_to_windows_866</tt></td><td><tt class="LITERAL">KOI8</tt></td><td><tt class="LITERAL">WIN866</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_ascii</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">SQL_ASCII</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_big5</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">BIG5</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_euc_cn</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">EUC_CN</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_euc_jp</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">EUC_JP</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_euc_kr</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">EUC_KR</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_euc_tw</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">EUC_TW</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_iso_8859_1</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">LATIN1</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_iso_8859_2</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">LATIN2</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_iso_8859_3</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">LATIN3</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_iso_8859_4</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">LATIN4</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_iso_8859_5</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_koi8_r</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">KOI8</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_sjis</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">SJIS</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_windows_1250</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">WIN1250</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_windows_1251</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">WIN1251</tt></td></tr>
+<tr><td><tt class="LITERAL">mic_to_windows_866</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td><td><tt class="LITERAL">WIN866</tt></td></tr>
+<tr><td><tt class="LITERAL">sjis_to_euc_jp</tt></td><td><tt class="LITERAL">SJIS</tt></td><td><tt class="LITERAL">EUC_JP</tt></td></tr>
+<tr><td><tt class="LITERAL">sjis_to_mic</tt></td><td><tt class="LITERAL">SJIS</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">sjis_to_utf8</tt></td><td><tt class="LITERAL">SJIS</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">tcvn_to_utf8</tt></td><td><tt class="LITERAL">WIN1258</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">uhc_to_utf8</tt></td><td><tt class="LITERAL">UHC</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_ascii</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">SQL_ASCII</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_big5</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">BIG5</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_euc_cn</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">EUC_CN</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_euc_jp</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">EUC_JP</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_euc_kr</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">EUC_KR</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_euc_tw</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">EUC_TW</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_gb18030</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">GB18030</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_gbk</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">GBK</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_1</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN1</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_10</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN6</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_13</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN7</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_14</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN8</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_15</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN9</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_16</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN10</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_2</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN2</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_3</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN3</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_4</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN4</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_5</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_6</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">ISO_8859_6</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_7</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">ISO_8859_7</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_8</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">ISO_8859_8</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_iso_8859_9</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">LATIN5</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_johab</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">JOHAB</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_koi8_r</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">KOI8</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_sjis</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">SJIS</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_tcvn</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN1258</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_uhc</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">UHC</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_1250</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN1250</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_1251</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN1251</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_1252</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN1252</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_1253</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN1253</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_1254</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN1254</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_1255</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN1255</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_1256</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN1256</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_1257</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN1257</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_866</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN866</tt></td></tr>
+<tr><td><tt class="LITERAL">utf8_to_windows_874</tt></td><td><tt class="LITERAL">UTF8</tt></td><td><tt class="LITERAL">WIN874</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1250_to_iso_8859_2</tt></td><td><tt class="LITERAL">WIN1250</tt></td><td><tt class="LITERAL">LATIN2</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1250_to_mic</tt></td><td><tt class="LITERAL">WIN1250</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1250_to_utf8</tt></td><td><tt class="LITERAL">WIN1250</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1251_to_iso_8859_5</tt></td><td><tt class="LITERAL">WIN1251</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1251_to_koi8_r</tt></td><td><tt class="LITERAL">WIN1251</tt></td><td><tt class="LITERAL">KOI8</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1251_to_mic</tt></td><td><tt class="LITERAL">WIN1251</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1251_to_utf8</tt></td><td><tt class="LITERAL">WIN1251</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1251_to_windows_866</tt></td><td><tt class="LITERAL">WIN1251</tt></td><td><tt class="LITERAL">WIN866</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1252_to_utf8</tt></td><td><tt class="LITERAL">WIN1252</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_1256_to_utf8</tt></td><td><tt class="LITERAL">WIN1256</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_866_to_iso_8859_5</tt></td><td><tt class="LITERAL">WIN866</tt></td><td><tt class="LITERAL">ISO_8859_5</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_866_to_koi8_r</tt></td><td><tt class="LITERAL">WIN866</tt></td><td><tt class="LITERAL">KOI8</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_866_to_mic</tt></td><td><tt class="LITERAL">WIN866</tt></td><td><tt class="LITERAL">MULE_INTERNAL</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_866_to_utf8</tt></td><td><tt class="LITERAL">WIN866</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_866_to_windows_1251</tt></td><td><tt class="LITERAL">WIN866</tt></td><td><tt class="LITERAL">WIN</tt></td></tr>
+<tr><td><tt class="LITERAL">windows_874_to_utf8</tt></td><td><tt class="LITERAL">WIN874</tt></td><td><tt class="LITERAL">UTF8</tt></td></tr>
+</tbody>
+<tr><td colspan="3">【注意】<a name="FTN.AEN7942">a.</a><br>转换名遵循一个标准的命名模式：将源编码中的所有非字母数字字符用下划线替换，后面跟着 <tt class="LITERAL">_to_</tt> ，然后后面再跟着经过同样处理的目标编码的名字。因此这些名字可能和客户的编码名字不同。</td></tr>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-math.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="functions-binarystring.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">数学函数和操作符</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">二进制字符串函数和操作符</td></tr>
+</table>
+</div>
+</body></html>

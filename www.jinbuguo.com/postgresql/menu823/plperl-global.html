@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PL/Perl 里的全局变量</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plperl-data.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plperl.html">快退</a></td><td width="60%" align="center" valign="bottom">章39. PL/Perl - Perl 过程语言</td><td width="10%" align="right" valign="top"><a href="plperl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plperl-trusted.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLPERL-GLOBAL">39.4. PL/Perl 里的全局变量</a></h1>
+<p>你可以利用全局散列 <tt class="VARNAME">%_SHARED</tt> 保存数据，包括代码引用，持续时间可以达到当前会话的生命期。</p>
+<p>下面是一个共享数据的例子：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION set_var(name text, val text) RETURNS text AS $$
+    if ($_SHARED{$_[0]} = $_[1]) {
+        return 'ok';
+    } else {
+        return "can't set shared variable $_[0] to $_[1]";
+    }
+$$ LANGUAGE plperl;
+
+CREATE OR REPLACE FUNCTION get_var(name text) RETURNS text AS $$
+    return $_SHARED{$_[0]};
+$$ LANGUAGE plperl;
+
+SELECT set_var('sample', 'Hello, PL/Perl!  How's tricks?');
+SELECT get_var('sample');</pre>
+<p>下面是一个使用代码引用的稍微复杂些的例子：</p>
+<pre class="PROGRAMLISTING">CREATE OR REPLACE FUNCTION myfuncs() RETURNS void AS $$
+    $_SHARED{myquote} = sub {
+        my $arg = shift;
+        $arg =~ s/(['\\])/\\$1/g;
+        return "'$arg'";
+    };
+$$ LANGUAGE plperl;
+
+SELECT myfuncs(); /* 初始化函数 */
+
+/* 建立一个使用引用的函数的函数 */
+
+CREATE OR REPLACE FUNCTION use_quote(TEXT) RETURNS text AS $$
+    my $text_to_quote = shift;
+    my $qfunc = $_SHARED{myquote};
+    return &amp;$qfunc($text_to_quote);
+$$ LANGUAGE plperl;</pre>
+<p>如果不在乎易读性，你可以用一行 <tt class="LITERAL">return $_SHARED{myquote}-&gt;($_[0]);</tt> 代替上面的三行。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plperl-data.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plperl-trusted.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PL/Perl 里的数据值</td><td width="34%" align="center" valign="top"><a href="plperl.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">可信的和不可信的 PL/Perl</td></tr>
+</table>
+</div>
+</body></html>
