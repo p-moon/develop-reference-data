@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>airplay.gif</file>
+    </qresource>
+</RCC>

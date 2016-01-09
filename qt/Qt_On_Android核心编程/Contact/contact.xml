@@ -1,0 +1,10 @@
+<?xml version="1.0"?> 
+<peoples>
+  <!-- comment, peoples -->
+  <people name="John">
+    <mobile>13302901234 <![CDATA[<primary>]]> </mobile>
+  </people>
+  <people name="Mary">
+    <mobile>13902905678</mobile>
+  </people>
+</peoples>

@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="add.png">images/ic_top_bar_add.png</file>
+        <file alias="add_pressed.png">images/ic_top_bar_add_pressed.png</file>
+        <file alias="delete.png">images/ic_top_bar_delete.png</file>
+        <file alias="delete_pressed.png">images/ic_top_bar_delete_pressed.png</file>
+        <file alias="thumbnail.png">images/ic_top_bar_thumbnail.png</file>
+        <file alias="thumbnail_pressed.png">images/ic_top_bar_thumbnail_pressed.png</file>
+        <file alias="save.png">images/ic_top_bar_save.png</file>
+        <file alias="save_pressed.png">images/ic_top_bar_save_pressed.png</file>
+        <file alias="background.png">images/background.png</file>
+        <file alias="thumb_add_new.png">images/thumb_add_new.png</file>
+        <file alias="thumb_text_bg.png">images/thumb_text_bg_yellow.png</file>
+        <file alias="view_background.png">images/view_background.png</file>
+    </qresource>
+</RCC>
