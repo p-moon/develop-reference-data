@@ -1,0 +1,128 @@
+* {
+	font-family: 宋体;
+	font-size: 12px;
+
+}
+
+
+QPushButton {
+    background-color: yellowgreen;
+    border-width: 2px;
+    border-color: seagreen;
+    border-style: solid;
+    border-radius: 5;
+    padding: 3px;
+    min-width: 9ex;
+    min-height: 2.5ex;
+}
+
+QPushButton:hover {
+   background-color: springgreen;
+}
+
+QPushButton:pressed {
+    padding-left: 5px;
+    padding-top: 5px;
+    background-color: palegreen;
+}
+
+
+
+QLabel {
+	font:bold;
+	font-family: 宋体;
+	font-size: 12px;
+
+}
+
+DailForm>QToolButton#OneToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#twoToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#threeToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#fourToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#fiveToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#sixToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#sevenToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#eightToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#nineToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#zeroToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#starToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#sharpToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 40px;
+}
+DailForm>QToolButton#delToolBtn {
+  font: bold;
+  font-family: 宋体;
+  font-size: 30px;
+}
+
+QComboBox, QSpinBox {
+    background-color: plum;					/*  暗紫色 */
+    selection-color: mediumvioletred;
+    selection-background-color: lightcoral;
+}
+
+QRadioButton:checked {
+	color:deepskyblue;
+}
+
+QRadioButton:hover {
+	color:white;
+    background-color: limegreen;
+}
+
+QGroupBox {
+	border-style:dashed;
+}
+
+
+QTabBar::tab {
+  height: 14ex;
+  width: 14ex;
+}
+
