@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>systemd-tmpfiles 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>systemd-tmpfiles 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+systemd-tmpfiles(8)                          systemd-228                         systemd-tmpfiles(8)
+
+<h3>名称</h3>
+    systemd-tmpfiles, systemd-tmpfiles-setup.service, systemd-tmpfiles-setup-dev.service,
+    systemd-tmpfiles-clean.service, systemd-tmpfiles-clean.timer - 创建、删除、清理易变文件与临时文件
+
+<h3>概览</h3>
+    systemd-tmpfiles [OPTIONS...] [CONFIGFILE...]
+    systemd-tmpfiles-setup.service
+    systemd-tmpfiles-setup-dev.service
+    systemd-tmpfiles-clean.service
+    systemd-tmpfiles-clean.timer
+
+<h3>描述</h3>
+    systemd-tmpfiles 根据配置文件(<a href="tmpfiles.d.html">tmpfiles.d(5)</a>)的指引，创建、删除、清理易变文件与临时文件。
+
+    若不指定任何"CONFIGFILE"参数，则表示使用所有标准位置的配置文件。
+    若指定了配置文件，则表示仅使用指定的配置文件。配置文件要么必须仅用绝对路径表示，要么必须仅用文件名表示，
+    如果仅用文件名表示，那么将在所有 <a href="tmpfiles.d.html">tmpfiles.d(5)</a> 目录中搜索。
+
+<h3>选项(OPTIONS)</h3>
+    所有可使用的选项如下：
+
+    --create
+        创建及写入所有 f, F, w, d, D, v, p, L, c, b, m 标记的文件与目录。
+        所有 z, Z, t, T, a, A 标记的文件与目录都将被设置相应的属主/属组、权限、安全标签。
+
+    --clean
+        清理所有过期的文件与目录
+
+    --remove
+        删除 R, D 标记的目录中的内容，以及 r, R 标记的目录与文件自身。
+
+    --boot
+        也执行带有"!"标记的行
+
+    --prefix=path
+        仅作用于带有特定前缀的路径，可以多次使用此选项。
+
+    --exclude-prefix=path
+        忽略带有特定前缀的路径，可以多次使用此选项。
+
+    --root=root
+        指定一个"根目录"，包括配置文件在内的所有路径都将加上这个前缀。
+
+    -h, --help
+        打印帮助信息后退出
+
+    --version
+        打印版本信息后退出
+
+    可以同时使用 --create, --clean, --remove 选项，以实现在删除旧文件的同时又创建新文件。
+
+<h3>非特权 --cleanup 操作</h3>
+    systemd-tmpfiles 尽量避免更改目录的访问时间(atime)与修改时间(mtime)，这需要 CAP_ADMIN 特权。
+    当以非root运行时，检查目录的内容会更新目录的访问时间(atime)，这可能会阻止正确的清理目录的内容。
+
+<h3>退出状态</h3>
+    成功时退出零，失败时退出非零。
+
+<h3>参见</h3>
+    <a href="systemd.html">systemd(1)</a>, <a href="tmpfiles.d.html">tmpfiles.d(5)</a>
+
+systemd-tmpfiles(8)                          systemd-228                         systemd-tmpfiles(8)
+</pre>
+
+
+<hr />
+
+
+</body></html>

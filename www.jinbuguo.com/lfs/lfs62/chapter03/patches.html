@@ -1,0 +1,645 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+
+    
+    
+  <title>3.3. 需要的补丁</title>
+  <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+
+    
+
+    
+  <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+
+  <body id="lfs" class="6.2">
+
+    
+<div class="navheader">
+      
+<div class="headertitles">
+        
+<h4>Linux From Scratch - 版本 6.2</h4>
+
+        
+<h3>第三章 软件包和补丁</h3>
+
+      </div>
+
+      
+<ul class="headerlinks">
+
+        <li class="prev">
+          <a accesskey="p" href="packages.html" title="全部软件包">后退</a>
+          
+    <p>全部软件包</p>
+
+        </li>
+
+        <li class="next">
+          <a accesskey="n" href="../chapter04/chapter04.html" title="最后的准备工作">前进</a>
+          
+    <p>最后的准备工作</p>
+
+        </li>
+
+        <li class="up"><a accesskey="u" href="chapter03.html" title="第三章 软件包和补丁">上一级</a></li>
+
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+
+      
+</ul>
+
+    </div>
+
+    
+<div class="sect1">
+      
+<div class="titlepage">
+        
+<h1 class="sect1">3.3. 需要的补丁</h1>
+
+      </div>
+
+      
+<p>除了下载软件包之外，还有一些补丁需要下载。这些补丁修正了本该由软件包开发者修正的错误；另外也做了一些小的修改，使得软件包之间可以更好的协同工作。构建 LFS 系统需要下列补丁：</p>
+
+      
+<div class="materials">
+        
+<div class="variablelist">
+          
+<dl>
+
+            <dt>
+              <span class="term">Bash Upstream Fixes Patch - <span class="token">23 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/bash-3.1-fixes-8.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/bash-3.1-fixes-8.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">bc337045fa4c5839babf0306cc9df6d0</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Bzip2 Bzgrep Security Fixes Patch -
+              <span class="token">1.2 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/bzip2-1.0.3-bzgrep_security-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/bzip2-1.0.3-bzgrep_security-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">4eae50e4fd690498f23d3057dfad7066</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Bzip2 Documentation Patch - <span class="token">1.6 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/bzip2-1.0.3-install_docs-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/bzip2-1.0.3-install_docs-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">9e5dfbf4814b71ef986b872c9af84488</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Coreutils Internationalization Fixes Patch -
+              <span class="token">101 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/coreutils-5.96-i18n-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/coreutils-5.96-i18n-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">3df2e6fdb1b5a5c13afedd3d3e05600f</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Coreutils Suppress Uptime, Kill, Su Patch -
+              <span class="token">13 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/coreutils-5.96-suppress_uptime_kill_su-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/coreutils-5.96-suppress_uptime_kill_su-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">227d41a6d0f13c31375153eae91e913d</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Coreutils Uname Patch - <span class="token">4.6 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/coreutils-5.96-uname-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/coreutils-5.96-uname-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">c05b735710fbd62239588c07084852a0</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Database (Berkeley) Upstream Fixes Patch -
+              <span class="token">3.8 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/db-4.4.20-fixes-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/db-4.4.20-fixes-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">32b28d1d1108dfcd837fe10c4eb0fbad</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Diffutils Internationalization Fixes Patch -
+              <span class="token">18 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/diffutils-2.8.1-i18n-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/diffutils-2.8.1-i18n-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">c8d481223db274a33b121fb8c25af9f7</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Expect Spawn Patch - <span class="token">6.8
+              KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/expect-5.43.0-spawn-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/expect-5.43.0-spawn-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">ef6d0d0221c571fb420afb7033b3bbba</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Gawk Segfault Patch - <span class="token">1.3 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/gawk-3.1.5-segfault_fix-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/gawk-3.1.5-segfault_fix-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">7679530d88bf3eb56c42eb6aba342ddb</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">GCC Specs Patch - <span class="token">15
+              KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/gcc-4.0.3-specs-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/gcc-4.0.3-specs-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">0aa7d4c6be50c3855fe812f6faabc306</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Glibc Linux Types Patch - <span class="token">1.1 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/glibc-2.3.6-linux_types-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/glibc-2.3.6-linux_types-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">30ea59ae747478aa9315455543b5bb43</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Glibc Inotify Syscall Functions Patch -
+              <span class="token">1.4 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/glibc-2.3.6-inotify-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/glibc-2.3.6-inotify-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">94f6d26ae50a0fe6285530fdbae90bbf</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Grep RedHat Fixes Patch - <span class="token">55 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/grep-2.5.1a-redhat_fixes-2.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/grep-2.5.1a-redhat_fixes-2.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">2c67910be2d0a54714f63ce350e6d8a6</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Groff Debian Patch - <span class="token">360
+              KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/groff-1.18.1.1-debian_fixes-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/groff-1.18.1.1-debian_fixes-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">a47c281afdda457ba4033498f973400d</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">GRUB Disk Geometry Patch - <span class="token">28 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/grub-0.97-disk_geometry-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/grub-0.97-disk_geometry-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">bf1594e82940e25d089feca74c6f1879</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Gzip Security Patch - <span class="token">2
+              KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/gzip-1.3.5-security_fixes-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/gzip-1.3.5-security_fixes-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">f107844f01fc49446654ae4a8f8a0728</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Inetutils GCC-4.x Fix Patch - <span class="token">1.3 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/inetutils-1.4.2-gcc4_fixes-3.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/inetutils-1.4.2-gcc4_fixes-3.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">5204fbc503c9fb6a8e353583818db6b9</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Inetutils No-Server-Man-Pages Patch -
+              <span class="token">4.1 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/inetutils-1.4.2-no_server_man_pages-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/inetutils-1.4.2-no_server_man_pages-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">eb477f532bc6d26e7025fcfc4452511d</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Kbd Backspace/Delete Fix Patch -
+              <span class="token">11 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/kbd-1.12-backspace-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/kbd-1.12-backspace-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">692c88bb76906d99cc20446fadfb6499</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Kbd GCC-4.x Fix Patch - <span class="token">1.4 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/kbd-1.12-gcc4_fixes-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/kbd-1.12-gcc4_fixes-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">615bc1e381ab646f04d8045751ed1f69</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Linux kernel UTF-8 Composing Patch -
+              <span class="token">11 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/linux-2.6.16.27-utf8_input-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/linux-2.6.16.27-utf8_input-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">d67b53e1e99c782bd28d879e11ee16c3</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Linux Libc Headers Inotify Patch -
+              <span class="token">4.7 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/linux-libc-headers-2.6.12.0-inotify-3.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/linux-libc-headers-2.6.12.0-inotify-3.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">8fd71a4bd3344380bd16caf2c430fa9b</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Mktemp Tempfile Patch - <span class="token">3.5 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/mktemp-1.5-add_tempfile-3.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/mktemp-1.5-add_tempfile-3.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">65d73faabe3f637ad79853b460d30a19</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Module-init-tools Patch - <span class="token">1.2 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/module-init-tools-3.2.2-modprobe-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/module-init-tools-3.2.2-modprobe-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">f1e452fdf3b8d7ef60148125e390c3e8</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Ncurses Fixes Patch - <span class="token">8.2 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/ncurses-5.5-fixes-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/ncurses-5.5-fixes-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">0e033185008f21578c6e4c7249f92cbb</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Perl Libc Patch - <span class="token">1.1
+              KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/perl-5.8.8-libc-2.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/perl-5.8.8-libc-2.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">3bf8aef1fb6eb6110405e699e4141f99</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Readline Upstream Fixes Patch - <span class="token">3.8 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/readline-5.1-fixes-3.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/readline-5.1-fixes-3.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">e30963cd5c6f6a11a23344af36cfa38c</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Sysklogd 8-Bit Cleanness Patch -
+              <span class="token">0.9 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/sysklogd-1.4.1-8bit-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/sysklogd-1.4.1-8bit-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">cc0d9c3bd67a6b6357e42807cf06073e</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Sysklogd Fixes Patch - <span class="token">27 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/sysklogd-1.4.1-fixes-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/sysklogd-1.4.1-fixes-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">508104f058d1aef26b3bc8059821935f</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Tar GCC-4.x Fix Patch - <span class="token">1.2 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/tar-1.15.1-gcc4_fix_tests-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/tar-1.15.1-gcc4_fix_tests-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">8e286a1394e6bcf2907f13801770a72a</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Tar Security Fixes Patch - <span class="token">3.9 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/tar-1.15.1-security_fixes-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/tar-1.15.1-security_fixes-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">19876e726d9cec9ce1508e3af74dc22e</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Tar Sparse Fix Patch - <span class="token">0.9 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/tar-1.15.1-sparse_fix-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/tar-1.15.1-sparse_fix-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">9e3623f7c88d8766878ecb27c980d86a</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Texinfo Multibyte Fixes Patch - <span class="token">1.5 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/texinfo-4.8-multibyte-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/texinfo-4.8-multibyte-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">6cb5b760cfdd2dd53a0430eb572a8aaa</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Texinfo Tempfile Fix Patch - <span class="token">2.2 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/texinfo-4.8-tempfile_fix-2.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/texinfo-4.8-tempfile_fix-2.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">559bda136a2ac7777ecb67511227af85</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Util-linux Cramfs Patch - <span class="token">2.8 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/util-linux-2.12r-cramfs-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/util-linux-2.12r-cramfs-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">1c3f40b30e12738eb7b66a35b7374572</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Vim Upstream Fixes Patch - <span class="token">42 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/vim-7.0-fixes-7.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/vim-7.0-fixes-7.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">d274219566702b0bafcb83ab4685bbde</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Vim Man Directories Patch - <span class="token">4.2 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/vim-7.0-mandir-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/vim-7.0-mandir-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">b6426eb4192faba1e867ddd502323f5b</tt></p>
+
+            </dd>
+
+            <dt>
+              <span class="term">Vim Spellfile Patch - <span class="token">1.2 KB</span>:</span>
+            </dt>
+
+            <dd>
+              
+    <p>下载：<a href="http://www.linuxfromscratch.org/patches/lfs/6.2/vim-7.0-spellfile-1.patch"><i>http://www.linuxfromscratch.org/patches/lfs/6.2/vim-7.0-spellfile-1.patch</i></a></p>
+
+              
+    <p>MD5和：<tt class="literal">98e59e34cb6e16a8d4671247cebd64ee</tt></p>
+
+            </dd>
+
+          
+</dl>
+
+        </div>
+
+      </div>
+
+      
+<p>所有补丁总计约 773.8 KB</p>
+
+      
+<p>除了上面列出的必需补丁外，LFS 社区还创建了许多可选的补丁。这些可选补丁修正了某些不重要的问题，或者是开启了某些默认没有开启的功能。请仔细阅读位于 <a href="http://www.linuxfromscratch.org/patches/"><i>http://www.linuxfromscratch.org/patches/</i></a> 的补丁数据库，选择任何符合您需要的额外补丁。</p>
+
+    </div>
+
+    
+<div class="navfooter">
+      
+<ul>
+
+        <li class="prev">
+          <a accesskey="p" href="packages.html" title="全部软件包">后退</a>
+          
+    <p>全部软件包</p>
+
+        </li>
+
+        <li class="next">
+          <a accesskey="n" href="../chapter04/chapter04.html" title="最后的准备工作">前进</a>
+          
+    <p>最后的准备工作</p>
+
+        </li>
+
+        <li class="up"><a accesskey="u" href="chapter03.html" title="第三章 软件包和补丁">上一级</a></li>
+
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+
+      
+</ul>
+
+    </div>
+
+  
+</body></html>

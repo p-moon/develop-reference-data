@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>UNION, CASE, and Related Constructs</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="typeconv-query.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="typeconv.html">快退</a></td><td width="60%" align="center" valign="bottom">章10. 类型转换</td><td width="10%" align="right" valign="top"><a href="typeconv.html">快进</a></td><td width="10%" align="right" valign="top"><a href="indexes.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TYPECONV-UNION-CASE">10.5. <tt class="LITERAL">UNION</tt>, <tt class="LITERAL">CASE</tt> 和相关构造</a></h1><a name="AEN15874"></a><a name="AEN15877"></a><a name="AEN15880"></a><a name="AEN15883"></a><a name="AEN15886"></a><a name="AEN15889"></a>
+<p>SQL <tt class="LITERAL">UNION</tt> 构造必须把那些可能不太相似的类型匹配起来成为一个结果集。解析算法分别应用于联合查询的每个输出字段。<tt class="LITERAL">INTERSECT</tt> 和 <tt class="LITERAL">EXCEPT</tt> 构造对不相同的类型使用和 <tt class="LITERAL">UNION</tt> 相同的算法进行解析。<tt class="LITERAL">CASE</tt>, <tt class="LITERAL">ARRAY</tt>, <tt class="LITERAL">VALUES</tt>, <code class="FUNCTION">GREATEST</code>, <code class="FUNCTION">LEAST</code> 构造也使用同样的算法匹配它的部件表达式并且选择一个结果数据类型。</p>
+<div class="PROCEDURE">
+<p><b><tt class="LITERAL">UNION</tt>, <tt class="LITERAL">CASE</tt> 和相关构造的类型解析</b></p>
+<ol type="1">
+<li class="STEP"><p>如果所有输入都是 <tt class="TYPE">unknown</tt> 类型则解析成 <tt class="TYPE">text</tt> 类型(字符串类型范畴的首选类型)。否则，在选择结果类型的时候忽略 <tt class="TYPE">unknown</tt> 输入。</p></li>
+<li class="STEP"><p>如果非 unknown 输入不属于同一个类型范畴，失败。</p></li>
+<li class="STEP"><p>选取第一个属于该范畴中首选类型的非 unknown 输入类型，或者，第一个允许所有非 unknown 输入隐含转换成它的类型。</p></li>
+<li class="STEP"><p>把所有输入转换成所选类型。</p></li>
+</ol>
+</div>
+<p>下面是一些例子。</p>
+<div class="EXAMPLE"><a name="AEN15918"></a>
+<p><b>例10-7. Union 中的待定类型解析</b></p>
+<pre class="SCREEN">SELECT text 'a' AS "text" UNION SELECT 'b';
+
+ text
+------
+ a
+ b
+(2 rows)</pre>
+<p>这里，unknown 类型文本 <tt class="LITERAL">'b'</tt> 将被解析成 <tt class="TYPE">text</tt> 类型。</p>
+</div>
+<div class="EXAMPLE"><a name="AEN15924"></a>
+<p><b>例10-8. 简单 Union 中的类型解析</b></p>
+<pre class="SCREEN">SELECT 1.2 AS "numeric" UNION SELECT 1;
+
+ numeric
+---------
+       1
+     1.2
+(2 rows)</pre>
+<p>文本 <tt class="LITERAL">1.2</tt> 的类型为 <tt class="TYPE">numeric</tt>，而且 <tt class="TYPE">integer</tt> 类型的 <tt class="LITERAL">1</tt> 可以隐含地转换为 <tt class="TYPE">numeric</tt> ，因此使用这个类型。</p>
+</div>
+<div class="EXAMPLE"><a name="AEN15933"></a>
+<p><b>例10-9. 转置 Union 中的类型解析</b></p>
+<pre class="SCREEN">SELECT 1 AS "real" UNION SELECT CAST('2.2' AS REAL);
+
+ real
+------
+    1
+  2.2
+(2 rows)</pre>
+<p>这里，因为类型 <tt class="TYPE">real</tt> 不能被隐含转换成 <tt class="TYPE">integer</tt> ，但是 <tt class="TYPE">integer</tt> 可以隐含转换成 <tt class="TYPE">real</tt> ，那么联合的结果类型将是 <tt class="TYPE">real</tt> 。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="typeconv-query.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="indexes.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">值存储</td><td width="34%" align="center" valign="top"><a href="typeconv.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">索引</td></tr>
+</table>
+</div>
+</body></html>

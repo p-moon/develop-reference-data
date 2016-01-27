@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>高可用性与负载均衡</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="migration.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="backup.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="monitoring.html">快进</a></td><td width="10%" align="right" valign="top"><a href="monitoring.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="HIGH-AVAILABILITY"></a>章24. 高可用性与负载均衡</h1><a name="AEN25420"></a><a name="AEN25422"></a><a name="AEN25424"></a><a name="AEN25426"></a><a name="AEN25428"></a><a name="AEN25430"></a>
+<p>多个数据库服务器可以协同工作，比如在主服务器失效的时候备份服务器立即取代它的位置(高可用性)，或者几台机器同时服务于同一个数据库(负载均衡)。理想状态多台服务器之间可以无缝协作。为静态页面提供服务的 Web 服务器可以轻松的通过将 web 请求分摊到多台机器从而实现负载均衡。事实上，只读数据库也能轻松的以相同的方法实现负载均衡。不幸的是，大多数数据库服务器都需要同时处理混合的读/写请求，将这些数据库联合起来工作是件很麻烦的事。虽然只读数据只需要在每台服务器上复制一份即可，但是在任何一台服务器上的写动作都必须传播到其它所有服务器上，这样才能保证将来对这些已修改数据的读取返回一致的结果。</p>
+<p>这个写同步问题就是导致多台服务器协同工作麻烦重重的最基本原因。有多种解决此问题的方法，其思路也各不相同，但都不是既简单又高效的方案。</p>
+<p>有一种解决方案是仅允许单独的一台"主"服务器修改数据，其它"从"服务器只能读取数据，还可能存在平时不允许访问、仅在失效切换后代替主服务器的"备用"服务器。</p>
+<p>一些失效切换和负载均衡方案是"同步的"，意思是直到所有服务器都完成了某个修改数据的事务之后，该事务才被认为是已经完成的。这将确保失效切换不会丢失任何数据并且所有服务器都将返回一致的结果。另一些方案是"异步的"，这种方案允许在事务提交之后与传播到所有其它服务器之间有一小段延时，但是在切换到备份服务器的时候某些事务可能会丢失，并且不同的服务器可能返回不一致的结果。当同步可能会很慢的时候可以使用异步通信。</p>
+<p>还可以按照粒度对解决方案进行分类。某些方案只能将整个数据库集群作为一个整体，而某些方案可以针对每个数据库或每张表分别做不同的处理。</p>
+<p>在选择任何失效切换或负载均衡方案的时候都必须考虑性能因素。功能和性能不可兼得，比如，一个完全同步的解决方案在慢速网络上可能削减性能一半以上，而完全异步的方案可能仅对性能有极其微小的影响。</p>
+<p>下面的部分大致描述了各种常见的失效切换、复制、负载均衡方案。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>共享磁盘失效切换</dt>
+<dd><p>共享磁盘失效切换通过仅保存一份数据库副本来避免花在同步上的开销。这个方案让多台服务器共享使用一个单独的磁盘阵列。如果主服务器失效，备份服务器将立即挂载该数据库，就像是从一次崩溃中恢复一样。这个方案允许快速的失效切换并且不会丢失数据。</p>
+<p>共享硬件的功能通常由网络存储设备提供，也可以使用完全符合 POSIX 行为的网络文件系统(NFS)。这种方案的局限性在于如果共享的磁盘阵列损坏了，那么整个系统将会瘫痪。另一个局限是备份服务器在主服务器正常运行的时候不能访问共享的存储器。</p>
+<p>一种改进的方案是文件系统复制：对文件系统的任何更改都将镜像到备份服务器上。这个方案的唯一局限是必须确保备份服务器的镜像与主服务器完全一致，特别是写入顺序必须完全相同。DRBD 是 Linux 上的一种流行的文件系统复制方案。</p></dd>
+<dt>使用即时恢复(PITR)的热备份</dt>
+<dd><p>热备份服务器(参见<a href="warm-standby.html">节23.4</a>)可以通过读取 WAL 记录流来保持数据库的当前状态。如果主服务器失效，那么热备份服务器将包含几乎所有主服务器的数据，并可以迅速的将自己切换为主服务器。这是一个异步方案，并且只能在整个数据库服务器上实施。</p></dd>
+<dt>主-从(Master-Slave)服务器复制</dt>
+<dd><p>这个方案将所有修改数据的请求发送到主服务器。主服务器异步向从服务器发送数据的更改信息。从服务器在主服务器运行的情况下只应答读请求。对于数据仓库的请求来说，从服务器非常理想的。</p>
+<p>Slony-I 是这个方案的一个例子，它支持针对每个表的粒度并支持多个从服务器。因为它异步、批量的更新从服务器，在失效切换的时候可能会有数据丢失。</p></dd>
+<dt>基于语句的复制中间件</dt>
+<dd><p>可以使用一个基于语句的复制中间件程序截取每一个 SQL 查询，并将其发送到某一个或者全部服务器。每一个服务器都独立运行。写请求发送给所有服务器，读请求则仅发送给某一个服务器，从而实现读取的负载均衡。</p>
+<p>如果只是简单的广播修改数据的 SQL 语句，那么类似 <code class="FUNCTION">random()</code>, <code class="FUNCTION">CURRENT_TIMESTAMP</code> 以及序列函数在不同的服务器上将生成不同的结果。这是因为每个服务器都独立运行并且广播的是 SQL 语句而不是如何对行进行修改。如果这种结果是不可接受的，那么中间件或者应用程序必须保证始终从同一个服务器读取这些值并将其应用到写入请求中。另外还必须保证每一个事务必须在所有服务器上全部提交成功或者全部回滚，或者使用两阶段提交(<a href="sql-prepare-transaction.html"><i>PREPARE TRANSACTION</i></a> 和 <a href="sql-commit-prepared.html"><i>COMMIT PREPARED</i></a>)。Pgpool 和 Sequoia 是这种方案的实例。</p></dd>
+<dt>同步多主服务器复制</dt>
+<dd><p>在这种方案中，每个服务器都可以接受写入请求，修改的数据将在事务被提交之前必须从原始服务器广播到所有其它服务器。过多的写入动作将导致过多的锁定，从而导致性能低下。事实上，在多台服务器上同时写的性能总是比在单独一台服务器上写的性能低。读请求将被均衡的分散到每台单独的服务器。某些实现使用共享磁盘来减少通信开销。同步多主服务器复制方案最适合于读取远多于写入的场合。它的优势是每台服务器都能接受写请求因此不需要在主从服务器之间划分工作负荷。因为在服务器之间发送的是数据的变化，所以不会对非确定性函数(比如 <code class="FUNCTION">random()</code>)造成不良影响。</p>
+<p>PostgreSQL 不提供这种类型的复制。但是 PostgreSQL 的两阶段提交(<a href="sql-prepare-transaction.html"><i>PREPARE TRANSACTION</i></a> 和 <a href="sql-commit-prepared.html"><i>COMMIT PREPARED</i></a>)可以用于在应用层或中间件代码中实现这个功能。</p></dd>
+<dt>异步多主服务器复制</dt>
+<dd><p>对于那些不规则连接的服务器(比如笔记本电脑或远程服务器)，要在它们之间保持数据一致是很麻烦的。在这个方案中，每台服务器都独立工作并周期性的与其他服务器通信以识别相互冲突的事务。可以通过用户或者冲突判决规则处理出现的冲突。</p></dd>
+<dt>数据分区</dt>
+<dd><p>数据分区将一张表分解为多个数据集合，每个集合都仅可以被单独一台服务器修改。例如，数据可以按照办公室划分：伦敦和巴黎的办公室各自使用自己的服务器。如果某个查询需要同时检索伦敦和巴黎的数据，应用程序可以同时查询两个服务器或者在每一台服务器上使用主/从复制来保持一份其它服务器上数据的只读副本。</p></dd>
+<dt>多服务器并行查询执行</dt>
+<dd><p>许多前述方案都允许多台服务器处理多个请求，但是没有一个方案允许多台服务器同时处理一个请求以加快速度。这个方案就允许多台服务器同时服务于一条查询语句。通常的做法是将数据在多个服务器上进行分割，然后每个服务器执行与其所含数据相关的查询部分并将结果返回给中心服务器组装成最终结果，然后再返回给用户。Pgpool-II 就能实现这个功能。</p></dd>
+<dt>商业解决方案</dt>
+<dd><p>因为 PostgreSQL 是开放源代码并且很容易被扩展，许多公司在 PostgreSQL 的基础上创建了商业的闭源解决方案，提供独特的失效切换、复制、负载均衡功能。</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="migration.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="monitoring.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">在不同版本之间迁移</td><td width="34%" align="center" valign="top"><a href="admin.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">监控数据库的活动</td></tr>
+</table>
+</div>
+</body></html>

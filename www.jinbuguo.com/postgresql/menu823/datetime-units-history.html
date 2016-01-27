@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>日期单位的历史</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="datetime-config-files.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="datetime-appendix.html">快退</a></td><td width="60%" align="center" valign="bottom">附录B. 日期/时间支持</td><td width="10%" align="right" valign="top"><a href="datetime-appendix.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-keywords-appendix.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DATETIME-UNITS-HISTORY">B.4. 日期单位的历史</a></h1>
+<p>儒略日是由法国学者 Joseph Justus Scaliger (1540-1609) 发明的，名称可能是取自 Scaliger 的父亲，意大利学者 Julius Caesar Scaliger (1484-1558)。天文学家已经用儒略周期为自 4713 BC 一月一日以来的每一天赋予了一个唯一的数字。这就是所谓的儒略日(JD)。JD 0 指定为 4713 BC 一月一日正午 UTC 到 4713 BC 一月二日正午 UTC 的 24 小时。</p>
+<p>"儒略日"(Julian Date)与"儒略历"(Julian Calendar)不同。儒略历是 Julius Caesar 在 45 BC 发明的。一直用到大约 1582 年，这时各国开始使用罗马历法。在儒略历里面，一年是近似 365.25 天。这样大约每 128 年就有一天的误差。</p>
+<p>不断积累的历法错误促使教皇格里高利十三世(Gregory XIII)按照与弥撒议会(Council of Trent)一致的精神改革了历法。在罗马历法里，一年是近似 365.2425 天。因此对应于罗马历法，大约要 3300 年，才会积累一天的误差。</p>
+<p>近似的 365+97/400 是通过利用下面的规则，规定每 400 年有 97 个闰年实现的：
+<table border="0">
+<tbody>
+<tr><td>每个可被 4 整除的年是一个闰年。</td></tr>
+<tr><td>不过，可被 100 整除的年不是闰年。</td></tr>
+<tr><td>但是，可以被 400 整除的年还是闰年。</td></tr>
+</tbody>
+</table>
+因此，1700, 1800, 1900, 2100, 2200 年都不是闰年。而 1600, 2000, 2400 年是闰年。相比而言，旧式的 Julian 历法里面只有能被 4 整除的年是闰年。</p>
+<p>罗马教皇在 1582 年 2 月 宣布从 1582 的 10 月中删除 10 天，也就是 10 月 15 号紧跟在 10 月 4 号的后面。信奉天主教的国家(意大利、波兰、葡萄牙、西班牙等)很快就遵循了这个规定，但是信奉新教的国家却一直拖延到 20 世纪开始的时候才逐渐遵守这个规定。大英帝国及其殖民地(包含今天的美国)在 1752 年 9 月 2 号之后紧跟着 14 号，稍稍与罗马教皇的规定不同，这就使为什么 Unix 系统上的 <tt class="COMMAND">cal</tt> 程序会产生如下输出的原因：</p>
+<pre class="SCREEN">$ <kbd class="USERINPUT">cal 9 1752</kbd>
+   September 1752
+ S  M Tu  W Th  F  S
+       1  2 14 15 16
+17 18 19 20 21 22 23
+24 25 26 27 28 29 30</pre>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>SQL标准声称"在日期时间的字面定义上，日期时间值中的日期和时间根据罗马历法受自然法则的约束。在 1752-09-03 和 1752-09-13 之间的日子，尽管被罗马教廷的教令取消了，但为了和"自然法则"相一致，因而是有效的日期。</p>
+</blockquote>
+</div>
+<p>在世界的不同地方，发明了许多不同的历法，有许多比罗马历法系统还早。例如，中国历法的最早应用可以追溯到公元前 14 世纪。传说黄帝在 2637 BC 就发明了这个历法。中华人民共和国使用罗马历法用于民用。中国历法用于决定节日/节气。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="datetime-config-files.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-keywords-appendix.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">日期/时间配置文件</td><td width="34%" align="center" valign="top"><a href="datetime-appendix.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SQL 关键字</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>测试评估</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="regress-run.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="regress.html">快退</a></td><td width="60%" align="center" valign="bottom">章28. 回归测试</td><td width="10%" align="right" valign="top"><a href="regress.html">快进</a></td><td width="10%" align="right" valign="top"><a href="regress-variant.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="REGRESS-EVALUATION">28.2. 测试评估</a></h1>
+<p>有一些正确安装并且具有完整功能的 PostgreSQL 可能会在一些回归测试中"失效"，这主要是因为浮点数的形式和时区支持的问题。目前的测试只是简单的用 <tt class="COMMAND">diff</tt> 与参考系统的输出进行比较，因而对一些细小的系统区别很敏感。当一项测试报告"失败"时，只要检查一下预期和实际的结果，你就会发现区别并不大。当然，我们仍然在努力维护所有我们支持的平台的准确参考文件，这样我们就可以假定所有测试都通过。</p>
+<p>回归测试的实际输出在 <tt class="FILENAME">src/test/regress/results</tt> 目录里的文件里。测试脚本使用 <tt class="COMMAND">diff</tt> 比较每个输出文件和存放在 <tt class="FILENAME">src/test/regress/expected</tt> 目录里的参考输出。任何区别都存放在 <tt class="FILENAME">src/test/regress/regression.diffs</tt> 里面供你检查。你也可以自己运行 <tt class="COMMAND">diff</tt> 。</p>
+<p>如果获得一个"失败"的测试结果，但实际上输出结果是正确的，你可以通过添加新的比较文件来抑制错误报告。参见<a href="regress-variant.html">节28.3</a>获取更多细节。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN26316">28.2.1. 错误信息差别</a></h2>
+<p>有一些回归测试涉及到有意的非法输入值。错误信息可能会来自 PostgreSQL 代码或来自主机平台系统过程。对于后者，信息可能在平台之间区别比较大，但应该反映相似的信息。这些信息上的差别将会导致一个"失败"的回归测试，我们可以通过检查文件发现这一点。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN26321">28.2.2. 区域差别</a></h2>
+<p>如果你在一台已经安装好了的服务器上运行测试，而该服务器是用一种非 C 区域设置初始化的，那么可能因为有排序顺序和其它类似的差别导致的失败。回归测试套件处理这种问题的方法是提供可选的结果文件，这些文件一起处理一大堆的区域。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN26324">28.2.3. 日期和时间差别</a></h2>
+<p>大多数日期和时间测试结果依赖于时区设置。参考文件是为 <tt class="LITERAL">PST8PDT</tt> 时区(伯克利，加州)准备的，因而如果测试没有设置为那个时区是显然会失败的。回归测试的驱动器把 <tt class="ENVAR">PGTZ</tt> 环境变量设置为 <tt class="LITERAL">PST8PDT</tt> 基本可以保证正确的测试。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN26330">28.2.4. 浮点数差别</a></h2>
+<p>有些测试涉及到对表中的数据列进行 64 位浮点数(<tt class="TYPE">double precision</tt>)计算的问题。我们观察了涉及到计算 <tt class="TYPE">double precision</tt> 字段的数学函数的结果差别。<tt class="LITERAL">float8</tt> 和 <tt class="LITERAL">geometry</tt> 测试尤其容易在不同平台之间产生小差别。这时需要肉眼对这些差别进行比较，以判断这些差别究竟有多大，我们发现是在小数点右边 10 位左右。</p>
+<p>有些系统把负零显示为 <tt class="LITERAL">-0</tt> ，而其它的只是显示 <tt class="LITERAL">0</tt> 。</p>
+<p>有些系统在 <code class="FUNCTION">pow()</code> 和 <code class="FUNCTION">exp()</code> 出错时产生的信号与目前 PostgreSQL 代码里期望的机制不一样。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN26344">28.2.5. 行顺序差别</a></h2>
+<p>你可能会看见同样的行以与预期文件的不同的顺序输出。在大多数情况下，严格说来这不算臭虫。大多数回归测试脚本都不会迂腐到在每个
+<tt class="LITERAL">SELECT</tt> 中都使用 <tt class="LITERAL">ORDER BY</tt> 的地步，因此根据 SQL 规范，它们的结果集顺序并非定义得非常好的。实际上，因为我们是在同样的数据上运行同样的查询，所以在所有平台上通常都获得同样的结果，因此即使缺少 <tt class="LITERAL">ORDER BY</tt> 也不算什么大问题。不过有些查询的确存在跨平台的排序问题。在测试一台已安装的服务器的时候，排序的差别也可能因为非 C 区域设置，或者非缺省的参数设置，比如客户自己设置的 <tt class="VARNAME">work_mem</tt> 或者规划器开销参数设置受影响。</p>
+<p>因此，如果你看到一个排序差异，应该不是什么要担心的问题(除非明确使用了 <tt class="LITERAL">ORDER BY</tt>)。不过，如果有这样的现像，请告诉我们，这样我们就可以在那条查询上加一个 <tt class="LITERAL">ORDER BY</tt> 从而在以后的版本里消除这种伪"失败"。</p>
+<p>你可能会问，为什么我们不对所有回归测试的 SELECT 进行排序以一次性消灭所有这类问题。原因是这样做只能让回归测试用处更少，而不是更多，因为它们会试图使用那些生成顺序结果的查询规划，而不再使用那些不排序的查询规划。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN26356">28.2.6. 堆栈深度不够</a></h2>
+<p>如果 <tt class="LITERAL">errors</tt> 测试导致在 <tt class="LITERAL">select infinite_recurse()</tt> 命令的时候服务器崩溃，这就意味着平台对进程堆栈的限制小于 <a href="runtime-config-resource.html#GUC-MAX-STACK-DEPTH">max_stack_depth</a> 参数值。我们可以通过在更高的堆栈限制的数值上运行服务器绕开这个问题(缺省 <tt class="VARNAME">max_stack_depth</tt> 建议值是 4MB)。如果你无法这么做，那么另外一个方法是减少 <tt class="VARNAME">max_stack_depth</tt> 的值。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN26364">28.2.7. "随机"测试</a></h2>
+<p><tt class="LITERAL">random</tt> 测试脚本的目的是测试生成随机结果。在很罕见的情况下，这会导致回归测试中的随机测试失败。键入</p>
+<pre class="PROGRAMLISTING">diff results/random.out expected/random.out</pre>
+<p>会产生仅仅一行或几行差别。你不必担心这些，除非随机测试在重复测试中总是失败。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="regress-run.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="regress-variant.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">运行测试</td><td width="34%" align="center" valign="top"><a href="regress.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">平台相关的比较文件</td></tr>
+</table>
+</div>
+</body></html>

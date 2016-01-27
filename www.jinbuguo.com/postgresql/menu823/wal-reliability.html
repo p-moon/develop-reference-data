@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>可靠性</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="wal.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="wal.html">快退</a></td><td width="60%" align="center" valign="bottom">章27. 可靠性和预写式日志</td><td width="10%" align="right" valign="top"><a href="wal.html">快进</a></td><td width="10%" align="right" valign="top"><a href="wal-intro.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="WAL-RELIABILITY">27.1. 可靠性</a></h1>
+<p>可靠性是任何严肃的数据库系统的重要属性，PostgreSQL 尽一切可能来保证可靠的操作。可靠性操作的一个方面是所有已提交的数据都应该存储在一个非易失的区域，这样就不会因为电力失效、操作系统崩溃、硬件失效(除了非易失区域自身失效之外)等原因导致数据丢失。向计算机的永久存储(磁盘驱动器或者等效的东西)成功写入数据通常可以满足这个要求。实际上，即使计算机完全失效，只要磁盘驱动器生存下来，那么它们就可以移动到另外一台类似硬件的计算机上，而所有已经提交的事务将保持原状。</p>
+<p>周期性地强制数据写入磁盘盘片看上去像一件简单的操作，但实际上不是。因为磁盘驱动器比内存和 CPU 要慢许多，在计算机的主存和磁盘盘片之间存在多层缓冲。 首先，有操作系统的缓冲区内存，它缓冲常用的磁盘块并且组合对磁盘写入的请求。幸运的是，所有操作系统都给予应用一个强制从缓冲区写入磁盘的方法，PostgreSQL 使用了该特性(参阅 <a href="runtime-config-wal.html#GUC-WAL-SYNC-METHOD">wal_sync_method</a> 参数)。</p>
+<p>然后，在磁盘驱动器的控制器上可能还有一个缓冲；特别是在 RAID 控制卡上更为常见。这些缓冲区中，有些是<i class="FIRSTTERM">透过式</i>写入，意思是写入动作在到达的同时写入到磁盘上。其它则是<i class="FIRSTTERM">回写式</i>写入，意思是数据将在稍后写入驱动器。这样的缓冲区是可靠性的危害，因为磁盘控制器上的内存是易失的，在发生电力失效的情况下会丢失其中的内容。好一些的控制器卡备有<i class="FIRSTTERM">电池供电的</i>缓冲区，可以在系统电力失效的情况下提供电力。在电力恢复之后，这些数据将会被写入磁盘驱动器。</p>
+<p>最后，大多数磁盘驱动器自身也有缓冲区。有些是透过式的，有些是回写式的。和磁盘控制器一样，回写式的磁盘缓冲区也存在数据丢失的问题。消费级别的 IDE 驱动器特别容易包含回写式缓冲，在掉电的情况下很容易丢失数据。</p>
+<p>在操作系统向磁盘硬件发出一个写请求的时候，它没有什么好办法来保证数据真正到达非易失的存储区域。实际上，确保所有存储部件都保证数据的完整性是管理员的责任。应该避免使用没有电池供电的回写缓冲磁盘控制器。在磁盘级别，如果驱动器不能保证在关闭(掉电)之前写入数据，那么应该关闭回写缓冲。</p>
+<p>另外一个数据丢失的风险来自磁盘盘片写操作自身。磁盘盘片会被分割为段，通常每段 512 字节。每次物理读写都对整个段进行操作。当一个写操作到达磁盘的时候，它可能是512字节、1024字节、或者8192字节，而写入操作可能因为电力失效而随时失败，意味着某些 512 字节的段写入了，而另一些则没有。为了避免这个问题，PostgreSQL 在修改磁盘上的实际页面<span class="emphasis"><i class="EMPHASIS">之前</i></span>周期性地把整个页面的影像写入永久存储。这样，在崩溃恢复的时候，PostgreSQL 就可以恢复部分写入的页面。如果你有一个电池供电的磁盘控制器或者是文件系统(比如 ReiserFS 4)自身能够避免部分页面写入，你可以通过 <a href="runtime-config-wal.html#GUC-FULL-PAGE-WRITES">full_page_writes</a> 参数来关闭页面影像功能。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="wal.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="wal-intro.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">可靠性和预写式日志</td><td width="34%" align="center" valign="top"><a href="wal.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">预写式日志(WAL)</td></tr>
+</table>
+</div>
+</body></html>

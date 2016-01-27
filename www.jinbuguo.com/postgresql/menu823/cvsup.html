@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>通过 CVSup 获取源代码</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="cvs-tree.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="cvs.html">快退</a></td><td width="60%" align="center" valign="bottom">附录F. CVS 仓库</td><td width="10%" align="right" valign="top"><a href="cvs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="docguide.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CVSUP">F.3. 通过 CVSup 获取源代码</a></h1>
+<p>使用匿名 CVS 检索 PostgreSQL 源码树的另一个方法是 CVSup 。CVSup 是由 John Polstra (<code class="EMAIL">&#60;<a href="mailto:jdp@polstra.com">jdp@polstra.com</a>&#62;</code>) 开发的，用于为 <a href="http://www.freebsd.org" target="_top">FreeBSD 项目</a> 分发 CVS 仓库和其它文件树。</p>
+<p>使用 CVSup 的主要优点是它可以可靠地在你的本地机器上复制<span class="emphasis"><i class="EMPHASIS">整个</i></span> CVS 仓库，允许快速的本地使用 <tt class="COMMAND">cvs</tt> 操作(比如 <tt class="OPTION">log</tt> 和 <tt class="OPTION">diff</tt>)。其它优点包括与 PostgreSQL 服务器的快速同步，因为它使用一种高效的流传输协议，该协议只传输最后更新(以来)的修改。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN87963">F.3.1. 准备一个 CVSup 客户端系统</a></h2>
+<p>做这件事需要为 CVSup 准备两个目录区域：一个本地 CVS 仓库(或者就是一个目录区域—如果你只是抓取一个快照而不是整个仓库，见下文)和一个本地 CVSup 簿记区域。这些东西可以在同一个目录树里面共存。</p>
+<p>确定你将在哪个目录里面安放你的 CVS 仓库的本地拷贝。在的一个系统中，最近在 <tt class="FILENAME">/home/cvs/</tt> 设立了仓库，但是以前把它放在 <tt class="FILENAME">/opt/postgres/cvs/</tt> 里的一个 PostgreSQL 开发版的目录树里。如果你想把你的仓库放在 <tt class="FILENAME">/home/cvs/</tt> ，那么把</p>
+<pre class="PROGRAMLISTING">setenv CVSROOT /home/cvs</pre>
+<p>放到你的 <tt class="FILENAME">.cshrc</tt> 文件中，或者根据你用的 shell 把类似的行放到 <tt class="FILENAME">.bashrc</tt> 或 <tt class="FILENAME">.profile</tt> 文件里。</p>
+<p><span class="APPLICATION">cvs</span> 仓库区域必须被初始化。一旦设置了 <tt class="ENVAR">CVSROOT</tt> ，那么初始化可以简单地用下面的命令完成：</p>
+<pre class="PROGRAMLISTING">cvs init</pre>
+<p>之后，你列举 <tt class="ENVAR">CVSROOT</tt> 目录时，你至少能看到一个名为 <tt class="FILENAME">CVSROOT</tt> 的目录。</p>
+<pre class="PROGRAMLISTING">$ ls $CVSROOT
+CVSROOT/</pre>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN87987">F.3.2. 运行 CVSup 客户端</a></h2>
+<p>先证实 <span class="APPLICATION">cvsup</span> 在你的路径里；在大多数系统上你可以键入下面命令核实这些</p>
+<pre class="PROGRAMLISTING">which cvsup</pre>
+<p>然后，只需要用下面命令运行 <span class="APPLICATION">cvsup</span> ：</p>
+<pre class="PROGRAMLISTING">cvsup -L 2 <tt class="REPLACEABLE"><i>postgres.cvsup</i></tt></pre>
+<p>这里的 <tt class="OPTION">-L 2</tt> 打开了一些状态消息，这样你就可以监控更新的进展过程，而 <tt class="REPLACEABLE"><i>postgres.cvsup</i></tt> 是你赋予你的 CVSup 配置文件的路径和名称。</p>
+<p>这里是一份为特定安装修改过的 CVSup 配置文件，它维护着一个完整的本地 CVS 仓库：</p>
+<pre class="PROGRAMLISTING"># This file represents the standard CVSup distribution file
+# for the PostgreSQL ORDBMS project
+# Modified by lockhart@fourpalms.org 1997-08-28
+# - Point to my local snapshot source tree
+# - Pull the full CVS repository, not just the latest snapshot
+#
+# Defaults that apply to all the collections
+*default host=cvsup.postgresql.org
+*default compress
+*default release=cvs
+*default delete use-rel-suffix
+# enable the following line to get the latest snapshot
+#*default tag=.
+# enable the following line to get whatever was specified above or by default
+# at the date specified below
+#*default date=97.08.29.00.00.00
+
+# base directory where CVSup will store its 'bookmarks' file(s)
+# will create subdirectory sup/
+#*default base=/opt/postgres # /usr/local/pgsql
+*default base=/home/cvs
+
+# prefix directory where CVSup will store the actual distribution(s)
+*default prefix=/home/cvs
+
+# complete distribution, including all below
+pgsql
+
+# individual distributions vs 'the whole thing'
+# pgsql-doc
+# pgsql-perl5
+# pgsql-src</pre>
+<p>在上面的步骤里，如果你声明 <tt class="OPTION">repository</tt> 而不是 <tt class="OPTION">pgsql</tt> ，那么你就会得到 cvsup.postgresql.org 上面的一个完整的仓库拷贝，包括其 <tt class="FILENAME">CVSROOT</tt> 目录。如果这么做，你可能会希望排除那些目录中的某些文件，以便你做本地的修改，方法是使用一个 refuse 文件。比如，对于上面的设置，你可以在 <tt class="FILENAME">/home/cvs/sup/repository/refuse</tt> 里面放下面这些行：</p>
+<pre class="PROGRAMLISTING">CVSROOT/config*
+CVSROOT/commitinfo*
+CVSROOT/loginfo*</pre>
+<p>参考 CVSup 的手册页获取如何使用拒绝(refuse)文件的信息。</p>
+<p>下面的是 PostgreSQL <a href="ftp://ftp.postgresql.org/pub/CVSup/README.cvsup" target="_top">ftp 站点</a> 建议的 CVSup 配置文件，它将只是抓取目前(版本)的快照：</p>
+<pre class="PROGRAMLISTING"># This file represents the standard CVSup distribution file
+# for the PostgreSQL ORDBMS project
+#
+# Defaults that apply to all the collections
+*default host=cvsup.postgresql.org
+*default compress
+*default release=cvs
+*default delete use-rel-suffix
+*default tag=.
+
+# base directory where CVSup will store its 'bookmarks' file(s)
+*default base=<tt class="REPLACEABLE"><i>/usr/local/pgsql</i></tt>
+
+# prefix directory where CVSup will store the actual distribution(s)
+*default prefix=<tt class="REPLACEABLE"><i>/usr/local/pgsql</i></tt>
+
+# complete distribution, including all below
+pgsql
+
+# individual distributions vs 'the whole thing'
+# pgsql-doc
+# pgsql-perl5
+# pgsql-src</pre>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="cvs-tree.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="docguide.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CVS 树的组织</td><td width="34%" align="center" valign="top"><a href="cvs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">文档</td></tr>
+</table>
+</div>
+</body></html>

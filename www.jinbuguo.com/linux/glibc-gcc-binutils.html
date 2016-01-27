@@ -1,0 +1,381 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; color:#600; }
+pre { background: #edc; }
+</style>
+<title>Glibc Binutils GCC 安装指南 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>Glibc Binutils GCC 安装指南</h1><h2 id="auth_name">作者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文作者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文作者不保证作品内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留作者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文作者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于作者水平有限，因此不能保证作品内容准确无误。如果你发现了作品中的错误(哪怕是错别字也好)，请来信指出，任何提高作品质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<h2>Glibc 安装指南(2.6.1 → 2.9)</h2>
+<h3>安装信息的来源</h3>
+<ul>
+<li>源码包内的下列文件：configure 　 FAQ 　 INSTALL 　 NOTES 　 Makeconfig 　 README 　 localedata/README</li>
+<li><a href="http://www.gnu.org/software/libc/manual/html_node/System-Configuration.html">http://www.gnu.org/software/libc/manual/html_node/System-Configuration.html</a></li>
+<li><a href="http://www.gnu.org/software/libc/manual/html_node/Installation.html">http://www.gnu.org/software/libc/manual/html_node/Installation.html</a></li>
+<li><a href="http://www.gnu.org/software/libc/manual/html_node/Name-Service-Switch.html">http://www.gnu.org/software/libc/manual/html_node/Name-Service-Switch.html</a></li>
+</ul>
+<h3>要点提示</h3>
+<p>编译Glibc的时候应该尽可能使用最新的内核头文件，至少要使用 2.6.16 以上版本的内核，先前的版本有一些缺陷会导致"make check"时一些与pthreads测试相关的项目失败。使用高版本内核头文件编译的Glibc二进制文件完全可以运行在较低版本的内核上，并且当你升级内核后新内核的特性仍然可以得到充分发挥而无需重新编译Glibc。但是如果编译时使用的头文件的版本较低，那么运行在更高版本的内核上时，新内核的特性就不能得到充分发挥。更多细节可以查看<a href="http://www.linuxsir.org/bbs/showthread.php?t=303531">[八卦故事]内核头文件传奇</a>的跟帖部分。</p>
+<p>推荐使用GCC-4.1以上的版本编译，老版本的GCC可能会生成有缺陷的代码。</p>
+<p>不要在运行中的系统上安装 Glibc，否则将会导致系统崩溃，至少应当将新 Glibc 安装到其他的单独目录，以保证不覆盖当前正在使用的 Glibc 。</p>
+<p>Glibc 不能在源码目录中编译，它必须在一个额外分开的目录中编译。这样在编译发生错误的时候，就可以删除整个编译目录重新开始。</p>
+<p>源码树下的Makeconfig文件中有许多用于特定目的的变量，你可以在编译目录下创建一个configparms文件来改写这些变量。执行make命令的时候configparms文件中的内容将会按照Makefile规则进行解析。比如可以通过在其中设置 CFLAGS LDFLAGS 环境变量来优化编译，设置 CC BUILD_CC AR RANLIB 来指定交叉编译环境。</p>
+<p>需要注意的是有些测试项目假定是以非 root 身份执行的，因此我们强烈建议你使用非 root 身份编译和测试 Glibc 。</p>
+<h3>配置选项</h3>
+<p>下列选项皆为<em>非默认值</em>[特别说明的除外]</p>
+<dl>
+<dt>--help<br />--version<br />--quiet<br />--config-cache<br />--no-create<br />--srcdir=DIR<br />--exec-prefix=EPREFIX<br />--bindir=DIR<br />--sbindir=DIR<br />--libexecdir=DIR<br />--sysconfdir=DIR<br />--sharedstatedir=DIR<br />--localstatedir=DIR<br />--libdir=DIR<br />--includedir=DIR<br />--oldincludedir=DIR<br />--datarootdir=DIR<br />--datadir=DIR<br />--infodir=DIR<br />--localedir=DIR<br />--mandir=DIR<br />--docdir=DIR<br />--htmldir=DIR<br />--dvidir=DIR<br />--pdfdir=DIR<br />--psdir=DIR<br />--build=BUILD<br />--host=HOST<dd>这些选项的含义基本上通用于所有软件包，这里就不特别讲解了。需要注意的是：没有--target=TARGET选项。</dd>
+<dt>--prefix=PREFIX</dt><dd>安装目录，默认为 /usr/local<br />Linux文件系统标准要求基本库必须位于 /lib 目录并且必须与根目录在同一个分区上，但是 /usr 可以在其他分区甚至是其他磁盘上。因此，如果在Linux平台上指定 --prefix=/usr ，那么基本库部分将自动安装到 /lib 目录下，而非基本库部分则会自动安装到 /usr/lib 目录中，同时将使用 /etc 作为配置目录，也就是等价于"slibdir=/lib sysconfdir=/etc"。但是如果保持默认值或指定其他目录，那么所有组件都间被安装到PREFIX目录下。</dd>
+<dt>--disable-sanity-checks</dt><dd>真正禁用线程(仅在特殊环境下使用该选项)。</dd>
+<dt>--enable-check-abi</dt><dd>在"make check"时执行"make check-abi"。[提示]在我的机器上始终导致check-abi-libm测试失败。</dd>
+<dt>--disable-shared</dt><dd>不编译共享库(即使平台支持)。在支持 ELF 并且使用 GNU 连接器的系统上默认为enable 。[提示] --disable-static 选项实际上是不存在的，静态库总是被无条件的编译和安装。</dd>
+<dt>--enable-profile</dt><dd>启用 profiling 信息相关的库文件编译。主要用于调试目的。</dd>
+<dt>--enable-omitfp</dt><dd>编译时忽略帧指示器(使用 -fomit-frame-pointer 编译)，并采取一些其他优化措施。忽略帧指示器可以提高运行效率，但是调试将变得不可用，并且可能生成含有 bug 的代码。使用这个选项还将导致额外编译带有调试信息的非优化版本的静态库(库名称以"_g"结尾)。</dd>
+<dt>--enable-bounded</dt><dd>启用运行时边界检查(比如数组越界)，这样会降低运行效率，但能防止某些溢出漏洞。</dd>
+<dt>--disable-versioning</dt><dd>不在共享库对象中包含符号的版本信息。这样可以减小库的体积，但是将不兼容依赖于老版本 C 库的二进制程序。[提示]在我的机器上使用此选项总是导致编译失败。</dd>
+<dt>--enable-oldest-abi=ABI</dt><dd>启用老版本的应用程序二进制接口支持。ABI是Glibc的版本号，只有明确指定版本号时此选项才有效。</dd>
+<dt>--enable-stackguard-randomization</dt><dd>在程序启动时使用一个随机数初始化 __stack_chk_guard ，主要用来抵抗恶意攻击。</dd>
+<dt>--enable-add-ons[=DIRS...]</dt><dd>为了减小软件包的复杂性，一些可选的libc特性被以单独的软件包发布，比如'linuxthreads'(现在已经被废弃了)，他们被称为'add-ons'。要使用这些额外的包，可以将他们解压到Glibc的源码树根目录下，然后使用此选项将DIR1,DIR2,...中的附加软件包包含进来。其中的"DIR"是附加软件包的目录名。默认值"yes"表示编译所有源码树根目录下找到的附加软件包。</dd>
+<dt>--disable-hidden-plt</dt><dd>默认情况下隐藏仅供内部调用的函数，以避免这些函数被加入到过程链接表(PLT,Procedure Linkage Table)中，这样可以减小 PLT 的体积并将仅供内部使用的函数隐藏起来。而使用该选项将把这些函数暴露给外部用户。</dd>
+<dt>--enable-bind-now</dt><dd>禁用"lazy binding"，也就是动态连接器在载入 DSO 时就解析所有符号(不管应用程序是否用得到)，默认行为是"lazy binding"，也就是仅在应用程序首次使用到的时候才对符号进行解析。因为在大多数情况下，应用程序并不需要使用动态库中的所有符号，所以默认的 "lazy binding"可以提高应用程序的加载性能并节约内存用量。然而，在两种情况下，"lazy binding"是不利的：①因为第一次调用DSO中的函数时，动态连接器要先拦截该调用来解析符号，所以初次引用DSO中的函数所花的时间比再次调用要花的时间长，但是某些应用程序不能容忍这种不可预知性。②如果一个错误发生并且动态连接器不能解析该符号，动态连接器将终止整个程序。在"lazy binding"方式下，这种情况可能发生在程序运行过程中的某个时候。某些应用程序也是不能容忍这种不可预知性的。通过关掉"lazy binding"方式，在应用程序接受控制权之前，让动态连接器在处理进程初始化期间就发现这些错误，而不要到运行时才出乱子。</dd>
+<dt>--enable-static-nss</dt><dd>编译静态版本的NSS(Name Service Switch)库。仅在/etc/nsswitch.conf中只使用dns和files的情况下，NSS才能编译成静态库，并且你还需要在静态编译应用程序的时候明确的连接所有与NSS库相关的库才行[比如：gcc -static test.c -o test -Wl,-lc,-lnss_files,-lnss_dns,-lresolv]。不推荐使用此选项，因为连接到静态NSS库的程序不能动态配置以使用不同的名字数据库。</dd>
+<dt>--disable-force-install</dt><dd>不强制安装当前新编译的版本(即使已存在的文件版本更新)。</dd>
+<dt>--enable-kernel=VERSION</dt><dd>VERSION 的格式是 X.Y.Z，表示编译出来的 Glibc 支持的最低内核版本。VERSION 的值越高(不能超过内核头文件的版本)，加入的兼容性代码就越少，库的运行速度就越快。</dd>
+<dt>--enable-all-warnings</dt><dd>在编译时显示所有编译器警告，也就是使用 -Wall 选项编译。</dd>
+<dt>--with-gd<br>--with-gd-include<br>--with-gd-lib</dt><dd>指定libgd的安装目录(DIR/include和DIR/lib)。后两个选项分别指定包含文件和库目录。</dd>
+<dt>--without-fp</dt><dd>仅在硬件没有浮点运算单元并且操作系统没有模拟的情况下使用。x86 与 x86_64 的 CPU 都有专门的浮点运算单元。而且 Linux 有 FPU 模拟。简单的说，不要 without 这个选项！因为它会导致许多问题！</dd>
+<dt>--with-binutils=DIR</dt><dd>明确指定编译时使用的Binutils(as,ld)所在目录。</dd>
+<dt>--with-elf</dt><dd>指定使用 ELF 对象格式，默认不使用。建议在支持 ELF 的 Linux 平台上明确指定此选项。</dd>
+<dt>--with-selinux<br>--without-selinux</dt><dd>启用/禁用 SELinux 支持，默认值自动检测。</dd>
+<dt>--with-xcoff</dt><dd>使用XCOFF对象格式(主要用于windows)。</dd>
+<dt>--without-cvs</dt><dd>不访问CVS服务器。推荐使用该选项，特别对于从CVS下载的的版本。</dd>
+<dt>--with-headers=DIR</dt><dd>指定内核头文件的所在目录，在Linux平台上默认是'/usr/include'。</dd>
+<dt>--without-tls</dt><dd>禁止编译支持线程本地存储(TLS)的库。使用这个选项将导致兼容性问题。</dd>
+<dt>--without-__thread</dt><dd>即使平台支持也不使用TSL特性。建议不要使用该选项。</dd>
+<dt>--with-cpu=CPU</dt><dd>在 gcc 命令行中加入"-mcpu=CPU"。鉴于"-mcpu"已经被反对使用，所以建议不要设置该选项，或者设为 --without-cpu 。</dd>
+</dl>
+<h3>编译与测试</h3>
+<p>使用 make 命令编译，使用 make check 测试。如果 make check 没有完全成功，就千万不要使用这个编译结果。需要注意的是有些测试项目假定是以非 root 身份执行的，因此我们强烈建议你使用非 root 身份编译和测试。</p>
+<p>测试中需要使用一些已经存在的文件(包括随后的安装过程)，比如 /etc/passwd, /etc/nsswitch.conf 之类。请确保这些文件中包含正确的内容。</p>
+<h3>安装与配置</h3>
+<p>使用 make install 命令安装。比如：make install  LC_ALL=C</p>
+<p>如果你打算将此 Glibc 安装为主 C 库，那么我们强烈建议你关闭系统，重新引导到单用户模式下安装。这样可以将可能的损害减小到最低。</p>
+<p>安装后需要配置 GCC 以使其使用新安装的 C 库。最简单的办法是使用恰当 GCC 的编译选项(比如 -Wl,--dynamic-linker=/lib/ld-linux.so.2 )重新编译 GCC 。然后还需要修改 specs 文件(通常位于 /usr/lib/gcc-lib/TARGET/VERSION/specs )，这个工作有点像巫术，调整实例请参考 LFS 中的两次工具链调整。</p>
+<p>可以在 make install 命令行使用'install_root'变量指定安装实际的安装目录(不同于 --prefix 指定的值)。这个在 chroot 环境下或者制作二进制包的时候通常很有用。'install_root'必须使用绝对路径。</p>
+<p>被'grantpt'函数调用的辅助程序'/usr/libexec/pt_chown'以 setuid 'root' 安装。这个可能成为安全隐患。如果你的 Linux 内核支持'devptsfs'或'devfs'文件系统提供的 pty slave ，那么就不需要使用 pt_chown 程序。</p>
+<p>安装完毕之后你还需要配置时区和 locale 。使用 localedef 来配置locale 。比如使用'localedef -i de_DE -f ISO-8859-1 de_DE'将 locale 设置为'de_DE.ISO-8859-1'。可以在编译目录中使用'make localedata/install-locales'命令配置所有可用的 locale ，但是一般不需要这么做。</p>
+<p>时区使用'TZ'环境变量设置。tzselect 脚本可以帮助你选择正确的值。设置系统全局范围内的时区可以将 /etc/localtime 文件连接到 /usr/share/zoneinfo 目录下的正确文件上。比如对于中国人可以'ln -s /usr/share/zoneinfo/PRC /etc/localtime'。</p>
+<hr />
+<h2>Binutils 安装指南(2.18 → 2.19.1)</h2>
+<h3>安装信息的来源</h3>
+<ul>
+<li>源码包内的下列文件：各级目录下的configure脚本 　README　 {bfd,binutils,gas,gold,libiberty}/README</li>
+</ul>
+<h3>要点提示</h3>
+<p>如果想与GCC联合编译，那么可以将binutils包的内容解压到GCC的源码目录中(tar -xvf binutils-2.19.1.tar.bz2 --strip-components=1 -C gcc-4.3.3)，然后按照正常编译GCC的方法编译即可。这样做的好处之一是可以完整的将 GCC 与 Binutils 进行一次bootstrap。</p>
+<p>推荐用一个新建的目录来编译，而不是在源码目录中。编译完毕后可以使用"make check"运行测试套件。这个测试套件依赖于DejaGnu软件包，而DejaGnu又依赖于expect，expect依赖于tcl。</p>
+<p>如果只想编译 ld 可以使用"make all-ld"，如果只想编译 as 可以使用"make all-gas"。类似的还有 clean-ld clean-as distclean-ld distclean-as check-ld check-as 等。</p>
+<h3>配置选项</h3>
+<p>下列选项皆为<em>非默认值</em>[特别说明的除外]</p>
+<dl>
+<dt>--help<br />--version<br />--quiet<br />--config-cache<br />--no-create<br />--srcdir=DIR<br />--prefix=PREFIX<br />--exec-prefix=EPREFIX<br />--bindir=DIR<br />--sbindir=DIR<br />--libexecdir=DIR<br />--datadir=DIR<br />--sysconfdir=DIR<br />--sharedstatedir=DIR<br />--localstatedir=DIR<br />--libdir=DIR<br />--includedir=DIR<br />--oldincludedir=DIR<br />--infodir=DIR<br />--mandir=DIR<br />--program-prefix=PREFIX<br />--program-suffix=SUFFIX<br />--program-transform-name=PROGRAM<br />--build=BUILD<br />--host=HOST<br />--target=TARGET</dt><dd>这些选项的含义基本上通用于所有软件包，这里就不特别讲解了。</dd>
+<dt>--disable-nls</dt><dd>禁用本地语言支持(它允许按照非英语的本地语言显示警告和错误消息)。编译时出现"undefined reference to 'libintl_gettext'"错误则必须禁用。</dd>
+<dt>--disable-rpath</dt><dd>不在二进制文件中硬编码库文件的路径。</dd>
+<dt>--disable-multilib</dt><dd>禁止编译适用于多重目标体系的库。例如，在x86_64平台上，默认既可以生成64位代码，也可以生成32位代码，若使用此选项，那么将只能生成64位代码。</dd>
+<dt>--enable-cgen-maint=CGENDIR</dt><dd>编译cgen相关的文件[主要用于GDB调试]。</dd>
+<dt>--enable-shared[=PKG[,...]]<br />--disable-shared<br />--enable-static[=PKG[,...]]<br />--disable-static</dt><dd>允许/禁止编译共享或静态版本的库和可执行程序，全部可识别的PKG如下：binutils,gas,gprof,ld,bfd,opcodes,libiberty(仅支持作为静态库)。static在所有目录下的默认值都是"yes"；而shared在不同子目录下默认值不同，有些为"yes"(binutils,gas,gprof,ld)有些为"no"(bfd,opcodes,libiberty)。</dd>
+<dt>--enable-install-libbfd<br />--disable-install-libbfd</dt><dd>允许或禁止安装 libbfd 以及相关的头文件( libbfd 是二进制文件描述库,用于读写目标文件".o",被GDB/ld/as等程序使用)。本地编译或指定--enable-shared的情况下默认值为"yes"，否则默认值为"no"。</dd>
+<dt>--enable-64-bit-bfd</dt><dd>让BFD支持64位目标，如果希望在32位平台上编译64程序就需要使用这个选项。如果指定的目标(TARGET)是64位则此选项默认打开，否则默认关闭(即使 --enable-targets=all 也是如此)。</dd>
+<dt>--enable-elf-stt-common</dt><dd>允许BFD生成STT_COMMON类型的ELF符号。[2.19版本新增选项]</dd>
+<dt>--enable-checking<br />--disable-checking</dt><dd>允许 as 执行运行时检查。正式发布版本默认禁用，快照版本默认启用。</dd>
+<dt>--disable-werror</dt><dd>禁止将所有编译器警告当作错误看待(因为当编译器为GCC时默认使用-Werror)。</dd>
+<dt>--enable-got=target|single|negative|multigot</dt><dd>指定GOT的处理模式。默认值是"target"。[2.19版本新增选项]</dd>
+<dt>--enable-gold</dt><dd>使用gold代替GNU ld。gold是Google开发的连接器，2008年捐赠给FSF，目的是取代现有的GNU ld，但目前两者还不能完兼容。[2.19版本新增选项]</dd>
+<dt>--enable-plugins</dt><dd>启用gold连接器的插件支持。[2.19版本新增选项]</dd>
+<dt>--enable-threads</dt><dd>编译多线程版本的gold连接器。[2.19版本新增选项]</dd>
+<dt>--with-lib-path=dir1:dir2...</dt><dd>指定编译出来的binutils工具(比如：ld)将来默认的库搜索路径，在绝大多数时候其默认值是"/lib:/usr/lib"。这个工作也可以通过设置 Makefile 中的 LIB_PATH 变量值完成。</dd>
+<dt>--with-libiconv-prefix[=DIR]<br />--without-libiconv-prefix</dt><dd>在 DIR/include 目录中搜索 libiconv 头文件，在 DIR/lib 目录中搜索 libiconv 库文件。或者根本不使用 libiconv 库。</dd>
+<dt>--with-libintl-prefix[=DIR]<br />--without-libintl-prefix</dt><dd>在 DIR/include 目录中搜索 libintl 头文件，在 DIR/lib 目录中搜索 libintl 库文件。或者根本不使用 libintl 库。</dd>
+<dt>--with-mmap</dt><dd>使用mmap访问BFD输入文件。某些平台上速度较快，某些平台上速度较慢，某些平台上无法正常工作。</dd>
+<dt>--with-pic<br />--without-pic</dt><dd>试图仅使用 PIC 或 non-PIC 对象，默认两者都使用。</dd>
+</dl>
+<p>以下选项仅在与GCC联合编译时才有意义，其含义与GCC相应选项的含义完全一样，默认值也相同。</p>
+<dl>
+<dt>--enable-bootstrap<br />--disable-bootstrap</dt>
+<dt>--enable-languages=lang1,lang2,...</dt>
+<dt>--enable-stage1-checking</dt>
+<dt>--enable-stage1-languages</dt>
+<dt>--disable-libada</dt>
+<dt>--disable-libgcj</dt>
+<dt>--disable-libgomp</dt>
+<dt>--disable-libmudflap</dt>
+<dt>--disable-libssp</dt>
+<dt>--enable-objc-gc</dt>
+<dt>--disable-cloog-version-check</dt>
+<dt>--disable-ppl-version-check</dt>
+<dt>--with-gnu-as<br />--with-gnu-ld</dt>
+<dt>--with-gmp=GMPDIR<br />--with-gmp-include=GMPINCDIR<br />--with-gmp-lib=GMPLIBDIR</dt>
+<dt>--with-mpfr=MPFRDIR<br />--with-mpfr-include=MPFRINCDIR<br />--with-mpfr-lib=MPFRLIBDIR</dt>
+<dt>--with-cloog=CLOOGDIR<br>--with-cloog_include=CLOOGINCDIR<br>--with-cloog_lib=CLOOGLIBDIR</dt>
+<dt>--with-ppl=PPLDIR<br>--with-ppl_include=PPLINCDIR<br>--with-ppl_lib=PPLLIBDIR</dt>
+<dt>--with-stabs</dt>
+</dl>
+<p>以下选项仅用于交叉编译环境</p>
+<dl>
+<dt>--enable-serial-[{host,target,build}-]configure</dt><dd>强制为 host, target, build 顺序配置子包，如果使用"all"则表示所有子包。</dd>
+<dt>--with-sysroot=dir</dt><dd>将 dir 看作目标系统的根目录。目标系统的头文件、库文件、运行时对象都将被限定在其中。</dd>
+<dt>--with-target-subdir=SUBDIR</dt><dd>为 target 在 SUBDIR 子目录中进行配置。</dd>
+<dt>--with-newlib</dt><dd>将'newlib'(另一种标准C库，主要用于嵌入式环境)指定为目标系统的C库进行使用。</dd>
+<dt>--with-build-sysroot=sysroot</dt><dd>在编译时将'sysroot'当作指定 build 平台的根目录看待。仅在已经使用了--with-sysroot选项的时候，该选项才有意义。</dd>
+<dt>--with-build-subdir=SUBDIR</dt><dd>为 build 在 SUBDIR 子目录中进行配置。</dd>
+<dt>--with-build-libsubdir=DIR</dt><dd>指定 build 平台的库文件目录。默认值是SUBDIR。</dd>
+<dt>--with-build-time-tools=path</dt><dd>在给定的path中寻找用于编译Binutils自身的目标工具。该目录中必须包含 ar, as, ld, nm, ranlib, strip 程序，有时还需要包含 objdump 程序。例如，当编译Binutils的系统的文件布局和将来部署Binutils的目标系统不一致时就需要使用此选项。</dd>
+<dt>--with-cross-host=HOST</dt><dd>这个选项已经被反对使用，应该使用--with-sysroot来代替其功能。</dd>
+</dl>
+<p>以下选项意义不大，一般不用考虑它们</p>
+<dl>
+<dt>--disable-dependency-tracking</dt><dd>禁止对Makefile规则的依赖性追踪。</dd>
+<dt>--disable-largefile</dt><dd>禁止支持大文件。[2.19版本新增选项]</dd>
+<dt>--disable-libtool-lock</dt><dd>禁止 libtool 锁定以加快编译速度(可能会导致并行编译的失败)</dd>
+<dt>--disable-build-warnings</dt><dd>禁止显示编译时的编译器警告，也就是使用"-w"编译器选项进行编译。</dd>
+<dt>--disable-fast-install</dt><dd>禁止为快速安装而进行优化。</dd>
+<dt>--enable-maintainer-mode</dt><dd>启用无用的 make 规则和依赖性(它们有时会导致混淆)</dd>
+<dt>--enable-commonbfdlib<br />--disable-commonbfdlib</dt><dd>允许或禁止编译共享版本的 BFD/opcodes/libiberty 库。分析configure脚本后发现这个选项事实上没有任何实际效果。</dd>
+<dt>--enable-install-libiberty</dt><dd>安装 libiberty 的头文件(libiberty.h)，许多程序都会用到这个库中的函数(getopt,strerror,strtol,strtoul)。这个选项经过实验，没有实际效果(相当于disable)。</dd>
+<dt>--enable-secureplt</dt><dd>使得binutils默认创建只读的 plt 项。相当于将来调用 gcc 时默认使用 -msecure-plt 选项。仅对 powerpc-linux 平台有意义。</dd>
+<dt>--enable-targets=TARGET,TARGET,TARGET...</dt><dd>使BFD在默认格式之外再支持多种其它平台的二进制文件格式，"all"表示所有已知平台。在32位系统上，即使使用"all"也只能支持所有32位目标，除非同时使用 --enable-64-bit-bfd 选项。由于目前 gas 并不能使用内置的默认平台之外的其它目标，因此这个选项没什么实际意义。此选项在所有目录下都没有默认值。但对于2.19版本，此选项在gold子目录下的默认值是"all"。</dd>
+<dt>--with-bugurl=URL<br />--without-bugurl</dt><dd>指定发送bug报告的URL/禁止发送bug报告。默认值是"http://www.sourceware.org/bugzilla/"。</dd>
+<dt>--with-datarootdir=DATADIR</dt><dd>将 DATADIR 用作数据根目录，默认值是[PREFIX/share]</dd>
+<dt>--with-docdir=DOCDIR<br />--with-htmldir=HTMLDIR<br />--with-pdfdir=PDFDIR</dt><dd>指定各种文档的安装目录。DOCDIR默认值的默认值是DATADIR，HTMLDIR和PDFDIR的默认值是DOCDIR。</dd>
+<dt>--with-included-gettext</dt><dd>使用软件包中自带的 GNU gettext 库。如果你已经使用了Glibc-2.0以上的版本，或者系统中已经安装了GNU gettext软件包，那么就没有必要使用这个选项。默认不使用。</dd>
+<dt>--with-pkgversion=PKG</dt><dd>在 bfd 库中使用"PKG"代替默认的"GNU Binutils"作为版本字符串。比如你可以在其中嵌入编译时间或第多少次编译之类的信息。</dd>
+<dt>--with-separate-debug-dir=DIR</dt><dd>在DIR中查找额外的全局debug信息，默认值：${libdir}/debug</dd>
+<dt>--with-debug-prefix-map='A=B C=D ...'</dt><dd>在调试信息中建立 A-B,C-D, ... 这样的映射关系。默认为空。[2.19版本新增选项]</dd>
+</dl>
+<h3>环境变量</h3>
+<dl>
+<dt>tooldir</dt><dd>可执行文件的安装目录。其默认值是"$(exec_prefix)/$(target_alias)"。</dd>
+</dl>
+<hr />
+<h2>GCC 安装指南(4.3 → 4.4)</h2>
+<h3>安装信息的来源</h3>
+<ul>
+<li>源码包内的下列文件：各级目录下的configure脚本 　ABOUT-NLS 　gcc/testsuite/README* 　INSTALL/* 　libstdc++-v3/docs/html/manual/bk01pt01ch02.html</li>
+<li><a href="http://gcc.gnu.org/faq.html">http://gcc.gnu.org/faq.html</a></li>
+<li><a href="http://gcc.gnu.org/install/">http://gcc.gnu.org/install/</a></li>
+<li><a href="http://gcc.gnu.org/onlinedocs/libstdc++/faq.html">http://gcc.gnu.org/onlinedocs/libstdc++/faq.html</a></li>
+<li><a href="http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt01ch02.html">http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt01ch02.html</a></li>
+</ul>
+<h3>要点提示</h3>
+<p>从GCC-4.3起，安装GCC将依赖于GMP-4.1以上版本和MPFR-2.3.2以上版本。如果将这两个软件包分别解压到GCC源码树的根目录下，并分别命名为"gmp"和"mpfr"，那么GCC的编译程序将自动将两者与GCC一起编译。建议尽可能使用最新的GMP和MPFR版本。</p>
+<p>推荐用一个新建的目录来编译GCC，而不是在源码目录中，这一点玩过LFS的兄弟都很熟悉了。另外，如果先前在编译中出现了错误，推荐使用 make distclean 命令进行清理，然后重新运行 configure 脚本进行配置，再在另外一个空目录中进行编译。</p>
+<p>如果想要安装C++编译器，那么 libstdc++ 将要求系统的C库必须至少带有 de_DE locale 支持，如果使用了 --enable-clocale=gnu 配置选项(很可能就是默认值)，那么还需要下列 locale ：
+<pre>
+locale              字符集
+-------------------------------------
+de_DE               ISO-8859-1
+de_DE@euro          ISO-8859-15
+en_HK               ISO-8859-1
+en_PH               ISO-8859-1
+en_US               ISO-8859-1
+en_US.ISO-8859-1    ISO-8859-1
+en_US.ISO-8859-15   ISO-8859-15
+en_US.UTF-8         UTF-8
+es_ES               ISO-8859-1
+es_MX               ISO-8859-1
+fr_FR               ISO-8859-1
+fr_FR@euro          ISO-8859-15
+is_IS               UTF-8
+it_IT               ISO-8859-1
+ja_JP.eucjp         EUC-JP
+se_NO.UTF-8         UTF-8
+ta_IN               UTF-8
+zh_TW               BIG5
+</pre>
+不过，这些locale并非严格必须，即使缺少上述 locale ，C++编译器也不会失效，只是libstdc++就不能提供"named locale"特性了，并且测试程序也会跳过与此相关的测试。</p>
+<h3>配置选项</h3>
+<p>[注意]这里仅包含适用于 C/C++ 语言编译器、十进制数字扩展库(libdecnumber)、在多处理机上编写并行程序的应用编程接口GOMP库(libgomp)、大杂烩的libiberty库、执行运行时边界检查的库(libmudflap)、保护堆栈溢出的库(libssp)、标准C++库(libstdc++) 相关的选项。也就是相当于 gcc-core 与 gcc-g++ 两个子包的选项。并不包括仅仅适用于其他语言的选项。</p>
+<p>每一个 --enable 选项都有一个对应的 --disable 选项，同样，每一个 --with 选项也都用一个对应的 --without 选项。每一对选项中必有一个是默认值(依赖平台的不同而不同)。下面所列选项若未特别说明皆为<em>非默认值</em>。</p>
+<dl>
+<dt>--help<br />--version<br />--quiet<br />--config-cache<br />--no-create<br />--srcdir=DIR<br />--prefix=PREFIX<br />--exec-prefix=EPREFIX<br />--bindir=DIR<br />--sbindir=DIR<br />--libexecdir=DIR<br />--datadir=DIR<br />--sysconfdir=DIR<br />--sharedstatedir=DIR<br />--localstatedir=DIR<br />--libdir=DIR<br />--includedir=DIR<br />--oldincludedir=DIR<br />--infodir=DIR<br />--mandir=DIR<br />--program-prefix=PREFIX<br />--program-suffix=SUFFIX<br />--program-transform-name=PROGRAM<br />--build=BUILD<br />--host=HOST<br />--target=TARGET</dt><dd>这些选项的含义基本上通用于所有软件包，这里就不特别讲解了。</dd>
+<dt>--disable-nls</dt><dd>禁用本地语言支持(它允许按照非英语的本地语言显示警告和错误消息)。编译时出现"undefined reference to 'libintl_gettext'"错误则必须禁用。</dd>
+<dt>--disable-rpath</dt><dd>不在二进制文件中硬编码库文件的路径。</dd>
+<dt>--enable-bootstrap<br>--disable-bootstrap</dt><dd>"bootstrap"的意思是用第一次编译生成的程序来第二次编译自己，然后又用第二次编译生成的程序来第三次编译自己，最后比较第二次和第三次编译的结果，以确保编译器能毫无差错的编译自身，这通常表明编译是正确的。非交叉编译的情况下enable是默认值；交叉编译的情况下，disable是默认值。提示：stage2出来的结果是"最终结果"。</dd>
+<dt>--enable-checking[=LIST]</dt><dd>该选项会在编译器内部生成一致性检查的代码，它并不改变编译器生成的二进制结果。这样导致编译时间增加，并且仅在使用GCC作为编译器的时候才有效，但是对输出结果没有影响。在"gcc"子目录下，对从CVS下载的版本默认值是"yes"(=assert,misc,tree,gc,rtlflag,runtime)，对于正式发布的版本则是"release"(=assert,runtime)，在"libgcc"子目录下，默认值始终是"no"。可以从 "assert,df,fold,gc,gcac,misc,rtlflag,rtl,runtime,tree,valgrind"中选择你想要检查的项目(逗号隔开的列表，"all"表示全部)，其中rtl,gcac,valgrind非常耗时。使用 --disable-checking 完全禁止这种检查会增加未能检测内部错误的风险，所以不建议这样做。</dd>
+<dt>--enable-languages=lang1,lang2,...</dt><dd>只安装指定语言的编译器及其运行时库，可以使用的语言是：ada, c, c++, fortran, java, objc, obj-c++ ，若不指定则安装所有默认可用的语言(ada和obj-c++为非默认语言)。</dd>
+<dt>--disable-multilib</dt><dd>禁止编译适用于多重目标体系的库。例如，在x86_64平台上，编译器默认既可以生成64位代码，也可以生成32位代码，若使用此选项，那么将只能生成64位代码。</dd>
+<dt>--enable-shared[=PKG[,...]]<br />--disable-shared<br />--enable-static[=PKG[,...]]<br />--disable-static</dt><dd>允许/禁止编译共享或静态版本的库，全部可识别的库如下：libgcc,libstdc++,libffi,zlib,boehm-gc,ada,libada,libjava,libobjc,libiberty(仅支持作为静态库)。static在所有目录下的默认值都是"yes"；shared除了在libiberty目录下的默认值是"no"外，在其它目录下的默认值也都是"yes"。</dd>
+<dt>--enable-decimal-float[=bid|dpd]<br />--disable-decimal-float</dt><dd>启用或禁用 libdecnumber 库符合 IEEE 754-2008 标准的 C 语言十进制浮点扩展，还可以进一步选择浮点格式(bid是i386与x86_64的默认值；dpd是PowerPC的默认值)。在 PowerPC/i386/x86_64 GNU/Linux 系统默认启用，在其他系统上默认禁用。</dd>
+<dt>--disable-libgomp</dt><dd>不编译在多处理机上编写并行程序的应用编程接口GOMP库(libgomp)。</dd>
+<dt>--disable-libmudflap</dt><dd>不编译执行运行时边界检查的库(libmudflap)。</dd>
+<dt>--disable-libssp</dt><dd>不编译保护缓冲区溢出的运行时库。</dd>
+<dt>--disable-symvers</dt><dd>禁用共享库对象中符号包含的版本信息。使用这个选项将导致 ABI 发生改变。禁用版本信息可以减小库的体积，但是将不兼容依赖于老版本库的二进制程序。它还会导致 libstdc++ 的 abi_check 测试失败，但你可以忽略这个失败。</dd>
+<dt>--enable-threads=posix|aix|dce|gnat|mach|rtems|solaris|vxworks|win32|nks<br />--disable-threads</dt><dd>启用或禁用线程支持，若启用，则必须同时明确指定线程模型(不同平台支持的线程库并不相同，Linux现在一般使用posix)。这将对Objective-C编译器、运行时库，以及C++/Java等面向对象语言的异常处理产生影响。</dd>
+<dt>--enable-version-specific-runtime-libs</dt><dd>将运行时库安装在编译器特定的子目录中(${libdir}/gcc-lib/${target_alias}/${gcc_version})，而不是默认的${libdir}目录中。另外，'libstdc++'的头文件将被安装在 ${libdir}/gcc-lib/${target_alias}/${gcc_version}/include/g++ 目录中(除非同时又指定了 --with-gxx-include-dir)。如果你打算同时安装几个不同版本的 GCC ，这个选项就很有用处了。当前，libgfortran,libjava,libmudflap,libstdc++,libobjc都支持该选项。</dd>
+<dt>--enable-werror<br />--disable-werror</dt><dd>是否将所有编译器警告当作错误看待(使用-Werror来编译)。对于开发中的版本和快照默认为"yes"，对于正式发布的版本则默认为"no"。</dd>
+<dt>--with-as=pathname<br>--with-ld=pathname</dt><dd>指定将来GCC使用的汇编器/连接器的位置，必须使用绝对路径。如果configure的默认查找过程找不到汇编器/连接器，就会需要该选项。或者系统中有多个汇编器/连接器，也需要它来指定使用哪一个。如果使用GNU的汇编器，那么你必须同时使用GNU连接器。</dd>
+<dt>--with-datarootdir=DATADIR</dt><dd>将 DATADIR 用作数据根目录，默认值是[PREFIX/share]</dd>
+<dt>--with-docdir=DOCDIR<br>--with-htmldir=HTMLDIR<br>--with-pdfdir=PDFDIR</dt><dd>指定各种文档的安装目录。DOCDIR默认值的默认值是DATADIR，HTMLDIR和PDFDIR的默认值是DOCDIR。</dd>
+<dt>--with-gmp=GMPDIR<br>--with-gmp-include=GMPINCDIR<br>--with-gmp-lib=GMPLIBDIR</dt><dd>指定 GMP 库的安装目录/头文件目录/库目录。指定GMPDIR相当于同时指定了：GMPINCDIR=GMPDIR/include,GMPLIBDIR=GMPDIR/lib 。</dd>
+<dt>--with-mpfr=MPFRDIR<br>--with-mpfr-include=MPFRINCDIR<br>--with-mpfr-lib=MPFRLIBDIR</dt><dd>指定 MPFR 库的安装目录/头文件目录/库目录。指定MPFRDIR相当于同时指定了：MPFRINCDIR=MPFRDIR/include,MPFRLIBDIR=MPFRDIR/lib 。</dd>
+<dt>--with-cloog=CLOOGDIR<br>--with-cloog_include=CLOOGINCDIR<br>--with-cloog_lib=CLOOGLIBDIR</dt><dd>指定<a href="http://www.cloog.org/">CLooG(Chunky Loop Generator)</a>的安装目录/头文件目录/库目录。指定CLOOGDIR相当于同时指定了：CLOOGINCDIR=CLOOGDIR/include,CLOOGLIBDIR=CLOOGDIR/lib 。[GCC-4.4新增选项]</dd>
+<dt>--with-ppl=PPLDIR<br>--with-ppl_include=PPLINCDIR<br>--with-ppl_lib=PPLLIBDIR</dt><dd>指定<a href="http://www.cs.unipr.it/ppl/">PPL(Parma Polyhedra Library)</a>的安装目录/头文件目录/库目录。指定PPLDIR相当于同时指定了：PPLINCDIR=PPLDIR/include,PPLLIBDIR=PPLDIR/lib 。[GCC-4.4新增选项]</dd>
+<dt>--with-gxx-include-dir=DIR</dt><dd>G++头文件的安装目录，默认为"prefix/include/c++/版本"。</dd>
+<dt>--with-libiconv-prefix[=DIR]<br>--without-libiconv-prefix</dt><dd>在 DIR/include 目录中搜索 libiconv 头文件，在 DIR/lib 目录中搜索 libiconv 库文件。或者根本不使用 libiconv 库。</dd>
+<dt>--with-libintl-prefix[=DIR]<br>--without-libintl-prefix</dt><dd>在 DIR/include 目录中搜索 libintl 头文件，在 DIR/lib 目录中搜索 libintl 库文件。或者根本不使用 libintl 库。</dd>
+<dt>--with-local-prefix=DIR</dt><dd>指定本地包含文件的安装目录，不管如何设置--prefix，其默认值都为 /usr/local 。只有在系统已经建立了某些特定的目录规则，而不再是在 /usr/local/include 中查找本地安装的头文件的时候，该选项才使必须的。不能指定为 /usr ，也不能指定为安装GCC自身头文件的目录(默认为$libdir/gcc/$target/$version/include)，因为安装的头文件会和系统的头文件混合，从而造成冲突，导致不能编译某些程序。</dd>
+<dt>--with-long-double-128<br />--without-long-double-128</dt><dd>指定long double类型为 128-bit 或 64-bit(等于double) 。基于 Glibc 2.4 或以上版本编译时默认为 128-bit ，其他情况默认为 64-bit ；但是可以使用这个选项强制指定。</dd>
+<dt>--with-pic<br>--without-pic</dt><dd>试图仅使用 PIC 或 non-PIC 对象，默认两者都使用。</dd>
+<dt>--with-slibdir=DIR</dt><dd>共享库(libgcc)的安装目录，默认等于 --libdir 的值。</dd>
+<dt>--with-system-libunwind</dt><dd>使用系统中已经安装的libunwind库，默认自动检测。</dd>
+<dt>--with-system-zlib</dt><dd>使用系统中的libz库，默认使用GCC自带的库。</dd>
+</dl>
+<p>以下选项仅适用于 C++ 语言：</p>
+<dl>
+<dt>--enable-__cxa_atexit</dt><dd>用 __cxa_atexit() 代替 atexit() 来登记 C++ 对象的本地静态和全局析构函数以符合C++标准对析构函数的处理规定。启用它相当于在将来调用 gcc 时默认使用 -fuse-cxa-exit 选项。该选项仅在使用Glibc的时候才有意义。</dd>
+<dt>--disable-c99</dt><dd>禁止支持 C99 标准。该选项将导致 ABI 接口发生改变。</dd>
+<dt>--enable-cheaders=c|c_std|c_global</dt><dd>为 g++ 创建C语言兼容的头文件，默认为"c_global"。</dd>
+<dt>--enable-clocale[=gnu|ieee_1003.1-2001|generic]</dt><dd>指定目标系统的 locale 模块，默认值为自动检测。建议明确设为"gnu"，否则可能会编译出 ABI 不兼容的 C++ 库。</dd>
+<dt>--enable-clock-gettime[=yes|no|rt]</dt><dd>指明如何获取C++0x草案里面time.clock中clock_gettime()函数："yes"表示在libc和libposix4库中检查(而libposix4在需要的时候还可能会链接到libstdc++)。"rt"表示还额外在librt库中查找，这一般并不是一个很好的选择，因为librt经常还会连接到libpthread上，从而使得单线程的程序产生不必要的锁定开销。默认值"no"则完全跳过这个检查。[GCC-4.4新增选项]</dd>
+<dt>--enable-concept-checks</dt><dd>打开额外的实例化库模板编译时检查(以特定的模板形式)，这可以帮助用户在他们的程序运行之前就发现这些程序在何处违反了STL规则。</dd>
+<dt>--enable-cstdio=PACKAGE</dt><dd>使用目标平台特定的 I/O 包，PACKAGE的默认值是"stdio"，也是唯一可用的值。使用这个选项将导致 ABI 接口发生改变。</dd>
+<dt>--enable-cxx-flags=FLAGS</dt><dd>编译 libstdc++ 库文件时传递给编译器的编译标志，是一个引号界定的字符串。默认为空，表示使用环境变量 CXXFLAGS 的值。</dd>
+<dt>--enable-fully-dynamic-string</dt><dd>该选项启用了一个特殊版本的 basic_string 来禁止在预处理的静态存储区域中放置空字符串的优化手段。参见 PR libstdc++/16612 获取更多细节。</dd>
+<dt>--disable-hosted-libstdcxx</dt><dd>默认编译特定于主机环境的C++库。使用该选项将仅编译独立于主机环境的C++运行时库(前者的子集)。</dd>
+<dt>--enable-libstdcxx-allocator[=new|malloc|mt|bitmap|pool]</dt><dd>指定目标平台特定的底层 std::allocator ，默认自动检测。使用这个选项将导致 ABI 接口发生改变。</dd>
+<dt>--enable-libstdcxx-debug</dt><dd>额外编译调试版本的 libstdc++ 库文件，并默认安装在 ${libdir}/debug 目录中。</dd>
+<dt>--enable-libstdcxx-debug-flags=FLAGS</dt><dd>编译调试版本的 libstdc++ 库文件时使用的编译器标志，默认为"-g3 -O0"</dd>
+<dt>--disable-libstdcxx-pch</dt><dd>禁止创建预编译的 libstdc++ 头文件(stdc++.h.gch)，这个文件包含了所有标准 C++ 的头文件。该选项的默认值等于hosted-libstdcxx的值。</dd>
+<dt>--disable-long-long</dt><dd>禁止使用模板支持'long long'类型。'long long'是 C99 新引进的类型，也是 GNU 对 C++98 标准的一个扩展。该选项将导致 ABI 接口发生改变。</dd>
+<dt>--enable-sjlj-exceptions</dt><dd>强制使用旧式的 setjmp/longjmp 异常处理模型，使用这个选项将导致 ABI 接口发生改变。默认使用可以大幅降低二进制文件尺寸和内存占用的新式的 libunwind 库进行异常处理。建议不要使用此选项。</dd>
+<dt>--disable-visibility</dt><dd>禁止 -fvisibility 编译器选项的使用(使其失效)。</dd>
+<dt>--disable-wchar_t</dt><dd>禁止使用模板支持多字节字符类型'wchar_t'。该选项将导致 ABI 接口发生改变。</dd>
+</dl>
+<p>以下选项仅用于交叉编译：</p>
+<dl>
+<dt>--enable-serial-[{host,target,build}-]configure</dt><dd>强制为 host, target, build 顺序配置子包，如果使用"all"则表示所有子包。</dd>
+<dt>--with-sysroot=DIR</dt><dd>将DIR看作目标系统的根目录。目标系统的头文件、库文件、运行时对象都将被限定在其中。其默认值是 ${gcc_tooldir}/sys-root 。</dd>
+<dt>--with-target-subdir=SUBDIR</dt><dd>为 target 在 SUBDIR 子目录中进行配置。</dd>
+<dt>--with-newlib</dt><dd>将'newlib'指定为目标系统的C库进行使用。这将导致 libgcc.a 中的 __eprintf 被忽略，因为它被假定为由'newlib'提供。</dd>
+<dt>--with-build-subdir=SUBDIR</dt><dd>为 build 在 SUBDIR 子目录中进行配置。</dd>
+<dt>--with-build-libsubdir=DIR</dt><dd>指定 build 平台的库文件目录。默认值是SUBDIR。</dd>
+<dt>--with-build-sysroot=sysroot</dt><dd>在编译时将'sysroot'当作指定 build 平台的根目录看待。仅在已经使用了--with-sysroot选项的时候，该选项才有意义。</dd>
+<dt>--with-build-time-tools=path</dt><dd>在给定的path中寻找用于编译GCC自身的目标工具。该目录中必须包含 ar, as, ld, nm, ranlib, strip 程序，有时还需要包含 objdump 程序。例如，当编译GCC的系统的文件布局和将来部署GCC的目标系统不一致时就需要使用此选项。</dd>
+<dt>--with-cross-host=HOST</dt><dd>这个选项已经被反对使用，应该使用--with-sysroot来代替其功能。</dd>
+</dl>
+<p>以下选项意义不大，一般不用考虑它们：</p>
+<dl>
+<dt>--enable-cld</dt><dd>启用它相当于将来对32位x86平台调用GCC时默认使用-mcld命令行选项，主要用于兼容一些老旧的平台。</dd>
+<dt>--disable-cloog-version-check</dt><dd>禁止检测<a href="http://www.cloog.org/">CLooG(Chunky Loop Generator)</a>的版本是否满足要求。[GCC-4.4新增选项]</dd>
+<dt>--enable-coverage[=opt|noopt]</dt><dd>在编译器每次编译时收集自身的 coverage 信息。这个仅用于内部测试的目的，并且仅在使用GCC编译的时候才有效。参数控制着是否在编译编译器时使用优化，在需要进行 coverage 分析的时候使用"noopt"(默认)，在需要进行性能分析的时候使用"opt"。</dd>
+<dt>--disable-dependency-tracking</dt><dd>禁止对Makefile规则的依赖性追踪。</dd>
+<dt>--disable-fast-install</dt><dd>禁止为快速安装而进行优化。</dd>
+<dt>--enable-fixed-point</dt><dd>启用C定点浮点运算(fixed-point arithmetic)，这是一种非常快速的模拟浮点运算的方法，特别是在具有相应硬件支持的处理器(比如MIPS)上。在MIPS平台上默认开启，在其他平台上则默认关闭。</dd>
+<dt>--enable-gold</dt><dd>仅在与Binutils联合编译时才有意义。使用gold代替GNU ld。gold是Google开发的连接器，2008年捐赠给FSF，目的是取代现有的GNU ld，但目前两者还不能完兼容。[GCC-4.4新增选项] </dd>
+<dt>--enable-gather-detailed-mem-stats</dt><dd>允许收集详细的内存使用信息，将来在调用 gcc 时如果使用了 -fmem-report 选项就可以打印这些信息。</dd>
+<dt>--enable-generated-files-in-srcdir</dt><dd>将生成的文件的副本保存在源代码目录中，以便于没有 texinfo, perl, bison, flex 的用户创建源代码的归档(比如创建正式发布的tarball)。</dd>
+<dt>--enable-initfini-array</dt><dd>为构造函数和析构函数使用 .init_array 和 .fini_array (而不是 .init 和 .fini) 节。该选项的默认值由configure脚本自动检测决定。</dd>
+<dt>--enable-intermodule</dt><dd>仅用一步来编译 compiler ，以达到内部模块最佳化。(什么意思?)</dd>
+<dt>--enable-install-libiberty</dt><dd>安装 libiberty 的头文件(libiberty.h)，许多程序都会用到这个库中的函数(getopt,strerror,strtol,strtoul)。这个选项经过实验，没有实际效果(相当于disable)。 </dd>
+<dt>--disable-largefile</dt><dd>禁止支持大文件。[GCC-4.4新增选项]</dd>
+<dt>--disable-libada</dt><dd>禁止编译GNAT的运行时库(libada，ADA编译器的运行时库)和相应的工具。</dd>
+<dt>--disable-libgcj</dt><dd>禁止编译GCJ的运行时库(libgcj，Java编译器的运行时库)。</dd>
+<dt>--disable-libtool-lock</dt><dd>禁止 libtool 锁定以加快编译速度(可能会导致并行编译的失败)</dd>
+<dt>--enable-linux-futex</dt><dd>在libgomp和libstdc++库中使用Linux的futex系统调用(快速用户空间互斥体)。默认值根据内核头文件sys/syscall.h中是否包含futex函数的定义而定。</dd>
+<dt>--enable-maintainer-mode</dt><dd>启用无用的 make 规则和依赖性(它们有时会导致混淆)。</dd>
+<dt>--enable-objc-gc</dt><dd>允许在 Objective-C 运行时库中使用 Boehm 垃圾回收器。当前并不支持Boehm，所以该选项没有实际意义。</dd>
+<dt>--disable-ppl-version-check</dt><dd>禁止检测<a href="http://www.cs.unipr.it/ppl/">PPL(Parma Polyhedra Library)</a>的版本是否满足要求。[GCC-4.4新增选项]</dd>
+<dt>--enable-secureplt</dt><dd>使编译器默认创建只读的 plt 项，相当于将来调用 gcc 时默认使用 -msecure-plt 选项。仅对 powerpc-linux 平台有意义。</dd>
+<dt>--enable-stage1-checking</dt><dd>对处于 stage1 状态的编译器执行额外的检查。默认值等于--enable-checking选项的值。</dd>
+<dt>--enable-stage1-languages</dt><dd>在bootstrap时，在 stage1 时使用系统原有的C编译器编译更多的语言支持，而不是使用stage1编译出来的C编译器来编译他们。该选项一般仅供编译器开发者使用。无默认值，可用的取值为：no, yes, all, ada, c, c++, fortran, java, objc, obj-c++ 。 </dd>
+<dt>--enable-tls<br />--disable-tls</dt><dd>允许或禁止目标系统支持TLS(线程本地存储)，"gcc"子目录下没有默认值，"libgcc libgomp libmudflap libstdc++-v3"子目录下默认为"yes"。一般情况下不需要明确指定，因为 configure 脚本可以自动检测。仅在你认为检测不正确的情况下(比如汇编器支持 TLS 但 C 却不支持或汇编器检测错误)才使用这个选项明确指定。</dd>
+<dt>--enable-twoprocess</dt><dd>Choose two-process fix methodology(啥意思?)。对于那些不支持双向pipe的系统，必须使用two-process方法。在 mingw32*,beos* 平台上默认为"yes"，其它平台上默认为"no"。</dd>
+<dt>--enable-werror-always</dt><dd>不管编译器是否支持，总是使用-Werror来编译，也就是将所有编译器警告当作错误看待。</dd>
+<dt>--enable-win32-registry=KEY</dt><dd>仅对Windows平台有意义。而且即使在Windows平台上也可以忽略该选项。</dd>
+<dt>--with-gnu-as<br>--with-gnu-ld</dt><dd>指定编译器将来使用的是GNU汇编器/连接器，默认值为未指定。如果你实际使用的不是GNU汇编器/连接器，指定这个选项会引起混淆；另一方面如果你实际使用的是GNU汇编器/连接器，但是却没有指定这个选项，也有可能会造成混淆。此选项仅在 hppa, sparc, sparc64 平台上才有意义。</dd>
+<dt>--with-bugurl=URL</dt><dd>提示用户发送bug报告的URL。默认值是"http://gcc.gnu.org/bugs.html"。</dd>
+<dt>--with-cpp-install-dir=DIR</dt><dd>除了将用户可见的 cpp 程序安装到默认的 PREFIX/bin 目录外，还将安装到 prefix/DIR 目录。</dd>
+<dt>--with-debug-prefix-map='A=B C=D ...'</dt><dd>在调试信息中将A映射B,C映射到D...</dd>
+<dt>--with-demangler-in-ld</dt><dd>尝试在 GNU ld 中使用 demangler</dd>
+<dt>--with-dwarf2</dt><dd>指定编译程序产生的调试信息默认为DWARF2格式。</dd>
+<dt>--with-gc=[page|zone]</dt><dd>指定编译过程中使用的垃圾回收方案(默认为"page")。</dd>
+<dt>--with-included-gettext</dt><dd>使用软件包中自带的 GNU gettext 库。如果你已经使用了Glibc-2.0以上的版本，或者系统中已经安装了GNU gettext软件包，那么就没有必要使用这个选项。默认不使用。</dd>
+<dt>--with-pkgversion=PKG</dt><dd>使用"PKG"代替默认的"GCC"作为版本字符串，这个信息将会在"gcc --version"命令下显示。比如你可以在其中嵌入编译时间或第多少次编译之类的信息。</dd>
+<dt>--with-stabs</dt><dd>指定将来编译器产生的调试信息默认为stabs格式，而不是宿主系统的默认格式。通常GCC产生的默认调试信息是ECOFF格式，但是它包含的调试信息没有stabs多。</dd>
+</dl>
+<h3>编译、测试、安装</h3>
+<p>除了使用 CFLAGS,LDFLAGS 之外，还可以使用 LIBCFLAGS,LIBCXXFLAGS 控制库文件(由stage3编译)的编译器选项。可以在 make 命令行上使用 BOOT_CFLAGS,BOOT_LDFLAGS 来控制 stage2,stage3 的编译。可以使用 make bootstrap4 来增加步骤以避免 stage1 可能被错误编译所导致的错误。可以使用 make profiledbootstrap 在编译stage1时收集一些有用的统计信息，然后使用这些信息编译最终的二进制文件，这样可以提升编译器和相应库文件的执行效率。</p>
+<p>编译完毕后可以使用"make check"运行测试套件，然后可以和<a href="http://gcc.gnu.org/buildstat.html">http://gcc.gnu.org/buildstat.html</a>里面列出来的结果进行对比，只要"unexpected failures"不要太多就好说。这个测试套件依赖于DejaGnu软件包，而DejaGnu又依赖于expect，expect依赖于tcl。如果只想运行C++测试，可以使用"make check-g++"命令；如果只想运行C编译器测试，可以使用"make check-gcc"。还可以制定只运行某些单项测试：比如使用 make check RUNTESTFLAGS="compile.exp -v" 运行编译测试。另一方面，GCC并不支持使用"make uninstall"进行卸载，建议你将GCC安装在一个特别的目录中，然后在不需要的时候直接删除这个目录。</p>
+
+<p>因为GCC的安装依赖于GMP和MPFR，所以下面附上GMP和MPFR的安装信息，主要是configure选项。</p>
+<h3>GMP-4.2.4</h3>
+<p>下面所列选项若未特别说明皆为<em>非默认值</em>。并且仅选择有实际意义的选项介绍：</p>
+<dl>
+<dt>--enable-assert</dt><dd>启用断言检查，主要用于调试目的。</dd>
+<dt>--enable-alloca=alloca|malloc-reentrant|malloc-notreentrant</dt><dd>分配临时工作区内存的方法：<br>alloca - 使用libc或编译器内置的方法<br>malloc-reentrant - 在堆上使用可重入的(re-entrant)方法分配<br>malloc-notreentrant - 在堆上使用全局变量的方法分配<br>默认值是优先使用alloca，不可用时使用malloc-reentrant。</dd>
+<dt>--enable-cxx</dt><dd>启用C++支持(必须同时拥有C++编译器支持)。也就是将要安装libgmpxx.la库和gmpxx.h头文件。</dd>
+<dt>--enable-fat</dt><dd>在运行时根据CPU型号选择相应的底层子程序。这将使得代码变得臃肿但可以获得更好的性能。</dd>
+<dt>--disable-fft</dt><dd>默认情况下，GMP使用 Karatsuba, 3-way Toom, Fermat FFT 三种算法进行乘法运算。而 Fermat FFT 算法仅用于操作数非常巨大的场合，所以，如果你预计到并不需要操作非常巨大的数字，那么可以禁用这个算法，这样可以减小一些二进制文件的体积。</dd>
+<dt>--enable-mpbsd</dt><dd>编译与Berkeley MP接口兼容的库文件(libmp.{so,a})和头文件(mp.h)</dd>
+<dt>--enable-nails=偶数</dt><dd>在limbs中使用nail(?何意?)</dd>
+<dt>--enable-profile</dt><dd>启用 profiling 信息相关的库文件编译。主要用于调试目的。</dd>
+<dt>--disable-shared<br />--disable-static</dt><dd>禁止编译共享或静态版本的库。</dd>
+<dt>--with-readline</dt><dd>在calc演示程序中使用readline库，默认值自动检测。</dd>
+<dt>--with-pic<br>--without-pic</dt><dd>试图仅使用 PIC 或 non-PIC 对象，默认两者都使用。</dd>
+</dl>
+<h3>MPFR-2.3.2</h3>
+<p>此包依赖于GMP，并且总是在<a href="http://www.mpfr.org/mpfr-current/patches">http://www.mpfr.org/mpfr-current/patches</a>存放最新版本的patch，可以使用<pre>patch -N -Z -p1 &lt; patches</pre>命令打补丁。</p>
+<p>下面所列选项若未特别说明皆为<em>非默认值</em>。并且仅选择有实际意义的选项介绍：</p>
+<dl>
+<dt>--enable-assert</dt><dd>启用断言检查，主要用于调试目的。</dd>
+<dt>--enable-decimal-float</dt><dd>编译与十进制浮点数之间的转换函数(要求GCC&gt;=4.2)</dd>
+<dt>--enable-logging</dt><dd>启用MPFR日志(必须要有底层操作系统的支持)</dd>
+<dt>--disable-shared<br />--disable-static</dt><dd>禁止编译共享或静态版本的库。</dd>
+<dt>--enable-tests-timeout=NUM</dt><dd>设定测试程序的超时秒数(NUM&lt;=9999)，默认没有超时限制。</dd>
+<dt>--enable-thread-safe</dt><dd>编译线程安全的MPFR库</dd>
+<dt>--enable-warnings</dt><dd>允许MPFR将错误输出到stderr</dd>
+<dt>--with-gmp=GMPDIR<br>--with-gmp-include=GMPINCDIR<br>--with-gmp-lib=GMPLIBDIR</dt><dd>指定 GMP 库的安装目录/头文件目录/库目录。指定GMPDIR相当于同时指定了：GMPINCDIR=GMPDIR/include,GMPLIBDIR=GMPDIR/lib 。</dd>
+<dt>--with-mulhigh_size=NUM</dt><dd>mulhigh的内置阈值表大小，没有默认值。</dd>
+<dt>--with-pic<br>--without-pic</dt><dd>试图仅使用 PIC 或 non-PIC 对象，默认两者都使用。</dd>
+</dl>
+
+
+<hr />
+
+</body></html>

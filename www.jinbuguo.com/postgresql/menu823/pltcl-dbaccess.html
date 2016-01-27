@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>在 PL/Tcl 里访问数据库</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="pltcl-global.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="pltcl.html">快退</a></td><td width="60%" align="center" valign="bottom">章38. PL/Tcl - Tcl 过程语言</td><td width="10%" align="right" valign="top"><a href="pltcl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="pltcl-trigger.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLTCL-DBACCESS">38.5. 在 PL/Tcl 里访问数据库</a></h1>
+<p>在 PL/Tcl 过程体里有下面的命令可以用于从访问数据库：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL"><code class="FUNCTION">spi_exec</code> ?<span class="OPTIONAL">-count <tt class="REPLACEABLE"><i>n</i></tt></span>? ?<span class="OPTIONAL">-array <tt class="REPLACEABLE"><i>name</i></tt></span>? <tt class="REPLACEABLE"><i>command</i></tt> ?<span class="OPTIONAL"><tt class="REPLACEABLE"><i>loop-body</i></tt></span>?</tt></dt>
+<dd><p>执行一个以字符串形式给出的 SQL 查询。查询中的错误会导致抛出一个错误。否则，<code class="FUNCTION">spi_exec</code> 的返回值是命令处理的行数(选出、插入、更新、删除)，如果该命令是一个功能性语句则返回零。另外，如果查询是一条 <tt class="COMMAND">SELECT</tt> 语句，那么选出的字段按照下面描述的方法放在 Tcl 变量中。</p>
+<p>可选的 <tt class="LITERAL">-count</tt> 值告诉 <code class="FUNCTION">spi_exec</code> 在该查询中处理的最大的行数。其效果和把查询设置为一个游标，然后说 <tt class="LITERAL">FETCH <tt class="REPLACEABLE"><i>n</i></tt></tt> 是一样的。</p>
+<p>如果查询是一个 <tt class="COMMAND">SELECT</tt> 语句，那么其结果列的数值将放在用各字段名命名的 Tcl 变量中。如果给出了 <tt class="LITERAL">-array</tt> 选项，那么字段值将放到这个命名的相关数组中，字段名用做数组索引。</p>
+<p>如果查询是 <tt class="COMMAND">SELECT</tt> 语句并且没有给出 <tt class="REPLACEABLE"><i>loop-body</i></tt> 脚本，那么只有结果的头一行会存储到 Tcl 变量中；如果还有其它行的话，将会被忽略。如果查询没有返回任何行，那么不会存储什么数据(这个情况可以通过检查 <code class="FUNCTION">spi_exec</code> 的结果来判断)。比如，</p>
+<pre class="PROGRAMLISTING">spi_exec "SELECT count(*) AS cnt FROM pg_proc"</pre>
+<p>将设置 Tcl 变量 <tt class="LITERAL">$cnt</tt> 设为系统表 <tt class="STRUCTNAME">pg_proc</tt> 中的行数。</p>
+<p>如果给出了可选的 <tt class="REPLACEABLE"><i>loop-body</i></tt> 参数，那么它就是一小段 Tcl 脚本，它会为 SELECT 结果中的每一行执行一次(注意：如果给出的查询不是 <tt class="COMMAND">SELECT</tt>，那么忽略 <tt class="REPLACEABLE"><i>loop-body</i></tt>)。在每次迭代之前，当前行的字段的数值都存储到 Tcl 变量中去了。比如，</p>
+<pre class="PROGRAMLISTING">spi_exec -array C "SELECT * FROM pg_class" {
+    elog DEBUG "have table $C(relname)"
+}</pre>
+<p>将为 <tt class="LITERAL">pg_class</tt> 的每一行打印一行日志信息。这个特性和其它 Tcl 循环构造的运做方式类似；特别是 <tt class="LITERAL">continue</tt> 和 <tt class="LITERAL">break</tt> 在循环体中的作用和平常是一样的。</p>
+<p>如果一个查询结果的某个字段是 NULL ，那么其目标变量就是"unset"而不会设置上什么东西。</p></dd>
+<dt><code class="FUNCTION">spi_prepare</code> <tt class="REPLACEABLE"><i>query</i></tt> <tt class="REPLACEABLE"><i>typelist</i></tt></dt>
+<dd><p>为后面的执行准备并保存一个查询规划。保存的规划的生命期就是当前会话的生命期。</p>
+<p>查询可以使用参数，这些参数是规划实际执行的时候提供的数值的占位符。在查询字符串里用符号 <tt class="LITERAL">$1</tt> ... <tt class="LITERAL">$<tt class="REPLACEABLE"><i>n</i></tt></tt> 引用各个参数。如果查询使用了参数，那么参数类型名必需以一个 Tcl 列表的形式给出。如果没有使用参数，那么给 <tt class="REPLACEABLE"><i>typelist</i></tt> 写一个空列表。目前，参数类型必需和 <tt class="LITERAL">pg_type</tt> 里显示的内部类型名一样；比如是 <tt class="LITERAL">int4</tt> 而不是 <tt class="LITERAL">integer</tt> 。</p>
+<p><code class="FUNCTION">spi_prepare</code> 的返回值是一个可以在随后的 <code class="FUNCTION">spi_execp</code> 调用中使用的查询 ID 。参阅 <code class="FUNCTION">spi_execp</code> 获取例子。</p></dd>
+<dt><tt class="LITERAL"><code class="FUNCTION">spi_execp</code> ?<span class="OPTIONAL">-count <tt class="REPLACEABLE"><i>n</i></tt></span>? ?<span class="OPTIONAL">-array <tt class="REPLACEABLE"><i>name</i></tt></span>? ?<span class="OPTIONAL">-nulls <tt class="REPLACEABLE"><i>string</i></tt></span>? <tt class="REPLACEABLE"><i>queryid</i></tt> ?<span class="OPTIONAL"><tt class="REPLACEABLE"><i>value-list</i></tt></span>? ?<span class="OPTIONAL"><tt class="REPLACEABLE"><i>loop-body</i></tt></span>?</tt></dt>
+<dd><p>执行一个前面用 <code class="FUNCTION">spi_prepare</code> 准备的查询。<tt class="REPLACEABLE"><i>queryid</i></tt> 是 <code class="FUNCTION">spi_prepare</code> 返回的 ID 。如果该查询引用了参数，那么必需提供一个 <tt class="REPLACEABLE"><i>value-list</i></tt> ：这是一个 Tcl 列表，里面包含那些参数的实际数值。这个列表的长度必需和前面给 <code class="FUNCTION">spi_prepare</code> 提供的参数类型列表的长度一样长。如果查询没有参数，那么省略 <tt class="REPLACEABLE"><i>value-list</i></tt> 。</p>
+<p><tt class="LITERAL">-nulls</tt> 可选的数值是一个空白字符串和字符 <tt class="LITERAL">'n'</tt> ，告诉 <code class="FUNCTION">spi_execp</code> 哪些参数是 NULL 。如果给出，那么它必需和 <tt class="REPLACEABLE"><i>value-list</i></tt> 的长度相同。如果没有给出，那么所有参数值都是非 NULL 。</p>
+<p>除了查询及其参数声明的方式之外，<code class="FUNCTION">spi_execp</code> 的使用方法基本上和 <code class="FUNCTION">spi_exec</code> 一样。<tt class="LITERAL">-count</tt>, <tt class="LITERAL">-array</tt>, <tt class="REPLACEABLE"><i>loop-body</i></tt> 选项都是一样的，结果数值也一样。</p>
+<p>下面是一个使用预备规划的 PL/Tcl 函数的例子：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION t1_count(integer, integer) RETURNS integer AS $$
+    if {![ info exists GD(plan) ]} {
+        # prepare the saved plan on the first call
+        set GD(plan) [ spi_prepare \
+                "SELECT count(*) AS cnt FROM t1 WHERE num &gt;= \$1 AND num &lt;= \$2" \
+                [ list int4 int4 ] ]
+    }
+    spi_execp -count 1 $GD(plan) [ list $1 $2 ]
+    return $cnt
+$$ LANGUAGE pltcl;</pre>
+<p>需要在给 <code class="FUNCTION">spi_prepare</code> 的查询字符串里放反斜杠，以确保 <tt class="LITERAL">$<tt class="REPLACEABLE"><i>n</i></tt></tt> 标记会原样传递给 <code class="FUNCTION">spi_prepare</code> ，而不是被 Tcl 的变量代换替换掉。</p></dd>
+<dt><code class="FUNCTION">spi_lastoid</code></dt>
+<dd><p>如果该查询是单行 <tt class="COMMAND">INSERT</tt> 并且被修改的表包含 OID ，则返回最后的 <code class="FUNCTION">spi_exec</code> 或 <code class="FUNCTION">spi_execp</code> 查询插入的行的 OID 。如果不是，将得到零。</p></dd>
+<dt><code class="FUNCTION">quote</code> <tt class="REPLACEABLE"><i>string</i></tt></dt>
+<dd><p>在给出的字符串里将所由单引号和反斜杠字符复制成双份。它可以用于安全地处理那些要输入到 <code class="FUNCTION">spi_exec</code> 或 <code class="FUNCTION">spi_prepare</code> 中的 SQL 命令中的引号包围字符串。比如，假如一个 SQL 命令看起来像这样</p>
+<pre class="PROGRAMLISTING">"SELECT '$val' AS ret"</pre>
+<p>这里的 Tcl 变量 <tt class="LITERAL">val</tt> 实际上包含 <tt class="LITERAL">doesn't</tt> 。这样最后的命令字符串会是这样</p>
+<pre class="PROGRAMLISTING">SELECT 'doesn't' AS ret</pre>
+<p>而这个字符串在 <code class="FUNCTION">spi_exec</code> 或 <code class="FUNCTION">spi_prepare</code> 的时候会导致一个分析错误。为了能工作正常，提交的命令应该包含</p>
+<pre class="PROGRAMLISTING">SELECT 'doesn''t' AS ret</pre>
+<p>在 PL/Tcl 中可以这样构造</p>
+<pre class="PROGRAMLISTING">"SELECT '[ quote $val ]' AS ret"</pre>
+<p><code class="FUNCTION">spi_execp</code> 的一个优点是你不需要像这样引号包围参数值，因为参数绝不会当做 SQL 查询字符串的一部分被分析。</p></dd>
+<dt><code class="FUNCTION">elog</code> <tt class="REPLACEABLE"><i>level</i></tt> <tt class="REPLACEABLE"><i>msg</i></tt></dt>
+<dd><p>发出一个日志或者错误消息。可能的级别是 <tt class="LITERAL">DEBUG</tt>, <tt class="LITERAL">LOG</tt>, <tt class="LITERAL">INFO</tt>, <tt class="LITERAL">NOTICE</tt>, <tt class="LITERAL">WARNING</tt>, <tt class="LITERAL">ERROR</tt>, <tt class="LITERAL">FATAL</tt> 。<tt class="LITERAL">ERROR</tt> 抛出一个错误条件：该行数进一步的执行将中止，同时退出当前事务。<tt class="LITERAL">FATAL</tt> 退出当前事务并且导致当前会话关闭(可能在 PL/Tcl 函数里没有什么理由使用这个错误级别，提供它主要是为了完整)。某个优先级别的信息是报告给客户端还是写到服务器日志，还是两个都做是由 <a href="runtime-config-logging.html#GUC-LOG-MIN-MESSAGES">log_min_messages</a> 和 <a href="runtime-config-logging.html#GUC-CLIENT-MIN-MESSAGES">client_min_messages</a> 配置变量控制的。参阅<a href="runtime-config.html">章17</a>获取更多细节。</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="pltcl-global.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="pltcl-trigger.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PL/Tcl 里的全局量</td><td width="34%" align="center" valign="top"><a href="pltcl.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PL/Tcl 里的触发器过程</td></tr>
+</table>
+</div>
+</body></html>

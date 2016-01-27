@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SELECT INTO</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-select.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-select.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-set.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-set.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-SELECTINTO"></a>SELECT INTO</h1>
+<div class="REFNAMEDIV"><a name="AEN54222"></a><h2>名称</h2>SELECT INTO&nbsp;--&nbsp;从一条查询的结果中定义一个新表</div>
+<a name="AEN54225"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN54227"></a><h2>语法</h2>
+<pre class="SYNOPSIS">SELECT [ ALL | DISTINCT [ ON ( <tt class="REPLACEABLE"><i>expression</i></tt> [, ...] ) ] ]
+    * | <tt class="REPLACEABLE"><i>expression</i></tt> [ AS <tt class="REPLACEABLE"><i>output_name</i></tt> ] [, ...]
+    INTO [ TEMPORARY | TEMP ] [ TABLE ] <tt class="REPLACEABLE"><i>new_table</i></tt>
+    [ FROM <tt class="REPLACEABLE"><i>from_item</i></tt> [, ...] ]
+    [ WHERE <tt class="REPLACEABLE"><i>condition</i></tt> ]
+    [ GROUP BY <tt class="REPLACEABLE"><i>expression</i></tt> [, ...] ]
+    [ HAVING <tt class="REPLACEABLE"><i>condition</i></tt> [, ...] ]
+    [ { UNION | INTERSECT | EXCEPT } [ ALL ] <tt class="REPLACEABLE"><i>select</i></tt> ]
+    [ ORDER BY <tt class="REPLACEABLE"><i>expression</i></tt> [ ASC | DESC | USING <tt class="REPLACEABLE"><i>operator</i></tt> ] [, ...] ]
+    [ LIMIT { <tt class="REPLACEABLE"><i>count</i></tt> | ALL } ]
+    [ OFFSET <tt class="REPLACEABLE"><i>start</i></tt> ]
+    [ FOR { UPDATE | SHARE } [ OF <tt class="REPLACEABLE"><i>table_name</i></tt> [, ...] ] [ NOWAIT ] [...] ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54243"></a><h2>描述</h2>
+<p><tt class="COMMAND">SELECT INTO</tt> 从一个查询的计算结果中创建一个新表。数据并不返回给客户端，这一点和普通的 <tt class="COMMAND">SELECT</tt> 不同。新表的字段具有和 <tt class="COMMAND">SELECT</tt> 的输出字段相同的名字和数据类型。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54249"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">TEMPORARY</tt> 或 <tt class="LITERAL">TEMP</tt></dt>
+<dd><p>如果声明了这个关键字，那么该表是作为一个临时表创建的。请参考 <a href="sql-createtable.html"><i>CREATE TABLE</i></a> 获取细节。</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_table</i></tt></dt>
+<dd><p>要创建的表的名字(可以有模式修饰)</p></dd>
+</dl>
+</div>
+<p>所有其它输入的域都在 <a href="sql-select.html"><i>SELECT</i></a> 中有详细描述。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54266"></a><h2>注意</h2>
+<p><a href="sql-createtableas.html"><i>CREATE TABLE AS</i></a> 的作用和 <tt class="COMMAND">SELECT INTO</tt> 类似。建议使用 <tt class="COMMAND">CREATE TABLE AS</tt> 语法，因为 <tt class="COMMAND">SELECT INTO</tt> 不是标准语法。实际上，它是不能在 <span class="APPLICATION">ECPG</span> 或 PL/pgSQL 中使用的，因为它们对 <tt class="LITERAL">INTO</tt> 子句的解释是不同的。而且，<tt class="COMMAND">CREATE TABLE AS</tt> 提供了 <tt class="COMMAND">SELECT INTO</tt> 所提供功能的超集。</p>
+<p>在 PostgreSQL 8.1 以前， <tt class="COMMAND">SELECT INTO</tt> 创建的表总是缺省包含 OID 。到了 PostgreSQL 8.1 ，这不再是缺省了，要想在新表中包含 OID ，可以打开 <a href="runtime-config-compatible.html#GUC-DEFAULT-WITH-OIDS">default_with_oids</a> 配置参数或使用 <tt class="LITERAL">WITH OIDS</tt> 子句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54285"></a><h2>例子</h2>
+<p>创建一个新表 <tt class="LITERAL">films_recent</tt> ，它的值包含来自 <tt class="LITERAL">films</tt> 的最近的条目：</p>
+<pre class="PROGRAMLISTING">SELECT * INTO films_recent FROM films WHERE date_prod &gt;= '2002-01-01';</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54291"></a><h2>兼容性</h2>
+<p>SQL 标准用 <tt class="COMMAND">SELECT INTO</tt> 表示选取数值到一个宿主程序的标量变量中，而不是创建一个新表。这种用法实际上就是在 <span class="APPLICATION">ECPG</span>(<a href="ecpg.html">章31</a>) 和 PL/pgSQL(<a href="plpgsql.html">章37</a>)里的用途。PostgreSQL 用 <tt class="COMMAND">SELECT INTO</tt> 创建表是历史原因。在新代码里最好使用 <tt class="COMMAND">CREATE TABLE AS</tt> 实现这个目的。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54302"></a><h2>又见</h2><a href="sql-createtableas.html"><i>CREATE TABLE AS</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-select.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-set.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SELECT</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SET</td></tr>
+</table>
+</div>
+</body></html>

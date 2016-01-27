@@ -1,0 +1,72 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_asis － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_asis</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>发送自己包含HTTP头内容的文件</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>asis_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_asis.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>这个模块提供了<code>send-as-is</code>处理器，这样Apache可以不加大多数常用的HTTP头(headers)传送它们。</p>
+
+    <p>这可以用来从服务器传送任何型态的资料，包括重定向以及其它特殊的HTTP应答，而不需要cgi-script或是nph script 。</p>
+
+    <p>由于历史原因，这个模块也处理MIME类型为<code>httpd/send-as-is</code>的文件。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="usage" id="usage">用法</a></h2>
+
+    <p>在服务器配置文档里，定义一个称为<code>send-as-is</code>的处理器，例如：</p>
+
+    <div class="example"><p><code>AddHandler send-as-is asis</code></p></div>
+
+    <p>任何带有"<code>.asis</code>"扩展名的文件的内容被Apache发往客户端时几乎没有什么变化。客户端将需要HTTP头来联系，所以别忘记它们。"Status:"是必须的头；此数据应该是3位数字的HTTP应答码，跟随一段文字信息。</p>
+
+    <p>这里有个示例文档，其内容将按照<em>原样</em>输出，它是告诉客户端重定向到另外一个文件：</p>
+
+
+    <div class="example"><p><code>
+      Status: 301 Now where did I leave that URL<br />
+      Location: http://xyz.abc.com/foo/bar.html<br />
+      Content-type: text/html<br />
+      <br />
+      &lt;html&gt;<br />
+      &lt;head&gt;<br />
+      &lt;title&gt;Lame excuses'R'us&lt;/title&gt;<br />
+      &lt;/head&gt;<br />
+      &lt;body&gt;<br />
+      &lt;h1&gt;Fred's exceptionally wonderful page has moved to<br />
+      &lt;a href="http://xyz.abc.com/foo/bar.html"&gt;Joe's&lt;/a&gt;
+      site.<br />
+      &lt;/h1&gt;<br />
+      &lt;/body&gt;<br />
+      &lt;/html&gt;
+    </code></p></div>
+
+    <div class="note"><h3>注意：</h3>
+    <p>服务器总会在送给客户端的资料里加上"<code>Date:</code>"和"<code>Server:</code>"头，所以这两个头不应该包含在这个文件里。另外，服务器<em>不会</em>加上通常都会加上的"<code>Last-Modified:</code>"头。</p>
+    </div>
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

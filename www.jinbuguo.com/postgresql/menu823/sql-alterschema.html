@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ALTER SCHEMA</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-alterrole.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-alterrole.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-altersequence.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-altersequence.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ALTERSCHEMA"></a>ALTER SCHEMA</h1>
+<div class="REFNAMEDIV"><a name="AEN44645"></a><h2>名称</h2>ALTER SCHEMA&nbsp;--&nbsp;修改一个模式的定义</div>
+<a name="AEN44648"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN44650"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ALTER SCHEMA <tt class="REPLACEABLE"><i>name</i></tt> RENAME TO <tt class="REPLACEABLE"><i>newname</i></tt>
+ALTER SCHEMA <tt class="REPLACEABLE"><i>name</i></tt> OWNER TO <tt class="REPLACEABLE"><i>newowner</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN44656"></a><h2>描述</h2>
+<p><tt class="COMMAND">ALTER SCHEMA</tt> 修改一个模式的定义。</p>
+<p>要使用 <tt class="COMMAND">ALTER SCHEMA</tt> ，你必须拥有该模式。要给一个模式重命名，你必须在该数据库上有 <tt class="LITERAL">CREATE</tt> 权限。要修改所有者，你还必须是新的所有角色的直接或间接成员，并且该成员必须在此数据库上有 <tt class="LITERAL">CREATE</tt> 权限。超级用户自动拥有全部权限。</p>
+</div>
+<div class="REFSECT1"><a name="AEN44664"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>现有模式的名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>newname</i></tt></dt>
+<dd><p>模式的新名字，新名字不能以 <tt class="LITERAL">pg_</tt> 开头，因为这些名字是保留给系统模式的。</p></dd>
+<dt><tt class="REPLACEABLE"><i>newowner</i></tt></dt>
+<dd><p>模式的新所有者</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN44683"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">ALTER SCHEMA</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN44687"></a><h2>又见</h2><a href="sql-createschema.html"><i>CREATE SCHEMA</i></a>, <a href="sql-dropschema.html"><i>DROP SCHEMA</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-alterrole.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-altersequence.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ALTER ROLE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">ALTER SEQUENCE</td></tr>
+</table>
+</div>
+</body></html>

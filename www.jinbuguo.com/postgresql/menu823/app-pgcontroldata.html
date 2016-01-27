@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_controldata</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="app-ipcclean.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="app-ipcclean.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-pg-ctl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-pg-ctl.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-PGCONTROLDATA"></a><span class="APPLICATION">pg_controldata</span></h1>
+<div class="REFNAMEDIV"><a name="AEN60426"></a><h2>名称</h2>pg_controldata&nbsp;--&nbsp;显示一个集群的控制信息</div>
+<a name="AEN60430"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN60432"></a><h2>语法</h2>
+<p><tt class="COMMAND">pg_controldata</tt> [<tt class="REPLACEABLE"><i>datadir</i></tt>]</p>
+</div>
+<div class="REFSECT1"><a name="R1-APP-PGCONTROLDATA-1"></a><h2>描述</h2>
+<p><tt class="COMMAND">pg_controldata</tt> 打印那些在 <tt class="COMMAND">initdb</tt> 过程中初始化的信息，比如表版本和服务器的区域等。它还显示有关预写日志和检查点处理相关的信息。这些信息是集群范围内有效的，并不和某个数据库相关。</p>
+<p>这个命令只应该有安装服务器的用户运行，因为它要求对数据目录的读访问权限。你可以在命令行上声明数据目录，或者使用 <tt class="ENVAR">PGDATA</tt> 环境变量。</p>
+</div>
+<div class="REFSECT1"><a name="AEN60444"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGDATA</tt></dt>
+<dd><p>缺省数据目录位置</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="app-ipcclean.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-pg-ctl.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><span class="APPLICATION">ipcclean</span></td><td width="34%" align="center" valign="top"><a href="reference-server.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><span class="APPLICATION">pg_ctl</span></td></tr>
+</table>
+</div>
+</body></html>

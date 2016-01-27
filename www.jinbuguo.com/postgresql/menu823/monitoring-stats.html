@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>统计收集器</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="monitoring-ps.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="monitoring.html">快退</a></td><td width="60%" align="center" valign="bottom">章25. 监控数据库的活动</td><td width="10%" align="right" valign="top"><a href="monitoring.html">快进</a></td><td width="10%" align="right" valign="top"><a href="monitoring-locks.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="MONITORING-STATS">25.2. 统计收集器</a></h1><a name="AEN25548"></a>
+<p> PostgreSQL 的<i class="FIRSTTERM">统计收集器</i>是一个支持收集和汇报服务器活跃性信息的子系统。目前，这个收集器可以给出对表和索引的访问计数，包括磁盘块的数量和独立行的项。</p>
+<p>PostgreSQL 还可以判断当前其它服务器进程正在执行的命令是什么。这个特性独立于统计收集器子系统，可以单独地被启用或禁用。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="MONITORING-STATS-SETUP">25.2.1. 统计收集器配置</a></h2>
+<p>因为统计收集给查询处理增加了一些开销，所以你可以启用或禁用统计收集。这是由配置参数控制的，通常在 <tt class="FILENAME">postgresql.conf</tt> 里设置(参阅<a href="runtime-config.html">章17</a>获取有关设置配置参数的细节)。</p>
+<p>要想让统计收集器运行起来，参数 <a href="runtime-config-statistics.html#GUC-STATS-START-COLLECTOR">stats_start_collector</a> 必须设置为 <tt class="LITERAL">true</tt> 。这既是缺省设置也是建议设置，但是如果你对统计信息不感兴趣并且想把所有额外的开销都去除，那么可以把它设置为 <tt class="LITERAL">false</tt> 。不过，实际节省的开销并不多。这个选项不能在服务器运行的时候改变。</p>
+<p>参数 <a href="runtime-config-statistics.html#GUC-STATS-BLOCK-LEVEL">stats_block_level</a> 和 <a href="runtime-config-statistics.html#GUC-STATS-ROW-LEVEL">stats_row_level</a> 控制实际发送给收集器的信息数量，因此也决定了会产生多少运行时开销。它们分别决定服务器进程是否向收集器发送磁盘块层次的访问统计和行层次的访问统计。另外，如果开启了这两个参数中的任何一个的话，针对每个数据库的事务提交和退出统计信息也将被收集。</p>
+<p>参数 <a href="runtime-config-statistics.html#GUC-STATS-COMMAND-STRING">stats_command_string</a> 控制是否监视每个服务器进程当前执行的命令字符串。统计收集器子进程的运行并不需要开启此特性。</p>
+<p>通常这些参数在 <tt class="FILENAME">postgresql.conf</tt> 中设置，因此它们作用于所有服务器进程，但是我们也可以在独立的会话里用 <a href="sql-set.html"><i>SET</i></a> 命令把它们打开或者关闭。为避免普通用户把它们的活跃性隐藏不给管理员看，只有超级用户允许用 <tt class="COMMAND">SET</tt> 命令修改这些参数。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>因为参数 <tt class="VARNAME">stats_block_level</tt>, <tt class="VARNAME">stats_row_level</tt> 缺省为 <tt class="LITERAL">false</tt> ，所以缺省配置只收集很少的统计信息。打开其中的一个或多个可以显著增加统计收机器生成的有用信息的数量，代价是增加一点运行时开销。</p>
+</blockquote>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="MONITORING-STATS-VIEWS">25.2.2. 查看收集到的统计信息</a></h2>
+<p>有一些预定义的视图可以用于显示统计收集的结果，在<a href="monitoring-stats.html#MONITORING-STATS-VIEWS-TABLE">表25-1</a>里列出。另外，我们可以使用底层的统计函数制作自定义的视图。</p>
+<p>在使用统计观察当前活跃性的时候，你必须意识到这些信息并不是实时更新的。每个独立的服务器进程只是在准备进入空闲状态的时候才向收集器传送新的块和行访问计数；因此正在处理的查询或者事务并不影响显示出来的总数。同样，收集器本身也最多每 <tt class="VARNAME">PGSTAT_STAT_INTERVAL</tt> 毫秒(缺省 500，除非在编译服务器的时候修改过)发送一次新的报告。因此显示总是落后于实际活动。但是由 <tt class="VARNAME">stats_command_string</tt> 收集的当前查询信息总是实时更新的。</p>
+<p>另外一个需要着重指出的是，在请求服务器进程显示任何这些统计信息的时候，它首先抓取收集器进程发出的最新报告，然后就拿这些数据作为所有统计视图和函数的快照，直到它当前的事务结束。因此统计信息在当前事务的持续期间内不会改变。类似的，每个进程的当前查询信息在该查询首次出现在事务中的时候就被收集了，并且在整个事务过程中都显示相同的信息。这是一个特性，而不是一个臭虫，因为这样就允许你在统计上执行几个查询并且对结果进行相关性检查而又不用担心这些数字会悄悄的变化。但是如果你想看每个查询的最新结果，那么就要记住在事务块外面处理这些查询。</p>
+<div class="TABLE"><a name="MONITORING-STATS-VIEWS-TABLE"></a>
+<p><b>表25-1. 标准统计视图</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>视图名字</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTNAME">pg_stat_activity</tt></td><td>每个服务器进程一行，显示：数据库 OID 、数据库名、进程 ID 、用户 OID 、用户名、当前查询、当前查询等待状态、当前查询开始执行的时间、进程启动的时间、客户端地址、客户端端口。报告当前查询相关信息的各个字段只有在打开 <tt class="VARNAME">stats_command_string</tt> 参数的时候才可用。另外，除非检查这些字段的用户是超级用户或者是正在报告的进程的用户，否则它们显示为空。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_stat_database</tt></td><td>每个数据库一行，显示：数据库 OID 、数据库名、与该数据库连接的活跃服务器进程数、已提交的事务总数、已回滚的事务总、已读取的磁盘块总数、缓冲区命中总数(在缓冲区中找到所需要的块，从而避免读取块的动作)。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_stat_all_tables</tt></td><td>当前数据库中每个表一行(包括TOAST表)，显示：表 OID 、模式名、表名、发起的顺序扫描总数、顺序扫描抓取的活数据行(live row)的数目、发起的索引扫描的总数(属于该表的所有索引)、索引扫描抓取的活数据行的数目、插入的行总数、更新的行总数、删除的行总数、上次手动清理该表的时间、上次由 autovacuum 自动清理该表的时间、上次手动分析该表的时间、上次由 autovacuum 自动分析该表的时间。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_stat_sys_tables</tt></td><td>和 <tt class="STRUCTNAME">pg_stat_all_tables</tt> 一样，但只显示系统表。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_stat_user_tables</tt></td><td>和 <tt class="STRUCTNAME">pg_stat_all_tables</tt> 一样，但只显示用户表。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_stat_all_indexes</tt></td><td>当前数据库的每个索引一行，显示：表 OID 、索引 OID 、模式名、表名、索引名、使用了该索引的索引扫描总数、索引扫描返回的索引记录数、使用该索引的简单索引扫描抓取的活表(live table)中数据行数。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_stat_sys_indexes</tt></td><td>和 <tt class="STRUCTNAME">pg_stat_all_indexes</tt> 一样，但只显示系统表上的索引。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_stat_user_indexes</tt></td><td>和 <tt class="STRUCTNAME">pg_stat_all_indexes</tt> 一样，但只显示用户表上的索引。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_statio_all_tables</tt></td><td>当前数据库中每个表一行(包括TOAST表)，显示：表 OID 、模式名、表名、从该表中读取的磁盘块总数、缓冲区命中次数、该表上所有索引的磁盘块读取总数、该表上所有索引的缓冲区命中总数、在该表的辅助TOAST表(如果存在)上的磁盘块读取总数、在该表的辅助TOAST表(如果存在)上的缓冲区命中总数、TOAST表的索引的磁盘块读取总数、TOAST表的索引的缓冲区命中总数。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_statio_sys_tables</tt></td><td>和 <tt class="STRUCTNAME">pg_statio_all_tables</tt> 一样，但只显示系统表。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_statio_user_tables</tt></td><td>和 <tt class="STRUCTNAME">pg_statio_all_tables</tt> 一样，但只显示用户表。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_statio_all_indexes</tt></td><td>当前数据库中每个索引一行，显示：表 OID 、索引 OID 、模式名、表名、索引名、该索引的磁盘块读取总数、该索引的缓冲区命中总数。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_statio_sys_indexes</tt></td><td>和 <tt class="STRUCTNAME">pg_statio_all_indexes</tt> 一样，但只显示系统表。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_statio_user_indexes</tt></td><td>和 <tt class="STRUCTNAME">pg_statio_all_indexes</tt> 一样，但只显示用户表。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_statio_all_sequences</tt></td><td>当前数据库中每个序列对象一行，显示：序列 OID 、模式名、序列名、序列的磁盘读取总数、序列的缓冲区命中总数。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_statio_sys_sequences</tt></td><td>和 <tt class="STRUCTNAME">pg_statio_all_sequences</tt> 一样，但只系统序列。因为目前没有定义系统序列，所以这个视图总是空的。</td></tr>
+<tr><td><tt class="STRUCTNAME">pg_statio_user_sequences</tt></td><td>和 <tt class="STRUCTNAME">pg_statio_all_sequences</tt> 一样，但只显示用户序列。</td></tr>
+</tbody>
+</table>
+</div>
+<p>针对每个索引的统计对于判断哪个索引得到使用以及它们的效果非常有用。</p>
+<p>从 PostgreSQL 8.1 开始，索引既可以直接使用，也可以通过"位图扫描"使用。在位图扫描中，多个索引的输出可以通过 AND 或者 OR 规则合并；所以，在使用索引的时候，很难把独立的堆(表)行抓取和指定的索引抓取结合起来。因此，位图扫描增大它使用的 <tt class="STRUCTNAME">pg_stat_all_indexes</tt>.<tt class="STRUCTFIELD">idx_tup_read</tt> 计数。并且它还增加为表使用的 <tt class="STRUCTNAME">pg_stat_all_tables</tt>.<tt class="STRUCTFIELD">idx_tup_fetch</tt> 计数，但是它并不影响 <tt class="STRUCTNAME">pg_stat_all_indexes</tt>.<tt class="STRUCTFIELD">idx_tup_fetch</tt></p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 PostgreSQL 8.1 之前，<tt class="STRUCTFIELD">idx_tup_read</tt> 和 <tt class="STRUCTFIELD">idx_tup_fetch</tt> 计数实际上总是一样的。现在即使是不考虑位图扫描，它们也可能是不同的，因为 <tt class="STRUCTFIELD">idx_tup_read</tt> 记录从索引检索的记录条目，而 <tt class="STRUCTFIELD">idx_tup_fetch</tt> 记录从表中抓取的活行数；如果有已经失效的或者还未提交的行通过索引扫描找出来，后者将会小一些。</p>
+</blockquote>
+</div>
+<p>The <tt class="STRUCTNAME">pg_statio_</tt> 系列视图在判断缓冲区效果的时候特别有用。在实际磁盘读取远比缓冲命中小的时候，这个缓冲基本满足所有读要求，因此不需要进行内核调用。但是，这些统计并未给出所有信息。由于 PostgreSQL 处理磁盘的方式，不在 PostgreSQL 缓冲区中的数据可能仍然驻留在内核的 I/O 缓存中，因此仍然可能不必经过物理读取。对获取 PostgreSQL 的 I/O 行为的更多细节感兴趣的用户可以结合使用 PostgreSQL 的统计收集器和可以分析内核 I/O 处理的操作系统工具来获取更多细节。</p>
+<p>其它查看统计的方法可以通过书写使用底层统计访问函数的查询来设置，这些底层统计访问函数和标准视图里使用的是一样的。这些函数在<a href="monitoring-stats.html#MONITORING-STATS-FUNCS-TABLE">表25-2</a>中列出。针对某个数据库进行访问的函数接受一个数据库 OID 为参数来标识需要报告哪个数据库。针对某个表或者某索引进行访问的函数接受一个表或者索引的 OID 。请注意这些函数只能看到在当前数据库里的表和索引。针对某个服务器进行访问的函数接受一个服务器进程号，其范围从 1 到当前活跃服务器的数目。</p>
+<div class="TABLE"><a name="MONITORING-STATS-FUNCS-TABLE"></a>
+<p><b>表25-2. 统计访问函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>函数</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_db_numbackends</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">integer</tt></td><td>处理该数据库活跃的服务器进程数目</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_db_xact_commit</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>数据库中已提交事务数量</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_db_xact_rollback</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>数据库中回滚的事务数量</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_db_blocks_fetched</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>数据库中磁盘块抓取请求的总数</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_db_blocks_hit</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>为数据库在缓冲区中找到的磁盘块抓取请求的总数</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_numscans</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>如果参数是一个表，那么就是进行的顺序扫描的数目，如果参数是一个索引，那么就是索引扫描的数目。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_tuples_returned</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>如果参数是一个表，那么就是顺序扫描读取的行数目，如果参数是一个索引，那么就是返回的索引行的数目。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_tuples_fetched</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>如果参数是一个表，那么就是位图扫描抓取的行数目，如果参数是一个索引，那么就是用简单索引扫描抓取的行数目。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_tuples_inserted</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>插入表中的行数量</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_tuples_updated</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>在表中已更新的行数量</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_tuples_deleted</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>从表中删除的行数量</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_blocks_fetched</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>表或者索引的磁盘块抓取请求的数量</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_blocks_hit</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>在缓冲区中找到的表或者索引的磁盘块请求数目</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_last_vacuum_time</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">timestamptz</tt></td><td>用户在该表上最后一次启动清理的时间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_last_autovacuum_time</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">timestamptz</tt></td><td>autovacuum 守护进程在该表上最后一次启动清理的时间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_last_analyze_time</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">timestamptz</tt></td><td>用户在该表上最后一次启动分析的时间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_last_autoanalyze_time</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">timestamptz</tt></td><td>autovacuum 守护进程在该表上最后一次启动分析的时间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_idset</code>()</tt></td><td><tt class="TYPE">setof integer</tt></td><td>当前活跃服务器编号的集合(从 1 到活跃后端的数目)。参阅文本中的使用样例。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_backend_pid</code>()</tt></td><td><tt class="TYPE">integer</tt></td><td>附着在当前会话上的服务器进程 ID</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_pid</code>(<tt class="TYPE">integer</tt>)</tt></td><td><tt class="TYPE">integer</tt></td><td>给定的服务器进程的 PID</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_dbid</code>(<tt class="TYPE">integer</tt>)</tt></td><td><tt class="TYPE">oid</tt></td><td>给定的服务器进程的数据库 ID</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_userid</code>(<tt class="TYPE">integer</tt>)</tt></td><td><tt class="TYPE">oid</tt></td><td>给定的服务器进程的用户 ID</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_activity</code>(<tt class="TYPE">integer</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>给定服务器进程的当前活动查询，仅在调用者是超级用户或被查询会话的用户，并且打开 <tt class="VARNAME">stats_command_string</tt> 的时候才能获得结果。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_waiting</code>(<tt class="TYPE">integer</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>如果给定服务器进程在等待某个锁，并且调用者是超级用户或被查询会话的用户，并且打开 <tt class="VARNAME">stats_command_string</tt> 的时候才返回真。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_activity_start</code>(<tt class="TYPE">integer</tt>)</tt></td><td><tt class="TYPE">timestamp with time zone</tt></td><td>给定服务器进程当前正在执行的查询的起始时间，仅在调用者是超级用户或被查询会话的用户，并且打开 <tt class="VARNAME">stats_command_string</tt> 的时候才能获得结果。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_start</code>(<tt class="TYPE">integer</tt>)</tt></td><td><tt class="TYPE">timestamp with time zone</tt></td><td>给定服务器进程启动的时间，如果当前用户不是超级用户或被查询的后端的用户，则返回 NULL 。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_client_addr</code>(<tt class="TYPE">integer</tt>)</tt></td><td><tt class="TYPE">inet</tt></td><td>连接到给定服务器进程的客户端 IP 地址。如果是通过 Unix 域套接字连接的则返回 NULL 。如果当前用户不是超级用户或被查询会话的用户，也返回 NULL 。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_get_backend_client_port</code>(<tt class="TYPE">integer</tt>)</tt></td><td><tt class="TYPE">integer</tt></td><td>连接到给定服务器进程的客户端 IP 端口。如果是通过 Unix 域套接字连接的则返回 -1 。如果当前用户不是超级用户或被查询会话的用户，也返回 NULL 。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_reset</code>()</tt></td><td><tt class="TYPE">boolean</tt></td><td>重置所有当前收集的统计。</td></tr>
+</tbody>
+</table>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b> <code class="FUNCTION">blocks_fetched</code> 减去 <code class="FUNCTION">blocks_hit</code> 就是为该表、索引、数据库而调用内核 <code class="FUNCTION">read()</code> 函数的数目；不过实际的物理读取的数目通常比较低，因为还有内核级的缓冲。</p>
+</blockquote>
+</div>
+<p><code class="FUNCTION">pg_stat_get_backend_idset</code> 函数提供了为每个活跃服务器进程生成一行的便捷方法。比如，要显示所有服务器进程的 PID 和它们的当前查询：</p>
+<pre class="PROGRAMLISTING">SELECT pg_stat_get_backend_pid(s.backendid) AS procpid,
+       pg_stat_get_backend_activity(s.backendid) AS current_query
+    FROM (SELECT pg_stat_get_backend_idset() AS backendid) AS s;</pre>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="monitoring-ps.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="monitoring-locks.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">标准 Unix 工具</td><td width="34%" align="center" valign="top"><a href="monitoring.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">查看锁</td></tr>
+</table>
+</div>
+</body></html>

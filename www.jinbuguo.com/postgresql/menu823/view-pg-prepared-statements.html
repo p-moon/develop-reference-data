@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_prepared_statements</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="view-pg-locks.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="view-pg-prepared-xacts.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="VIEW-PG-PREPARED-STATEMENTS">43.40. <tt class="STRUCTNAME">pg_prepared_statements</tt></a></h1><a name="AEN65800"></a>
+<p><tt class="STRUCTNAME">pg_prepared_statements</tt> 显示所有当前会话中可用的预备语句。参见 <a href="sql-prepare.html"><i>PREPARE</i></a> 获取关于预备语句的更多信息。</p>
+<p>每个预备语句在 <tt class="STRUCTNAME">pg_prepared_statements</tt> 中都有对应的一条记录。当一条新的预备语句创建后该视图中就会新增一条记录，同样，当一条预备语句被释放后(比如通过 <a href="sql-deallocate.html"><i>DEALLOCATE</i></a> 命令)，相应的记录也会被删除。</p>
+<div class="TABLE"><a name="AEN65808"></a>
+<p><b>表43-40. <tt class="STRUCTNAME">pg_prepared_statements</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">name</tt></td><td><tt class="TYPE">text</tt></td><td>预备语句的标识符</td></tr>
+<tr><td><tt class="STRUCTFIELD">statement</tt></td><td><tt class="TYPE">text</tt></td><td>创建该预备语句的查询字符串。对于从 SQL 创建的预备语句而言是客户端提交的 <tt class="COMMAND">PREPARE</tt> 语句。对于通过前/后端协议创建的预备语句而言是预备语句自身的文本。</td></tr>
+<tr><td><tt class="STRUCTFIELD">prepare_time</tt></td><td><tt class="TYPE">timestamptz</tt></td><td>创建该预备语句的时间戳</td></tr>
+<tr><td><tt class="STRUCTFIELD">parameter_types</tt></td><td><tt class="TYPE">regtype[]</tt></td><td>该预备语句期望的参数类型，以 <tt class="TYPE">regtype</tt> 类型的数组格式出现。与该数组元素相对应的 OID 可以通过把 <tt class="TYPE">regtype</tt> 值转换为 <tt class="TYPE">oid</tt> 值得到。</td></tr>
+<tr><td><tt class="STRUCTFIELD">from_sql</tt></td><td><tt class="TYPE">boolean</tt></td><td>如果该预备语句是通过 <tt class="COMMAND">PREPARE</tt> 语句创建的则为 <tt class="LITERAL">true</tt> ；如果是通过前/后端协议创建的则为 <tt class="LITERAL">false</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p><tt class="STRUCTNAME">pg_prepared_statements</tt> 视图是只读的。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="view-pg-locks.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="view-pg-prepared-xacts.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_locks</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_prepared_xacts</tt></td></tr>
+</table>
+</div>
+</body></html>

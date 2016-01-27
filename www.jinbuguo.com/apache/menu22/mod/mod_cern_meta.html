@@ -1,0 +1,107 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_cern_meta － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：&lt;<a href="../translator_announcement.html#join">虚位以待</a>&gt; | 本篇译稿完成时间：?年?月?日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_cern_meta</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>允许Apache使用CERN httpd元文件，从而可以在发送文件时对头进行修改</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>cern_meta_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_cern_meta.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>Emulate the CERN HTTPD Meta file semantics. Meta files are HTTP
+    headers that can be output in addition to the normal range of
+    headers for each file accessed. They appear rather like the
+    Apache .asis files, and are able to provide a crude way of
+    influencing the Expires: header, as well as providing other
+    curiosities. There are many ways to manage meta information,
+    this one was chosen because there is already a large number of
+    CERN users who can exploit this module.</p>
+
+    <p>More information on the <a href="http://www.w3.org/pub/WWW/Daemon/User/Config/General.html#MetaDir">CERN metafile semantics</a> is available.</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="MetaDir" id="MetaDir">MetaDir</a> <a name="metadir" id="metadir">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>Name of the directory to find CERN-style meta information
+files</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>MetaDir <var>directory</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>MetaDir .web</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>Indexes</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_cern_meta</td></tr>
+</table>
+    <p>Specifies the name of the directory in which Apache can find
+    meta information files. The directory is usually a 'hidden'
+    subdirectory of the directory that contains the file being
+    accessed. Set to "<code>.</code>" to look in the same directory
+    as the file:</p>
+
+    <div class="example"><p><code>MetaDir .</code></p></div>
+
+    <p>Or, to set it to a subdirectory of the directory containing the
+    files:</p>
+
+    <div class="example"><p><code>MetaDir .meta</code></p></div>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="MetaFiles" id="MetaFiles">MetaFiles</a> <a name="metafiles" id="metafiles">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>Activates CERN meta-file processing</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>MetaFiles on|off</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>MetaFiles off</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>Indexes</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_cern_meta</td></tr>
+</table>
+    <p>Turns on/off Meta file processing on a per-directory basis.</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="MetaSuffix" id="MetaSuffix">MetaSuffix</a> <a name="metasuffix" id="metasuffix">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>File name suffix for the file containg CERN-style
+meta information</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>MetaSuffix <var>suffix</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>MetaSuffix .meta</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>Indexes</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_cern_meta</td></tr>
+</table>
+    <p>Specifies the file name suffix for the file containing the
+    meta information. For example, the default values for the two
+    directives will cause a request to
+    <code>DOCUMENT_ROOT/somedir/index.html</code> to look in
+    <code>DOCUMENT_ROOT/somedir/.web/index.html.meta</code> and
+    will use its contents to generate additional MIME header
+    information.</p>
+
+    <div class="example"><h3>示例：</h3><p><code>
+      MetaSuffix .meta
+    </code></p></div>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

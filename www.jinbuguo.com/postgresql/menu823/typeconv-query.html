@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>值存储</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="typeconv-func.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="typeconv.html">快退</a></td><td width="60%" align="center" valign="bottom">章10. 类型转换</td><td width="10%" align="right" valign="top"><a href="typeconv.html">快进</a></td><td width="10%" align="right" valign="top"><a href="typeconv-union-case.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TYPECONV-QUERY">10.4. 值存储</a></h1>
+<p>要插入表中的数值也根据下面的步骤转换成目标列的数据类型。</p>
+<div class="PROCEDURE">
+<p><b>值存储数据类型解析</b></p>
+<ol type="1">
+<li class="STEP"><p>查找与目标字段准确的匹配。</p></li>
+<li class="STEP"><p>试着将表达式直接转换成目标类型。如果已知这两种类型之间存在一个已注册的转换函数，那么直接调用该转换函数即可。如果表达式是一个未知类型文本，该文本字符串的内容将交给目标类型的输入转换过程。</p></li>
+<li class="STEP"><p>检查一下看看目标类型是否有长度转换。长度转换是一个从某类型到自身的转换。如果在 <tt class="STRUCTNAME">pg_cast</tt> 表里面找到一个，那么在存储到目标字段之前先在表达式上应用。这样的转换函数总是接受一个额外的类型为 <tt class="TYPE">integer</tt> 的参数，它接收目标字段的声明长度(实际上是其 <tt class="STRUCTFIELD">atttypmod</tt> 值，<tt class="STRUCTFIELD">atttypmod</tt> 的解释随不同的数据类型而不同)。转换函数负责施加那些长度相关的语义，比如长度检查或者截断。</p></li>
+</ol>
+</div>
+<div class="EXAMPLE"><a name="AEN15853"></a>
+<p><b>例10-6. <tt class="TYPE">character</tt> 存储类型转换</b></p>
+<p>对一个目标列定义为 <tt class="TYPE">character(20)</tt> 的语句，下面的语句确保存储值的长度正确：</p>
+<pre class="SCREEN">CREATE TABLE vv (v character(20));
+INSERT INTO vv SELECT 'abc' || 'def';
+SELECT v, length(v) FROM vv;
+
+          v           | length
+----------------------+--------
+ abcdef               |     20
+(1 row)</pre>
+<p>这里真正发生的事情是两个 unknown 文本缺省解析成 <tt class="TYPE">text</tt> ，这样就允许 <tt class="LITERAL">||</tt> 操作符解析成 <tt class="TYPE">text</tt> 连接。然后操作符的 <tt class="TYPE">text</tt> 结果转换成 <tt class="TYPE">bpchar</tt>("空白填充的字符型"，<tt class="TYPE">character</tt> 类型内部名称)以匹配目标字段类型。不过，因为知道 <tt class="TYPE">text</tt> 和 <tt class="TYPE">bpchar</tt> 是二进制兼容的，这样的转换是隐含的并且实际上不做任何函数调用。最后，在系统表里找到长度转换函数 <tt class="LITERAL">bpchar(bpchar, integer)</tt> 并且应用于该操作符的结果并存储字段长。这个类型相关的函数执行所需的长度检查和额外的空白填充。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="typeconv-func.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="typeconv-union-case.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">函数</td><td width="34%" align="center" valign="top"><a href="typeconv.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="LITERAL">UNION</tt>, <tt class="LITERAL">CASE</tt> 和相关构造</td></tr>
+</table>
+</div>
+</body></html>

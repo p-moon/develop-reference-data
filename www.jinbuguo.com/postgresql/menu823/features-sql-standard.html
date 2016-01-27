@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>支持的特性</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="features.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="features.html">快退</a></td><td width="60%" align="center" valign="bottom">附录D. SQL 兼容性</td><td width="10%" align="right" valign="top"><a href="features.html">快进</a></td><td width="10%" align="right" valign="top"><a href="unsupported-features-sql-standard.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FEATURES-SQL-STANDARD">D.1. 支持的特性</a></h1>
+<p><div class="INFORMALTABLE"><a name="AEN75902"></a>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>标识符</th><th>包</th><th>描述</th><th>注释</th></tr>
+</thead>
+<tbody>
+<tr><td>B012</td><td>&nbsp;</td><td>Embedded C</td><td>&nbsp;</td></tr>
+<tr><td>B021</td><td>&nbsp;</td><td>Direct SQL</td><td>&nbsp;</td></tr>
+<tr><td>E011</td><td>核心</td><td>Numeric data types</td><td>&nbsp;</td></tr>
+<tr><td>E011-01</td><td>核心</td><td>INTEGER and SMALLINT data types</td><td>&nbsp;</td></tr>
+<tr><td>E011-02</td><td>核心</td><td>REAL, DOUBLE PRECISION, and FLOAT data types</td><td>&nbsp;</td></tr>
+<tr><td>E011-03</td><td>核心</td><td>DECIMAL and NUMERIC data types</td><td>&nbsp;</td></tr>
+<tr><td>E011-04</td><td>核心</td><td>Arithmetic operators</td><td>&nbsp;</td></tr>
+<tr><td>E011-05</td><td>核心</td><td>Numeric comparison</td><td>&nbsp;</td></tr>
+<tr><td>E011-06</td><td>核心</td><td>Implicit casting among the numeric data types</td><td>&nbsp;</td></tr>
+<tr><td>E021</td><td>核心</td><td>Character data types</td><td>&nbsp;</td></tr>
+<tr><td>E021-01</td><td>核心</td><td>CHARACTER data type</td><td>&nbsp;</td></tr>
+<tr><td>E021-02</td><td>核心</td><td>CHARACTER VARYING data type</td><td>&nbsp;</td></tr>
+<tr><td>E021-03</td><td>核心</td><td>Character literals</td><td>&nbsp;</td></tr>
+<tr><td>E021-04</td><td>核心</td><td>CHARACTER_LENGTH function</td><td>trims trailing spaces from CHARACTER values before counting</td></tr>
+<tr><td>E021-05</td><td>核心</td><td>OCTET_LENGTH function</td><td>&nbsp;</td></tr>
+<tr><td>E021-06</td><td>核心</td><td>SUBSTRING function</td><td>&nbsp;</td></tr>
+<tr><td>E021-07</td><td>核心</td><td>Character concatenation</td><td>&nbsp;</td></tr>
+<tr><td>E021-08</td><td>核心</td><td>UPPER and LOWER functions</td><td>&nbsp;</td></tr>
+<tr><td>E021-09</td><td>核心</td><td>TRIM function</td><td>&nbsp;</td></tr>
+<tr><td>E021-10</td><td>核心</td><td>Implicit casting among the character string types</td><td>&nbsp;</td></tr>
+<tr><td>E021-11</td><td>核心</td><td>POSITION function</td><td>&nbsp;</td></tr>
+<tr><td>E021-12</td><td>核心</td><td>Character comparison</td><td>&nbsp;</td></tr>
+<tr><td>E031</td><td>核心</td><td>Identifiers</td><td>&nbsp;</td></tr>
+<tr><td>E031-01</td><td>核心</td><td>Delimited identifiers</td><td>&nbsp;</td></tr>
+<tr><td>E031-02</td><td>核心</td><td>Lower case identifiers</td><td>&nbsp;</td></tr>
+<tr><td>E031-03</td><td>核心</td><td>Trailing underscore</td><td>&nbsp;</td></tr>
+<tr><td>E051</td><td>核心</td><td>Basic query specification</td><td>&nbsp;</td></tr>
+<tr><td>E051-01</td><td>核心</td><td>SELECT DISTINCT</td><td>&nbsp;</td></tr>
+<tr><td>E051-02</td><td>核心</td><td>GROUP BY clause</td><td>&nbsp;</td></tr>
+<tr><td>E051-04</td><td>核心</td><td>GROUP BY can contain columns not in &lt;select list&gt;</td><td>&nbsp;</td></tr>
+<tr><td>E051-05</td><td>核心</td><td>Select list items can be renamed</td><td>AS is required</td></tr>
+<tr><td>E051-06</td><td>核心</td><td>HAVING clause</td><td>&nbsp;</td></tr>
+<tr><td>E051-07</td><td>核心</td><td>Qualified * in select list</td><td>&nbsp;</td></tr>
+<tr><td>E051-08</td><td>核心</td><td>Correlation names in the FROM clause</td><td>&nbsp;</td></tr>
+<tr><td>E051-09</td><td>核心</td><td>Rename columns in the FROM clause</td><td>&nbsp;</td></tr>
+<tr><td>E061</td><td>核心</td><td>Basic predicates and search conditions</td><td>&nbsp;</td></tr>
+<tr><td>E061-01</td><td>核心</td><td>Comparison predicate</td><td>&nbsp;</td></tr>
+<tr><td>E061-02</td><td>核心</td><td>BETWEEN predicate</td><td>&nbsp;</td></tr>
+<tr><td>E061-03</td><td>核心</td><td>IN predicate with list of values</td><td>&nbsp;</td></tr>
+<tr><td>E061-04</td><td>核心</td><td>LIKE predicate</td><td>&nbsp;</td></tr>
+<tr><td>E061-05</td><td>核心</td><td>LIKE predicate ESCAPE clause</td><td>&nbsp;</td></tr>
+<tr><td>E061-06</td><td>核心</td><td>NULL predicate</td><td>&nbsp;</td></tr>
+<tr><td>E061-07</td><td>核心</td><td>Quantified comparison predicate</td><td>&nbsp;</td></tr>
+<tr><td>E061-08</td><td>核心</td><td>EXISTS predicate</td><td>&nbsp;</td></tr>
+<tr><td>E061-09</td><td>核心</td><td>Subqueries in comparison predicate</td><td>&nbsp;</td></tr>
+<tr><td>E061-11</td><td>核心</td><td>Subqueries in IN predicate</td><td>&nbsp;</td></tr>
+<tr><td>E061-12</td><td>核心</td><td>Subqueries in quantified comparison predicate</td><td>&nbsp;</td></tr>
+<tr><td>E061-13</td><td>核心</td><td>Correlated subqueries</td><td>&nbsp;</td></tr>
+<tr><td>E061-14</td><td>核心</td><td>Search condition</td><td>&nbsp;</td></tr>
+<tr><td>E071</td><td>核心</td><td>Basic query expressions</td><td>&nbsp;</td></tr>
+<tr><td>E071-01</td><td>核心</td><td>UNION DISTINCT table operator</td><td>&nbsp;</td></tr>
+<tr><td>E071-02</td><td>核心</td><td>UNION ALL table operator</td><td>&nbsp;</td></tr>
+<tr><td>E071-03</td><td>核心</td><td>EXCEPT DISTINCT table operator</td><td>&nbsp;</td></tr>
+<tr><td>E071-05</td><td>核心</td><td>Columns combined via table operators need not have exactly the same data type</td><td>&nbsp;</td></tr>
+<tr><td>E071-06</td><td>核心</td><td>Table operators in subqueries</td><td>&nbsp;</td></tr>
+<tr><td>E081-01</td><td>核心</td><td>SELECT privilege</td><td>&nbsp;</td></tr>
+<tr><td>E081-02</td><td>核心</td><td>DELETE privilege</td><td>&nbsp;</td></tr>
+<tr><td>E081-03</td><td>核心</td><td>INSERT privilege at the table level</td><td>&nbsp;</td></tr>
+<tr><td>E081-04</td><td>核心</td><td>UPDATE privilege at the table level</td><td>&nbsp;</td></tr>
+<tr><td>E081-06</td><td>核心</td><td>REFERENCES privilege at the table level</td><td>&nbsp;</td></tr>
+<tr><td>E081-08</td><td>核心</td><td>WITH GRANT OPTION</td><td>&nbsp;</td></tr>
+<tr><td>E081-10</td><td>核心</td><td>EXECUTE privilege</td><td>&nbsp;</td></tr>
+<tr><td>E091</td><td>核心</td><td>Set functions</td><td>&nbsp;</td></tr>
+<tr><td>E091-01</td><td>核心</td><td>AVG</td><td>&nbsp;</td></tr>
+<tr><td>E091-02</td><td>核心</td><td>COUNT</td><td>&nbsp;</td></tr>
+<tr><td>E091-03</td><td>核心</td><td>MAX</td><td>&nbsp;</td></tr>
+<tr><td>E091-04</td><td>核心</td><td>MIN</td><td>&nbsp;</td></tr>
+<tr><td>E091-05</td><td>核心</td><td>SUM</td><td>&nbsp;</td></tr>
+<tr><td>E091-06</td><td>核心</td><td>ALL quantifier</td><td>&nbsp;</td></tr>
+<tr><td>E091-07</td><td>核心</td><td>DISTINCT quantifier</td><td>&nbsp;</td></tr>
+<tr><td>E101</td><td>核心</td><td>Basic data manipulation</td><td>&nbsp;</td></tr>
+<tr><td>E101-01</td><td>核心</td><td>INSERT statement</td><td>&nbsp;</td></tr>
+<tr><td>E101-03</td><td>核心</td><td>Searched UPDATE statement</td><td>&nbsp;</td></tr>
+<tr><td>E101-04</td><td>核心</td><td>Searched DELETE statement</td><td>&nbsp;</td></tr>
+<tr><td>E111</td><td>核心</td><td>Single row SELECT statement</td><td>&nbsp;</td></tr>
+<tr><td>E121-01</td><td>核心</td><td>DECLARE CURSOR</td><td>&nbsp;</td></tr>
+<tr><td>E121-02</td><td>核心</td><td>ORDER BY columns need not be in select list</td><td>&nbsp;</td></tr>
+<tr><td>E121-03</td><td>核心</td><td>Value expressions in ORDER BY clause</td><td>&nbsp;</td></tr>
+<tr><td>E121-04</td><td>核心</td><td>OPEN statement</td><td>&nbsp;</td></tr>
+<tr><td>E121-08</td><td>核心</td><td>CLOSE statement</td><td>&nbsp;</td></tr>
+<tr><td>E121-10</td><td>核心</td><td>FETCH statement implicit NEXT</td><td>&nbsp;</td></tr>
+<tr><td>E121-17</td><td>核心</td><td>WITH HOLD cursors</td><td>&nbsp;</td></tr>
+<tr><td>E131</td><td>核心</td><td>Null value support (nulls in lieu of values)</td><td>&nbsp;</td></tr>
+<tr><td>E141</td><td>核心</td><td>Basic integrity constraints</td><td>&nbsp;</td></tr>
+<tr><td>E141-01</td><td>核心</td><td>NOT NULL constraints</td><td>&nbsp;</td></tr>
+<tr><td>E141-02</td><td>核心</td><td>UNIQUE constraints of NOT NULL columns</td><td>&nbsp;</td></tr>
+<tr><td>E141-03</td><td>核心</td><td>PRIMARY KEY constraints</td><td>&nbsp;</td></tr>
+<tr><td>E141-04</td><td>核心</td><td>Basic FOREIGN KEY constraint with the NO ACTION default for both referential delete action and referential update action</td><td>&nbsp;</td></tr>
+<tr><td>E141-06</td><td>核心</td><td>CHECK constraints</td><td>&nbsp;</td></tr>
+<tr><td>E141-07</td><td>核心</td><td>Column defaults</td><td>&nbsp;</td></tr>
+<tr><td>E141-08</td><td>核心</td><td>NOT NULL inferred on PRIMARY KEY</td><td>&nbsp;</td></tr>
+<tr><td>E141-10</td><td>核心</td><td>Names in a foreign key can be specified in any order</td><td>&nbsp;</td></tr>
+<tr><td>E151</td><td>核心</td><td>Transaction support</td><td>&nbsp;</td></tr>
+<tr><td>E151-01</td><td>核心</td><td>COMMIT statement</td><td>&nbsp;</td></tr>
+<tr><td>E151-02</td><td>核心</td><td>ROLLBACK statement</td><td>&nbsp;</td></tr>
+<tr><td>E152</td><td>核心</td><td>Basic SET TRANSACTION statement</td><td>&nbsp;</td></tr>
+<tr><td>E152-01</td><td>核心</td><td>SET TRANSACTION statement: ISOLATION LEVEL SERIALIZABLE clause</td><td>&nbsp;</td></tr>
+<tr><td>E152-02</td><td>核心</td><td>SET TRANSACTION statement: READ ONLY and READ WRITE clauses</td><td>&nbsp;</td></tr>
+<tr><td>E161</td><td>核心</td><td>SQL comments using leading double minus</td><td>&nbsp;</td></tr>
+<tr><td>E171</td><td>核心</td><td>SQLSTATE support</td><td>&nbsp;</td></tr>
+<tr><td>F021</td><td>核心</td><td>Basic information schema</td><td>&nbsp;</td></tr>
+<tr><td>F021-01</td><td>核心</td><td>COLUMNS view</td><td>&nbsp;</td></tr>
+<tr><td>F021-02</td><td>核心</td><td>TABLES view</td><td>&nbsp;</td></tr>
+<tr><td>F021-03</td><td>核心</td><td>VIEWS view</td><td>&nbsp;</td></tr>
+<tr><td>F021-04</td><td>核心</td><td>TABLE_CONSTRAINTS view</td><td>&nbsp;</td></tr>
+<tr><td>F021-05</td><td>核心</td><td>REFERENTIAL_CONSTRAINTS view</td><td>&nbsp;</td></tr>
+<tr><td>F021-06</td><td>核心</td><td>CHECK_CONSTRAINTS view</td><td>&nbsp;</td></tr>
+<tr><td>F031</td><td>核心</td><td>Basic schema manipulation</td><td>&nbsp;</td></tr>
+<tr><td>F031-01</td><td>核心</td><td>CREATE TABLE statement to create persistent base tables</td><td>&nbsp;</td></tr>
+<tr><td>F031-02</td><td>核心</td><td>CREATE VIEW statement</td><td>&nbsp;</td></tr>
+<tr><td>F031-03</td><td>核心</td><td>GRANT statement</td><td>&nbsp;</td></tr>
+<tr><td>F031-04</td><td>核心</td><td>ALTER TABLE statement: ADD COLUMN clause</td><td>&nbsp;</td></tr>
+<tr><td>F031-13</td><td>核心</td><td>DROP TABLE statement: RESTRICT clause</td><td>&nbsp;</td></tr>
+<tr><td>F031-16</td><td>核心</td><td>DROP VIEW statement: RESTRICT clause</td><td>&nbsp;</td></tr>
+<tr><td>F031-19</td><td>核心</td><td>REVOKE statement: RESTRICT clause</td><td>&nbsp;</td></tr>
+<tr><td>F032</td><td>&nbsp;</td><td>CASCADE drop behavior</td><td>&nbsp;</td></tr>
+<tr><td>F033</td><td>&nbsp;</td><td>ALTER TABLE statement: DROP COLUMN clause</td><td>&nbsp;</td></tr>
+<tr><td>F034</td><td>&nbsp;</td><td>Extended REVOKE statement</td><td>&nbsp;</td></tr>
+<tr><td>F034-01</td><td>&nbsp;</td><td>REVOKE statement performed by other than the owner of a schema object</td><td>&nbsp;</td></tr>
+<tr><td>F034-02</td><td>&nbsp;</td><td>REVOKE statement: GRANT OPTION FOR clause</td><td>&nbsp;</td></tr>
+<tr><td>F034-03</td><td>&nbsp;</td><td>REVOKE statement to revoke a privilege that the grantee has WITH GRANT OPTION</td><td>&nbsp;</td></tr>
+<tr><td>F041</td><td>核心</td><td>Basic joined table</td><td>&nbsp;</td></tr>
+<tr><td>F041-01</td><td>核心</td><td>Inner join (but not necessarily the INNER keyword)</td><td>&nbsp;</td></tr>
+<tr><td>F041-02</td><td>核心</td><td>INNER keyword</td><td>&nbsp;</td></tr>
+<tr><td>F041-03</td><td>核心</td><td>LEFT OUTER JOIN</td><td>&nbsp;</td></tr>
+<tr><td>F041-04</td><td>核心</td><td>RIGHT OUTER JOIN</td><td>&nbsp;</td></tr>
+<tr><td>F041-05</td><td>核心</td><td>Outer joins can be nested</td><td>&nbsp;</td></tr>
+<tr><td>F041-07</td><td>核心</td><td>The inner table in a left or right outer join can also be used in an inner join</td><td>&nbsp;</td></tr>
+<tr><td>F041-08</td><td>核心</td><td>All comparison operators are supported (rather than just =)</td><td>&nbsp;</td></tr>
+<tr><td>F051</td><td>核心</td><td>Basic date and time</td><td>&nbsp;</td></tr>
+<tr><td>F051-01</td><td>核心</td><td>DATE data type (including support of DATE literal)</td><td>&nbsp;</td></tr>
+<tr><td>F051-02</td><td>核心</td><td>TIME data type (including support of TIME literal) with fractional seconds precision of at least 0</td><td>&nbsp;</td></tr>
+<tr><td>F051-03</td><td>核心</td><td>TIMESTAMP data type (including support of TIMESTAMP literal) with fractional seconds precision of at least 0 and 6</td><td>&nbsp;</td></tr>
+<tr><td>F051-04</td><td>核心</td><td>Comparison predicate on DATE, TIME, and TIMESTAMP data types</td><td>&nbsp;</td></tr>
+<tr><td>F051-05</td><td>核心</td><td>Explicit CAST between datetime types and character string types</td><td>&nbsp;</td></tr>
+<tr><td>F051-06</td><td>核心</td><td>CURRENT_DATE</td><td>&nbsp;</td></tr>
+<tr><td>F051-07</td><td>核心</td><td>LOCALTIME</td><td>&nbsp;</td></tr>
+<tr><td>F051-08</td><td>核心</td><td>LOCALTIMESTAMP</td><td>&nbsp;</td></tr>
+<tr><td>F052</td><td>增强日期时间设施</td><td>Intervals and datetime arithmetic</td><td>&nbsp;</td></tr>
+<tr><td>F053</td><td>&nbsp;</td><td>OVERLAPS predicate</td><td>&nbsp;</td></tr>
+<tr><td>F081</td><td>核心</td><td>UNION and EXCEPT in views</td><td>&nbsp;</td></tr>
+<tr><td>F111</td><td>&nbsp;</td><td>Isolation levels other than SERIALIZABLE</td><td>&nbsp;</td></tr>
+<tr><td>F111-01</td><td>&nbsp;</td><td>READ UNCOMMITTED isolation level</td><td>&nbsp;</td></tr>
+<tr><td>F111-02</td><td>&nbsp;</td><td>READ COMMITTED isolation level</td><td>&nbsp;</td></tr>
+<tr><td>F111-03</td><td>&nbsp;</td><td>REPEATABLE READ isolation level</td><td>&nbsp;</td></tr>
+<tr><td>F131</td><td>核心</td><td>Grouped operations</td><td>&nbsp;</td></tr>
+<tr><td>F131-01</td><td>核心</td><td>WHERE, GROUP BY, and HAVING clauses supported in queries with grouped views</td><td>&nbsp;</td></tr>
+<tr><td>F131-02</td><td>核心</td><td>Multiple tables supported in queries with grouped views</td><td>&nbsp;</td></tr>
+<tr><td>F131-03</td><td>核心</td><td>Set functions supported in queries with grouped views</td><td>&nbsp;</td></tr>
+<tr><td>F131-04</td><td>核心</td><td>Subqueries with GROUP BY and HAVING clauses and grouped views</td><td>&nbsp;</td></tr>
+<tr><td>F131-05</td><td>核心</td><td>Single row SELECT with GROUP BY and HAVING clauses and grouped views</td><td>&nbsp;</td></tr>
+<tr><td>F171</td><td>&nbsp;</td><td>Multiple schemas per user</td><td>&nbsp;</td></tr>
+<tr><td>F191</td><td>增强完整性管理</td><td>Referential delete actions</td><td>&nbsp;</td></tr>
+<tr><td>F201</td><td>核心</td><td>CAST function</td><td>&nbsp;</td></tr>
+<tr><td>F221</td><td>核心</td><td>Explicit defaults</td><td>&nbsp;</td></tr>
+<tr><td>F222</td><td>&nbsp;</td><td>INSERT statement: DEFAULT VALUES clause</td><td>&nbsp;</td></tr>
+<tr><td>F231</td><td>&nbsp;</td><td>Privilege tables</td><td>&nbsp;</td></tr>
+<tr><td>F231-01</td><td>&nbsp;</td><td>TABLE_PRIVILEGES view</td><td>&nbsp;</td></tr>
+<tr><td>F231-02</td><td>&nbsp;</td><td>COLUMN_PRIVILEGES view</td><td>&nbsp;</td></tr>
+<tr><td>F231-03</td><td>&nbsp;</td><td>USAGE_PRIVILEGES view</td><td>&nbsp;</td></tr>
+<tr><td>F251</td><td>&nbsp;</td><td>Domain support</td><td>&nbsp;</td></tr>
+<tr><td>F261</td><td>核心</td><td>CASE expression</td><td>&nbsp;</td></tr>
+<tr><td>F261-01</td><td>核心</td><td>Simple CASE</td><td>&nbsp;</td></tr>
+<tr><td>F261-02</td><td>核心</td><td>Searched CASE</td><td>&nbsp;</td></tr>
+<tr><td>F261-03</td><td>核心</td><td>NULLIF</td><td>&nbsp;</td></tr>
+<tr><td>F261-04</td><td>核心</td><td>COALESCE</td><td>&nbsp;</td></tr>
+<tr><td>F271</td><td>&nbsp;</td><td>Compound character literals</td><td>&nbsp;</td></tr>
+<tr><td>F281</td><td>&nbsp;</td><td>LIKE enhancements</td><td>&nbsp;</td></tr>
+<tr><td>F302</td><td>&nbsp;</td><td>INTERSECT table operator</td><td>&nbsp;</td></tr>
+<tr><td>F302-01</td><td>&nbsp;</td><td>INTERSECT DISTINCT table operator</td><td>&nbsp;</td></tr>
+<tr><td>F302-02</td><td>&nbsp;</td><td>INTERSECT ALL table operator</td><td>&nbsp;</td></tr>
+<tr><td>F304</td><td>&nbsp;</td><td>EXCEPT ALL table operator</td><td>&nbsp;</td></tr>
+<tr><td>F311-01</td><td>核心</td><td>CREATE SCHEMA</td><td>&nbsp;</td></tr>
+<tr><td>F311-02</td><td>核心</td><td>CREATE TABLE for persistent base tables</td><td>&nbsp;</td></tr>
+<tr><td>F311-03</td><td>核心</td><td>CREATE VIEW</td><td>&nbsp;</td></tr>
+<tr><td>F311-05</td><td>核心</td><td>GRANT statement</td><td>&nbsp;</td></tr>
+<tr><td>F321</td><td>&nbsp;</td><td>User authorization</td><td>&nbsp;</td></tr>
+<tr><td>F361</td><td>&nbsp;</td><td>Subprogram support</td><td>&nbsp;</td></tr>
+<tr><td>F381</td><td>&nbsp;</td><td>Extended schema manipulation</td><td>&nbsp;</td></tr>
+<tr><td>F381-01</td><td>&nbsp;</td><td>ALTER TABLE statement: ALTER COLUMN clause</td><td>&nbsp;</td></tr>
+<tr><td>F381-02</td><td>&nbsp;</td><td>ALTER TABLE statement: ADD CONSTRAINT clause</td><td>&nbsp;</td></tr>
+<tr><td>F381-03</td><td>&nbsp;</td><td>ALTER TABLE statement: DROP CONSTRAINT clause</td><td>&nbsp;</td></tr>
+<tr><td>F391</td><td>&nbsp;</td><td>Long identifiers</td><td>&nbsp;</td></tr>
+<tr><td>F401</td><td>&nbsp;</td><td>Extended joined table</td><td>&nbsp;</td></tr>
+<tr><td>F401-01</td><td>&nbsp;</td><td>NATURAL JOIN</td><td>&nbsp;</td></tr>
+<tr><td>F401-02</td><td>&nbsp;</td><td>FULL OUTER JOIN</td><td>&nbsp;</td></tr>
+<tr><td>F401-04</td><td>&nbsp;</td><td>CROSS JOIN</td><td>&nbsp;</td></tr>
+<tr><td>F411</td><td>增强日期时间设施</td><td>Time zone specification</td><td>differences regarding literal interpretation</td></tr>
+<tr><td>F421</td><td>&nbsp;</td><td>National character</td><td>&nbsp;</td></tr>
+<tr><td>F431</td><td>&nbsp;</td><td>Read-only scrollable cursors</td><td>&nbsp;</td></tr>
+<tr><td>F431-01</td><td>&nbsp;</td><td>FETCH with explicit NEXT</td><td>&nbsp;</td></tr>
+<tr><td>F431-02</td><td>&nbsp;</td><td>FETCH FIRST</td><td>&nbsp;</td></tr>
+<tr><td>F431-03</td><td>&nbsp;</td><td>FETCH LAST</td><td>&nbsp;</td></tr>
+<tr><td>F431-04</td><td>&nbsp;</td><td>FETCH PRIOR</td><td>&nbsp;</td></tr>
+<tr><td>F431-05</td><td>&nbsp;</td><td>FETCH ABSOLUTE</td><td>&nbsp;</td></tr>
+<tr><td>F431-06</td><td>&nbsp;</td><td>FETCH RELATIVE</td><td>&nbsp;</td></tr>
+<tr><td>F441</td><td>&nbsp;</td><td>Extended set function support</td><td>&nbsp;</td></tr>
+<tr><td>F471</td><td>核心</td><td>Scalar subquery values</td><td>&nbsp;</td></tr>
+<tr><td>F481</td><td>核心</td><td>Expanded NULL predicate</td><td>&nbsp;</td></tr>
+<tr><td>F491</td><td>增强完整性管理</td><td>Constraint management</td><td>&nbsp;</td></tr>
+<tr><td>F501</td><td>核心</td><td>Features and conformance views</td><td>&nbsp;</td></tr>
+<tr><td>F501-01</td><td>核心</td><td>SQL_FEATURES view</td><td>&nbsp;</td></tr>
+<tr><td>F501-02</td><td>核心</td><td>SQL_SIZING view</td><td>&nbsp;</td></tr>
+<tr><td>F501-03</td><td>核心</td><td>SQL_LANGUAGES view</td><td>&nbsp;</td></tr>
+<tr><td>F502</td><td>&nbsp;</td><td>Enhanced documentation tables</td><td>&nbsp;</td></tr>
+<tr><td>F502-01</td><td>&nbsp;</td><td>SQL_SIZING_PROFILES view</td><td>&nbsp;</td></tr>
+<tr><td>F502-02</td><td>&nbsp;</td><td>SQL_IMPLEMENTATION_INFO view</td><td>&nbsp;</td></tr>
+<tr><td>F502-03</td><td>&nbsp;</td><td>SQL_PACKAGES view</td><td>&nbsp;</td></tr>
+<tr><td>F531</td><td>&nbsp;</td><td>Temporary tables</td><td>&nbsp;</td></tr>
+<tr><td>F555</td><td>增强日期时间设施</td><td>Enhanced seconds precision</td><td>&nbsp;</td></tr>
+<tr><td>F561</td><td>&nbsp;</td><td>Full value expressions</td><td>&nbsp;</td></tr>
+<tr><td>F571</td><td>&nbsp;</td><td>Truth value tests</td><td>&nbsp;</td></tr>
+<tr><td>F591</td><td>&nbsp;</td><td>Derived tables</td><td>&nbsp;</td></tr>
+<tr><td>F611</td><td>&nbsp;</td><td>Indicator data types</td><td>&nbsp;</td></tr>
+<tr><td>F651</td><td>&nbsp;</td><td>Catalog name qualifiers</td><td>&nbsp;</td></tr>
+<tr><td>F672</td><td>&nbsp;</td><td>Retrospective check constraints</td><td>&nbsp;</td></tr>
+<tr><td>F701</td><td>增强完整性管理</td><td>Referential update actions</td><td>&nbsp;</td></tr>
+<tr><td>F711</td><td>&nbsp;</td><td>ALTER domain</td><td>&nbsp;</td></tr>
+<tr><td>F761</td><td>&nbsp;</td><td>Session management</td><td>&nbsp;</td></tr>
+<tr><td>F771</td><td>&nbsp;</td><td>Connection management</td><td>&nbsp;</td></tr>
+<tr><td>F781</td><td>&nbsp;</td><td>Self-referencing operations</td><td>&nbsp;</td></tr>
+<tr><td>F791</td><td>&nbsp;</td><td>Insensitive cursors</td><td>&nbsp;</td></tr>
+<tr><td>F801</td><td>&nbsp;</td><td>Full set function</td><td>&nbsp;</td></tr>
+<tr><td>S071</td><td>增强的对象支持</td><td>SQL paths in function and type name resolution</td><td>&nbsp;</td></tr>
+<tr><td>S111</td><td>增强的对象支持</td><td>ONLY in query expressions</td><td>&nbsp;</td></tr>
+<tr><td>S211</td><td>增强的对象支持</td><td>User-defined cast functions</td><td>&nbsp;</td></tr>
+<tr><td>T031</td><td>&nbsp;</td><td>BOOLEAN data type</td><td>&nbsp;</td></tr>
+<tr><td>T071</td><td>&nbsp;</td><td>BIGINT data type</td><td>&nbsp;</td></tr>
+<tr><td>T141</td><td>&nbsp;</td><td>SIMILAR predicate</td><td>&nbsp;</td></tr>
+<tr><td>T151</td><td>&nbsp;</td><td>DISTINCT predicate</td><td>&nbsp;</td></tr>
+<tr><td>T171</td><td>&nbsp;</td><td>LIKE clause in table definition</td><td>&nbsp;</td></tr>
+<tr><td>T191</td><td>增强完整性管理</td><td>Referential action RESTRICT</td><td>&nbsp;</td></tr>
+<tr><td>T201</td><td>增强完整性管理</td><td>Comparable data types for referential constraints</td><td>&nbsp;</td></tr>
+<tr><td>T211-01</td><td>激活数据库，增强完整性管理</td><td>Triggers activated on UPDATE, INSERT, or DELETE of one base table</td><td>&nbsp;</td></tr>
+<tr><td>T211-02</td><td>激活数据库，增强完整性管理</td><td>BEFORE triggers</td><td>&nbsp;</td></tr>
+<tr><td>T211-03</td><td>激活数据库，增强完整性管理</td><td>AFTER triggers</td><td>&nbsp;</td></tr>
+<tr><td>T211-04</td><td>激活数据库，增强完整性管理</td><td>FOR EACH ROW triggers</td><td>&nbsp;</td></tr>
+<tr><td>T211-07</td><td>激活数据库，增强完整性管理</td><td>TRIGGER privilege</td><td>&nbsp;</td></tr>
+<tr><td>T212</td><td>增强完整性管理</td><td>Enhanced trigger capability</td><td>&nbsp;</td></tr>
+<tr><td>T231</td><td>&nbsp;</td><td>Sensitive cursors</td><td>&nbsp;</td></tr>
+<tr><td>T241</td><td>&nbsp;</td><td>START TRANSACTION statement</td><td>&nbsp;</td></tr>
+<tr><td>T271</td><td>&nbsp;</td><td>Savepoints</td><td>&nbsp;</td></tr>
+<tr><td>T312</td><td>&nbsp;</td><td>OVERLAY function</td><td>&nbsp;</td></tr>
+<tr><td>T321-01</td><td>核心</td><td>User-defined functions with no overloading</td><td>&nbsp;</td></tr>
+<tr><td>T321-03</td><td>核心</td><td>Function invocation</td><td>&nbsp;</td></tr>
+<tr><td>T321-06</td><td>核心</td><td>ROUTINES view</td><td>&nbsp;</td></tr>
+<tr><td>T321-07</td><td>核心</td><td>PARAMETERS view</td><td>&nbsp;</td></tr>
+<tr><td>T322</td><td>PSM</td><td>Overloading of SQL-invoked functions and procedures</td><td>&nbsp;</td></tr>
+<tr><td>T323</td><td>&nbsp;</td><td>Explicit security for external routines</td><td>&nbsp;</td></tr>
+<tr><td>T351</td><td>&nbsp;</td><td>Bracketed SQL comments (/*...*/ comments)</td><td>&nbsp;</td></tr>
+<tr><td>T441</td><td>&nbsp;</td><td>ABS and MOD functions</td><td>&nbsp;</td></tr>
+<tr><td>T461</td><td>&nbsp;</td><td>Symmetric BETWEEN predicate</td><td>&nbsp;</td></tr>
+<tr><td>T501</td><td>&nbsp;</td><td>Enhanced EXISTS predicate</td><td>&nbsp;</td></tr>
+<tr><td>T551</td><td>&nbsp;</td><td>Optional key words for default syntax</td><td>&nbsp;</td></tr>
+<tr><td>T581</td><td>&nbsp;</td><td>Regular expression substring function</td><td>&nbsp;</td></tr>
+<tr><td>T591</td><td>&nbsp;</td><td>UNIQUE constraints of possibly null columns</td><td>&nbsp;</td></tr>
+</tbody>
+</table>
+</div></P>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="features.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="unsupported-features-sql-standard.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SQL 兼容性</td><td width="34%" align="center" valign="top"><a href="features.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">不支持的特性</td></tr>
+</table>
+</div>
+</body></html>

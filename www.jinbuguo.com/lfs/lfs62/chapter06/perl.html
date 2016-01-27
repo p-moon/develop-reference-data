@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.22. Perl-5.8.8</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="libtool.html" title="Libtool-1.5.22">后退</a>
+          <p>Libtool-1.5.22</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="readline.html" title="Readline-5.1">前进</a>
+          <p>Readline-5.1</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.22. Perl-5.8.8</h1>
+      </div>
+      <div class="package">
+        <p>Perl 将 C, sed, awk 和 sh 的最佳特性集于一身，是一种强大的编程语言。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">1.5 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">143 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.22.1. 安装 Perl</h2>
+        </div>
+        <p>为了运行测试套件，要先创建一个基本的 <tt class="filename">/etc/hosts</tt> 文件，好几个测试都需要它来解析 localhost 的名称：</p>
+        <pre class="userinput"><kbd class="command">echo "127.0.0.1 localhost $(hostname)" &gt; /etc/hosts</kbd></pre>
+        <p>对 Perl 的设置进行更多的控制，你可以运行交互的 <span><strong class="command">Configure</strong></span> 脚本，精心选择编译配置。如果你能接受 Perl 的自动配置(这是很明智的)，就用下面的命令：</p>
+        <pre class="userinput"><kbd class="command">./configure.gnu --prefix=/usr \
+    -Dman1dir=/usr/share/man/man1 \
+    -Dman3dir=/usr/share/man/man3 \
+    -Dpager="/usr/bin/less -isR"</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>-Dpager="/usr/bin/less -isR"</tt></em></span>
+            </dt>
+            <dd>
+              <p>纠正 <span><strong class="command">perldoc</strong></span> 代码调用 <span><strong class="command">less</strong></span> 程序时的一个错误。</p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><tt>-Dman1dir=/usr/share/man/man1
+              -Dman3dir=/usr/share/man/man3</tt></em></span>
+            </dt>
+            <dd>
+              <p>因为 Groff 还没有安装，<span><strong class="command">Configure</strong></span> 会认为我们不想安装 Perl 的 man 手册。应用这个参数来改变这种情况：</p>
+            </dd>
+          </dl>
+        </div>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make test</tt></strong> 。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-perl" name="contents-perl"></a>
+          <h2 class="sect2">6.22.2. Perl 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">a2p, c2ph, dprofpp,
+              enc2xs, find2perl, h2ph, h2xs, instmodsh, libnetcfg, perl,
+              perl5.8.8(→perl), perlbug, perlcc, perldoc, perlivp,
+              piconv, pl2pm, pod2html, pod2latex, pod2man, pod2text,
+              pod2usage, podchecker, podselect, psed(→s2p), pstruct(→c2ph), s2p, splain, xsubpp</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">安装的库：太多了，有好几百个，无法在这里全部列出！</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3682102" name="id3682102"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="a2p" name="a2p"></a><span class="term"><span><strong class="command">a2p</strong></span></span></td>
+                <td><p>把 awk 翻译成 Perl</p></td>
+              </tr>
+              <tr>
+                <td><a id="c2ph" name="c2ph"></a><span class="term"><span><strong class="command">c2ph</strong></span></span></td>
+                <td><p>显示 <span><strong class="command">cc -g -S</strong></span> 产生的 C 语言结构。</p>
+              </tr>
+              <tr>
+                <td><a id="dprofpp" name="dprofpp"></a><span class="term"><span><strong class="command">dprofpp</strong></span></span></td>
+                <td><p>显示 Perl 的 profile 数据。</p></td>
+              </tr>
+              <tr>
+                <td><a id="enc2xs" name="enc2xs"></a><span class="term"><span><strong class="command">enc2xs</strong></span></span></td>
+                <td><p>为 Encode 模块编译 Perl 扩展，用于 Unicode 字符映射或 Tcl 编码文件。</p></td>
+              </tr>
+              <tr>
+                <td><a id="find2perl" name="find2perl"></a><span class="term"><span><strong class="command">find2perl</strong></span></span></td>
+                <td><p>将 <span><strong class="command">find</strong></span> 命令翻译成 Perl 代码。</p></td>
+              </tr>
+              <tr>
+                <td><a id="h2ph" name="h2ph"></a><span class="term"><span><strong class="command">h2ph</strong></span></span></td>
+                <td><p>将 <tt class="filename">.h</tt> 的C头文件转成 <tt class="filename">.ph</tt> 的perl头文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="h2xs" name="h2xs"></a><span class="term"><span><strong class="command">h2xs</strong></span></span></td>
+                <td><p>将 <tt class="filename">.h</tt> 的 C 头文件转成 perl 程序扩展</p></td>
+              </tr>
+              <tr>
+                <td><a id="instmodsh" name="instmodsh"></a><span class="term"><span><strong class="command">instmodsh</strong></span></span></td>
+                <td><p>一个监测安装 Perl 模块的 Shell 脚本，甚至可以从已安装模块中创建压缩包。</p></td>
+              </tr>
+              <tr>
+                <td><a id="libnetcfg" name="libnetcfg"></a><span class="term"><span><strong class="command">libnetcfg</strong></span></span></td>
+                <td><p>可以用来配置 <tt class="filename">libnet</tt></p></td>
+              </tr>
+              <tr>
+                <td><a id="perl" name="perl"></a><span class="term"><span><strong class="command">perl</strong></span></span></td>
+                <td><p>综合了 C,
+                    <span><strong class="command">sed</strong></span>,
+                    <span><strong class="command">awk</strong></span>,
+                    <span><strong class="command">sh</strong></span> 特性和能力于一体的强大的编程语言</p></td>
+              </tr>
+              <tr>
+                <td><a id="perl-version" name="perl-version"></a><span class="term"><span><strong class="command">perl5.8.8</strong></span></span></td>
+                <td><p><span><strong class="command">perl</strong></span> 的硬连接</p></td>
+              </tr>
+              <tr>
+                <td><a id="perlbug" name="perlbug"></a><span class="term"><span><strong class="command">perlbug</strong></span></span></td>
+                <td><p>生成关于 perl 和相关模块的 bug 报告，并且 mail 给他们。</p></td>
+              </tr>
+              <tr>
+                <td><a id="perlcc" name="perlcc"></a><span class="term"><span><strong class="command">perlcc</strong></span></span></td>
+                <td><p>从 perl 程序生成可执行文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="perldoc" name="perldoc"></a><span class="term"><span><strong class="command">perldoc</strong></span></span></td>
+                <td><p>显示嵌于 perl 安装目录或者一个 perl 脚本的 .pod 格式的小文档。</p></td>
+              </tr>
+              <tr>
+                <td><a id="perlivp" name="perlivp"></a><span class="term"><span><strong class="command">perlivp</strong></span></span></td>
+                <td><p>Perl 安装验证过程，可以用它来验证 Perl 及其库是否安装正常。</p></td>
+              </tr>
+              <tr>
+                <td><a id="piconv" name="piconv"></a><span class="term"><span><strong class="command">piconv</strong></span></span></td>
+                <td><p>A 是 Perl 版本的字符编码转换程序，类似于 <span><strong class="command">iconv</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="pl2pm" name="pl2pm"></a><span class="term"><span><strong class="command">pl2pm</strong></span></span></td>
+                <td><p>将 Perl4 样式的 <tt class="filename">.pl</tt> 库文件转化为 Perl5 样式的 <tt class="filename">.pm</tt> 库模块的工具</p></td>
+              </tr>
+              <tr>
+                <td><a id="pod2html" name="pod2html"></a><span class="term"><span><strong class="command">pod2html</strong></span></span></td>
+                <td><p>将 pod 格式的文件转为 html 格式</p></td>
+              </tr>
+              <tr>
+                <td><a id="pod2latex" name="pod2latex"></a><span class="term"><span><strong class="command">pod2latex</strong></span></span></td>
+                <td><p>将 pod 格式的文件转为 LaTeX 格式</p></td>
+              </tr>
+              <tr>
+                <td><a id="pod2man" name="pod2man"></a><span class="term"><span><strong class="command">pod2man</strong></span></span></td>
+                <td><p>将 pod 数据转为格式化的 *roff 输入</p></td>
+              </tr>
+              <tr>
+                <td><a id="pod2text" name="pod2text"></a><span class="term"><span><strong class="command">pod2text</strong></span></span></td>
+                <td><p>将 pod 数据转为格式化的 ASCII 文本</p></td>
+              </tr>
+              <tr>
+                <td><a id="pod2usage" name="pod2usage"></a><span class="term"><span><strong class="command">pod2usage</strong></span></span></td>
+                <td><p>打印文件内嵌的 pod 文档的使用信息</p></td>
+              </tr>
+              <tr>
+                <td><a id="podchecker" name="podchecker"></a><span class="term"><span><strong class="command">podchecker</strong></span></span></td>
+                <td><p>检查 pod 格式的文档的语法</p></td>
+              </tr>
+              <tr>
+                <td><a id="podselect" name="podselect"></a><span class="term"><span><strong class="command">podselect</strong></span></span></td>
+                <td><p>有选择的打印 pod 文档内容到标准输出</p></td>
+              </tr>
+              <tr>
+                <td><a id="psed" name="psed"></a><span class="term"><span><strong class="command">psed</strong></span></span></td>
+                <td><p>是 Perl 版本的流式编辑器，类似于 <span><strong class="command">sed</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="pstruct" name="pstruct"></a><span class="term"><span><strong class="command">pstruct</strong></span></span></td>
+                <td><p>显示 <span><strong class="command">cc -g -S</strong></span> 产生的 C 语言结构</p></td>
+              </tr>
+              <tr>
+                <td><a id="s2p" name="s2p"></a><span class="term"><span><strong class="command">s2p</strong></span></span></td>
+                <td><p>把 <span><strong class="command">sed</strong></span> 脚本翻译成 Perl 脚本</p></td>
+              </tr>
+              <tr>
+                <td><a id="splain" name="splain"></a><span class="term"><span><strong class="command">splain</strong></span></span></td>
+                <td><p>强制 Perl 输出冗余警告信息</p></td>
+              </tr>
+              <tr>
+                <td><a id="xsubpp" name="xsubpp"></a><span class="term"><span><strong class="command">xsubpp</strong></span></span></td>
+                <td><p>把 Perl XS 代码转换成 C 代码</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="libtool.html" title="Libtool-1.5.22">后退</a>
+          <p>Libtool-1.5.22</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="readline.html" title="Readline-5.1">前进</a>
+          <p>Readline-5.1</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

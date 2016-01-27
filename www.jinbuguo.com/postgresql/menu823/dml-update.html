@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>更新数据</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="dml-insert.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="dml.html">快退</a></td><td width="60%" align="center" valign="bottom">章6. 数据操作</td><td width="10%" align="right" valign="top"><a href="dml.html">快进</a></td><td width="10%" align="right" valign="top"><a href="dml-delete.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DML-UPDATE">6.2. 更新数据</a></h1><a name="AEN2928"></a><a name="AEN2930"></a>
+<p>修改已经存储在数据库中的数据的行为叫做更新。你可以更新单独的一行，也可以更新表中所有的行，还可以更新其中的一部分行。我们可以独立地更新每个字段，而其它的字段则不受影响。</p>
+<p>要执行一次更新，你需要三种信息：</p>
+<ol compact="COMPACT" type="1">
+<li><p>表的名字和要更新的字段名</p></li>
+<li><p>字段的新值</p></li>
+<li><p>要更新哪些行</p></li>
+</ol>
+<p>我们在<a href="ddl.html">章5</a>里说过，SQL 通常并不为数据行提供唯一标识。因此我们无法直接声明需要更新哪一行。但是，我们可以通过声明一个被更新的行必须满足的条件。只有在表里存在主键的时候 (不管你叫它什么)，我们才能通过选取主键可靠地指定一个独立的行。图形化的数据库访问工具依赖这个东西来让我们可以独立地更新某些行。</p>
+<p>比如，这条命令将所有价格为 5 的产品重定价为 10 ：</p>
+<pre class="PROGRAMLISTING">UPDATE products SET price = 10 WHERE price = 5;</pre>
+<p>这样做可能导致零行、一行或多行数据被更新。如果我们试图执行一个不匹配任何行的更新，那也不算错。</p>
+<p>让我们仔细看看这个命令。首先是关键字 <tt class="LITERAL">UPDATE</tt> 跟着表名字。和平常一样，表名字也可以是用模式修饰的，否则就会从模式路径中把它找出来。然后是关键字 <tt class="LITERAL">SET</tt> 跟着字段名与一个等号以及新的字段值。新的字段值可以是任意标量表达式，而不仅仅是常量。比如，如果你想把所有产品的价格提高 10% ，可以用：</p>
+<pre class="PROGRAMLISTING">UPDATE products SET price = price * 1.10;</pre>
+<p>如你所见，新值的表达式也可以引用行中现有的数值。我们还忽略了 <tt class="LITERAL">WHERE</tt> 子句。如果我们忽略了这个子句，那么表中所有的行都要被更新。如果出现了 <tt class="LITERAL">WHERE</tt> 子句，那么只有匹配其条件的行才会被更新。请注意在 <tt class="LITERAL">SET</tt> 子句中的等号是一个赋值，而在 <tt class="LITERAL">WHERE</tt> 子句中的等号是比较，不过这样并不会导致任何歧义。当然 <tt class="LITERAL">WHERE</tt> 条件不一定非得是相等测试。许多其它操作符也都可以使用(参阅<a href="functions.html">章9</a>)。但是表达式必须得出一个布尔结果。</p>
+<p>你还可以在一个 <tt class="COMMAND">UPDATE</tt> 命令中更新更多的字段，方法是在 <tt class="LITERAL">SET</tt> 子句中列出更多赋值。比如：</p>
+<pre class="PROGRAMLISTING">UPDATE mytable SET a = 5, b = 3, c = 1 WHERE a &gt; 0;</pre>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="dml-insert.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="dml-delete.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">插入数据</td><td width="34%" align="center" valign="top"><a href="dml.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">删除数据</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>崩溃恢复</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="gist-examples.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="gist.html">快退</a></td><td width="60%" align="center" valign="bottom">章50. GiST 索引</td><td width="10%" align="right" valign="top"><a href="gist.html">快进</a></td><td width="10%" align="right" valign="top"><a href="gin.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="GIST-RECOVERY">50.5. 崩溃恢复</a></h1>
+<p>通常，重放 WAL 日志就足以再数据库崩溃之后恢复 GiST 索引的完整性。不过，还存在一些边角的情况，这些时候索引状态无法完整地重建。这时候索引从作用上仍然是正确的，但是可能会导致一些性能的降低。在发生这种情况的时候，索引可以通过 <tt class="COMMAND">VACUUM</tt> 其所有表来修复，或者通过使用 <tt class="COMMAND">REINDEX</tt> 重建索引来修复。在某些情况下，单纯的 <tt class="COMMAND">VACUUM</tt> 是不够的，需要 <tt class="COMMAND">VACUUM FULL</tt> 或 <tt class="COMMAND">REINDEX</tt> 。是否需要这些步骤，可以从崩溃恢复的日志信息中得到提示：</p>
+<pre class="PROGRAMLISTING">LOG:  index NNN/NNN/NNN needs VACUUM or REINDEX to finish crash recovery</pre>
+<p>或者在索引插入的时候出现下面的日志信息：</p>
+<pre class="PROGRAMLISTING">LOG:  index "FOO" needs VACUUM or REINDEX to finish crash recovery</pre>
+<p>如果一个单纯的 <tt class="COMMAND">VACUUM</tt> 觉得自己无法完整地恢复，它会返回一个提示：</p>
+<pre class="PROGRAMLISTING">NOTICE:  index "FOO" needs VACUUM FULL or REINDEX to finish crash recovery</pre>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="gist-examples.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="gin.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">例子</td><td width="34%" align="center" valign="top"><a href="gist.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">GIN 索引</td></tr>
+</table>
+</div>
+</body></html>

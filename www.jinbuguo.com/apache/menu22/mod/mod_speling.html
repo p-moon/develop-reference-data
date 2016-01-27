@@ -1,0 +1,109 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_speling － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：&lt;<a href="../translator_announcement.html#join">虚位以待</a>&gt; | 本篇译稿完成时间：?年?月?日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_speling</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>自动纠正URL中的拼写错误</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>speling_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_speling.c</td></tr>
+</table>
+<h3>概述</h3>
+
+
+    <p>Requests to documents sometimes cannot be served by the core
+    apache server because the request was misspelled or
+    miscapitalized. This module addresses this problem by trying to
+    find a matching document, even after all other modules gave up.
+    It does its work by comparing each document name in the
+    requested directory against the requested document name
+    <strong>without regard to case</strong>, and allowing
+    <strong>up to one misspelling</strong> (character insertion /
+    omission / transposition or wrong character). A list is built
+    with all document names which were matched using this
+    strategy.</p>
+
+    <p>If, after scanning the directory,</p>
+
+    <ul>
+      <li>no matching document was found, Apache will proceed as
+      usual and return a "document not found" error.</li>
+
+      <li>only one document is found that "almost" matches the
+      request, then it is returned in the form of a redirection
+      response.</li>
+
+      <li>more than one document with a close match was found, then
+      the list of the matches is returned to the client, and the
+      client can select the correct candidate.</li>
+    </ul>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="CheckSpelling" id="CheckSpelling">CheckSpelling</a> <a name="checkspelling" id="checkspelling">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>Enables the spelling 
+module</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>CheckSpelling on|off</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>CheckSpelling Off</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>Options</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_speling</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>CheckSpelling was available as a separately available
+module for Apache 1.1, but was limited to miscapitalizations. As
+of Apache 1.3, it is part of the Apache distribution. Prior to Apache
+1.3.2, the <code>CheckSpelling</code> directive was only available in the
+"server" and "virtual host" contexts.</td></tr>
+</table>
+    <p>This directive enables or disables the spelling module. When
+    enabled, keep in mind that</p>
+
+    <ul>
+      <li>the directory scan which is necessary for the spelling
+      correction will have an impact on the server's performance
+      when many spelling corrections have to be performed at the
+      same time.</li>
+
+      <li>the document trees should not contain sensitive files
+      which could be matched inadvertently by a spelling
+      "correction".</li>
+
+      <li>the module is unable to correct misspelled user names (as
+      in <code>http://my.host/~apahce/</code>), just file names or
+      directory names.</li>
+
+      <li>spelling corrections apply strictly to existing files, so
+      a request for the <code>&lt;Location /status&gt;</code> may
+      get incorrectly treated as the negotiated file
+      "<code>/stats.html</code>".</li>
+    </ul>
+
+    
+    <p>mod_speling should not be enabled in <a href="mod_dav.html">DAV</a>
+    enabled directories, because it will try to "spell fix" newly created
+    resource names against existing filenames, e.g., when trying to upload
+    a new document <code>doc43.html</code> it might redirect to an existing
+    document <code>doc34.html</code>, which is not what was intended.
+    </p>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

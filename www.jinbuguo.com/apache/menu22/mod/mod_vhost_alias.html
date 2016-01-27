@@ -1,0 +1,188 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_vhost_alias － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_vhost_alias</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>提供大批量虚拟主机的动态配置支持</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>vhost_alias_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_vhost_alias.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>本模块通过将HTTP请求中的IP地址和/或"<code>Host:</code>"头内容转换为所要提供服务的文件路径名来创建动态的虚拟主机配置。这样的做法，使得应用配置大量相似的虚拟主机变得更为容易。</p>
+    
+    <div class="note"><h3>注意</h3>
+      <p>如果使用<code class="module"><a href="../mod/mod_alias.html">mod_alias</a></code>或<code class="module"><a href="../mod/mod_userdir.html">mod_userdir</a></code>来将URI转换为文件名，那么<code class="module"><a href="../mod/mod_vhost_alias.html">mod_vhost_alias</a></code>的设定将被覆盖。例如，下面的配置将始终把<code>/cgi-bin/script.pl</code> 映射为<code>/usr/local/apache2/cgi-bin/script.pl</code> 。</p>
+
+      <div class="example"><p><code>
+        ScriptAlias /cgi-bin/ /usr/local/apache2/cgi-bin/<br />
+        VirtualScriptAlias /never/found/%0/cgi-bin/
+      </code></p></div>
+    </div>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="interpol" id="interpol">目录名称的转换</a></h2>
+    
+
+    <p>本模块中的所有指令都用于将字符串替换为路径名。被替换的字符串(以后称为"name")可以是服务器名(参见<code class="directive"><a href="../mod/core.html#usecanonicalname">UseCanonicalName</a></code>指令以了解决策方法)或者是"点数字"格式的虚拟主机IP地址。替换操作由<code>printf</code>格式修饰符控制，该修饰符有以下几种格式：</p>
+
+	<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA">
+<tr><td><code>%%</code></td><td>插入一个百分号(<code>%</code>)</td></tr>
+<tr><td><code>%p</code></td><td>插入虚拟主机的端口号</td></tr>
+<tr><td><code>%N.M</code></td><td>插入名称(或者名称的一部分)</td></tr>
+</table>
+
+    <p><code>N</code>和<code>M</code>被用来指定name中的子字符串。<code>N</code>从name中用小数点分隔的某部分中选取，而<code>M</code>是从<code>N</code>选中的字符串中选取部分字符。<code>M</code>是可选的且默认为"0"；小数点当且仅当<code>M</code>存在时才必须书写。替换操作如下：</p>
+
+    <table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA">
+<tr><td><code>0</code></td><td>整个name</td></tr>
+<tr><td><code>1</code></td><td>第一部分</td></tr>
+<tr><td><code>2</code></td><td>第二部分</td></tr>
+<tr><td><code>-1</code></td><td>最后一部分</td></tr>
+<tr><td><code>-2</code></td><td>倒数第二部分</td></tr>
+<tr><td><code>2+</code></td><td>从第二部分开始到最后的所有部分</td></tr>
+<tr><td><code>-2+</code></td><td>倒数第二部分以及之前的各部分</td></tr>
+<tr><td><code>1+</code>和<code>-1+</code></td><td>等同于<code>0</code></td></tr>
+</table>
+
+    <p>如果<code>N</code>或<code>M</code>大于部分的个数，则简单的用下划线来替换。</p>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="examples" id="examples">示例</a></h2>
+    
+
+    <p>对于一个简单的基于名称的虚拟主机，配置文件中可能会使用下面的指令：</p>
+
+    <div class="example"><p><code>
+      UseCanonicalName    Off<br />
+      VirtualDocumentRoot /usr/local/apache/vhosts/%0
+    </code></p></div>
+
+    <p>那么对<code>http://www.example.com/directory/file.html</code>的请求将会返回文件<code>/usr/local/apache/vhosts/www.example.com/directory/file.html</code></p> 
+
+    <p>对于拥有大量虚拟主机的情况而言，减少<code>vhosts</code>目录大小的一个好办法就是重新组织。为此你可以使用下面的配置：</p>
+
+    <div class="example"><p><code>
+      UseCanonicalName    Off<br />
+      VirtualDocumentRoot /usr/local/apache/vhosts/%3+/%2.1/%2.2/%2.3/%2
+    </code></p></div>
+
+    <p>那么对<code>http://www.domain.example.com/directory/file.html</code>的请求将会返回文件<code>/usr/local/apache/vhosts/example.com/d/o/m/domain/directory/file.html</code></p>
+
+    <p>进一步的分割可以用name尾字符来索引(hashing)，例如：</p>
+
+<div class="example"><p><code>
+    VirtualDocumentRoot /usr/local/apache/vhosts/%3+/%2.-1/%2.-2/%2.-3/%2
+</code></p></div>
+
+    <p>该例返回文件<code>/usr/local/apache/vhosts/example.com/n/i/a/domain/directory/file.html</code></p>
+
+    <p>也可以这样使用：</p>
+
+<div class="example"><p><code>
+    VirtualDocumentRoot /usr/local/apache/vhosts/%3+/%2.1/%2.2/%2.3/%2.4+
+</code></p></div>
+
+    <p>该例返回文件<code>/usr/local/apache/vhosts/example.com/d/o/m/ain/directory/file.html</code></p>
+
+    <p>对于基于IP地址的虚拟主机，可以这样配置：</p>
+
+    <div class="example"><p><code>
+      UseCanonicalName DNS<br />
+      VirtualDocumentRootIP /usr/local/apache/vhosts/%1/%2/%3/%4/docs<br />
+      VirtualScriptAliasIP  /usr/local/apache/vhosts/%1/%2/%3/%4/cgi-bin
+    </code></p></div>
+
+    <p>对<code>http://www.domain.example.com/directory/file.html</code>的请求将会返回文件<code>/usr/local/apache/vhosts/10/20/30/40/docs/directory/file.html</code> ，这里假设<code>www.domain.example.com</code>的IP地址为10.20.30.40。对<code>http://www.domain.example.com/cgi-bin/script.pl</code>的请求将会执行程序<code>/usr/local/apache/vhosts/10/20/30/40/cgi-bin/script.pl</code></p>
+
+    <p>如果你希望在<code>VirtualDocumentRoot</code>指令中包含点字符(<code>.</code>)，但这又和<code>%</code>指令产生冲突，可以这样解决：</p>
+
+	<div class="example"><p><code>
+    VirtualDocumentRoot /usr/local/apache/vhosts/%2.0.%3.0
+</code></p></div>
+
+    <p>对<code>http://www.domain.example.com/directory/file.html</code>的请求将会返回文件<code>/usr/local/apache/vhosts/domain.example/directory/file.html</code></p>
+     
+    <p><code class="directive"><a href="../mod/mod_log_config.html#logformat">LogFormat</a></code>指令的<code>%V</code>和<code>%A</code>在和本模块的协同中起了一定作用。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="VirtualDocumentRoot" id="VirtualDocumentRoot">VirtualDocumentRoot</a> <a name="virtualdocumentroot" id="virtualdocumentroot">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>对于给定的基于名称的虚拟主机动态配置根文档目录</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>VirtualDocumentRoot <em>interpolated-directory</em>|none</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>VirtualDocumentRoot none</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_vhost_alias</td></tr>
+</table>
+
+    <p><code class="directive">VirtualDocumentRoot</code>指令使Apache可以通过虚拟主机的域名找到相应的文档。扩展<em>interpolated-directory</em>所得到的目录将会作为虚拟主机的根目录，这和<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>指令的参数是一样的。如果<em>interpolated-directory</em>为<code>none</code> ，那么<code class="directive">VirtualDocumentRoot</code>将被关闭。该指令不能和<code class="directive"><a href="#virtualdocumentrootip">VirtualDocumentRootIP</a></code>指令在同一作用域中使用。</p>
+
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="VirtualDocumentRootIP" id="VirtualDocumentRootIP">VirtualDocumentRootIP</a> <a name="virtualdocumentrootip" id="virtualdocumentrootip">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>对于给定的基于IP的虚拟主机动态配置根文档目录</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>VirtualDocumentRootIP <em>interpolated-directory</em>|none</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>VirtualDocumentRootIP none</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_vhost_alias</td></tr>
+</table>
+
+<p><code class="directive">VirtualDocumentRootIP</code>与<code class="directive"><a href="#virtualdocumentroot">VirtualDocumentRoot</a></code>相似，只是替换操作时用的不是虚拟主机名称，而是IP地址。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="VirtualScriptAlias" id="VirtualScriptAlias">VirtualScriptAlias</a> <a name="virtualscriptalias" id="virtualscriptalias">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>对于给定的基于名称的虚拟主机动态配置CGI目录</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>VirtualScriptAlias <em>interpolated-directory</em>|none</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>VirtualScriptAlias none</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_vhost_alias</td></tr>
+</table>
+
+    <p><code class="directive">VirtualScriptAlias</code>指令使Apache确定何处存放的是CGI脚本，这和<code class="directive"><a href="#virtualdocumentroot">VirtualDocumentRoot</a></code>的做法是一样的。它匹配请求中的以<code>/cgi-bin/</code>开始的URI，更像"<code class="directive"><a href="../mod/mod_alias.html#scriptalias">ScriptAlias</a></code> <code>/cgi-bin/</code>"的作用。</p>
+
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="VirtualScriptAliasIP" id="VirtualScriptAliasIP">VirtualScriptAliasIP</a> <a name="virtualscriptaliasip" id="virtualscriptaliasip">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>对于给定的基于IP的虚拟主机动态配置CGI目录</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>VirtualScriptAliasIP <em>interpolated-directory</em>|none</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>VirtualScriptAliasIP none</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_vhost_alias</td></tr>
+</table>
+
+    <p><code class="directive">VirtualScriptAliasIP</code>和<code class="directive"><a href="#virtualscriptalias">VirtualScriptAlias</a></code>相似，只是替换操作使用的不是虚拟主机名称，而是IP地址。</p>
+
+    
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

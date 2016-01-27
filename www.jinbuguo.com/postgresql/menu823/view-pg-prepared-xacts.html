@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_prepared_xacts</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="view-pg-prepared-statements.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="view-pg-roles.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="VIEW-PG-PREPARED-XACTS">43.41. <tt class="STRUCTNAME">pg_prepared_xacts</tt></a></h1><a name="AEN65860"></a>
+<p><tt class="STRUCTNAME">pg_prepared_xacts</tt> 显示那些当前准备好进行两阶段提交的事务的信息(参阅 <a href="sql-prepare-transaction.html"><i>PREPARE TRANSACTION</i></a> 获取细节)。</p>
+<p><tt class="STRUCTNAME">pg_prepared_xacts</tt> 为每个预备事务包含一行。如果事务提交或者回滚，则删除该条记录。</p>
+<div class="TABLE"><a name="AEN65867"></a>
+<p><b>表43-41. <tt class="STRUCTNAME">pg_prepared_xacts</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">transaction</tt></td><td><tt class="TYPE">xid</tt></td><td>&nbsp;</td><td>预备事务的数字事务标识</td></tr>
+<tr><td><tt class="STRUCTFIELD">gid</tt></td><td><tt class="TYPE">text</tt></td><td>&nbsp;</td><td>赋予该事务的全局事务标识</td></tr>
+<tr><td><tt class="STRUCTFIELD">prepared</tt></td><td><tt class="TYPE">timestamp with time zone</tt></td><td>&nbsp;</td><td>事务准备好提交的时间</td></tr>
+<tr><td><tt class="STRUCTFIELD">owner</tt></td><td><tt class="TYPE">name</tt></td><td><tt class="LITERAL"><a href="catalog-pg-authid.html"><tt class="STRUCTNAME">pg_authid</tt></a>.rolname</tt></td><td>执行该事务的用户的名字</td></tr>
+<tr><td><tt class="STRUCTFIELD">database</tt></td><td><tt class="TYPE">name</tt></td><td><tt class="LITERAL"><a href="catalog-pg-database.html"><tt class="STRUCTNAME">pg_database</tt></a>.datname</tt></td><td>执行该事务所在的数据库名</td></tr>
+</tbody>
+</table>
+</div>
+<p>在访问 <tt class="STRUCTNAME">pg_prepared_xacts</tt> 视图的时候，内部事务管理器数据结构被暂时锁住，并且为显示视图制作了一份拷贝。这样就保证了视图生成一个一致的结果集，而不会阻塞正常的操作太长时间。当然，即便这么做，如果过于频繁地访问这个视图，肯定也会对数据库性能造成一定的影响。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="view-pg-prepared-statements.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="view-pg-roles.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_prepared_statements</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_roles</tt></td></tr>
+</table>
+</div>
+</body></html>

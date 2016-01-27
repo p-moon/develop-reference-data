@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PL/Python 函数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plpython.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plpython.html">快退</a></td><td width="60%" align="center" valign="bottom">章40. PL/Python - Python 过程语言</td><td width="10%" align="right" valign="top"><a href="plpython.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plpython-trigger.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLPYTHON-FUNCS">40.1. PL/Python 函数</a></h1>
+<p>PL/Python 写的函数用通常的 <a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a> 语法声明。比如：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION <tt class="REPLACEABLE"><i>funcname</i></tt> (<tt class="REPLACEABLE"><i>argument-list</i></tt>)
+  RETURNS <tt class="REPLACEABLE"><i>return-type</i></tt>
+AS $$
+  # PL/Python function body
+$$ LANGUAGE plpythonu;</pre>
+<p>函数体是一个简单的 Python 脚本。当该函数被调用的时候，传递的参数将成为 <tt class="VARNAME">args[]</tt> 数组的元素。命名参数也会被传递到脚本中并被当作普通变量。结果将使用 <tt class="LITERAL">return</tt> 或 <tt class="LITERAL">yield</tt> 照常返回。</p>
+<p>例如，返回两个整数中较大者的函数：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION pymax (a integer, b integer)
+  RETURNS integer
+AS $$
+  if a &gt; b:
+    return a
+  return b
+$$ LANGUAGE plpythonu;</pre>
+<p>以函数体形式给出的 Python 转换成 Python 函数。比如，上面的转换成</p>
+<pre class="PROGRAMLISTING">def __plpython_procedure_pymax_23456():
+  if a &gt; b:
+    return a
+  return b</pre>
+<p>这里假设 23456 是 PostgreSQL 赋予这个函数的 OID 。</p>
+<p>PostgreSQL 函数变量可以通过全局的 <tt class="VARNAME">args</tt> 列表获取。在 <code class="FUNCTION">pymax</code> 例子里，<tt class="VARNAME">args[0]</tt> 包含第一个参数的数值。<tt class="VARNAME">args[1]</tt> 包含第二个。除此在外，还可以使用上例中演示的已命名的参数，这种方法的可读性更好。</p>
+<p>如果向函数传递了一个 NULL 值，参数值将会显示为 <tt class="SYMBOL">None</tt> 。上述函数定义将对 NULL 输入产生错误的结果。我们可以通过添加 <tt class="LITERAL">STRICT</tt> 来进行更合理的操作：如果传入 NULL 值，函数将根本不会被调用，而是立即返回 NULL 。当然，也可以在函数体中检查输入参数是否为 NULL ：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION pymax (a integer, b integer)
+  RETURNS integer
+AS $$
+  if (a is None) or (b is None):
+    return None
+  if a &gt; b:
+    return a
+  return b
+$$ LANGUAGE plpythonu;</pre>
+<p>如上所示，要从 PL/Python 函数中返回 NULL ，只要返回 <tt class="SYMBOL">None</tt> 即可。无论函数是否严格，这样做都有效。</p>
+<p>复合类型参数将作为 Python 映射进行传递。映射的元素名是组合类型的元素名。如果被传递的行中某个属性值为 NULL ，它在映射中的值将是 <tt class="SYMBOL">None</tt> 。例如：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE employee (
+  name text,
+  salary integer,
+  age integer
+);
+
+CREATE FUNCTION overpaid (e employee)
+  RETURNS boolean
+AS $$
+  if e["salary"] &gt; 200000:
+    return True
+  if (e["age"] &lt; 30) and (e["salary"] &gt; 100000):
+    return True
+  return False
+$$ LANGUAGE plpythonu;</pre>
+<p>有多种从 Python 函数返回行或者复合类型的方法。下面的例子假定我们有：</p>
+<pre class="PROGRAMLISTING">CREATE TYPE named_value AS (
+  name   text,
+  value  integer
+);</pre>
+<p>一个复合类型的结果可以作为下列之一被返回：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>序列类型(一个元组或列表，但不是一个集合，因为集合不可以被索引)</dt>
+<dd><p>返回的序列对象中的项数必须与结果的复合类型字段数相同。索引为 0 的项将被分配给组合类型的第一个字段，其它依此类推，比如：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION make_pair (name text, value integer)
+  RETURNS named_value
+AS $$
+  return [ name, value ]
+  # 或者作为元组返回( name, value )
+$$ LANGUAGE plpythonu;</pre>
+<p>要为任何字段返回 NULL ，就在相应的位置插入 <tt class="SYMBOL">None</tt> 。</p></dd>
+<dt>映射(字典)</dt>
+<dd><p>每个结果类型字段的值都重新从映射中使用字段名作为键检索。例如：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION make_pair (name text, value integer)
+  RETURNS named_value
+AS $$
+  return { "name": name, "value": value }
+$$ LANGUAGE plpythonu;</pre>
+<p>任何额外的字典键/值对都将被忽略。丢失的键将被当作错误。要为任何字段返回 NULL ，就以相应的字段名作为键插入 <tt class="SYMBOL">None</tt> 。</p></dd>
+<dt>对象(任何提供 <tt class="LITERAL">__getattr__</tt> 方法的对象)</dt>
+<dd><p>它的工作方式和映射一样。例如：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION make_pair (name text, value integer)
+  RETURNS named_value
+AS $$
+  class named_value:
+    def __init__ (self, n, v):
+      self.name = n
+      self.value = v
+  return named_value(name, value)
+
+  # 或者简单地
+  class nv: pass
+  nv.name = name
+  nv.value = value
+  return nv
+$$ LANGUAGE plpythonu;</pre></dd>
+</dl>
+</div>
+<p>如果没有提供返回值，Python 将返回缺省的 <tt class="SYMBOL">None</tt> 。PL/Python 将把 <tt class="SYMBOL">None</tt> 翻译成 NULL 。</p>
+<p>一个 PL/Python 函数还可以返回标量或组合类型的集合。有多种方法可以达到这个目的，因为返回的对象在内部被转换成一个迭代器。下面的例子假定我们有一个复合类型：</p>
+<pre class="PROGRAMLISTING">CREATE TYPE greeting AS (
+  how text,
+  who text
+);</pre>
+<p>一个集合结果可以从下列之一返回：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>序列类型(元组、列表、集合)</dt>
+<dd><pre class="PROGRAMLISTING">CREATE FUNCTION greet (how text)
+  RETURNS SETOF greeting
+AS $$
+  # 返回包含作为符合类型列表的元组
+  # 所有其它组合也都可以
+  return ( [ how, "World" ], [ how, "PostgreSQL" ], [ how, "PL/Python" ] )
+$$ LANGUAGE plpythonu;</pre></dd>
+<dt>迭代器(任何提供 <tt class="SYMBOL">__iter__</tt> 和 <tt class="SYMBOL">next</tt> 方法的对象)</dt>
+<dd><pre class="PROGRAMLISTING">CREATE FUNCTION greet (how text)
+  RETURNS SETOF greeting
+AS $$
+  class producer:
+    def __init__ (self, how, who):
+      self.how = how
+      self.who = who
+      self.ndx = -1
+
+    def __iter__ (self):
+      return self
+
+    def next (self):
+      self.ndx += 1
+      if self.ndx == len(self.who):
+        raise StopIteration
+      return ( self.how, self.who[self.ndx] )
+
+  return producer(how, [ "World", "PostgreSQL", "PL/Python" ])
+$$ LANGUAGE plpythonu;</pre></dd>
+<dt>生成器(<tt class="LITERAL">yield</tt>)</dt>
+<dd><pre class="PROGRAMLISTING">CREATE FUNCTION greet (how text)
+  RETURNS SETOF greeting
+AS $$
+  for who in [ "World", "PostgreSQL", "PL/Python" ]:
+    yield ( how, who )
+$$ LANGUAGE plpythonu;</pre>
+<p><div class="WARNING">
+<table class="WARNING" border="1" width="90%">
+<tr><td align="CENTER"><b>警告</b></td></tr>
+<tr><td align="LEFT"><p>当前，由于 Python <a href="http://sourceforge.net/tracker/index.php?func=detail&#38;aid=1483133&#38;group_id=5470&#38;atid=105470" target="_top">bug #1483133</a> 的原因，一些 Python 2.4 的调试版本(使用 <tt class="LITERAL">--with-pydebug</tt> 选项编译)已知会让 PostgreSQL 服务器在使用迭代器返回集合时崩溃。原始的 Fedora 4 仍然包含这个臭虫，但是在生产版本的 Python 或已经修补的 Fedora 4 上没有这个问题。</p></td></tr>
+</table>
+</div></P></dd>
+</dl>
+</div>
+<p>全局字典 <tt class="VARNAME">SD</tt> 可以用于在函数调用中间存储数据。这个变量是私有静态数据。全局字典 <tt class="VARNAME">SD</tt> 是公共数据，可以在一个后端里的所有 Python 函数之间使用。但在使用时需要小心。</p>
+<p>每个函数都在 Python 解释器里获得自己的受限制的执行对象，因此来自 <code class="FUNCTION">myfunc</code> 的全局数据很函数参数是 <code class="FUNCTION">myfunc2</code> 所看不到的。这里的例外是上面提到的 <tt class="VARNAME">SD</tt> 字典。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plpython.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plpython-trigger.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PL/Python - Python 过程语言</td><td width="34%" align="center" valign="top"><a href="plpython.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">触发器函数</td></tr>
+</table>
+</div>
+</body></html>

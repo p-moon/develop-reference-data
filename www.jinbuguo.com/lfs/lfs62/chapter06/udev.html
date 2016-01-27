@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.55. Udev-096</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="texinfo.html" title="Texinfo-4.8">后退</a>
+          <p>Texinfo-4.8</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="util-linux.html" title="Util-linux-2.12r">前进</a>
+          <p>Util-linux-2.12r</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.55. Udev-096</h1>
+      </div>
+      <div class="package">
+        <p>Udev 软件包包含动态地创建设备节点的程序。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">6.8 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.55.1. 安装 Udev</h2>
+        </div>
+        <p> udev-config 压缩包里面包含用配置 Udev 的 LFS-specific 文件。把它解压到 Udev 的源码目录：</p>
+        <pre class="userinput"><kbd class="command">tar xf ../udev-config-6.2.tar.bz2</kbd></pre>
+        <p>创建一些Udev无法创建的设备和目录，因为这些会在系统启动的早些时候被用到：</p>
+        <pre class="userinput"><kbd class="command">install -dv /lib/{firmware,udev/devices/{pts,shm}}
+mknod -m0666 /lib/udev/devices/null c 1 3
+ln -sv /proc/self/fd /lib/udev/devices/fd
+ln -sv /proc/self/fd/0 /lib/udev/devices/stdin
+ln -sv /proc/self/fd/1 /lib/udev/devices/stdout
+ln -sv /proc/self/fd/2 /lib/udev/devices/stderr
+ln -sv /proc/kcore /lib/udev/devices/core</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make EXTRAS="extras/ata_id extras/cdrom_id extras/edd_id \
+            extras/firmware extras/floppy extras/path_id \
+            extras/scsi_id extras/usb_id extras/volume_id"</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>make 选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>EXTRAS=...</tt></em></span>
+            </dt>
+            <dd>
+              <p>这将会编译一些帮助程序，对定制Udev的规则很有帮助。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make test</tt></strong> 。</p>
+        <p>注意，Udev的测试单元会在宿主系统的日志中产生很多信息。这些都是无害的，可以被忽略掉。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make DESTDIR=/ \
+    EXTRAS="extras/ata_id extras/cdrom_id extras/edd_id \
+            extras/firmware extras/floppy extras/path_id \
+            extras/scsi_id extras/usb_id extras/volume_id" install</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>make 参数的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>DESTDIR=/</tt></em></span>
+            </dt>
+            <dd>
+              <p>防止编译 Udev 的进程杀死可能存在于宿主系统中的 <span><strong class="command">udevd</strong></span> 进程。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>Udev 要工作，需要配置才可以。因为默认是不安装任何配置文件的。安装 LFS-specific 配置文件：</p>
+        <pre class="userinput"><kbd class="command">cp -v udev-config-6.2/[0-9]* /etc/udev/rules.d/</kbd></pre>
+        <p>安装解释如何创建 Udev 规则的文档：</p>
+        <pre class="userinput"><kbd class="command">install -m644 -D -v docs/writing_udev_rules/index.html \
+    /usr/share/doc/udev-096/index.html</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-udev" name="contents-udev"></a>
+          <h2 class="sect2">6.55.2. Udev 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">ata_id, cdrom_id,
+              create_floppy_devices, edd_id, firmware_helper, path_id,
+              scsi_id, udevcontrol, udevd, udevinfo, udevmonitor, udevsettle,
+              udevtest, udevtrigger, usb_id, vol_id, write_cd_aliases</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">安装的目录：</span></strong> <span class="seg">/etc/udev</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3695961" name="id3695961"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="ata_id" name="ata_id"></a><span class="term"><span><strong class="command">ata_id</strong></span></span></td>
+                <td><p>为 Udev 提供关于 ATA 驱动器的一个唯一的字符串和一些附加信息（uuid，label等）</p></td>
+              </tr>
+              <tr>
+                <td><a id="cdrom_id" name="cdrom_id"></a><span class="term"><span><strong class="command">cdrom_id</strong></span></span></td>
+                <td><p>为 Udev 提供 CD-ROM 或 DVD-ROM 驱动器的性能</p></td>
+              </tr>
+              <tr>
+                <td><a id="create_floppy_devices" name="create_floppy_devices"></a><span class="term"><span><strong class="command">create_floppy_devices</strong></span></span></td>
+                <td><p>创建所有可能的 CMOS 类型的 floppy 设备</p></td>
+              </tr>
+              <tr>
+                <td><a id="edd_id" name="edd_id"></a><span class="term"><span><strong class="command">edd_id</strong></span></span></td>
+                <td><p>为 Udev 提供关于 BIOS 磁盘驱动器的 EDD ID</p></td>
+              </tr>
+              <tr>
+                <td><a id="firmware_helper" name="firmware_helper"></a><span class="term"><span><strong class="command">firmware_helper</strong></span></span></td>
+                <td><p>为设备加载 firmware</p></td>
+              </tr>
+              <tr>
+                <td><a id="path_id" name="path_id"></a><span class="term"><span><strong class="command">path_id</strong></span></span></td>
+                <td><p>提供设备的最短的唯一的硬件路径</p></td>
+              </tr>
+              <tr>
+                <td><a id="scsi_id" name="scsi_id"></a><span class="term"><span><strong class="command">scsi_id</strong></span></span></td>
+                <td><p>根据向特定设备发送SCSI INQUIRY命令的返回信息，为 Udev 提供一个唯一的 SCSI 标识符</p></td>
+              </tr>
+              <tr>
+                <td><a id="udevcontrol" name="udevcontrol"></a><span class="term"><span><strong class="command">udevcontrol</strong></span></span></td>
+                <td><p>为运行  <span><strong class="command">udevd</strong></span> 守护进程，配置一些选项。比如，log level。</p></td>
+              </tr>
+              <tr>
+                <td><a id="udevd" name="udevd"></a><span class="term"><span><strong class="command">udevd</strong></span></span></td>
+                <td><p>一个守护进程，侦听热插拔事件，并针对事件，创建设备，运行配置好的外部程序。</p></td>
+              </tr>
+              <tr>
+                <td><a id="udevinfo" name="udevinfo"></a><span class="term"><span><strong class="command">udevinfo</strong></span></span></td>
+                <td><p>允许用户查询 <span><strong class="command">udev</strong></span> 数据库以得到当前这个系统上所有设备的信息，它也提供一种方式去查询任何设备在 <tt class="systemitem">sysfs</tt> 树里去帮助创建 Udev 规则。</p></td>
+              </tr>
+              <tr>
+                <td><a id="udevmonitor" name="udevmonitor"></a><span class="term"><span><strong class="command">udevmonitor</strong></span></span></td>
+                <td><p>打印出从Udev的规则运行之后，收到的内核事件和 Udev 发出的环境变量。</p></td>
+              </tr>
+              <tr>
+                <td><a id="udevsettle" name="udevsettle"></a><span class="term"><span><strong class="command">udevsettle</strong></span></span></td>
+                <td><p>监视 Udev 的事件队列，如果当前热插拔事件被处理完就立即退出。</p></td>
+              </tr>
+              <tr>
+                <td><a id="udevtest" name="udevtest"></a><span class="term"><span><strong class="command">udevtest</strong></span></span></td>
+                <td><p>模拟一个 <span><strong class="command">udev</strong></span> 为那些给定的设备,并且打印出真实节点的名称 <span><strong class="command">udev</strong></span> 可能已经被创建或者(不在LFS中)被重命名的网络接口。</p></td>
+              </tr>
+              <tr>
+                <td><a id="udevtrigger" name="udevtrigger"></a><span class="term"><span><strong class="command">udevtrigger</strong></span></span></td>
+                <td><p>重新切换到内核空间的热插拔事件处理</p></td>
+              </tr>
+              <tr>
+                <td><a id="usb_id" name="usb_id"></a><span class="term"><span><strong class="command">usb_id</strong></span></span></td>
+                <td><p>为 Udev 提供关于 USB 设备的信息</p></td>
+              </tr>
+              <tr>
+                <td><a id="vol_id" name="vol_id"></a><span class="term"><span><strong class="command">vol_id</strong></span></span></td>
+                <td><p>为 Udev 提供一个文件系统的 label 和 uuid</p></td>
+              </tr>
+              <tr>
+                <td><a id="etc-udev" name="etc-udev"></a><span class="term"><tt class="filename">/etc/udev</tt></span></td>
+                <td><p>包含 <span><strong class="command">udev</strong></span> 配置文件、设备许可、设备命名规则。</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="texinfo.html" title="Texinfo-4.8">后退</a>
+          <p>Texinfo-4.8</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="util-linux.html" title="Util-linux-2.12r">前进</a>
+          <p>Util-linux-2.12r</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

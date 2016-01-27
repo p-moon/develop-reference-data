@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SET ROLE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-set-constraints.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-set-constraints.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-set-session-authorization.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-set-session-authorization.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-SET-ROLE"></a>SET ROLE</h1>
+<div class="REFNAMEDIV"><a name="AEN54518"></a><h2>名称</h2>SET ROLE&nbsp;--&nbsp;设置当前会话的当前用户标识符</div>
+<a name="AEN54521"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN54523"></a><h2>语法</h2>
+<pre class="SYNOPSIS">SET [ SESSION | LOCAL ] ROLE <tt class="REPLACEABLE"><i>rolename</i></tt>
+SET [ SESSION | LOCAL ] ROLE NONE
+RESET ROLE</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54526"></a><h2>描述</h2>
+<p>这条命令将当前会话的当前用户标识为 <tt class="REPLACEABLE"><i>rolename</i></tt> 。角色名可以写成表识符或者是字符串文本。在 <tt class="COMMAND">SET ROLE</tt> 之后，SQL 命令的权限检查就好像当初登录的用户是此命令指定的用户那样。</p>
+<p>当前会话的用户必须是指定的 <tt class="REPLACEABLE"><i>rolename</i></tt> 角色的成员。但超级用户可以选择任何角色。</p>
+<p><tt class="LITERAL">SESSION</tt> 和 <tt class="LITERAL">LOCAL</tt> 修饰词的作用和普通的 <a href="sql-set.html"><i>SET</i></a> 命令一样。</p>
+<p><tt class="LITERAL">NONE</tt> 和 <tt class="LITERAL">RESET</tt> 形式重置当前用户标识为当前会话用户标识符。任何用户都可以执行这种形式。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54540"></a><h2>注意</h2>
+<p>使用这条命令，它可能会增加一个用户的权限，也可能会限制一个用户的权限。如果会话用户的角色有 <tt class="LITERAL">INHERITS</tt> 属性，那么它自动拥有它能 <tt class="COMMAND">SET ROLE</tt> 变成的角色的所有权限；在这种情况下，<tt class="COMMAND">SET ROLE</tt> 实际上是删除了所有直接赋予会话用户的权限，以及它的所属角色的权限，只剩下指定角色的权限。另一方面，如果会话用户的角色有 <tt class="LITERAL">NOINHERITS</tt> 属性，<tt class="COMMAND">SET ROLE</tt> 删除直接赋予会话用户的权限，而获取指定角色的权限。</p>
+<p>实际上，如果一个超级用户 <tt class="COMMAND">SET ROLE</tt> 为一个非超级用户，它会失去其超级用户权限。</p>
+<p><tt class="COMMAND">SET ROLE</tt> 有和 <a href="sql-set-session-authorization.html"><i>SET SESSION AUTHORIZATION</i></a> 类似的效果，但是其中涉及的权限检查有区别。还有，<tt class="COMMAND">SET SESSION AUTHORIZATION</tt> 判断有什么角色可以用于稍后的 <tt class="COMMAND">SET ROLE</tt> 命令，而用 <tt class="COMMAND">SET ROLE</tt> 并不修改稍后的 <tt class="COMMAND">SET ROLE</tt> 可以设置的角色集。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54557"></a><h2>例子</h2>
+<pre class="PROGRAMLISTING">SELECT SESSION_USER, CURRENT_USER;
+
+ session_user | current_user 
+--------------+--------------
+ peter        | peter
+
+SET ROLE 'paul';
+
+SELECT SESSION_USER, CURRENT_USER;
+
+ session_user | current_user 
+--------------+--------------
+ peter        | paul</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54560"></a><h2>兼容性</h2>
+<p>PostgreSQL 允许标识符语法(<tt class="LITERAL">"rolename"</tt>)，而 SQL 标准要求角色名字写成字符串文本。SQL 并不允许在事务里面执行这条命令；PostgreSQL 并未做此限制，因为没有理由限制。<tt class="LITERAL">SESSION</tt> 和 <tt class="LITERAL">LOCAL</tt> 修饰词是 PostgreSQL 的扩展，还有 <tt class="LITERAL">RESET</tt> 语法也一样。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54570"></a><h2>又见</h2><a href="sql-set-session-authorization.html"><i>SET SESSION AUTHORIZATION</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-set-constraints.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-set-session-authorization.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SET CONSTRAINTS</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SET SESSION AUTHORIZATION</td></tr>
+</table>
+</div>
+</body></html>

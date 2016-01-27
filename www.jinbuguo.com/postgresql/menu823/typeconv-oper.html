@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>操作符</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="typeconv-overview.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="typeconv.html">快退</a></td><td width="60%" align="center" valign="bottom">章10. 类型转换</td><td width="10%" align="right" valign="top"><a href="typeconv.html">快进</a></td><td width="10%" align="right" valign="top"><a href="typeconv-func.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TYPECONV-OPER">10.2. 操作符</a></h1><a name="AEN15684"></a>
+<p>下面讲解的过程解释了如何在一次操作符调用中确定所使用的究竟是哪个操作符。请注意这个过程受被调用操作符的优先级影响。参阅<a href="sql-syntax-lexical.html#SQL-PRECEDENCE">节4.1.6</a>获取更多信息。</p>
+<div class="PROCEDURE">
+<p><b>操作符类型解析</b></p>
+<ol type="1">
+<li class="STEP"><p>从系统表 <code class="CLASSNAME">pg_operator</code> 中选出要考虑的操作符。如果使用了一个不带修饰的操作符名(常见的状况)，那么认为该操作符是那些在当前搜索路径中名字和参数个数都正确的操作符(参阅<a href="ddl-schemas.html#DDL-SCHEMAS-PATH">节5.7.3</a>)。如果给出一个带修饰的操作符名，那么只考虑指定模式中的操作符。</p>
+<ol class="SUBSTEPS" type="a">
+<li class="STEP"><p>如果搜索路径中找到了多个相同参数类型的操作符，那么只考虑最早出现在路径中的那一个。但是不同参数类型的操作符将被平等看待，而不管它们在路径中的位置如何。</p></li>
+</ol></li>
+<li class="STEP"><p>查找精确接受输入参数类型的操作符。如果找到一个(在一组被考虑的操作符中，可能只存在一个精确匹配的)，则用之。</p>
+<ol class="SUBSTEPS" type="a">
+<li class="STEP"><p>如果一个双目操作符调用中的一个参数是 <tt class="TYPE">unknown</tt> 类型，则在本次检查中假设其与另一个参数类型相同。其它涉及 <tt class="TYPE">unknown</tt> 的情况绝不会在此处找到匹配。</p></li>
+</ol></li>
+<li class="STEP"><p>寻找最优匹配。</p>
+<ol class="SUBSTEPS" type="a">
+<li class="STEP"><p>抛弃那些输入类型不匹配并且也不能隐式转换成匹配的候选操作符。<tt class="TYPE">unknown</tt> 文本在这种情况下可以转换成任何东西。如果只剩下一个候选项，则用之，否则继续下一步。</p></li>
+<li class="STEP"><p>遍历所有候选操作符，保留那些输入类型匹配最准确的。此时，域被看作和他们的基本类型相同。如果没有一个操作符能被保留，则保留所有候选。如果只剩下一个候选项，则用之，否则继续下一步。</p></li>
+<li class="STEP"><p>遍历所有候选操作符，保留那些需要类型转换时接受(属于输入数据类型的类型范畴的)首选类型位置最多的操作符。如果没有接受首选类型的操作符，则保留所有候选。如果只剩下一个候选项，则用之，否则继续下一步。</p></li>
+<li class="STEP"><p>如果有任何输入参数是 <tt class="TYPE">unknown</tt> 类型，检查剩余的候选操作符对应参数位置的类型范畴。在每一个能够接受字符串类型范畴的位置使用 <tt class="TYPE">string</tt> 类型(这种对字符串的偏爱是合适的，因为 unknown 文本确实像字符串)。另外，如果所有剩下的候选操作符都接受相同的类型范畴，则选择该类型范畴，否则抛出一个错误(因为在没有更多线索的条件下无法作出正确的选择)。现在抛弃不接受选定的类型范畴的候选操作符，然后，如果任意候选操作符在某个给定的参数位置接受一个首选类型，则抛弃那些在该参数位置接受非首选类型的候选操作符。</p></li>
+<li class="STEP"><p>如果只剩下一个操作符，则用之。如果还有多个候选操作符或者没有候选操作符，则产生一个错误。</p></li>
+</ol></li>
+</ol>
+</div>
+<p>下面是一些例子。</p>
+<div class="EXAMPLE"><a name="AEN15722"></a>
+<p><b>例10-1. 指数操作符类型解析</b></p>
+<p>在系统表中里只有一个指数操作符，它以 <tt class="TYPE">double precision</tt> 作为参数。扫描器给下面查询表达式的两个参数赋予 <tt class="TYPE">integer</tt> 的初始类型：</p>
+<pre class="SCREEN">SELECT 2 ^ 3 AS "exp";
+
+ exp
+-----
+   8
+(1 row)</pre>
+<p>分析器对两个参数都做类型转换，查询等效于：</p>
+<pre class="SCREEN">SELECT CAST(2 AS double precision) ^ CAST(3 AS double precision) AS "exp";</pre>
+</div>
+<div class="EXAMPLE"><a name="AEN15729"></a>
+<p><b>例10-2. 字符串连接操作符类型分析</b></p>
+<p>一种字符串风格的语法既可以用于字符串也可以用于复杂的扩展类型。未声明类型的字符串将被所有可能的候选操作符匹配。</p>
+<p>有一个未声明的参数的例子：</p>
+<pre class="SCREEN">SELECT text 'abc' || 'def' AS "text and unknown";
+
+ text and unknown
+------------------
+ abcdef
+(1 row)</pre>
+<p>本例中分析器寻找两个参数都是 <tt class="TYPE">text</tt> 的操作符。确实这样的操作符，因此另一个参数就被认为是 <tt class="TYPE">text</tt> 类型。</p>
+<p>下面是连接未声明类型：</p>
+<pre class="SCREEN">SELECT 'abc' || 'def' AS "unspecified";
+
+ unspecified
+-------------
+ abcdef
+(1 row)</pre>
+<p>因为查询中没有声明任何类型，所以本例中对类型没有任何初始提示。因此，分析器查找所有候选操作符，发现既存在接受字符串类型范畴的操作符也存在接受位串类型范畴的操作符。因为字符串类型范畴是首选，所以选择字符串类型范畴的首选类型 <tt class="TYPE">text</tt> 作为解析未知类型文本的声明类型。</p>
+</div>
+<div class="EXAMPLE"><a name="AEN15741"></a>
+<p><b>例10-3. 绝对值和取反操作符类型分析</b></p>
+<p>PostgreSQL 操作符表里面有几条记录对应于前缀操作符 <tt class="LITERAL">@</tt> ，它们都用于为各种数值类型实现绝对值操作。其中之一用于 <tt class="TYPE">float8</tt> 类型它是数值类型范畴中的首选类型。因此，在面对非数值输入的时候，PostgreSQL 会使用该类型：</p>
+<pre class="SCREEN">SELECT @ '-4.5' AS "abs";
+ abs
+-----
+ 4.5
+(1 row)</pre>
+<p>此处，系统在应用选定的操作符之前执行类一次 <tt class="TYPE">text</tt> 到 <tt class="TYPE">float8</tt> 的隐式转换。我们可以验证它是 <tt class="TYPE">float8</tt> 而不是其它类型：</p>
+<pre class="SCREEN">SELECT @ '-4.5e500' AS "abs";
+
+ERROR:  "-4.5e500" is out of range for type double precision</pre>
+<p>另一方面，前缀操作符 <tt class="LITERAL">~</tt>(按位取反)只为整数数据类型定义，而不为 <tt class="TYPE">float8</tt> 定义。因此，如果我们用 <tt class="LITERAL">~</tt> 做类似的实验将得到：</p>
+<pre class="SCREEN">SELECT ~ '20' AS "negation";
+
+ERROR:  operator is not unique: ~ "unknown"
+HINT:  Could not choose a best candidate operator. You may need to add explicit
+type casts.</pre>
+<p>这是因为系统无法决定几个可能的 <tt class="LITERAL">~</tt> 操作符中究竟应该使用哪一个。我们可以用明确地类型转换来帮它：</p>
+<pre class="SCREEN">SELECT ~ CAST('20' AS int8) AS "negation";
+
+ negation
+----------
+      -21
+(1 row)</pre>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="typeconv-overview.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="typeconv-func.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">概述</td><td width="34%" align="center" valign="top"><a href="typeconv.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">函数</td></tr>
+</table>
+</div>
+</body></html>

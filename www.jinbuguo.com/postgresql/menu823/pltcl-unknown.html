@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>Modules and the unknown command</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="pltcl-trigger.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="pltcl.html">快退</a></td><td width="60%" align="center" valign="bottom">章38. PL/Tcl - Tcl 过程语言</td><td width="10%" align="right" valign="top"><a href="pltcl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="pltcl-procnames.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLTCL-UNKNOWN">38.7. 模块和 <code class="FUNCTION">unknown</code> 的命令</a></h1>
+<p>PL/Tcl 使用时支持自动加载 Tcl 代码。它识别一个特殊的 <tt class="LITERAL">pltcl_modules</tt> 表，该表被认为包含 Tcl 代码的模块。如果存在这个表，则在创建完解释器后马上从该表中抓取 <tt class="LITERAL">unknown</tt> 模块并加载到 Tcl 解释器中。</p>
+<p>因为 <tt class="LITERAL">unknown</tt> 模块实际上可以包含任何你需要的初始化脚本，它通常是定义为一个 Tcl <code class="FUNCTION">unknown</code> 过程，在 Tcl 不能识别一个调用的过程名的时候就调用它。PL/Tcl这个过程的标准版本试图在 <tt class="LITERAL">pltcl_modules</tt> 里找到一个定义所需要过程的模块。如果找到一个，那么把它加载入解释器，然后允许继续按照原来的过程调用处理。另外还定义了一个 <tt class="LITERAL">pltcl_modfuncs</tt> 表，它提供了哪个函数由哪个模块定义的索引，因此查找过程相当快。</p>
+<p>PostgreSQL 包括维护这些表的支持脚本：<tt class="COMMAND">pltcl_loadmod</tt>, <tt class="COMMAND">pltcl_listmod</tt>, <tt class="COMMAND">pltcl_delmod</tt> 以及标准 <tt class="FILENAME">share/unknown.pltcl</tt> 中 <tt class="LITERAL">unknown</tt> 模块的源代码。这个模块必须一开始就加载入每个数据库才能支持自动加载机制。</p>
+<p>表 <tt class="LITERAL">pltcl_modules</tt> 和 <tt class="LITERAL">pltcl_modfuncs</tt> 必需可以为所有人读取，但是把它做成只有数据库管理员可写并拥有是明智的。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="pltcl-trigger.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="pltcl-procnames.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PL/Tcl 里的触发器过程</td><td width="34%" align="center" valign="top"><a href="pltcl.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">Tcl 过程名字</td></tr>
+</table>
+</div>
+</body></html>

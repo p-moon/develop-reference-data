@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE AGGREGATE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-copy.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-copy.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createcast.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createcast.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATEAGGREGATE"></a>CREATE AGGREGATE</h1>
+<div class="REFNAMEDIV"><a name="AEN46476"></a><h2>名称</h2>CREATE AGGREGATE&nbsp;--&nbsp;定义一个新的聚集函数</div>
+<a name="AEN46479"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN46481"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE AGGREGATE <tt class="REPLACEABLE"><i>name</i></tt> ( <tt class="REPLACEABLE"><i>input_data_type</i></tt> [ , ... ] ) (
+    SFUNC = <tt class="REPLACEABLE"><i>sfunc</i></tt>,
+    STYPE = <tt class="REPLACEABLE"><i>state_data_type</i></tt>
+    [ , FINALFUNC = <tt class="REPLACEABLE"><i>ffunc</i></tt> ]
+    [ , INITCOND = <tt class="REPLACEABLE"><i>initial_condition</i></tt> ]
+    [ , SORTOP = <tt class="REPLACEABLE"><i>sort_operator</i></tt> ]
+)
+
+下面是旧语法
+
+CREATE AGGREGATE <tt class="REPLACEABLE"><i>name</i></tt> (
+    BASETYPE = <tt class="REPLACEABLE"><i>base_type</i></tt>,
+    SFUNC = <tt class="REPLACEABLE"><i>sfunc</i></tt>,
+    STYPE = <tt class="REPLACEABLE"><i>state_data_type</i></tt>
+    [ , FINALFUNC = <tt class="REPLACEABLE"><i>ffunc</i></tt> ]
+    [ , INITCOND = <tt class="REPLACEABLE"><i>initial_condition</i></tt> ]
+    [ , SORTOP = <tt class="REPLACEABLE"><i>sort_operator</i></tt> ]
+)</pre>
+</div>
+<div class="REFSECT1"><a name="AEN46497"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE AGGREGATE</tt> 定义一个新的聚集函数。一些常用的聚集函数已经包含在基础软件包里了；在<a href="functions-aggregate.html">节9.15</a>里有文档记录。如果你需要定义一个新类型或需要一个还没有提供的聚集函数，这时 <tt class="COMMAND">CREATE AGGREGATE</tt> 便可排上用场。</p>
+<p>如果给出了一个模式的名字(比如 <tt class="LITERAL">CREATE AGGREGATE myschema.myagg ...</tt>)，那么该聚集函数是在指定模式中创建的。否则它是在当前模式中创建的。</p>
+<p>一个聚集函数是用它的名字和输入数据类型来标识的。同一模式中如果两个聚集处理的输入数据不同，它们可以有相同的名字。一个聚集函数的输入数据类型必须和所有同一模式中的普通函数的名字和输入类型不同。</p>
+<p>一个聚集函数是用一个或两个普通函数做成的：一个状态转换函数 <tt class="REPLACEABLE"><i>sfunc</i></tt> 和一个可选的最终计算函数 <tt class="REPLACEABLE"><i>ffunc</i></tt> 。它们是这样使用的：</p>
+<pre class="PROGRAMLISTING"><tt class="REPLACEABLE"><i>sfunc</i></tt>( internal-state, next-data-values ) ---&#62; next-internal-state
+<tt class="REPLACEABLE"><i>ffunc</i></tt>( internal-state ) ---&#62; aggregate-value</pre>
+<p>PostgreSQL 创建一个类型为 <tt class="REPLACEABLE"><i>stype</i></tt> 的临时变量。它保存这个聚集的当前内部状态。对于每个输入数据条目，都调用状态转换函数计算内部状态值的新数值。在处理完所有数据后，调用一次最终处理函数以计算聚集的返回值。如果没有最终处理函数，则将最后的状态值当做返回值。</p>
+<p>一个聚集函数还可能提供一个初始条件，也就是内部状态值的初始值。这个值是作为一个类型为 <tt class="TYPE">text</tt> 的字段存储在数据库里的，不过它们必须是状态值数据类型的合法的外部表现形式的常量。如果没有提供状态，那么状态值初始化为 NULL 。</p>
+<p>如果该状态转换函数被定义为"strict"，那么就不能用 NULL 输入调用它。此时，聚集的执行如下所述。带有任何 NULL 输入值的行将被忽略(不调用此函数并且保留前一个状态值)。如果初始状态值是 NULL ，那么在第一个含有非 NULL 值的行上，使用第一个参数值替换状态值，然后状态转换函数在随后所有的含有非 NULL 值的行上调用。这样做让比较容易实现像 <code class="FUNCTION">max</code> 这样的聚集。请注意这种行为只是当 <tt class="REPLACEABLE"><i>state_data_type</i></tt> 与 <tt class="REPLACEABLE"><i>input_data_type</i></tt> 相同的时候才表现出来。如果这些类型不同，你必须提供一个非 NULL 的初始条件或者使用一个非"strice"的状态转换函数。</p>
+<p>如果状态转换函数不是严格(strict)的，那么它将无条件地在每个输入行上调用，并且必须自行处理 NULL 输入和 NULL 转换值，这样就允许聚集的作者对聚集中的 NULL 有完全的控制。</p>
+<p>如果最终转换函数定义为"strict"，那么如果最终状态值是 NULL 时就不会调用它；而是自动输出一个 NULL 结果。这才是 strict 函数的正常特征。不管是那种情况，最终处理函数可以自由选择是否返回 NULL 。比如，<code class="FUNCTION">avg</code> 的最终处理函数在零输入记录时就会返回 NULL 。</p>
+<p>行为类似 <code class="FUNCTION">MIN</code> 或 <code class="FUNCTION">MAX</code> 的聚集有时候可以优化为使用索引，而不用扫描每个输入行。如果这个聚集可以如此优化，则用一个<i class="FIRSTTERM">排序操作符</i>标识它。这里基本的要求是聚集必须以操作符归纳出来的排序顺序生成第一个元素；换句话说</p>
+<pre class="PROGRAMLISTING">SELECT agg(col) FROM tab;</pre>
+<p>必须等于</p>
+<pre class="PROGRAMLISTING">SELECT col FROM tab ORDER BY col USING sortop LIMIT 1;</pre>
+<p>更多的假设是聚集忽略 NULL 输入，并且只有在输入没有非空数值的时候，它才生成 NULL 结果。通常，数据类型的 <tt class="LITERAL">&lt;</tt> 操作符是 <code class="FUNCTION">MIN</code> 的适用排序操作符，而 <tt class="LITERAL">&gt;</tt> 是 <code class="FUNCTION">MAX</code>的适用操作符。请注意，除非声明的操作符是 B-tree 索引操作符类的"小于"或者"大于"策略号，否则这种优化将不会生效。</p>
+</div>
+<div class="REFSECT1"><a name="AEN46538"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>要创建的聚集函数名(可以有模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>input_data_type</i></tt></dt>
+<dd><p>该聚集函数要处理的输入数据类型。要创建一个零参数聚集函数，可以使用 <tt class="LITERAL">*</tt> 代替输入数据类型列表。<code class="FUNCTION">count(*)</code> 就是这种聚集函数的一个实例。</p></dd>
+<dt><tt class="REPLACEABLE"><i>base_type</i></tt></dt>
+<dd><p>在旧式的 <tt class="COMMAND">CREATE AGGREGATE</tt> 语法中，输入数据类型是通过 <tt class="LITERAL">basetype</tt> 参数指定的，而不是写在聚集的名称之后。需要注意的是这种旧式语法仅允许一个输入参数。要创建一个零参数聚集函数，可以将 <tt class="LITERAL">basetype</tt> 指定为 <tt class="LITERAL">"ANY"</tt>(而不是 <tt class="LITERAL">*</tt>)。</p></dd>
+<dt><tt class="REPLACEABLE"><i>sfunc</i></tt></dt>
+<dd><p>将在每一个输入行上调用的状态转换函数的名称。对于有 <tt class="REPLACEABLE"><i>N</i></tt> 个参数的聚集函数，<tt class="REPLACEABLE"><i>sfunc</i></tt> 必须有 <tt class="REPLACEABLE"><i>N</i></tt>+1 个参数，其中的第一个参数类型为 <tt class="REPLACEABLE"><i>state_data_type</i></tt> ，其余的匹配已声明的输入数据类型。函数必须返回一个 <tt class="REPLACEABLE"><i>state_data_type</i></tt> 类型的值。这个函数接受当前状态值和当前输入数据，并返回下个状态值。</p></dd>
+<dt><tt class="REPLACEABLE"><i>state_data_type</i></tt></dt>
+<dd><p>聚集的状态值的数据类型</p></dd>
+<dt><tt class="REPLACEABLE"><i>ffunc</i></tt></dt>
+<dd><p>在转换完所有输入行后调用的最终处理函数，它计算聚集的结果。此函数必须接受一个类型为 <tt class="REPLACEABLE"><i>state_data_type</i></tt> 的参数。聚集的输出数据类型被定义为此函数的返回类型。如果没有声明 <tt class="REPLACEABLE"><i>ffunc</i></tt> 则使用聚集结果的状态值作为聚集的结果，且输出类型为 <tt class="REPLACEABLE"><i>state_data_type</i></tt> 。</p></dd>
+<dt><tt class="REPLACEABLE"><i>initial_condition</i></tt></dt>
+<dd><p>状态值的初始设置(值)。它必须是一个 <tt class="REPLACEABLE"><i>state_data_type</i></tt> 类型可以接受的文本常量值。如果没有声明，状态值初始为 NULL 。</p></dd>
+<dt><tt class="REPLACEABLE"><i>sort_operator</i></tt></dt>
+<dd><p>用于 <code class="FUNCTION">MIN</code> 或 <code class="FUNCTION">MAX</code> 类型聚集的排序操作符。这个只是一个操作符名(可以有模式修饰)。这个操作符假设接受和聚集一样的输入数据类型。</p></dd>
+</dl>
+</div>
+<p><tt class="COMMAND">CREATE AGGREGATE</tt> 的参数可以以任何顺序书写，而不只是上面显示的顺序。</p>
+</div>
+<div class="REFSECT1"><a name="AEN46601"></a><h2>例子</h2>
+<p>参见<a href="xaggr.html">节33.10</a></p>
+</div>
+<div class="REFSECT1"><a name="AEN46605"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">CREATE AGGREGATE</tt> 是 PostgreSQL 语言的扩展。SQL 标准没有提供用户自定义聚集函数的功能。</p>
+</div>
+<div class="REFSECT1"><a name="AEN46610"></a><h2>又见</h2><a href="sql-alteraggregate.html"><i>ALTER AGGREGATE</i></a>, <a href="sql-dropaggregate.html"><i>DROP AGGREGATE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-copy.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createcast.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">COPY</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE CAST</td></tr>
+</table>
+</div>
+</body></html>

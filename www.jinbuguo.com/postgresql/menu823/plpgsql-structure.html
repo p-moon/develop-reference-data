@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PL/pgSQL 的结构</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plpgsql-development-tips.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plpgsql.html">快退</a></td><td width="60%" align="center" valign="bottom">章37. PL/pgSQL - SQL 过程语言</td><td width="10%" align="right" valign="top"><a href="plpgsql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plpgsql-declarations.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLPGSQL-STRUCTURE">37.3. PL/pgSQL 的结构</a></h1>
+<p>PL/pgSQL 是一种块结构的语言。函数定义的所有文本都必须是一个<i class="FIRSTTERM">块</i>。一个块用下面的方法定义：</p>
+<pre class="SYNOPSIS">[<span class="OPTIONAL">&lt;&lt;<tt class="REPLACEABLE"><i>label</i></tt>&gt;&gt;</span>]
+[<span class="OPTIONAL">DECLARE
+    <tt class="REPLACEABLE"><i>declarations</i></tt></span>]
+BEGIN
+    <tt class="REPLACEABLE"><i>statements</i></tt>
+END [<span class="OPTIONAL"><tt class="REPLACEABLE"><i>label</i></tt></span>];</pre>
+<p>块中的每个声明和每条语句都是用一个分号终止的，如果一个子块在另外一个块里，那么 <tt class="LITERAL">END</tt> 后面必须有个分号，如上所述；不过结束函数体的最后的 <tt class="LITERAL">END</tt> 可以不要这个分号。</p>
+<p>所有关键字和标识符都是大小写无关的，标识符被隐含地转换成小写字符，除非被双引号包围。</p>
+<p>在 PL/pgSQL 里有两种类型注释。双破折号(<tt class="LITERAL">--</tt>)引出一个扩展到该行结尾的注释。<tt class="LITERAL">/*</tt>引出一个块注释，一直扩展到下一个 <tt class="LITERAL">*/</tt> 的出现。块注释不能嵌套，但是双破折号注释可以包围在块注释里面，并且双破折号可以隐藏块注释分隔符 <tt class="LITERAL">/*</tt> 和 <tt class="LITERAL">*/</tt> 。</p>
+<p>块语句段里的任何语句都可以是一个<i class="FIRSTTERM">子块</i>。子块可以用于逻辑分组或者把变量局部化为作用于一个比较小的语句组。</p>
+<p>在语句块前面的声明段(declarations section)里定义的变量在每次进入语句块时都初始化为它们的缺省值，而不是每次函数调用时初始化一次。比如：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION somefunc() RETURNS integer AS $$
+DECLARE
+    quantity integer := 30;
+BEGIN
+    RAISE NOTICE 'Quantity here is %', quantity;  -- 在这里的数量是 30
+    quantity := 50;
+    --
+    -- 创建一个子块
+    --
+    DECLARE
+        quantity integer := 80;
+    BEGIN
+        RAISE NOTICE 'Quantity here is %', quantity;  -- 在这里的数量是 80
+    END;
+
+    RAISE NOTICE 'Quantity here is %', quantity;  -- 在这里的数量是 50
+
+    RETURN quantity;
+END;
+$$ LANGUAGE plpgsql;</pre>
+<p>一定不要把 PL/pgSQL 里用于语句分组的 <tt class="COMMAND">BEGIN</tt>/<tt class="COMMAND">END</tt> 和用于事务控制的数据库命令搞混了。PL/pgSQL 的 <tt class="COMMAND">BEGIN</tt>/<tt class="COMMAND">END</tt> 只是用于分组(译注：像 C 里的 { 与 } )；它们不会开始和结束一个事务。函数和触发器过程总是在一个由外层命令建立起来的事务里执行，它们无法开始或者提交事务，因为 PostgreSQL 没有嵌套事务。不过，一个包含 <tt class="LITERAL">EXCEPTION</tt> 子句的块实际上形成一个子事务，它可以在不影响外层事务的情况下回滚。更多相关信息请参阅<a href="plpgsql-control-structures.html#PLPGSQL-ERROR-TRAPPING">节37.7.5</a>。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plpgsql-development-tips.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plpgsql-declarations.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">开发 PL/pgSQL 的一些提示</td><td width="34%" align="center" valign="top"><a href="plpgsql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">声明</td></tr>
+</table>
+</div>
+</body></html>

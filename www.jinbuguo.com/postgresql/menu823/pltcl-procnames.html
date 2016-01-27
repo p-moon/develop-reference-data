@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>Tcl 过程名字</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="pltcl-unknown.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="pltcl.html">快退</a></td><td width="60%" align="center" valign="bottom">章38. PL/Tcl - Tcl 过程语言</td><td width="10%" align="right" valign="top"><a href="pltcl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plperl.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLTCL-PROCNAMES">38.8. Tcl 过程名字</a></h1>
+<p>在 PostgreSQL 里，同一个函数名字可以用于不同的函数，只要参数个数或者它们的类型不同。不过，Tcl 要求所有的过程名字都是唯一的。PL/Tcl 通过把内部 Tcl 过程名字包含该函数来自系统表 <tt class="STRUCTNAME">pg_proc</tt> 的对象 ID 作为名字的一部分来处理这些问题。因此同名不同参数类型的 PostgreSQL 行数也将会有不同的 Tcl 过程名。这个问题通常对 PL/Tcl 程序员而言不算啥，但是在调试的时候可能会看到。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="pltcl-unknown.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plperl.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">模块和 <code class="FUNCTION">unknown</code> 的命令</td><td width="34%" align="center" valign="top"><a href="pltcl.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PL/Perl - Perl 过程语言</td></tr>
+</table>
+</div>
+</body></html>

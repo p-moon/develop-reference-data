@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_listener</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-largeobject.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-namespace.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-LISTENER">43.22. <tt class="STRUCTNAME">pg_listener</tt></a></h1><a name="AEN63868"></a>
+<p><tt class="STRUCTNAME">pg_listener</tt> 表支持 <a href="sql-listen.html"><i>LISTEN</i></a> 和 <a href="sql-notify.html"><i>NOTIFY</i></a> 命令。一个监听器为它监听的每个通知名称在 <tt class="STRUCTNAME">pg_listener</tt> 里创建一条记录。一个通知发起人扫描 <tt class="STRUCTNAME">pg_listener</tt> 并且更新每条匹配的记录以显示一个通知已经发生。通知发起人还发送一个信号给监听器(使用记录在表中的 PID)以唤醒它做处理。</p>
+<div class="TABLE"><a name="AEN63876"></a>
+<p><b>表43-22. <tt class="STRUCTNAME">pg_listener</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">relname</tt></td><td><tt class="TYPE">name</tt></td><td>通知条件名。该名字不需要匹配任何数据库中的实际关系；项 <tt class="STRUCTFIELD">relname</tt> 是历史原因形成的。</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">listenerpid</tt></td><td><tt class="TYPE">int4</tt></td><td>创建此条目的服务器进程的 PID</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">notification</tt></td><td><tt class="TYPE">int4</tt></td><td>如果这个监听器上没有等待的事件，那么是零。如果有等待的事件，那么是发送通知的服务器的 PID</td><td>&nbsp;</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-largeobject.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-namespace.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_largeobject</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_namespace</tt></td></tr>
+</table>
+</div>
+</body></html>

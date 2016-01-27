@@ -1,0 +1,218 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>安全方面的提示 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">杂项文档</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>安全方面的提示</h1>
+
+
+    <p>本文中的提示和技巧有些是针对网络服务器的建立的，有些是综合性的，其余的则是针对Apache的。</p>
+  </div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="uptodate" id="uptodate">保持不断更新和升级</a></h2>
+
+    <p>Apache HTTP服务器有一个很好的安全记录和一个高度关注安全问题的开发社团。但是这仍然不能避免在发行版中存在或大或小的问题。所以知道这个软件的版本更新和升级补丁是至关重要的。如果你是直接从Apache组织得到Apache HTTP服务器的，我们强烈建议你订阅<a href="http://httpd.apache.org/lists.html#http-announce">Apache HTTP服务器通告邮件列表</a>以保证能够在第一时间得知软件的版本更新和升级补丁。许多第三方Apache软件发行版也有类似的服务。</p>
+
+    <p>当然，Web服务器出现的问题在绝大多数时候不是由Apache源代码引起的，而是由附加的代码、CGI脚本、底层操作系统引起的。因此你必须保持机器上所有软件的及时更新。</p>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="serverroot" id="serverroot">ServerRoot目录的权限</a></h2>
+  
+    
+    
+    <p>通常，Apache由root用户启动，在提供服务时切换为由<code class="directive"><a href="../mod/mpm_common.html#user">User</a></code>指令所指定的用户。正如root所执行的任何命令那样，你必须保证<code class="directive">ServerRoot</code>下的文件是受保护的，不允许非root用户对它修改。不仅文件本身，而且目录及其父目录都必须只能由root来改写。例如，如果将<code class="directive">ServerRoot</code>指定为<code>/usr/local/apache</code> ，则推荐以root身份来建立此目录，如：</p>
+    
+    <div class="example"><p><code>
+      mkdir /usr/local/apache <br />
+      cd /usr/local/apache <br />
+      mkdir bin conf logs <br />
+      chown 0 . bin conf logs <br />
+      chgrp 0 . bin conf logs <br />
+      chmod 755 . bin conf logs
+    </code></p></div>
+    
+    <p>这里已经假定了"/"、"/usr"、"/usr/local"只能由root来改写。在安装<code class="program"><a href="../programs/httpd.html">httpd</a></code>可执行文件时，应该确保它也受到了同样的保护：</p>
+    
+    <div class="example"><p><code>
+      cp httpd /usr/local/apache/bin <br />
+      chown 0 /usr/local/apache/bin/httpd <br />
+      chgrp 0 /usr/local/apache/bin/httpd <br />
+      chmod 511 /usr/local/apache/bin/httpd
+    </code></p></div>
+    
+    <p>你可以在其中建立htdocs子目录，该子目录可以允许其他用户改写 -- root不会执行其中任何文件，也不应该在其中建立文件。</p>
+    
+    <p>如果允许非root用户对由root执行或读写的文件有写权限，则会危及系统。比如，别人有可能会覆盖<code class="program"><a href="../programs/httpd.html">httpd</a></code>可执行文件，那么下一次启动时，就会执行恶意代码。如果日志目录(对非root用户)是可写的，别人就有可能用一个指向其他敏感文件的连接来覆盖日志文件，使那个文件被改写为杂乱的数据。如果日志文件本身(对非root用户)是可写的，别人就可能伪造日志。</p>
+    
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="ssi" id="ssi">服务器端包含</a></h2>
+    
+    <p>服务器端包含(SSI)会带来一些潜在的安全隐患。</p>
+    
+    <p>首先是增加了服务器的负载。Apache必须解析所有允许SSI的文件，而无论其中是否包含SSI指令。虽然增加的负载较小，但是在共享服务器环境中会变得很显著。</p>
+    
+    <p>SSI文件与CGI脚本一样存在风险。使用"exe ccmd"元素，允许SSI的文件可以执行任何CGI脚本，以及由httpd.conf设置的执行Apache的用户或组所允许执行的任何程序。</p>
+    
+    <p>有若干方法可以在得到SSI好处的同时提高SSI文件的安全性。</p>
+    
+    <p>服务器管理员可以使用<a href="#cgi">关于CGI</a>中所描述的<a href="../suexec.html">suexec</a> ，以隔离野蛮SSI文件所造成的破坏。</p>
+    
+    <p>对.html或.htm后缀的文件允许SSI是危险的，尤其是在一个共享的或者高流量的服务器环境中。被允许SSI的文件应该有一个单独的后缀，比如常规的.shtml ，使服务器的负载保持在最低水平，并使风险管理更容易。</p>
+    
+    <p>另一个方案是，关闭SSI页面执行脚本和程序的功能，即在用<code class="directive"><a href="../mod/core.html#options">Options</a></code>指令中，用<code>IncludesNOEXEC</code>替换<code>Includes</code> 。注意，用户仍然可以使用 &lt;--#include virtual="..." --&gt;来执行位于<code class="directive"><a href="../mod/mod_alias.html#scriptalias">ScriptAlias</a></code>指令指定的目录中的CGI脚本。</p>
+    
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="cgi" id="cgi">关于CGI</a></h2>
+  
+    
+    
+    <p>首先，你不得不信任CGI程序的作者以及你自己发现CGI中潜在安全漏洞的能力，无论这些漏洞是有预谋的或者仅仅是意外。CGI脚本可以执行web服务器用户所允许执行的任意系统命令，如果没有经过仔细的检查，这可能是极其危险的。</p>
+    
+    <p>由于所有CGI脚本都以相同的身份执行，所以可能会和其他脚本(有意或无意地)冲突。比如，用户A憎恨用户B，因此他就可能写一个脚本去破坏用户B的数据库。<a href="../suexec.html">suEXEC</a>是一个允许脚本以不同的身份运行的程序，它包含在Apache1.2以后的版本中，并被Apache服务器代码中特殊的挂钩所调用。还有一种常用的方法是使用<a href="http://cgiwrap.unixtools.org/">CGIWrap</a> 。</p>
+    
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="nsaliasedcgi" id="nsaliasedcgi">未指定为脚本的CGI</a></h2>
+  
+    
+    
+    <p>仅在下列情况下，可以考虑允许用户执行位于任意目录中的CGI脚本：</p>
+    
+    <ul>
+      <li>你绝对信任用户不会写一些有意无意会使系统遭受攻击的脚本。</li>
+      <li>你认为安全因素与其他因素相比显得不那么重要，存在一两个潜在漏洞也无关紧要。</li>
+      <li>你没有用户，而且没人会来访问你的服务器。</li>
+    </ul>
+    
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="saliasedcgi" id="saliasedcgi">指定为脚本的CGI</a></h2>
+  
+    
+    
+    <p>把CGI集中在特定的目录中，并由管理员决定其中的内容。这样绝对比使用不作为脚本的CGI来得安全，除非对这些目录有写权限的用户被信任，或者管理员希望对每个CGI脚本/程序进行潜在安全漏洞测试。</p>
+    
+    <p>大多数站点都选择这种方案，而不使用未指定为脚本的CGI。</p>
+    
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="dynamic" id="dynamic">其他动态内容的来源</a></h2>
+
+
+  <p>嵌入在Apache中作为模块运行的脚本解释器，比如：mod_php, mod_perl, mod_tcl, mod_python 将会使用和Apache一样的用户身份运行(参见<code class="directive"><a href="../mod/mpm_common.html#user">User</a></code>指令)，所以被这些模块执行的脚本可能访问任何Apache服务器能够访问的对象。一些脚本引擎可能提供了某些方面的限制，但是最好在假定他们并不存在的前提下做好安全防护。</p>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="systemsettings" id="systemsettings">系统设置的保护</a></h2>
+  
+    
+    
+    <p>为了得到真正严密的保护，应该禁止用户使用可能导致安全特性被覆盖的<code>.htaccess</code>文件，方法是在服务器配置文件中设置：</p>
+    <div class="example"><p><code>
+      &lt;Directory /&gt; <br />
+        AllowOverride None <br />
+      &lt;/Directory&gt;
+    </code></p></div>
+    
+    <p>使所有目录无法使用<code>.htaccess</code>文件，明确指定可以使用的目录除外。</p>
+    
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="protectserverfiles" id="protectserverfiles">默认配置下服务器文件的保护</a></h2>
+  
+    
+    
+    <p>默认访问是偶尔会被误解的Apache特性之一。也就是，除非你采取措施，否则，如果服务器能够通过标准URL映射规则找到一个文件，那么就可能把它提供给客户端。比如下例：</p>
+
+    <div class="example"><p><code>
+      # cd /; ln -s / public_html <br />
+      Accessing <code>http://localhost/~root/</code>
+    </code></p></div>
+    
+    <p>它会允许客户端遍历整个文件系统。其解决方法是，在服务器配置中增加下列指令：</p>
+    
+    <div class="example"><p><code>
+      &lt;Directory /&gt; <br />
+      Order Deny,Allow <br />
+      Deny from all <br />
+      &lt;/Directory&gt;
+    </code></p></div>
+    
+    <p>这样，对文件系统的默认访问被禁止。而对需要访问的区域，可以增加正确的<code class="directive"><a href="../mod/core.html#directory">Directory</a></code>块，比如：</p>
+    
+    <div class="example"><p><code>
+      &lt;Directory /usr/users/*/public_html&gt; <br />
+        Order Deny,Allow <br />
+        Allow from all <br />
+      &lt;/Directory&gt; <br />
+      &lt;Directory /usr/local/httpd&gt; <br />
+        Order Deny,Allow <br />
+        Allow from all <br />
+      &lt;/Directory&gt;
+    </code></p></div>
+    
+    <p>必须特别注意<code class="directive"><a href="../mod/core.html#location">Location</a></code>和<code class="directive"><a href="../mod/core.html#directory">Directory</a></code>指令的相互作用，比如，即使<code>&lt;Directory /&gt;</code>拒绝访问，<code>&lt;Location /&gt;</code>指令仍然可能推翻其设置。</p>
+    
+    <p>还必须留意<code class="directive"><a href="../mod/mod_userdir.html#userdir">UserDir</a></code>指令，此设置如果类似"./"，则与上述例子有相同的风险。如果你使用的是1.3或更高版本，我们强烈建议在服务器配置文件中包含以下指令：</p>
+    
+    <div class="example"><p><code>
+      UserDir disabled root
+    </code></p></div>
+    
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="watchyourlogs" id="watchyourlogs">观察日志文件</a></h2>
+  
+    
+    
+    <p>要了解服务器上发生了什么，就必须检查<a href="../logs.html">日志文件</a>。虽然日志文件只是记录已经发生的事件，但是它会让你知道服务器遭受的攻击，并帮助你判断是否提达到了必要的安全等级。</p>
+    
+    <p>一些例子：</p>
+    
+    <div class="example"><p><code>
+      grep -c "/jsp/source.jsp?/jsp/ /jsp/source.jsp??" access_log <br />
+      grep "client denied" error_log | tail -n 10
+    </code></p></div>
+    
+    <p>上例会列出试图使用<a href="http://online.securityfocus.com/bid/4876/info/">Apache Tomcat Source.JSP Malformed Request Information Disclosure Vulnerability</a>的攻击次数。下例会列出最后十个被拒绝的客户端：</p>
+    
+    <div class="example"><p><code>
+      [Thu Jul 11 17:18:39 2002] [error] [client foo.bar.com] client denied 
+      by server configuration: /usr/local/apache/htdocs/.htpasswd
+    </code></p></div>
+    
+    <p>可见，日志文件只是记录已经发生的事件，所以，如果客户端可以访问<code>.htpasswd</code>文件，而且在<a href="../logs.html#accesslog">访问日志</a>中发现类似如下的记录：</p>
+    
+    <div class="example"><p><code>
+      foo.bar.com - - [12/Jul/2002:01:59:13 +0200] "GET /.htpasswd HTTP/1.1"
+    </code></p></div>
+    
+    <p>这可能表示服务器配置文件中的下列指令已经被注解了：</p>
+    
+    <div class="example"><p><code>
+      &lt;Files ~ "^\.ht"&gt; <br />
+        Order allow,deny <br />
+        Deny from all <br />
+      &lt;/Files&gt;
+    </code></p></div>
+    
+  </div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

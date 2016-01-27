@@ -1,0 +1,237 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>apxs - Apache 扩展工具 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">支持程序</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>apxs - Apache 扩展工具</h1>
+
+
+    <p><code>apxs</code>是一个为Apache HTTP服务器编译和安装扩展模块的工具，用于编译一个或多个源程序或目标代码文件为动态共享对象，使之可以用由<code class="module"><a href="../mod/mod_so.html">mod_so</a></code>提供的<code class="directive"><a href="../mod/mod_so.html#loadmodule">LoadModule</a></code>指令在运行时加载到Apache服务器中。</p>
+
+    <p>因此，要使用这个扩展机制，你的平台必须支持DSO特性，而且Apache <code class="program"><a href="../programs/httpd.html">httpd</a></code>必须内建了<code class="module"><a href="../mod/mod_so.html">mod_so</a></code>模块。<code>apxs</code>工具能自动探测是否具备这样的条件，你也可以自己用这个命令手动探测：</p>
+
+    <div class="example"><p><code>
+      $ httpd -l
+    </code></p></div>
+
+    <p>该命令的输出列表中应该有<code class="module"><a href="../mod/mod_so.html">mod_so</a></code>模块。如果所有这些条件均已具备，则可以很容易地借助<code>apxs</code>安装你自己的DSO模块以扩展Apache服务器的功能：</p>
+
+    <div class="example"><p><code>
+      $ apxs -i -a -c mod_foo.c<br />
+      gcc -fpic -DSHARED_MODULE -I/path/to/apache/include -c mod_foo.c<br />
+      ld -Bshareable -o mod_foo.so mod_foo.o<br />
+      cp mod_foo.so /path/to/apache/modules/mod_foo.so<br />
+      chmod 755 /path/to/apache/modules/mod_foo.so<br />
+      [activating module 'foo' in /path/to/apache/etc/httpd.conf]<br />
+      $ apachectl restart<br />
+      /path/to/apache/sbin/apachectl restart: httpd not running, trying to start<br />
+      [Tue Mar 31 11:27:55 1998] [debug] mod_so.c(303): loaded module foo_module<br />
+      /path/to/apache/sbin/apachectl restart: httpd started<br />
+      $ _
+    </code></p></div>
+
+    <p>其中的参数<var>files</var>可以是任何C源程序文件(.c)、目标代码文件(.o)、甚至是一个库(.a)。<code>apxs</code>工具会根据其后缀自动编译C源程序或者连接目标代码和库。但是，使用预编译的目标代码时，必须保证它们是地址独立代码(PIC)，使之能被动态地加载。如果使用GCC编译，则应该使用 <code>-fpic</code> 参数；如果使用其他C编译器，则应该查阅其手册，为<code>apxs</code>使用相应的编译参数。</p>
+
+    <p>有关Apache对DSO的支持的详细信息，可以阅读<code class="module"><a href="../mod/mod_so.html">mod_so</a></code>文档，或者直接阅读<code>src/modules/standard/mod_so.c</code>源程序。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="synopsis" id="synopsis">语法</a></h2>
+    <p><code><strong>apxs</strong> -<strong>g</strong>
+    [ -<strong>S</strong> <var>name</var>=<var>value</var> ]
+    -<strong>n</strong> <var>modname</var></code></p>
+
+    <p><code><strong>apxs</strong> -<strong>q</strong>
+    [ -<strong>S</strong> <var>name</var>=<var>value</var> ]
+    <var>query</var> ...</code></p>
+
+    <p><code><strong>apxs</strong> -<strong>c</strong>
+    [ -<strong>S</strong> <var>name</var>=<var>value</var> ]
+    [ -<strong>o</strong> <var>dsofile</var> ]
+    [ -<strong>I</strong> <var>incdir</var> ]
+    [ -<strong>D</strong> <var>name</var>=<var>value</var> ]
+    [ -<strong>L</strong> <var>libdir</var> ]
+    [ -<strong>l</strong> <var>libname</var> ]
+    [ -<strong>Wc,</strong><var>compiler-flags</var> ]
+    [ -<strong>Wl,</strong><var>linker-flags</var> ]
+    <var>files</var> ...</code></p>
+
+    <p><code><strong>apxs</strong> -<strong>i</strong>
+    [ -<strong>S</strong> <var>name</var>=<var>value</var> ]
+    [ -<strong>n</strong> <var>modname</var> ]
+    [ -<strong>a</strong> ]
+    [ -<strong>A</strong> ]
+    <var>dso-file</var> ...</code></p>
+
+    <p><code><strong>apxs</strong> -<strong>e</strong>
+    [ -<strong>S</strong> <var>name</var>=<var>value</var> ]
+    [ -<strong>n</strong> <var>modname</var> ]
+    [ -<strong>a</strong> ]
+    [ -<strong>A</strong> ]
+    <var>dso-file</var> ...</code></p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="options" id="options">选项</a></h2>
+    <h3><a name="options.common" id="options.common">一般选项</a></h3>
+      <dl>
+      <dt><code>-n <var>modname</var></code></dt>
+      <dd>它明确设置了 <code>-i</code>(安装)和 <code>-g</code>(模板生成)选项的模块名称。对 <code>-g</code> 选项，它是必须的；对 <code>-i</code> 选项，<code>apxs</code>工具会根据源代码判断，或(在失败的情况下)按文件名推测出这个模块的名称。</dd>
+      </dl>
+    
+
+    <h3><a name="options.query" id="options.query">查询选项</a></h3>
+      <dl>
+      <dt><code>-q</code></dt>
+      <dd>查询某种<code>apxs</code>设置的信息。该选项的<var>query</var>参数可以是下列一个或多个字符串：<code>CC</code>, <code>CFLAGS</code>, <code>CFLAGS_SHLIB</code>, <code>INCLUDEDIR</code>, <code>LD_SHLIB</code>, <code>LDFLAGS_SHLIB</code>, <code>LIBEXECDIR</code>, <code>LIBS_SHLIB</code>, <code>SBINDIR</code>, <code>SYSCONFDIR</code>, <code>TARGET</code> 。
+
+      <p>这个参数用于手动查询某些设置。比如，要手动处理Apache的C头文件，可以在Makefile中使用：</p>
+      <div class="example"><p><code>
+        INC=-I`apxs -q INCLUDEDIR`
+      </code></p></div>
+	  </dd>
+      </dl>
+    
+
+    <h3><a name="options.conf" id="options.conf">配置选项</a></h3>
+      <dl>
+      <dt><code>-S <var>name</var>=<var>value</var></code></dt>
+      <dd>此选项可以改变apxs的上述设置。</dd>
+      </dl>
+    
+
+    <h3><a name="options.template" id="options.template">模板生成选项</a></h3>
+      <dl>
+      <dt><code>-g</code></dt>
+      <dd>此选项生成一个名为<var>name</var>的子目录(见选项 <code>-n</code>)和其中的两个文件：一个是名为<code>mod_<var>name</var>.c</code>的样板模块源程序，可以用来建立你自己的模块，或是学习使用apxs机制的良好开端；另一个则是对应的<code>Makefile</code> ，用于编译和安装此模块。</dd>
+      </dl>
+    
+
+    <h3><a name="options.dso" id="options.dso">DSO编译选项</a></h3>
+      <dl>
+      <dt><code>-c</code></dt>
+      <dd>此选项表示需要执行编译操作。它首先会编译C源程序(.c)<var>files</var>为对应的目标代码文件(.o)，然后连接这些目标代码和<var>files</var>中其余的目标代码文件(.o和.a)，以生成动态共享对象<var>dsofile</var> 。如果没有指定 <code>-o</code> 选项，则此输出文件名由<var>files</var>中的第一个文件名推测得到，也就是默认为<code>mod_<var>name</var>.so</code> 。</dd>
+
+      <dt><code>-o <var>dsofile</var></code></dt>
+      <dd>明确指定所建立的动态共享对象的文件名，它不能从<var>files</var>文件列表中推测得到。如果没有明确指定，则其文件名将为<code>mod_unknown.so</code> 。</dd>
+
+      <dt><code>-D <var>name</var>=<var>value</var></code></dt>
+      <dd>此选项直接传递到给编译命令，用于增加自定义的编译变量。</dd>
+
+      <dt><code>-I <var>incdir</var></code></dt>
+      <dd>此选项直接传递到给编译命令，用于增加自定义的包含目录。</dd>
+
+      <dt><code>-L <var>libdir</var></code></dt>
+      <dd>此选项直接传递到给连接命令，用于增加自定义的库文件目录。</dd>
+
+      <dt><code>-l <var>libname</var></code></dt>
+      <dd>此选项直接传递到给连接命令，用于增加自定义的库文件。</dd>
+
+      <dt><code>-Wc,<var>compiler-flags</var></code></dt>
+      <dd>此选项用于向编译命令 <code>libtool --mode=compile</code> 中附加<var>compiler-flags</var> ，以增加编译器特有的选项。</dd>
+
+      <dt><code>-Wl,<var>linker-flags</var></code></dt>
+      <dd>此选项用于向连接命令 <code>libtool --mode=link</code> 中附加<var>linker-flags</var> ，以增加连接器特有的选项。</dd>
+      </dl>
+    
+
+    <h3><a name="options.dsoinstall" id="options.dsoinstall">DSO的安装和配置选项</a></h3>
+    
+      <dl>
+      <dt><code>-i</code></dt>
+      <dd>此选项表示需要执行安装操作，以安装一个或多个动态共享对象到服务器的<var>modules</var>目录中。</dd>
+
+      <dt><code>-a</code></dt>
+      <dd>此选项自动增加一个<code class="directive"><a href="../mod/mod_so.html#loadmodule">LoadModule</a></code>行到<code>httpd.conf</code>文件中，以激活此模块，或者，如果此行已经存在，则启用之。</dd>
+
+      <dt><code>-A</code></dt>
+      <dd>与 <code>-a</code> 选项类似，但是它增加的<code class="directive"><a href="../mod/mod_so.html#loadmodule">LoadModule</a></code>命令有一个井号前缀(<code>#</code>)，即此模块已经准备就绪但尚未启用。</dd>
+
+      <dt><code>-e</code></dt>
+      <dd>表示需要执行编辑操作，它可以与 <code>-a</code> 和 <code>-A</code> 选项配合使用，与 <code>-i</code> 操作类似，修改Apache的<code>httpd.conf</code>文件，但是并不安装此模块。</dd>
+      </dl>
+    
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="examples" id="examples">举例</a></h2>
+    <p>假设有一个扩展Apache功能的模块<code>mod_foo.c</code> ，使用下列命令，可以将C源程序编译为共享模块，以在运行时加载到Apache服务器中：</p>
+
+    <div class="example"><p><code>
+      $ apxs -c mod_foo.c<br />
+      /path/to/libtool --mode=compile gcc ... -c mod_foo.c<br />
+      /path/to/libtool --mode=link gcc ... -o mod_foo.la mod_foo.slo<br />
+      $ _
+    </code></p></div>
+
+    <p>然后，必须修改Apache的配置，以确保有一个<code class="directive"><a href="../mod/mod_so.html#loadmodule">LoadModule</a></code>指令来加载此共享对象。为了简化这一步骤，<code>apxs</code>可以自动进行该操作，以安装此共享对象到"modules"目录，并更新<code>httpd.conf</code>文件，命令如下：</p>
+
+    <div class="example"><p><code>
+      $ apxs -i -a mod_foo.la<br />
+      /path/to/instdso.sh mod_foo.la /path/to/apache/modules<br />
+      /path/to/libtool --mode=install cp mod_foo.la /path/to/apache/modules
+      ...
+      chmod 755 /path/to/apache/modules/mod_foo.so<br />
+      [activating module 'foo' in /path/to/apache/conf/httpd.conf]<br />
+      $ _
+    </code></p></div>
+
+    <p>如果配置文件中尚不存在，会增加下列的行：</p>
+
+    <div class="example"><p><code>
+      LoadModule foo_module modules/mod_foo.so
+    </code></p></div>
+
+    <p>如果你希望默认禁用此模块，可以使用 <code>-A</code> 选项，即：</p>
+
+    <div class="example"><p><code>
+      $ apxs -i -A mod_foo.c
+    </code></p></div>
+
+    <p>要快速测试apxs机制，可以建立一个Apache模块样板及其对应的Makefile ：</p>
+
+    <div class="example"><p><code>
+      $ apxs -g -n foo<br />
+      Creating [DIR]  foo<br />
+      Creating [FILE] foo/Makefile<br />
+      Creating [FILE] foo/modules.mk<br />
+      Creating [FILE] foo/mod_foo.c<br />
+      Creating [FILE] foo/.deps<br />
+      $ _
+    </code></p></div>
+
+    <p>然后，立即可以编译此样板模块为共享对象并加载到Apache服务器中：</p>
+
+    <div class="example"><p><code>
+      $ cd foo<br />
+      $ make all reload<br />
+      apxs -c mod_foo.c<br />
+      /path/to/libtool --mode=compile gcc ... -c mod_foo.c<br />
+      /path/to/libtool --mode=link gcc ... -o mod_foo.la mod_foo.slo<br />
+      apxs -i -a -n "foo" mod_foo.la<br />
+      /path/to/instdso.sh mod_foo.la /path/to/apache/modules<br />
+      /path/to/libtool --mode=install cp mod_foo.la /path/to/apache/modules
+      ...
+      chmod 755 /path/to/apache/modules/mod_foo.so<br />
+      [activating module 'foo' in /path/to/apache/conf/httpd.conf]<br />
+      apachectl restart<br />
+      /path/to/apache/sbin/apachectl restart: httpd not running, trying to start<br />
+      [Tue Mar 31 11:27:55 1998] [debug] mod_so.c(303): loaded module foo_module<br />
+      /path/to/apache/sbin/apachectl restart: httpd started<br />
+      $ _
+    </code></p></div>
+
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

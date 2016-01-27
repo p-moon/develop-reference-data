@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ALTER TABLE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-altersequence.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-altersequence.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-altertablespace.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-altertablespace.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ALTERTABLE"></a>ALTER TABLE</h1>
+<div class="REFNAMEDIV"><a name="AEN44847"></a><h2>名称</h2>ALTER TABLE&nbsp;--&nbsp;修改表的定义</div>
+<a name="AEN44850"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN44852"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ALTER TABLE [ ONLY ] <tt class="REPLACEABLE"><i>name</i></tt> [ * ]
+    <tt class="REPLACEABLE"><i>action</i></tt> [, ... ]
+ALTER TABLE [ ONLY ] <tt class="REPLACEABLE"><i>name</i></tt> [ * ]
+    RENAME [ COLUMN ] <tt class="REPLACEABLE"><i>column</i></tt> TO <tt class="REPLACEABLE"><i>new_column</i></tt>
+ALTER TABLE <tt class="REPLACEABLE"><i>name</i></tt>
+    RENAME TO <tt class="REPLACEABLE"><i>new_name</i></tt>
+ALTER TABLE <tt class="REPLACEABLE"><i>name</i></tt>
+    SET SCHEMA <tt class="REPLACEABLE"><i>new_schema</i></tt>
+
+这里的 <tt class="REPLACEABLE"><i>action</i></tt> 是下列之一：
+
+    ADD [ COLUMN ] <tt class="REPLACEABLE"><i>column</i></tt> <tt class="REPLACEABLE"><i>type</i></tt> [ <tt class="REPLACEABLE"><i>column_constraint</i></tt> [ ... ] ]
+    DROP [ COLUMN ] <tt class="REPLACEABLE"><i>column</i></tt> [ RESTRICT | CASCADE ]
+    ALTER [ COLUMN ] <tt class="REPLACEABLE"><i>column</i></tt> TYPE <tt class="REPLACEABLE"><i>type</i></tt> [ USING <tt class="REPLACEABLE"><i>expression</i></tt> ]
+    ALTER [ COLUMN ] <tt class="REPLACEABLE"><i>column</i></tt> SET DEFAULT <tt class="REPLACEABLE"><i>expression</i></tt>
+    ALTER [ COLUMN ] <tt class="REPLACEABLE"><i>column</i></tt> DROP DEFAULT
+    ALTER [ COLUMN ] <tt class="REPLACEABLE"><i>column</i></tt> { SET | DROP } NOT NULL
+    ALTER [ COLUMN ] <tt class="REPLACEABLE"><i>column</i></tt> SET STATISTICS <tt class="REPLACEABLE"><i>integer</i></tt>
+    ALTER [ COLUMN ] <tt class="REPLACEABLE"><i>column</i></tt> SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
+    ADD <tt class="REPLACEABLE"><i>table_constraint</i></tt>
+    DROP CONSTRAINT <tt class="REPLACEABLE"><i>constraint_name</i></tt> [ RESTRICT | CASCADE ]
+    DISABLE TRIGGER [ <tt class="REPLACEABLE"><i>trigger_name</i></tt> | ALL | USER ]
+    ENABLE TRIGGER [ <tt class="REPLACEABLE"><i>trigger_name</i></tt> | ALL | USER ]
+    CLUSTER ON <tt class="REPLACEABLE"><i>index_name</i></tt>
+    SET WITHOUT CLUSTER
+    SET WITHOUT OIDS
+    SET ( <tt class="REPLACEABLE"><i>storage_parameter</i></tt> = <tt class="REPLACEABLE"><i>value</i></tt> [, ... ] )
+    RESET ( <tt class="REPLACEABLE"><i>storage_parameter</i></tt> [, ... ] )
+    INHERIT <tt class="REPLACEABLE"><i>parent_table</i></tt>
+    NO INHERIT <tt class="REPLACEABLE"><i>parent_table</i></tt>
+    OWNER TO <tt class="REPLACEABLE"><i>new_owner</i></tt>
+    SET TABLESPACE <tt class="REPLACEABLE"><i>new_tablespace</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN44890"></a><h2>描述</h2>
+<p><tt class="COMMAND">ALTER TABLE</tt> 变更一个现存表的定义。它有好几种子形式：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">ADD COLUMN</tt></dt>
+<dd><p>这种形式使用和 <a href="sql-createtable.html"><i>CREATE TABLE</i></a> 一样的语法向表中增加一个新的字段。</p></dd>
+<dt><tt class="LITERAL">DROP COLUMN</tt></dt>
+<dd><p>这种形式从表中删除一个字段。和这个字段相关的索引和表约束也会被自动删除。如果任何表之外的对象依赖于这个字段，必须说 <tt class="LITERAL">CASCADE</tt> ，比如外键参考、视图等等。</p></dd>
+<dt><tt class="LITERAL">ALTER COLUMN TYPE</tt></dt>
+<dd><p>这种形式改变表中一个字段的类型。该字段涉及的索引和简单的表约束将被自动地转换为使用新的字段类型，方法是重新分析最初提供的表达式。可选的 <tt class="LITERAL">USING</tt> 子句声明如何从旧的字段值里计算新的字段值；如果省略，那么缺省的转换就是从旧类型向新类型的赋值转换。如果从旧数据类型到新类型没有隐含或者赋值的转换，那么必须提供一个 <tt class="LITERAL">USING</tt></p></dd>
+<dt><tt class="LITERAL">SET</tt>/<tt class="LITERAL">DROP DEFAULT</tt></dt>
+<dd><p>这种形式为一个字段设置或者删除缺省值。请注意缺省值只应用于随后的 <tt class="COMMAND">INSERT</tt> 命令；它们不会修改表中已经存在的行。也可以为视图创建缺省，这个时候它们是在视图的 <tt class="LITERAL">ON INSERT</tt> 规则应用之前插入 <tt class="COMMAND">INSERT</tt> 语句中去的。</p></dd>
+<dt><tt class="LITERAL">SET</tt>/<tt class="LITERAL">DROP NOT NULL</tt></dt>
+<dd><p>这些形式修改一个字段是否允许 NULL 值或者拒绝 NULL 值。如果表在字段中包含非 NULL ，那么你只可以 <tt class="LITERAL">SET NOT NULL</tt></p></dd>
+<dt><tt class="LITERAL">SET STATISTICS</tt></dt>
+<dd><p>这个形式为随后的 <a href="sql-analyze.html"><i>ANALYZE</i></a> 操作设置针对每个字段的统计收集目标。目标的范围可以在 0 到 1000 之内设置；设置为 -1 表示重新恢复到使用系统缺省的统计目标(<a href="runtime-config-query.html#GUC-DEFAULT-STATISTICS-TARGET">default_statistics_target</a>)。有关 PostgreSQL 查询规划器使用的统计信息的更多信息，请参考<a href="planner-stats.html">节13.2</a>。</p></dd>
+<dt><tt class="LITERAL">SET STORAGE</tt></dt>
+<dd><p>这种形式为一个字段设置存储模式。这个设置控制这个字段是内联保存还是保存在一个附属的表里，以及数据是否要压缩。<tt class="LITERAL">PLAIN</tt> 必需用于定长的数值(比如 <tt class="TYPE">integer</tt>)并且是内联的、不压缩的。<tt class="LITERAL">MAIN</tt> 用于内联、可压缩的数据。<tt class="LITERAL">EXTERNAL</tt> 用于外部保存、不压缩的数据， <tt class="LITERAL">EXTENDED</tt> 用于外部的压缩数据。<tt class="LITERAL">EXTENDED</tt> 是大多数支持非 <tt class="LITERAL">PLAIN</tt> 存储的数据的缺省。使用 <tt class="LITERAL">EXTERNAL</tt> 将令在 <tt class="TYPE">text</tt> 和 <tt class="TYPE">bytea</tt> 字段上的子字符串操作更快，但付出的代价是增加了存储空间。请注意 <tt class="LITERAL">SET STORAGE</tt> 本身并不改变表上的任何东西，只是设置将来的表操作时，建议使用的策略。参阅<a href="storage-toast.html">节52.2</a>获取更多信息。</p></dd>
+<dt><tt class="LITERAL">ADD <tt class="REPLACEABLE"><i>table_constraint</i></tt></tt></dt>
+<dd><p>这个形式给表增加一个新的约束，用的语法和 <a href="sql-createtable.html"><i>CREATE TABLE</i></a> 一样。</p></dd>
+<dt><tt class="LITERAL">DROP CONSTRAINT</tt></dt>
+<dd><p>这个形式删除一个表上的约束。</p></dd>
+<dt><tt class="LITERAL">DISABLE</tt>/<tt class="LITERAL">ENABLE TRIGGER</tt></dt>
+<dd><p>这个形式关闭或者打开属于该表的触发器。一个被关闭掉的触发器是系统仍然知道的，但是在触发器事件发生的时候不会被执行。对于一个推迟了的触发器，在事件发生的时候会检查打开状态，而不是在函数实际执行的时候。可以通过指定名字的方法打开或者关闭任意一个触发器，或者是该表上的所有触发器，或者只是用户触发器(这个选项排除了那些用于实现外键约束的触发器)。打开或者关闭约束触发器要求超级用户权限；这么做的时候应该小心，因为如果触发器不执行的话，约束保证的数据完整性也就没有办法确保了。</p></dd>
+<dt><tt class="LITERAL">CLUSTER</tt></dt>
+<dd><p>这种形式为将来的 <a href="sql-cluster.html"><i>CLUSTER</i></a> 选项选择缺省索引。它实际上并不对表重新群集。</p></dd>
+<dt><tt class="LITERAL">SET WITHOUT CLUSTER</tt></dt>
+<dd><p>这种形式从表中删除最新使用的 <a href="sql-cluster.html"><i>CLUSTER</i></a> 索引。这样会影响将来那些没有声明索引的群集操作。</p></dd>
+<dt><tt class="LITERAL">SET WITHOUT OIDS</tt></dt>
+<dd><p>这种形式从表中删除 <tt class="LITERAL">oid</tt> 系统字段。它和 <tt class="LITERAL">DROP COLUMN oid RESTRICT</tt> 完全相同，只不过是如果表上已经没有 <tt class="LITERAL">oid</tt> 字段的时候不会报错。</p>
+<p>请注意，不存在某种 <tt class="COMMAND">ALTER TABLE</tt> 的变种可以在删除了 OID 之后再把它们恢复回来。</p></dd>
+<dt><tt class="LITERAL">SET ( <tt class="REPLACEABLE"><i>storage_parameter</i></tt> = <tt class="REPLACEABLE"><i>value</i></tt> [, ... ] )</tt></dt>
+<dd><p>这种形式修改表的一个或多个存储参数。参见 <a href="sql-createtable.html"><i>CREATE TABLE</i></a> 获取可用参数的细节。需要注意的是表的内容不会被此命令立即修改，根据参数的不同可能需要重写表以获得想要的效果。可以通过 <a href="sql-cluster.html"><i>CLUSTER</i></a> 或某种 <tt class="COMMAND">ALTER TABLE</tt> 重写一个表。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>当 <tt class="COMMAND">CREATE TABLE</tt> 允许用 <tt class="LITERAL">WITH (<tt class="REPLACEABLE"><i>storage_parameter</i></tt>)</tt> 语法指定 <tt class="LITERAL">OIDS</tt> 的时候，<tt class="COMMAND">ALTER TABLE</tt> 并不将 <tt class="LITERAL">OIDS</tt> 看作存储参数。</p>
+</blockquote>
+</div></dd>
+<dt><tt class="LITERAL">RESET ( <tt class="REPLACEABLE"><i>storage_parameter</i></tt> [, ... ] )</tt></dt>
+<dd><p>这种形式重置表的一个或多个存储参数。与 <tt class="LITERAL">SET</tt> 一样，根据参数的不同可能需要重写表才能获得想要的效果。</p></dd>
+<dt><tt class="LITERAL">INHERIT <tt class="REPLACEABLE"><i>parent_table</i></tt></tt></dt>
+<dd><p>这种形式将目标表添加为指定父表的新子表。之后在父表上的查询将包含目标表中的记录。要被添加为一个子表，目标表必须已经包含所有与父表相同的字段(除此之外当然也可以包含一些其它字段)，这些字段的数据类型必须匹配，并且如果父表的字段有 <tt class="LITERAL">NOT NULL</tt> 约束的话子表的相应字段也必须有 <tt class="LITERAL">NOT NULL</tt> 约束。</p>
+<p>所有父表的 <tt class="LITERAL">CHECK</tt> 约束必须同时与子表的约束匹配。当前 <tt class="LITERAL">UNIQUE</tt>, <tt class="LITERAL">PRIMARY KEY</tt>, <tt class="LITERAL">FOREIGN KEY</tt> 约束不被考虑在内，但是将来可能会有所改变。</p></dd>
+<dt><tt class="LITERAL">NO INHERIT <tt class="REPLACEABLE"><i>parent_table</i></tt></tt></dt>
+<dd><p>这种形式从指定父表的子表列表中删除目标表。这样，在父表上的查询将不再目标表中的记录。</p></dd>
+<dt><tt class="LITERAL">OWNER</tt></dt>
+<dd><p>这种形式将表、序列、视图的属主改变成指定的用户。</p></dd>
+<dt><tt class="LITERAL">SET TABLESPACE</tt></dt>
+<dd><p>这种形式将表空间修改为指定的表空间并相关的数据文件移动到新的表空间。但是表上的所有索引都不会被移动，索引可以通过另外一个单独的 <tt class="LITERAL">SET TABLESPACE</tt> 命令移动。参见 <a href="sql-createtablespace.html"><i>CREATE TABLESPACE</i></a> 。</p></dd>
+<dt><tt class="LITERAL">RENAME</tt></dt>
+<dd><p><tt class="LITERAL">RENAME</tt> 形式改变一个表(或者索引、序列、视图)的名字，或者是表中独立字段的名字。它们对存储的数据没有影响。</p></dd>
+<dt><tt class="LITERAL">SET SCHEMA</tt></dt>
+<dd><p>这种形式把表移动到另外一个模式。相关的索引、约束、序列都跟着移动。</p></dd>
+</dl>
+</div>
+<p>除了 <tt class="LITERAL">RENAME</tt> 和 <tt class="LITERAL">SET SCHEMA</tt> 之外所有动作都可以捆绑在一个多次修改列表中并行使用。比如，可以在一个命令里增加几个字段和/或修改几个字段的类型。对于大表，这么做特别有用，因为只需要对该表做一次处理。</p>
+<p>要使用 <tt class="COMMAND">ALTER TABLE</tt> ，你必须拥有该表。要修改一个表的模式，你还必须在新模式上拥有 <tt class="LITERAL">CREATE</tt> 权限。要把该表添加为一个父表的新子表，你必须同时拥有父表。要修改所有者，你还必须是新的所有角色的直接或间接成员，并且该成员必须在此表的模式上有 <tt class="LITERAL">CREATE</tt> 权限。这些限制强制了修改该所有者不会做任何通过删除和重建表不能做的事情。不过，超级用户可以以任何方式修改任意表的所有权。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45073"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>试图更改的现存表(可能有模式修饰)的名称。如果声明了 <tt class="LITERAL">ONLY</tt> ，则只更改该表。如果没有声明 <tt class="LITERAL">ONLY</tt> ，则该表及其所有后代表(如果有)都被更新。可以在表名字后面附加一个 <tt class="LITERAL">*</tt> 表示所有后代表都被扫描，但是在目前的版本里，这是缺省行为。缺省可以通过改变配置选项 <a href="runtime-config-compatible.html#GUC-SQL-INHERITANCE">sql_inheritance</a> 来改变。</p></dd>
+<dt><tt class="REPLACEABLE"><i>column</i></tt></dt>
+<dd><p>现存或新的字段名称</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_column</i></tt></dt>
+<dd><p>现存字段的新名称</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_name</i></tt></dt>
+<dd><p>表的新名称</p></dd>
+<dt><tt class="REPLACEABLE"><i>type</i></tt></dt>
+<dd><p>新字段的类型，或者现存字段的新类型。</p></dd>
+<dt><tt class="REPLACEABLE"><i>table_constraint</i></tt></dt>
+<dd><p>新的表约束定义</p></dd>
+<dt><tt class="REPLACEABLE"><i>constraint_name</i></tt></dt>
+<dd><p>要删除的现有约束的名字</p></dd>
+<dt><tt class="LITERAL">CASCADE</tt></dt>
+<dd><p>级联删除依赖于被依赖字段或者约束的对象(比如引用该字段的视图)</p></dd>
+<dt><tt class="LITERAL">RESTRICT</tt></dt>
+<dd><p>如果字段或者约束还有任何依赖的对象，则拒绝删除该字段。这是缺省行为。</p></dd>
+<dt><tt class="REPLACEABLE"><i>trigger_name</i></tt></dt>
+<dd><p>要打开或者关闭的单个触发器的名字</p></dd>
+<dt><tt class="LITERAL">ALL</tt></dt>
+<dd><p>打开或者关闭属于该表的所有触发器。如果这些触发器中有外键约束，那么就要求超级用户权限。</p></dd>
+<dt><tt class="LITERAL">USER</tt></dt>
+<dd><p>打开或者关闭所有属于该表的非外键约束触发器</p></dd>
+<dt><tt class="REPLACEABLE"><i>index_name</i></tt></dt>
+<dd><p>要标记为群集的表上面的索引名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>storage_parameter</i></tt></dt>
+<dd><p>表的存储参数的名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>value</i></tt></dt>
+<dd><p>表的存储参数的新值，根据参数的不同，可能是一个数字或单词。</p></dd>
+<dt><tt class="REPLACEABLE"><i>parent_table</i></tt></dt>
+<dd><p>将要与该表建立/取消关联的父表</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_owner</i></tt></dt>
+<dd><p>该表的新所有者的用户名</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_tablespace</i></tt></dt>
+<dd><p>这个表将要移动到的表空间名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_schema</i></tt></dt>
+<dd><p>表将前往的新模式的名字</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN45176"></a><h2>注意</h2>
+<p><tt class="LITERAL">COLUMN</tt> 关键字是多余的，可以省略。</p>
+<p>如果用 <tt class="LITERAL">ADD COLUMN</tt> 增加一个字段，那么所有表中现有行都初始化为该字段的缺省值(如果没有声明 <tt class="LITERAL">DEFAULT</tt> 子句，那么就是 NULL)。</p>
+<p>用一个非空缺省值增加一个字段或者改变一个字段的现有类型会重写整个表。对于大表来说，这个操作可能会花很长时间；并且它还临时需要两倍的磁盘空间。</p>
+<p>增加一个 <tt class="LITERAL">CHECK</tt> 或 <tt class="LITERAL">NOT NULL</tt> 约束将会扫描该表以保证现有的行符合约束要求。</p>
+<p>提供在一个 <tt class="COMMAND">ALTER TABLE</tt> 里面声明多个修改的主要原因是原先需要的对表的多次扫描和重写可以组合成一个步骤。</p>
+<p><tt class="LITERAL">DROP COLUMN</tt> 命令并不是物理上把字段删除，而只是简单地把它标记为对 SQL 操作不可见。随后对该表的插入和更新将在该字段存储一个 NULL 。因此，删除一个字段是很快的，但是它不会立即释放表在磁盘上的空间，因为被删除了的字段占据的空间还没有回收。这些空间将随着现有的行的更新而得到回收。</p>
+<p><tt class="LITERAL">ALTER TYPE</tt> 要求重写整个表的特性有时候是一个优点，因为重写的过程消除了表中没用的空间。比如，要想立刻回收被一个已经删除的字段占据的空间，最快的方法是</p>
+<pre class="PROGRAMLISTING">ALTER TABLE table ALTER COLUMN anycol TYPE anytype;</pre>
+<p>这里的 <tt class="LITERAL">anycol</tt> 是任何在表中还存在的字段，而 <tt class="LITERAL">anytype</tt> 是和该字段的原类型一样的类型。这样的结果是在表上没有任何可见的语意的变化，但是这个命令强迫重写，这样就删除了不再使用的数据。</p>
+<p> <tt class="LITERAL">ALTER TYPE</tt> 的 <tt class="LITERAL">USING</tt> 选项实际上可以声明涉及该行旧值的任何表达式；也就是说，它可以引用除了正在被转换的字段之外其它的字段。这样，就可以用 <tt class="LITERAL">ALTER TYPE</tt> 语法做非常普遍性的转换。因为这个灵活性，<tt class="LITERAL">USING</tt> 表达式并没有作用于该字段的缺省值(如果有的话)；结果可能不是缺省表达式要求的常量表达式。这就意味着如果从旧类型到新类型没有隐含或者赋值转换的话，那么即使存在 <tt class="LITERAL">USING</tt> 子句，<tt class="LITERAL">ALTER TYPE</tt> 也可能无法把缺省值转换成新的类型。在这种情况下，应该用 <tt class="LITERAL">DROP DEFAULT</tt> 先删除缺省，执行 <tt class="LITERAL">ALTER TYPE</tt> ，然后使用 <tt class="LITERAL">SET DEFAULT</tt> 增加一个合适的新缺省值。类似的考虑也适用于涉及该字段的索引和约束。</p>
+<p>如果表有任何后代表，那么如果不在后代表上做同样的修改的话，就不允许在父表上增加、重命名、修改一个字段的类型，也就是说，<tt class="COMMAND">ALTER TABLE ONLY</tt> 将被拒绝。这样就保证了后代表总是有和父表匹配的字段。</p>
+<p>一个递归 <tt class="LITERAL">DROP COLUMN</tt> 操作将只有在后代表并不从任何其它父表中继承该字段并且从来没有独立定义该字段的时候才能删除一个后代表的字段。一个非递归的 <tt class="LITERAL">DROP COLUMN</tt>(也就是 <tt class="COMMAND">ALTER TABLE ONLY ... DROP COLUMN</tt>) 从来不会删除任何后代字段，而是把他们标记为独立定义的(而不是继承的)。</p>
+<p><tt class="LITERAL">TRIGGER</tt>, <tt class="LITERAL">CLUSTER</tt>, <tt class="LITERAL">OWNER</tt>, <tt class="LITERAL">TABLESPACE</tt> 行为绝不会递归到后代表；也就是说，它们的行为就像总是声明了 <tt class="LITERAL">ONLY</tt> 一样。添加一个约束只能在 <tt class="LITERAL">CHECK</tt> 约束上递归。</p>
+<p>不允许更改系统表结构的任何部分。</p>
+<p>请参考 <a href="sql-createtable.html"><i>CREATE TABLE</i></a> 部分获取更多有效参数的描述。<a href="ddl.html">章5</a>里有更多有关继承的信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45223"></a><h2>例子</h2>
+<p>向表中增加一个 <tt class="TYPE">varchar</tt> 列：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors ADD COLUMN address varchar(30);</pre>
+<p>从表中删除一个字段：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors DROP COLUMN address RESTRICT;</pre>
+<p>在一个操作中修改两个现有字段的类型：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors
+    ALTER COLUMN address TYPE varchar(80),
+    ALTER COLUMN name TYPE varchar(100);</pre>
+<p>使用一个 <tt class="LITERAL">USING</tt> 子句，把一个包含 UNIX 时间戳的 integer 字段转化成 <tt class="TYPE">timestamp with time zone</tt> 字段：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE foo
+    ALTER COLUMN foo_timestamp TYPE timestamp with time zone
+    USING
+        timestamp with time zone 'epoch' + foo_timestamp * interval '1 second';</pre>
+<p>同样地，当字段有一个不会自动转换成新类型的缺省值表达式时：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE foo
+    ALTER COLUMN foo_timestamp DROP DEFAULT,
+    ALTER COLUMN foo_timestamp TYPE timestamp with time zone
+    USING
+        timestamp with time zone 'epoch' + foo_timestamp * interval '1 second',
+    ALTER COLUMN foo_timestamp SET DEFAULT now();</pre>
+<p>对现存字段改名：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors RENAME COLUMN address TO city;</pre>
+<p>更改现存表的名字：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors RENAME TO suppliers;</pre>
+<p>给一个字段增加一个非空约束：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors ALTER COLUMN street SET NOT NULL;</pre>
+<p>从一个字段里删除一个非空约束：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors ALTER COLUMN street DROP NOT NULL;</pre>
+<p>给一个表增加一个检查约束：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors ADD CONSTRAINT zipchk CHECK (char_length(zipcode) = 5);</pre>
+<p>删除一个表及其所有子表的监查约束：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors DROP CONSTRAINT zipchk;</pre>
+<p>向表中增加一个外键约束：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors ADD CONSTRAINT distfk FOREIGN KEY (address) REFERENCES addresses (address) MATCH FULL;</pre>
+<p>给表增加一个(多字段)唯一约束：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors ADD CONSTRAINT dist_id_zipcode_key UNIQUE (dist_id, zipcode);</pre>
+<p>给一个表增加一个自动命名的主键约束，要注意的是一个表只能有一个主键：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors ADD PRIMARY KEY (dist_id);</pre>
+<p>把表移动到另外一个表空间：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE distributors SET TABLESPACE fasttablespace;</pre>
+<p>把表移动到另外一个模式：</p>
+<pre class="PROGRAMLISTING">ALTER TABLE myschema.distributors SET SCHEMA yourschema;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN45259"></a><h2>兼容性</h2>
+<p><tt class="LITERAL">ADD</tt>, <tt class="LITERAL">DROP</tt>, <tt class="LITERAL">SET DEFAULT</tt> 形式与 SQL 标准兼容。其它形式是 PostgreSQL 对 SQL 标准的扩展。还有，在一个 <tt class="COMMAND">ALTER TABLE</tt> 命令里声明多个操作也是扩展。</p>
+<p><tt class="COMMAND">ALTER TABLE DROP COLUMN</tt> 可以用于删除表中的唯一的一个字段，留下一个零字段的表。这是对 SQL 的扩展，它不允许零字段表。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-altersequence.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-altertablespace.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ALTER SEQUENCE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">ALTER TABLESPACE</td></tr>
+</table>
+</div>
+</body></html>

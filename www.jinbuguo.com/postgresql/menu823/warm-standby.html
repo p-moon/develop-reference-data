@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>高可用性热备份服务器</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="continuous-archiving.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="backup.html">快退</a></td><td width="60%" align="center" valign="bottom">章23. 备份与恢复</td><td width="10%" align="right" valign="top"><a href="backup.html">快进</a></td><td width="10%" align="right" valign="top"><a href="migration.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="WARM-STANDBY">23.4. 高可用性热备份服务器</a></h1><a name="AEN25288"></a><a name="AEN25290"></a><a name="AEN25292"></a><a name="AEN25294"></a><a name="AEN25296"></a><a name="AEN25298"></a><a name="AEN25300"></a>
+<p>连续归档可以配合随时准备取代失效主服务器的一个或多个<i class="FIRSTTERM">备份服务器</i>，用于创建一个<i class="FIRSTTERM">高可用性</i>(HA)集群。这个能力通常被称为<i class="FIRSTTERM">热备份</i>或<i class="FIRSTTERM">日志传送(Log Shipping)</i>。</p>
+<p>虽然主服务器和备份服务器只是松散的耦合在一起，但它们必须同时运行。主服务器以连续归档模式运行，备份服务器以连续恢复模式运行并从主服务器不停的读取 WAL 文件。因为数据库的表无需为此进行任何改变，所以与其它复制方法相比，额外的管理开销很小。并且这种方法对主服务器的性能影响也很小。</p>
+<p>直接移动 WAL 或在数据库服务器之间"传送"日志记录通常被称为日志传送(Log Shipping)。PostgreSQL 实现了基于文件的日志传送，意思是 WAL 记录每次移动一个完整的文件(WAL 段)。WAL 文件可以被轻易的在任意两个地点之间传送，不管是与邻近的系统还是地球另一面的系统。所需带宽取决于主服务器的事务发生速度。基于记录的日志传送也可以通过<a href="warm-standby.html#WARM-STANDBY-RECORD">节23.4.4</a>中讨论的自定义过程实现。</p>
+<p>日志传送是异步的，也就是 WAL 记录在事务提交之后才被传送。也就是说主服务器遭遇致命故障后尚未传送的事务数据将会丢失。数据丢失的长度可以使用 <tt class="VARNAME">archive_timeout</tt> 加以限制，比如限制为几秒钟。当然这么小的设置也导致了传送带宽的大幅增长。如果你期望将丢失的数据限制在一分钟之内，可能更好的办法是使用基于记录的日志传送。</p>
+<p>因为不停的执行恢复过程，备份服务器在通常情况下是不能被访问的。由于恢复速度非常快，备份服务器通常在启用后只有很短的时间不能使用。因此，我们认为这个方案可以作为热备份来提供高可用性。将服务器从一个已归档的基础备份中恢复将可能耗费大量时间，所以这个方案只能用于灾难恢复而不能用于提供高可用性。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="WARM-STANDBY-PLANNING">23.4.1. 规划</a></h2>
+<p>至少从数据库服务器的角度看，创建主服务器和备份服务器并令两者尽可能完全相同是非常明智的。特别是表空间的路径名必须保持完全一致，这样主服务器和备份服务器就必须拥有同样的表空间挂载路径(如果使用了表空间的话)。需要记住的是如果在主服务器上执行了 <a href="sql-createtablespace.html"><i>CREATE TABLESPACE</i></a> 命令，那么该命令需要的任何新挂载点必须在执行该命令<span class="emphasis"><i class="EMPHASIS">之前</i></span>同时在主服务器和备份服务器上创建。硬件不必完全相同，但是经验显示维护两个完全相同的系统比维护两个不同的系统要少许多麻烦。无论如何，应尽量保持体系结构相同，比如一个是 32-bit 系统另一个是 64-bit 系统将不能正常工作。</p>
+<p>通常，在主版本不同的服务器之间传送日志是不可能的，但是次版本不同是可以的，因为它们的磁盘格式相同，不过我们鼓励你尽可能使用完全相同的版本。在进行版本升级的时候，正确的做法是首先升级备份服务器，因为新版本的服务器通常可以读取老版本的 WAL 文件，但反之则不然。</p>
+<p>启用一个备份服务器并不需要特殊的模式。在主服务器和备份服务器上发生的操作完全是普通的连续归档和连续恢复工作。这两个服务器之间唯一的联系仅仅是共享 WAL 归档文件：主服务器写归档、备份服务器读归档。必须注意确保不同主服务器的 WAL 归档之间不要发生混淆。</p>
+<p>使得两个松散耦合的服务器协同工作的诀窍只是一个用于备份服务器的简单 <tt class="VARNAME">restore_command</tt> 而已，它只是等候主服务器的下一个可用 WAL 文件罢了。<tt class="VARNAME">restore_command</tt> 在备份服务器的 <tt class="FILENAME">recovery.conf</tt> 文件中指定。普通的恢复过程需要来自 WAL 归档的文件，如果无法获取则报告错误。对于备份过程来说，下一个可用 WAL 文件通常不能马上获取，所以必须耐心等待直到它出现。能够等待的 <tt class="VARNAME">restore_command</tt> 可以写成一个轮询下一个 WAL 文件是否可用的脚本。同时必须有触发失效切换的机制，它应当中断 <tt class="VARNAME">restore_command</tt> ，跳出循环并向备份服务器返回一个"文件未找到"的错误。这将导致备份服务器结束恢复过程并取代已失效的主服务器。</p>
+<p>一个伪代码示范的 <tt class="VARNAME">restore_command</tt> 如下：</p>
+<pre class="PROGRAMLISTING">triggered = false;
+while (!NextWALFileReady() &#38;&#38; !triggered)
+{
+    sleep(100000L);         /* 等候 0.1 秒 */
+    if (CheckForExternalTrigger())
+        triggered = true;
+}
+if (!triggered)
+        CopyWALFileForRecovery();</pre>
+<p>PostgreSQL 并不提供检测主服务器失效以及通知备份服务器的系统软件。有许多这样的工具可用，它们为成功的实现失效切换做了非常好的整合，比如 IP 地址切换。</p>
+<p>触发失效切换的方法是规划和设计的一个重要部分。<tt class="VARNAME">restore_command</tt> 将在每个 WAL 文件上进行一次完整的执行，即运行 <tt class="VARNAME">restore_command</tt> 的进程将在每个 WAL 文件上生成和结束(也就是不存在守护进程或服务器进程)，因此不能使用信号和信号处理器，必须使用更加固定的通知机制来触发失效切换。可以使用简单的超时机制，特别是已知主服务器的 <tt class="VARNAME">archive_timeout</tt> 设置的情况下。这个方法容易在网络繁忙或者主服务器负载较大的时候出现误判而触发失效切换。如果可行，也可以用明确创建主服务器失效指示文件的方法作为通知机制，这个方法不容易产生误判。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="WARM-STANDBY-CONFIG">23.4.2. 实现</a></h2>
+<p>下面是配置一个备份服务器的简短过程。对于每一步的细节请参考所指示的前面的章节。</p>
+<ol type="1">
+<li><p>安装主服务器和备份服务器并尽可能保持完全相同，包括完全相同的数据库副本和 PostgreSQL 版本。</p></li>
+<li><p>设置从主服务器连续归档 WAL 到备份服务器上的某个目录。确保主服务器上的 <a href="runtime-config-wal.html#GUC-ARCHIVE-COMMAND">archive_command</a> 和 <a href="runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT">archive_timeout</a> 设置恰当(参见<a href="continuous-archiving.html#BACKUP-ARCHIVING-WAL">节23.3.1</a>)。</p></li>
+<li><p>为主服务器做一个基础备份(参见<a href="continuous-archiving.html#BACKUP-BASE-BACKUP">节23.3.2</a>)，然后在备份服务器上还原这个备份。</p></li>
+<li><p>在备份服务器上依照 WAL 归档启动恢复过程，注意在 <tt class="FILENAME">recovery.conf</tt> 中使用正确的 <tt class="VARNAME">restore_command</tt> 设置(参见<a href="continuous-archiving.html#BACKUP-PITR-RECOVERY">节23.3.3</a>)。</p></li>
+</ol>
+<p>恢复过程将按只读方式处理 WAL 归档，因此，一旦 WAL 文件被复制到备份服务器之后它就可以在被备份数据库读取的同时复制到磁带上。这样，运行中的备份服务器可以同时作为长远考虑的、用于灾难恢复的文件存储。</p>
+<p>为了测试，也可以在同一个系统上运行主服务器和备份服务器。不过这对于增强服务器的健壮性没有任何帮助，因此不能被称为高可用性(HA)。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="WARM-STANDBY-FAILOVER">23.4.3. 失效切换</a></h2>
+<p>主服务器失效时备份服务器必须立即进入失效切换过程。</p>
+<p>备份服务器失效时并不需要进行失效切换。如果备份服务器可以被重启，那么即使过了一段时间之后，恢复过程仍然可以重新继续。如果备份服务器不能被重启，那么必须创建一个全新的备份服务器。</p>
+<p>如果主服务器失效后重启了，必须有一个机制通知它：你现在已经不是主服务器了。这个常常被称为 STONITH(Shoot the Other Node In The Head)，它对于保证不会出现两台机器都认为自己是主服务器来说是必须的，否则一旦出现这种情况将会导致混乱和数据丢失。</p>
+<p>许多失效切换系统只由主服务器和备份服务器两个系统组成，之间用某种"心跳"机制连接，不停地检查两者之间的连通性以及主服务器是否依然有效。此外，还可以使用第三方系统(见证服务器)来避免不恰当的失效切换，但由此带来的额外复杂性可能是不值的的，除非经过了充分和严格的测试。</p>
+<p>一旦失效切换到备份服务器，那么将只有一台单独的服务器在运行，也就是进入"简并态"(degenerate state)。先前的备份服务器将变为主服务器，先前的主服务器停机并可能仍然保持停机状态。为了回到正常状态，我们必须重建一个完整的备份服务器，比如就在原来已经停机的主服务器上。然后可以认为原来的主服务器与备份服务器现在调换了一下位置。有些人选择使用第三个服务器为新的主服务器提供备份，直到创建新的备份服务器，但是这样的方法明显更加复杂。</p>
+<p>因此，从主服务器切换到备份服务器可以非常快速，但是需要花费一些时间来重新准备失效切换。我们鼓励有规律的在主服务器与备份服务器之间进行切换，这样就可以有规律的对服务器进行停机维护。并且这也提供了失效切换的实战演习，从而确保在真正需要的时候不出意外。我们建议你写一份完善的管理计划。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="WARM-STANDBY-RECORD">23.4.4. 基于记录的日志传送</a></h2>
+<p>PostgreSQL 直接支持前面所讲的基于文件的日志传送。它还能实现基于记录的日志传送，不过这需要你自己进行一些开发。</p>
+<p>外部程序可以调用 <code class="FUNCTION">pg_xlogfile_name_offset()</code> 函数(参见<a href="functions-admin.html">节9.20</a>)获取当前结尾 WAL 的文件名和精确的字节偏移量。然后就可以直接访问 WAL 文件并从备份服务器的最后一个已知 WAL 结尾开始复制数据。这样丢失的数据就位于该复制程序的轮询时间间隔中，因此丢失的数据可以非常少，但是这样一来就不会在强制归档不完整的段文件上浪费带宽。需要注意的是，备份服务器的 <tt class="VARNAME">restore_command</tt> 脚本仍然处理完整的 WAL 文件，因此额外复制的数据对于备份服务器并不可用。仅在主服务器失效，也就是最后一部分 WAL 文件喂给备份服务器之后才可用。因此，正确实现这个过程需要该数据复制程序配合 <tt class="VARNAME">restore_command</tt> 脚本才能完成。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="BACKUP-INCREMENTAL-UPDATED">23.4.5. 增量更新备份</a></h2><a name="AEN25376"></a><a name="AEN25378"></a>
+<p>对于一个热备份配置，有可能将主服务器上周期性基础备份的开销转移到备份服务器上。这就是通常所说的增量更新备份或日志更改积累(简称：更改积累)。</p>
+<p>如果在备份服务器上备份的时候它正在处理主服务器传送过来的日志，那么可以重新加载那些数据并从最后一次重启的点开始重新启动备份服务器的恢复过程。我们不需要保留重启点之前的 WAL 文件。从增量备份中恢复要比从基础备份中恢复快得多。</p>
+<p>因为备份服务器并不处于"活着"的状态，因此不能使用 <code class="FUNCTION">pg_start_backup()</code> 和 <code class="FUNCTION">pg_stop_backup()</code> 管理备份，因此保留多长时间的 WAL 用于备份恢复完全取决于你的意愿。你可以通过在备份服务器上运行 <span class="APPLICATION">pg_controldata</span> 来检查控制文件并确定当前检查点的 WAL 位置。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="continuous-archiving.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="migration.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">在线备份以及即时恢复(PITR)</td><td width="34%" align="center" valign="top"><a href="backup.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">在不同版本之间迁移</td></tr>
+</table>
+</div>
+</body></html>

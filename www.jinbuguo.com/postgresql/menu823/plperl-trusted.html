@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>可信的和不可信的 PL/Perl</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="plperl-global.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="plperl.html">快退</a></td><td width="60%" align="center" valign="bottom">章39. PL/Perl - Perl 过程语言</td><td width="10%" align="right" valign="top"><a href="plperl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plperl-triggers.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLPERL-TRUSTED">39.5. 可信的和不可信的 PL/Perl</a></h1><a name="AEN41466"></a>
+<p>通常，PL/Perl 是作为一种叫 <tt class="LITERAL">plperl</tt> 的"可信"编程语言安装的。在这种设置中，为了保持安全，某些 Perl 操作被关闭掉了。通常，受限制的操作都是那些和环境相互交互的动作。这包括文件句柄操作、<tt class="LITERAL">require</tt> 、<tt class="LITERAL">use</tt>(对于外部模块)。没有办法访问数据库服务器进程内部或者获取具有服务器进程权限的 OS 级别的访问，就像 C 函数那样。因此，任何非特权的数据库用户都可以允许使用这种语言。</p>
+<p>这里是一个无法运转的函数的例子，因为出于安全原因，文件系统的操作是不允许的：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION badfunc() RETURNS integer AS $$
+    my $tmpfile = "/tmp/badfile";
+    open my $fh, '&gt;', $tmpfile
+        or elog(ERROR, qq{could not open the file "$tmpfile": $!});
+    print $fh "Testing writing to a file\n";
+    close $fh or elog(ERROR, qq{could not close the file "$tmpfile": $!});
+    return 1;
+$$ LANGUAGE plperl;</pre>
+<p>创建这个函数将会失败，因为它使用的非法调用将会被验证器捕获。</p>
+<p>有时候想写不受限制的 Perl 函数。比如，可能需要一个能发送邮件的 Perl 函数。为了处理这种情况，PL/Perl 也可以安装为"不可信"的语言 PL/PerlU 。在这种情况下，可以使用完整的 Perl 语言。如果用 <tt class="COMMAND">createlang</tt> 安装该语言，那么用 <tt class="LITERAL">plperlu</tt> 这个名字可以选取不可信的 PL/Perl 变种。</p>
+<p>PL/PerlU 函数的作者必须注意不能把该函数用于做任何不想做的事情，因为它可以干任何数据库管理员能干的事情。请注意数据库系统只允许数据库超级用户创建不可信语言写的函数。</p>
+<p>如果上面的函数由超级用户用 <tt class="LITERAL">plperlu</tt> 创建，那么执行就会成功。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>为了堵上从 PL/Perl 到 PL/PerlU 的特权操作可能存在的安全漏洞，这两个语言必须在不同的 Perl 解释器实例中运行。如果你的 Perl 安装恰当这就不是问题。但并不是所有的安装在编译时都使用了恰当的标志。如果 PostgreSQL 检测到不能启动第二个解释器的话将会报错，这样你就不能在同一个后端进程中同时使用 PL/PerlU 和 PL/Perl 。唯一的补救措施就是使用正确的标志重新编译 Perl ，也就是使用 <tt class="LITERAL">usemultiplicity</tt> 或者同时使用 <tt class="LITERAL">usethreads</tt> 和 <tt class="LITERAL">useithreads</tt> 。更新信息参见 <tt class="LITERAL">perlembed</tt> 手册页。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="plperl-global.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plperl-triggers.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PL/Perl 里的全局变量</td><td width="34%" align="center" valign="top"><a href="plperl.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PL/Perl 触发器</td></tr>
+</table>
+</div>
+</body></html>

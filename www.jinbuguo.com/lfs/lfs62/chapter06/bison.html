@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.17. Bison-2.2</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="m4.html" title="M4-1.4.4">后退</a>
+          <p>M4-1.4.4</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="ncurses.html" title="Ncurses-5.5">前进</a>
+          <p>Ncurses-5.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.17. Bison-2.2</h1>
+      </div>
+      <div class="package">
+        <p>Bison 软件包包括一个语法分析程序生成器。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.6 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">11.9 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.17.1. 安装 Bison</h2>
+        </div>
+        <p>为编译 Bison 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr</kbd></pre>
+        <p>如果 <span><strong class="command">bison</strong></span> 程序不在 $PATH 中的话，编译时将会出现缺乏国际化支持的错误信息。下面处理可以解决这个问题：</p>
+        <pre class="userinput"><kbd class="command">echo '#define YYENABLE_NLS 1' &gt;&gt; config.h</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make check</tt></strong> 。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-bison" name="contents-bison"></a>
+          <h2 class="sect2">6.17.2. Bison 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">bison, yacc</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">安装的库：</span></strong> <span class="seg">liby.a</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3680385" name="id3680385"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="bison" name="bison"></a><span class="term"><span><strong class="command">bison</strong></span></span></td>
+                <td><p>根据一系列规则来生成一个可以分析文本文件的结构的程序的程序，Bison 是一个替代 Yacc (Yet Another Compiler Compiler) 的语法分析程序生成器。</p></td>
+              </tr>
+              <tr>
+                <td><a id="yacc" name="yacc"></a><span class="term"><span><strong class="command">yacc</strong></span></span></td>
+                <td><p>一个 <span><strong class="command">bison</strong></span> 的包装，意思是程序仍然调用 <span><strong class="command">yacc</strong></span> 而不是 <span><strong class="command">bison</strong></span> ，它用 <em class="parameter"><tt>-y</tt></em> 选项调用 <span><strong class="command">bison</strong></span> 。</p></td>
+              </tr>
+              <tr>
+                <td><a id="liby.a" name="liby.a"></a><span class="term"><tt class="filename">liby.a</tt></span></td>
+                <td><p>acc 库包含与 Yacc 兼容的 <tt class="function">yyerror</tt> 和
+                    <tt class="function">main</tt> 函数，这个库通常不是很有用，但是 POSIX 需要它。</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="m4.html" title="M4-1.4.4">后退</a>
+          <p>M4-1.4.4</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="ncurses.html" title="Ncurses-5.5">前进</a>
+          <p>Ncurses-5.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>聚集函数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="tutorial-join.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="tutorial-sql.html">快退</a></td><td width="60%" align="center" valign="bottom">章2. SQL 语言</td><td width="10%" align="right" valign="top"><a href="tutorial-sql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="tutorial-update.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TUTORIAL-AGG">2.7. 聚集函数</a></h1><a name="AEN828"></a>
+<p><a name="AEN831"></a><a name="AEN833"></a><a name="AEN835"></a><a name="AEN837"></a><a name="AEN839"></a>和大多数其它关系数据库产品一样，PostgreSQL 支持聚集函数。一个聚集函数从多个输入行中计算出一个结果。比如，我们有在一个行集合上计算 <code class="FUNCTION">count</code>(数目), <code class="FUNCTION">sum</code>(总和), <code class="FUNCTION">avg</code>(均值), <code class="FUNCTION">max</code>(最大值), <code class="FUNCTION">min</code>(最小值)的函数。</p>
+<p>比如，我们可以用下面的语句找出所有低温中的最高温度：</p>
+<pre class="PROGRAMLISTING">SELECT max(temp_lo) FROM weather;</pre>
+<pre class="SCREEN"> max
+-----
+  46
+(1 row)</pre>
+<p><a name="AEN851"></a>如果我们想知道该读数发生在哪个城市，可能会用：</p>
+<pre class="PROGRAMLISTING">SELECT city FROM weather WHERE temp_lo = max(temp_lo);     -- <i class="LINEANNOTATION">错！</i></pre>
+<p>不过这个方法不能运转，因为聚集函数 <code class="FUNCTION">max</code> 不能用于 <tt class="LITERAL">WHERE</tt> 子句中。存在这个限制是因为 <tt class="LITERAL">WHERE</tt> 子句决定哪些行可以进入聚集阶段；因此它必需在聚集函数之前计算。不过，我们可以用其它方法实现这个目的；这里我们使用<i class="FIRSTTERM">子查询</i>：</p>
+<pre class="PROGRAMLISTING">SELECT city FROM weather
+    WHERE temp_lo = (SELECT max(temp_lo) FROM weather);</pre>
+<pre class="SCREEN">     city
+---------------
+ San Francisco
+(1 row)</pre>
+<p>这样做是可以的，因为子查询是一次独立的计算，它独立于外层查询计算自己的聚集。</p>
+<p><a name="AEN862"></a><a name="AEN864"></a>聚集同样也常用于 <tt class="LITERAL">GROUP BY</tt> 子句。比如，我们可以获取每个城市低温的最高值：</p>
+<pre class="PROGRAMLISTING">SELECT city, max(temp_lo)
+    FROM weather
+    GROUP BY city;</pre>
+<pre class="SCREEN">     city      | max
+---------------+-----
+ Hayward       |  37
+ San Francisco |  46
+(2 rows)</pre>
+<p>这样每个城市一个输出。每个聚集结果都是在匹配该城市的行上面计算的。我们可以用 <tt class="LITERAL">HAVING</tt> 过滤这些分组：</p>
+<pre class="PROGRAMLISTING">SELECT city, max(temp_lo)
+    FROM weather
+    GROUP BY city
+    HAVING max(temp_lo) &lt; 40;</pre>
+<pre class="SCREEN">  city   | max
+---------+-----
+ Hayward |  37
+(1 row)</pre>
+<p>这样就只给出那些 <tt class="LITERAL">temp_lo</tt> 值曾经有低于 40 度的城市。最后，如果我们只关心那些名字以<span class="QUOTE">"<tt class="LITERAL">S</tt>"</span>开头的城市，我们可以用：</p>
+<pre class="PROGRAMLISTING">SELECT city, max(temp_lo)
+    FROM weather
+    WHERE city LIKE 'S%'
+    GROUP BY city
+    HAVING max(temp_lo) &lt; 40;</pre>
+<p>语句中的 <tt class="LITERAL">LIKE</tt> 执行模式匹配，在<a href="functions-matching.html">节9.7</a>里有解释。</p>
+<p>理解聚集和 SQL 的 <tt class="LITERAL">WHERE</tt> 和 <tt class="LITERAL">HAVING</tt> 子句之间的关系非常重要。<tt class="LITERAL">WHERE</tt> 和 <tt class="LITERAL">HAVING</tt> 的基本区别如下：<tt class="LITERAL">WHERE</tt> 在分组和聚集计算之前选取输入行(它控制哪些行进入聚集计算)，而 <tt class="LITERAL">HAVING</tt> 在分组和聚集之后选取输出行。因此，<tt class="LITERAL">WHERE</tt> 子句不能包含聚集函数；因为试图用聚集函数判断那些行将要输入给聚集运算是没有意义的。相反，<tt class="LITERAL">HAVING</tt> 子句总是包含聚集函数。当然，你可以写不使用聚集的 <tt class="LITERAL">HAVING</tt> 子句，但这样做没什么好处，因为同样的条件可以更有效地用于 <tt class="LITERAL">WHERE</tt> 阶段。</p>
+<p>在前面的例子里，我们可以在 <tt class="LITERAL">WHERE</tt> 里应用城市名称限制，因为它不需要聚集。这样比在 <tt class="LITERAL">HAVING</tt> 里增加限制更加高效，因为我们避免了为那些未通过 <tt class="LITERAL">WHERE</tt> 检查的行进行分组和聚集计算。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="tutorial-join.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="tutorial-update.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">在表之间连接</td><td width="34%" align="center" valign="top"><a href="tutorial-sql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">更新</td></tr>
+</table>
+</div>
+</body></html>

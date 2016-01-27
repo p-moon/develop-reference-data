@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_cast</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-autovacuum.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-class.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-CAST">43.11. <tt class="STRUCTNAME">pg_cast</tt></a></h1><a name="AEN62717"></a>
+<p><tt class="STRUCTNAME">pg_cast</tt> 表存储数据类型转换路径，包括内置路径和那些通过 <a href="sql-createcast.html"><i>CREATE CAST</i></a> 定义的路径。</p>
+<div class="TABLE"><a name="AEN62722"></a>
+<p><b>表43-11. <tt class="STRUCTFIELD">pg_cast</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">castsource</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-type.html"><tt class="STRUCTNAME">pg_type</tt></a>.oid</tt></td><td>源数据类型的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">casttarget</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-type.html"><tt class="STRUCTNAME">pg_type</tt></a>.oid</tt></td><td>目标数据类型的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">castfunc</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>用于执行这个转换的函数的 OID 。如果该数据类型是二进制兼容的，那么为零(也就是说，不需要运行时的操作来执行转换)。</td></tr>
+<tr><td><tt class="STRUCTFIELD">castcontext</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td>标识这个转换可以在什么环境里调用。<tt class="LITERAL">e</tt> 表示只能进行明确的转换(使用 <tt class="LITERAL">CAST</tt> 或 <tt class="LITERAL">::</tt> 语法)。<tt class="LITERAL">a</tt> 表示在赋值给目标字段的时候隐含调用，也可以明确调用。<tt class="LITERAL">i</tt> 表示在表达式中隐含，当然也包括其它情况。</td></tr>
+</tbody>
+</table>
+</div>
+<p>在 <tt class="STRUCTNAME">pg_cast</tt> 里列出的类型转换函数必须总是以类型转换的源类型作为它的第一个参数类型，并且返回类型转换的目的类型作为它的结果类型。一个类型转换函数最多有三个参数。如果出现了第二个参数，必须是 <tt class="TYPE">integer</tt> 类型；它接受与目标类型关联的修饰词，如果没有，就是 <tt class="LITERAL">-1</tt> 。如果出现了第三个参数，那么必须是 <tt class="TYPE">boolean</tt> 类型；如果该类型转换是一种明确的转换，那么它接受 <tt class="LITERAL">true</tt> ，否则接受 <tt class="LITERAL">false</tt> 。</p>
+<p>在 <tt class="STRUCTNAME">pg_cast</tt> 里创建一条源类型和目标类型相同的记录是合理的，只要相关联的函数接受多过一个参数。这样的记录代表"长度转换函数"，他们把该类型的数值转换为对特定的类型修饰词数值合法的值。不过，请注意，现在还不支持将非缺省类型修饰词和用户创建数据类型关联起来，因此这个设施只用于少量的内置类型，这些类型都有内置于语法分析器里的类型修饰词语法。</p>
+<p>如果一条 <tt class="STRUCTNAME">pg_cast</tt> 记录有着不同的原类型和目标类型，并且有一个接收多于一个参数的函数，那么它就意味着用一个步骤从一种类型转换到另外一种类型，同时还附加一个长度转换。如果没有这样的记录，那么转换成一个使用了类型修饰词的类型涉及两个步骤，一个是在数据类型之间转换，另外一个是附加修饰词。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-autovacuum.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-class.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_autovacuum</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_class</tt></td></tr>
+</table>
+</div>
+</body></html>

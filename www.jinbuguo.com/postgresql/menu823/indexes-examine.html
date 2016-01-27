@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>检查索引的使用</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="indexes-opclass.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="indexes.html">快退</a></td><td width="60%" align="center" valign="bottom">章11. 索引</td><td width="10%" align="right" valign="top"><a href="indexes.html">快进</a></td><td width="10%" align="right" valign="top"><a href="mvcc.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INDEXES-EXAMINE">11.9. 检查索引的使用</a></h1><a name="AEN16294"></a>
+<p>尽管在 PostgreSQL 里的索引并不需要维护和调节，但是检查一下哪些索引在实际查询中被使用了仍然非常重要。检查索引的使用是通过 <a href="sql-explain.html"><i>EXPLAIN</i></a> 命令进行的；为此目的做的应用在<a href="using-explain.html">节13.1</a>里演示。我们也可以在一个运行的服务器上收集有关索引使用的统计信息，就像<a href="monitoring-stats.html">节25.2</a>里描述的那样。</p>
+<p>归纳一个判断需要设置哪些索引的通用过程是很难的。在前面的章节中已经列出了许多典型的例子。在大多数情况下我们都需要许多试验。本节的剩余部分就是给出一些这方面的窍门。</p>
+<ul>
+<li><p>总是先运行 <a href="sql-analyze.html"><i>ANALYZE</i></a> 命令收集关于表中数值分布的统计信息。猜测一个查询返回的行数需要这个信息，而规划器需要这个行数以便给每个可能的查询规划赋予真实开销值。如果缺乏任何真实的统计信息，那么就会假设一些缺省数值，那肯定是不准确的。因此，如果还没有运行 <tt class="COMMAND">ANALYZE</tt> 就检查一个应用的索引使用状况，那实际上就是一次失败的检查。</p></li>
+<li><p>使用真实的数据做实验。用测试数据设置索引将告诉你在测试数据中需要什么索引，而不是在真实数据中。</p>
+<p>最要命的是用很小的数据集。如果从 100000 行中选 1000 行是使用索引的好时机，那么从 100 行中选 1 行很难说也需要索引，因为 100 行很可能是装在一个磁盘页里面的，因此没有任何查询规划能比通过顺序访问抓取一个磁盘页面更有效。</p>
+<p>做测试数据的时候也要小心，如果应用还不能在生产环境中使用，那么这也是不可避免的。那些非常相似的数据、完全随机的数据、或者按照排序顺序插入的数据会令统计信息偏离实际数据的特征。</p></li>
+<li><p>如果索引没有得到使用，那么在测试中强制它的使用也许有些价值。有一些运行时参数可以关闭各种各样的查询规划(在<a href="runtime-config-query.html#RUNTIME-CONFIG-QUERY-ENABLE">节17.6.1</a>)中描述)。比如，关闭顺序扫描(<tt class="VARNAME">enable_seqscan</tt>)和嵌套循环连接(<tt class="VARNAME">enable_nestloop</tt>)将强迫系统使用不同的规划。如果系统仍然选择顺序扫描或者嵌套循环连接，那么在为何索引没有得到使用的问题中可能有更基本的问题，比如，查询条件和索引不匹配等(前面的章节中介绍了什么样的查询可以使用什么样的索引)。</p></li>
+<li><p>如果强制索引用法确实使用了索引，那么就有两种可能：要么是系统选择是正确的：使用索引实际上并不合适，要么是查询计划的开销计算并不反映现实情况。这样你就应该对使用和不使用索引的查询进行计时。这个时候 <tt class="COMMAND">EXPLAIN ANALYZE</tt> 命令就很有用了。</p></li>
+<li><p>如果实际情况说明开销计算是错误的，那么仍然有两种可能。总开销是从每行的每个规划节点乘以每个规划节点的选择性估计的开销计算出来的。规划节点的开销可以用一些运行时参数进行调节(在<a href="runtime-config-query.html#RUNTIME-CONFIG-QUERY-CONSTANTS">节17.6.2</a>中描述)。不准确的选择性估计是因为统计信息不够充分。我们可以通过调节统计收集参数(参阅 <a href="sql-altertable.html"><i>ALTER TABLE</i></a>)提高选择性估计的精度。</p>
+<p>如果你没能通过将开销调整得更准确而实现索引的使用，那么你可能不得不求助于明确地强制索引使用。并且与 PostgreSQL 开发人员联系并讨论你的情况。</p></li>
+</ul>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="indexes-opclass.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="mvcc.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">操作符类</td><td width="34%" align="center" valign="top"><a href="indexes.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">并发控制</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,293 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>在Microsoft Windows上编译Apache － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">针对特定平台的说明</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>在Microsoft Windows上编译Apache</h1>
+
+
+
+    <p>在你开始编译Apache之前有许多重要问题需要注意。开始之前请先看看<a href="windows.html">在Microsoft Windows上使用Apache</a> 。</p>
+
+  </div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="requirements" id="requirements">系统要求</a></h2>
+
+    
+
+    <p>编译Apache需要正确安装以下环境：</p>
+
+    <ul>
+      <li>
+        <p>磁盘空间</p>
+        <p>确保至少有50MB空闲磁盘空间可用。安装以后Apache使用大约10MB磁盘空间，再加上会快速增长的日志和缓存文件需要的空间。 实际需要的空间大小会在相当大程度上取决于你选择的配置以及使用的第三方模块和库。</p>
+      </li>
+
+      <li>
+        <p>Microsoft Visual C++ 5.0 或更高版本</p>
+        <p>可以使用命令行工具，也可以在Visual Studio集成开发环境内编译Apache。使用命令行工具要求环境变量中包含 <code>PATH</code>, <code>INCLUDE</code>, <code>LIB</code> 和其他一些变量，这些环境变量可以用<code>vcvars32</code>批处理文件来设置：</p>
+
+        <div class="example"><p><code>
+          "c:\Program Files\DevStudio\VC\Bin\vcvars32.bat"
+        </code></p></div>
+      </li>
+
+      <li>
+        <p>Windows Platform SDK</p>
+        <p>Visual C++ 5.0 编译需要一套新版的Microsoft Windows Platform SDK来允许Apache的某些特性。 对于命令行编译，用<code>setenv</code>批处理文件来设置环境变量：</p>
+
+        <div class="example"><p><code>
+          "c:\Program Files\Platform SDK\setenv.bat"
+        </code></p></div>
+
+        <p>随Visual C++ 6.0 及以后版本发布的Platform SDK文件足以满足要求，所以新版本的用户可以略过这个要求。</p>
+
+        <div class="note">注意，需要新版的Windows Platform SDK来使得Apache支持的全部<code class="module"><a href="../mod/mod_isapi.html">mod_isapi</a></code>特性可用。没有新版SDK的话，在 MSVC++ 5.0 下编译Apache会出现某些<code class="module"><a href="../mod/mod_isapi.html">mod_isapi</a></code>特性将被禁止的警告。在<a href="http://msdn.microsoft.com/downloads/sdks/platform/platform.asp">http://msdn.microsoft.com/downloads/sdks/platform/platform.asp</a>可以找到新版的Microsoft Winodws Platform SDK。</div>
+      </li>
+
+      <li>
+        <p>awk工具(awk, gawk或类似软件)</p>
+        <p>为了在编译系统内安装Apache ，用<code>awk.exe</code>工具修改了几个文件。选择awk是因为它很小，易于下载(与Perl或者WSH/VB相比)，而且能够完成生成文件的任务。Brian Kernighan的<a href="http://cm.bell-labs.com/cm/cs/who/bwk/">http://cm.bell-labs.com/cm/cs/who/bwk/</a>站点有一个编译好的本地Win32代码版本，这个文件<a href="http://cm.bell-labs.com/cm/cs/who/bwk/awk95.exe">http://cm.bell-labs.com/cm/cs/who/bwk/awk95.exe</a>你必须将它名字保存为<code>awk.exe</code>而不是<code>awk95.exe</code> 。</p>
+
+        <div class="note">注意Developer Studio集成开发环境只能在Tools - Options菜单中的Directories页上列出的可执行文件搜索路径列表中查找 <code>awk.exe</code>(对于Developer Studio 7.0 是在the Projects - VC++ Directories 面板)。 把<code>awk.exe</code>的路径加入到列表中，并按要求加入到系统<code>PATH</code>环境变量里。</div>
+
+        <div class="note">如果你用的是Cygwin (<a href="http://www.cygwin.com/">http://www.cygwin.com/</a>)需要注意，awk工具的文件名是<code>gawk.exe</code>而文件<code>awk.exe</code>实际上是<code>gawk.exe</code>的一个符号连接。 而Windows命令行解释程序不认识符号连接，因此编译二进制安装文件会失败。可行的变通办法是从cygwin安装目录删除文件<code>awk.exe</code>并把<code>gawk.exe</code>改名为<code>awk.exe</code> 。</div>
+      </li>
+
+      <li>
+        <p>[可选] OpenSSL库(因为<code class="module"><a href="../mod/mod_ssl.html">mod_ssl</a></code>和<code>ab.exe</code>用到ssl支持)</p>
+        <p><strong>警告：在整个世界范围使用和发布高强度密码体系与专利知识产权都有相当大的限制和严格的禁令。</strong>OpenSSL包括了在美国及其他国家和地区受到出口条例、国内法律以及受专利保护的知识产权所限制的高强度密码体系。对于OpenSSL项目提供的代码，不管是Apache软件基金会还是OpenSSL项目都不能提供关于拥有、使用和发布该代码的法律建议。<strong>向你自己的法律顾问咨询，你需要为你自己的行为负责。</strong></p>
+
+        <p>为了编译 <code class="module"><a href="../mod/mod_ssl.html">mod_ssl</a></code>或abs项目(<code>ab.exe</code>用到SSL支持)，OpenSSL必须安装到<code>srclib</code>目录下名为<code>openssl</code>的子目录中，openSSL可以从<a href="http://www.openssl.org/source/">http://www.openssl.org/source/</a>获得。要是准备既编译<code>release</code>版本又编译<code>debug</code>版本，而且要禁止 0.9.7 版中受专利保护的特性，你应该使用下列编译命令：</p>
+
+        <div class="example"><p><code>
+          perl Configure VC-WIN32<br />
+          perl util\mkfiles.pl &gt;MINFO<br />
+          perl util\mk1mf.pl dll no-asm no-mdc2 no-rc5 no-idea VC-WIN32 &gt;makefile<br />
+          perl util\mk1mf.pl dll debug no-asm no-mdc2 no-rc5 no-idea VC-WIN32 &gt;makefile.dbg<br />
+          perl util\mkdef.pl 32 libeay no-asm no-mdc2 no-rc5 no-idea &gt;ms\libeay32.def<br />
+          perl util\mkdef.pl 32 ssleay no-asm no-mdc2 no-rc5 no-idea &gt;ms\ssleay32.def<br />
+          nmake<br />
+          nmake -f makefile.dbg
+        </code></p></div>
+
+      </li>
+
+      <li>
+        <p>[可选] zlib源码 (用于<code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code>)</p>
+        <p>Zlib必须安装到<code>srclib</code>目录下的<code>zlib</code>子目录，但是你不需要去编译那些源码。编译系统会直接把压缩源码编译到<code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code>模块中去。 Zlib可以从<a href="http://www.gzip.org/zlib/">http://www.gzip.org/zlib/</a>获得 -- <code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code>已经经过验证可以使用版本 1.1.4 正确编译。</p>
+      </li>
+
+    </ul>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="commandbuild" id="commandbuild">命令行编译</a></h2>
+
+    
+
+    <p>首先，将Apache源码包解压到合适的目录。打开一个命令提示符窗口并用<code>cd</code>切换到那个目录。</p>
+
+    <p>主要的Apache make文件命令都包含在文件<code>Makefile.win</code>中。要在Windows NT上编译Apache ，只需要简单地使用下列命令之一就可以编译<code>release</code>或<code>debug</code>版本，分别是：</p>
+
+    <div class="example"><pre>
+nmake /f Makefile.win _apacher
+
+nmake /f Makefile.win _apached
+    </pre></div>
+
+    <p>两条命令都可以编译Apache 。后者会在编译结果文件中包含调试信息，使发现bugs和跟踪问题更容易。</p>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="workspacebuild" id="workspacebuild">Developer Studio集成开发环境的工作区编译</a></h2>
+
+    
+
+    <p>Apache也能够用VC++的Visual Studio集成开发环境编译。为了简化过程，提供了一个Visual Studio工作区文件：<code>Apache.dsw</code> 。
+    它阐述了完整的Apache二进制发行版需要的全部<code>.dsp</code>项目列表。
+    它包含了项目之间的依存关系来保证编译按合适的顺序进行。</p>
+
+    <p>打开 <code>Apache.dsw</code> 工作区文件，选择
+    <code>InstallBin</code> (根据需要选择编译<code>Release</code> 或者<code>Debug</code> 版本)
+    为活动项目。<code>InstallBin</code>会引发编译相关的项目并调用 <code>Makefile.win</code>
+    移动编译后的可执行文件和动态链接库。你可以改变<code>InstallBin</code>项目的设置来定制
+    <code>INSTDIR=</code> 选项，修改设置中General页里面的Build Command line条目。<code>INSTDIR</code>的缺省值是
+    <code>/Apache2</code>目录。如果你只是想要测试编译(不安装)，就用
+    <code>BuildBin</code>项目代替。</p>
+
+    <p><code>.dsp</code>项目文件使用Visual C++ 6.0格式发行。Visual C++ 5.0 (97)也能识别这种格式。而Visual C++
+    7.0 (.net)必须把<code>Apache.dsw</code>和<code>.dsp</code>
+    文件转换成<code>Apache.sln</code>和<code>.msproj</code>文件，
+    如果有任何一个<code>.dsp</code>源文件改变了，必须重新转换相应的<code>.msproj</code>文件！
+    这很容易，只需要在VC++ 7.0 集成开发环境中重新打开
+    <code>Apache.dsw</code>文件。</p>
+
+    <p>Visual C++ 7.0 (.net)的用户还应该使用Build
+    菜单下的Configuration Manager对话框来不选中模块abs ，<code class="module"><a href="../mod/mod_ssl.html">mod_ssl</a></code>和<code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code> ，
+    对编译<code>Debug</code>和<code>Release</code>版本都是。
+    仅当<code>srclib</code>目录下至少存在<code>openssl</code>或者<code>zlib</code>子目录二者之一，
+    才能调用<code>nmake</code>或者明白地使用<code>BinBuild</code>目标直接从集成开发环境来编译这几个模块。</p>
+
+    <p>导出的那些<code>.mak</code>文件造成很大的争议，但对于
+    Visual C++ 5.0 的用户它们是编译<code class="module"><a href="../mod/mod_ssl.html">mod_ssl</a></code> 、abs(带SSL支持的ab)和<code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code>是必需的。
+    VC++ 7.0 (.net)的用户也能从中受益，用<code>nmake</code>编译比用
+    <code>binenv</code>要快。
+    从VC++ 5.0 或 6.0 集成开发环境编译所有项目，再使用Project菜单 - Export导出所有make文件。
+    为了创建全部自动产生的动态目标你必须首先编译项目，以便互相之间的依存关系可以被正确解析。运行下面命令修正路径使之能编译到任何位置：</p>
+
+    <div class="example"><p><code>
+      perl srclib\apr\build\fixwin32mak.pl
+    </code></p></div>
+
+    <p>你必须在<code>httpd</code>源码树的<em>顶层</em>目录输入这个命令。
+    当前目录及其子目录下所有的<code>.mak</code> 和 <code>.dep</code>项目文件都将被改正，并且时间戳被调节到与<code>.dsp</code>一致。</p>
+
+    <p>如果你贡献修正项目文件的补丁，我们必须以Visual Studio 6.0 格式来确认项目文件。
+    改动应该简单而且只带有最少的编译和连接标记以便能够被从VC++ 5.0 到 7.0 的所有环境识别。</p>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="projectcomponents" id="projectcomponents">项目组件</a></h2>
+
+    
+
+    <p><code>Apache.dsw</code>工作区文件和<code>makefile.win</code>
+    <code> nmake</code>脚本都是以下列顺序编译Apache服务器的<code>.dsp</code>项目文件：</p>
+
+    <ol>
+      <li><code>srclib\apr\apr.dsp</code></li>
+
+      <li><code>srclib\apr\libapr.dsp</code></li>
+
+      <li><code>srclib\apr-util\uri\gen_uri_delims.dsp</code></li>
+
+      <li><code>srclib\apr-util\xml\expat\lib\xml.dsp</code></li>
+
+      <li><code>srclib\apr-util\aprutil.dsp</code></li>
+
+      <li><code>srclib\apr-util\libaprutil.dsp</code></li>
+
+      <li><code>srclib\pcre\dftables.dsp</code></li>
+
+      <li><code>srclib\pcre\pcre.dsp</code></li>
+
+      <li><code>srclib\pcre\pcreposix.dsp</code></li>
+
+      <li><code>server\gen_test_char.dsp</code></li>
+
+      <li><code>libhttpd.dsp</code></li>
+
+      <li><code>Apache.dsp</code></li>
+    </ol>
+
+    <p>此外，<code>modules\</code>子目录树包含了大多数模块的项目文件。</p>
+
+    <p><code>support\</code>子目录包含了一些附加程序的项目文件，它们运行时不是Apache的一部分，
+    但是管理员要使用它们来测试Apache和维护密码与日志文件。
+    Windows平台特有的支持项目在<code>support\win32\</code>目录下。</p>
+
+    <ol>
+      <li><code>support\ab.dsp</code></li>
+
+      <li><code>support\htdigest.dsp</code></li>
+
+      <li><code>support\htpasswd.dsp</code></li>
+
+      <li><code>support\logresolve.dsp</code></li>
+
+      <li><code>support\rotatelogs.dsp</code></li>
+
+      <li><code>support\win32\ApacheMonitor.dsp</code></li>
+
+      <li><code>support\win32\wintty.dsp</code></li>
+    </ol>
+
+    <p>一旦编译了Apache，它需要被安装在服务器根目录，缺省是在同一个盘符下的<code>\Apache2</code>目录。</p>
+
+    <p>要自动编译和安装所有文件到指定的目录<em>dir</em> ，使用下列<code>nmake</code>命令之一：</p>
+
+    <div class="example"><pre>
+nmake /f Makefile.win installr INSTDIR=<em>dir</em>
+
+nmake /f Makefile.win installd INSTDIR=<em>dir</em>
+    </pre></div>
+
+    <p><code>INSTDIR</code>的<em>dir</em>参数给出了安装目录；如果要安装到<code>\Apache2</code>目录可以省略。</p>
+
+    <p>安装结果如下列：</p>
+
+    <ul>
+      <li><code><em>dir</em>\bin\Apache.exe</code> - Apache可执行文件</li>
+
+      <li><code><em>dir</em>\bin\ApacheMonitor.exe</code> - 服务监视器托盘图表工具</li>
+
+      <li><code><em>dir</em>\bin\htdigest.exe</code> - 摘要授权密码文件工具(Digest auth
+      password file utility)</li>
+
+      <li><code><em>dir</em>\bin\htdbm.exe</code> - SDBM授权数据库密码文件工具(SDBM auth
+      database password file utility)</li>
+
+      <li><code><em>dir</em>\bin\htpasswd.exe</code> - 基本授权密码文件工具(Basic auth
+      password file utility)</li>
+
+      <li><code><em>dir</em>\bin\logresolve.exe</code> - 日志文件dns名称查找工具</li>
+
+      <li><code><em>dir</em>\bin\rotatelogs.exe</code> - 日志文件遍历工具</li>
+
+      <li><code><em>dir</em>\bin\wintty.exe</code> - 控制台窗口工具</li>
+
+      <li><code><em>dir</em>\bin\libapr.dll</code> - Apache可移植运行时共享库</li>
+
+      <li><code><em>dir</em>\bin\libaprutil.dll</code> - Apache运行时共享库工具</li>
+
+      <li><code><em>dir</em>\bin\libhttpd.dll</code> - Apache核心库</li>
+
+      <li><code><em>dir</em>\modules\mod_*.so</code> - Apache可装载模块</li>
+
+      <li><code><em>dir</em>\conf</code> - 配置目录</li>
+
+      <li><code><em>dir</em>\logs</code> - 空日志目录</li>
+
+      <li><code><em>dir</em>\include</code> - C语言头文件</li>
+
+      <li><code><em>dir</em>\lib</code> - 连接库文件</li>
+    </ul>
+
+    <h3><a name="projectcomponents-warn" id="projectcomponents-warn">关于从开发树编译Apache的警告</a></h3>
+
+      
+
+      <div class="note">在每次发布<code>发行</code>版本之间，只有<code>.dsp</code>文件被维护。
+      考虑到会对审阅者的时间造成巨大浪费，并不重新产生<code>.mak</code>文件。
+      因此，你不能依靠上述的<code>NMAKE</code>命令来编译修订过的<code>.dsp</code>项目文件，除非你自己从项目中导出全部<code>.mak</code>文件。如果你在Microsoft Developer Studio环境中编译这样做是不必要的。</div>
+
+      <div class="note">同时注意在导出make文件之前编译<code>BuildBin</code>目标项目是非常值得的(或者用命令行目标 
+      <code>_apacher</code> 或 <code>_apached</code>)。
+      许多文件在编译过程中自动产生。只有一次完全编译才提供为正确的编译行为编译正确的依存关系树所需要的全部依赖文件。</div>
+
+      <p>为创建供发布的<code>.mak</code>文件，一定要检查<code>.mak</code>
+      (或<code>.dep</code>)中Platform SDK和其他头文件的依存性。
+      <code>DevStudio\SharedIDE\bin\</code>(VC5)或者<code>DevStudio\Common\MSDev98\bin\</code>(VC6)
+      目录包含了<code>sysincl.dat</code>文件，其中列出了所有的例外情况来告诉VC++创建依存关系时不扫描列表中的文件，
+      更新此文件以包含这些头文件
+      (同时包括正斜杠和反斜杠路径，比如<code>sys/time.h</code>和<code>sys\time.h</code>要同时列出)。
+      在发布的<code>.mak</code>文件中包含一个本地安装路径将使编译完全失败，所以不要忘了运行<code>srclib/apr/build/fixwin32mak.pl</code>来修正<code>.mak</code>文件中的绝对路径。</p>
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.45. Man-DB-2.4.3</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="make.html" title="Make-3.80">后退</a>
+          <p>Make-3.80</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="mktemp.html" title="Mktemp-1.5">前进</a>
+          <p>Mktemp-1.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.45. Man-DB-2.4.3</h1>
+      </div>
+      <div class="package">
+        <p> Man-DB 包含查找和显示 man 手册页的程序。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.2 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">9 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.45.1. 安装 Man-DB</h2>
+        </div>
+        <p>对 Man-DB 的源码需要做三个调整。</p>
+        <p>第一，改变已翻译的 Man-DB 带的 manual 页的位置，使其在传统和 UTF-8 的 locale 环境下均能使用：</p>
+        <pre class="userinput"><kbd class="command">mv man/de{_DE.88591,} &amp;&amp;
+mv man/es{_ES.88591,} &amp;&amp;
+mv man/it{_IT.88591,} &amp;&amp;
+mv man/ja{_JP.eucJP,} &amp;&amp;
+sed -i 's,\*_\*,??,' man/Makefile.in</kbd></pre>
+        <p>第二，使用 <span><strong class="command">sed</strong></span> 的替换功能来删除 <tt class="filename">man_db.conf</tt> 文件中的 "<span class="quote">/usr/man</span>" 行，
+        来避免在使用像 <span><strong class="command">whatis</strong></span> 这样的命令时的冗余结果：</p>
+        <pre class="userinput"><kbd class="command">sed -i '/\t\/usr\/man/d' src/man_db.conf.in</kbd></pre>
+        <p>第三，改变 Man-DB 在运行时应该能够发现的程序的记录，但它们还没有安装：</p>
+        <pre class="userinput"><kbd class="command">cat &gt;&gt;include/manconfig.h.in &lt;&lt;"EOF"
+<tt class="literal">#define WEB_BROWSER "exec /usr/bin/lynx"
+#define COL "/usr/bin/col"
+#define VGRIND "/usr/bin/vgrind"
+#define GRAP "/usr/bin/grap"</tt>
+EOF</kbd></pre>
+        <p> <span><strong class="command">col</strong></span> 是 Util-linux 的一部分， <span><strong class="command">lynx</strong></span> 基于文本的浏览器（参见 BLFS 的安装说明）,
+         <span><strong class="command">vgrind</strong></span> 把程序源码转换为 Groff 的输入，<span><strong class="command">grap</strong></span> 在 Groff 文档中对图表排版非常有用。
+         <span><strong class="command">vgrind</strong></span> 和 <span><strong class="command">grap</strong></span> 不是查看 manual 页所必须的。它们不是 LFS 的一部分，也不是 BLFS
+         的一部分，但是在完成 LFS 之后，你应该能够自己安装。</p>
+        <p>为编译 Man-DB 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr --enable-mb-groff --disable-setuid</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--enable-mb-groff</tt></em></span>
+            </dt>
+            <dd>
+              <p>通知 <span><strong class="command">man</strong></span> 在格式化非ISO-8859-1格式的 manual 页时，使用 "<span class="quote">ascii8</span>" 和
+                "<span class="quote">nippon</span>" Groff 设备。</p>
+            </dd>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--disable-setuid</tt></em></span>
+            </dt>
+            <dd>
+              <p>使 <span><strong class="command">man</strong></span> 不能给用户 <tt class="systemitem">man</tt> 设置uid位。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>这个软件包没有附带测试程序。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <p>一些软件包提供这个版本 <span><strong class="command">man</strong></span> 无法显示的 UTF-8 编码的 man 手册页。
+        下面的脚本将会允许它们中的一些转换成为下面表中的编码格式。Man-DB 期望 manual 页的编码格式是下面表中的一项。在显示它们的时
+        候，可以根据需要转换成实际的 locale 编码，因此它们能够在传统的和 UTF-8 的locale下显示。因为脚本是在系统构建和对公共数据
+        中限制使用的，所以，我们不必担心错误检测和使用非预期的临时文件名。</p>
+        <pre class="userinput"><kbd class="command">cat &gt;&gt;convert-mans &lt;&lt;"EOF"
+<tt class="literal">#!/bin/sh -e
+FROM="$1"
+TO="$2"
+shift ; shift
+while [ $# -gt 0 ]
+do
+        FILE="$1"
+        shift
+        iconv -f "$FROM" -t "$TO" "$FILE" &gt;.tmp.iconv
+        mv .tmp.iconv "$FILE"
+done</tt>
+EOF
+install -m755 convert-mans  /usr/bin</kbd></pre>
+        <p>一些关于 man 和 info 页的压缩可以在 BLFS 手册中找到（<a href="http://www.linuxfromscratch.org/blfs/view/cvs/postlfs/compressdoc.html"><i>http://www.linuxfromscratch.org/blfs/view/cvs/postlfs/compressdoc.html</i></a>）。</p>
+      </div>
+      <div class="sect2">
+        <div class="titlepage">
+          <h2 class="sect2">6.45.2. Non-English Manual Pages in LFS</h2>
+        </div>
+        <p>每一种 Linux 的发行版在存储 manual 页的字符编码方面都有自己的方法。比如，RedHat
+        以 UTF-8 编码存储所有的 manual 页;然而 Debian 使用不同的语言编码(通常是8位的)。这
+        就导致包在为不同发行版设置 manual 页时不兼容。</p>
+        <p>LFS采用跟 Debian 一样的方法。这是因为 Man-DB 不能够理解 UTF-8 存储的 man 手册页。Man-DB 比 Man 好在在任意的 locale 下不需要额外的配置就可以使用。最后，我们没有选用 RedHat 的方法，因为它的<span><strong class="command">groff</strong></span>文本格式组织的不好。</p>
+        <p>语言跟字符编码的关联已经列在下面的表中。Man-DB 会在查看的时候自动的将它们转变为 locale 的编码。</p>
+        <div class="table">
+          <a id="id3691960" name="id3691960"></a>
+          <p class="title">
+            <b>Table 6.1. manual 页的字符编码表
+            pages</b></p>
+          <table summary="Expected character encoding of manual pages"
+          border="1">
+            <colgroup>
+              <col />
+              <col />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>
+                  Language (code)
+                </th>
+                <th>
+                  Encoding
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  Danish (da)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  German (de)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  English (en)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Spanish (es)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Finnish (fi)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  French (fr)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Irish (ga)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Galician (gl)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Indonesian (id)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Icelandic (is)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Italian (it)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Dutch (nl)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Norwegian (no)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Portuguese (pt)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Swedish (sv)
+                </td>
+                <td>
+                  ISO-8859-1
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Czech (cs)
+                </td>
+                <td>
+                  ISO-8859-2
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Croatian (hr)
+                </td>
+                <td>
+                  ISO-8859-2
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Hungarian (hu)
+                </td>
+                <td>
+                  ISO-8859-2
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Japanese (ja)
+                </td>
+                <td>
+                  EUC-JP
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Korean (ko)
+                </td>
+                <td>
+                  EUC-KR
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Polish (pl)
+                </td>
+                <td>
+                  ISO-8859-2
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Russian (ru)
+                </td>
+                <td>
+                  KOI8-R
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Slovak (sk)
+                </td>
+                <td>
+                  ISO-8859-2
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Turkish (tr)
+                </td>
+                <td>
+                  ISO-8859-9
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          <div class="admonhead">
+            <img alt="[Note]" src="../images/note.png" />
+            <h3 class="admontitle">注意</h3>
+          </div>
+          <div class="admonbody">
+            <p> 不在上面列表中的语言的 Manual 页是不支持的。挪威语无法使用，因为从 no_NO 到 nb_NO 的locale转变。韩语因为不完整的 patch 也是功能不全的。
+of the
+              incomplete Groff patch.</p>
+          </div>
+        </div>
+        <p>如果 manual 页的编码是 Man-DB 所预期的，manual 页就会被拷贝到 <tt class="filename">/usr/share/man/<em class="replaceable"><tt>&lt;language
+          code&gt;</tt></em></tt>。例如，法语的 manual 页(<a href="http://ccb.club.fr/man/man-fr-1.58.0.tar.bz2"><i>http://ccb.club.fr/man/man-fr-1.58.0.tar.bz2</i></a>)
+          可以使用下面的命令安装：</p>
+        <pre class="userinput"><kbd class="command">mkdir -p /usr/share/man/fr &amp;&amp;
+cp -rv man? /usr/share/man/fr</kbd></pre>
+        <p>如果 manual 页是 UTF-8 编码的（例如，针对 "<span class="quote">RedHat</span>" 的）
+        ，而不是上面列表中的。它们不得不在安装之前从 UTF-8 转变为列表中的编码。这可以通过 <span><strong class="command">convert-mans</strong></span> 来实现。比如，西班牙的 manual 页
+        (<a href="http://ditec.um.es/~piernas/manpages-es/man-pages-es-1.55.tar.bz2"><i>http://ditec.um.es/~piernas/manpages-es/man-pages-es-1.55.tar.bz2</i></a>)
+         可以通过下面的命令来安装：</p>
+        <pre class="userinput"><kbd class="command">mv man7/iso_8859-7.7{,X}
+convert-mans UTF-8 ISO-8859-1 man?/*.?
+mv man7/iso_8859-7.7{X,}
+make install</kbd></pre>
+        <div class="note">
+          <div class="admonhead">
+            <img alt="[Note]" src="../images/note.png" />
+            <h3 class="admontitle">注意</h3>
+          </div>
+          <div class="admonbody">
+            <p>在转换的过程中需要除去 <tt class="filename">man7/iso_8859-7.7</tt> 文件，因为它已经存在于ISO-8859-1中，这是 man-pages-es-1.55 的一个bug。下一个版本可能就不会需要了。</p>
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-man-db" name="contents-man-db"></a>
+          <h2 class="sect2">6.45.3. Man-DB 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">accessdb, apropos,
+              catman, convert-mans,lexgrog, man, mandb, manpath, whatis, zsoelim</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3692072" name="id3692072"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="accessdb" name="accessdb"></a><span class="term"><span><strong class="command">accessdb</strong></span></span></td>
+                <td><p>将 <span><strong class="command">whatis</strong></span> 数据库的内容转储为人类可读形式</p></td>
+              </tr>
+              <tr>
+                <td><a id="apropos" name="apropos"></a><span class="term"><span><strong class="command">apropos</strong></span></span></td>
+                <td><p>搜索 <span><strong class="command">whatis</strong></span> 数据库，显示包含给定字符串的系统命令的简短描述。</p></td>
+              </tr>
+              <tr>
+                <td><a id="catman" name="catman"></a><span class="term"><span><strong class="command">catman</strong></span></span></td>
+                <td><p>创建或更新预格式化的 manual 页</p></td>
+              </tr>
+              <tr>
+                <td><a id="convert-mans" name="convert-mans"></a><span class="term"><span><strong class="command">convert-mans</strong></span></span></td>
+                <td><p>重新格式化 man 手册页，以使 Man-DB 能够显示它们</p></td>
+              </tr>
+              <tr>
+                <td><a id="lexgrog" name="lexgrog"></a><span class="term"><span><strong class="command">lexgrog</strong></span></span></td>
+                <td><p>显示一行给定 manual 页的摘要信息。</p></td>
+              </tr>
+              <tr>
+                <td><a id="man" name="man"></a><span class="term"><span><strong class="command">man</strong></span></span></td>
+                <td><p>格式化并显示请求的 manual 页</p></td>
+              </tr>
+              <tr>
+                <td><a id="mandb" name="mandb"></a><span class="term"><span><strong class="command">mandb</strong></span></span></td>
+                <td><p>创建或更新 <span><strong class="command">whatis</strong></span> 数据库</p></td>
+              </tr>
+              <tr>
+                <td><a id="manpath" name="manpath"></a><span class="term"><span><strong class="command">manpath</strong></span></span></td>
+                <td><p>显示 $MANPATH 的内容或在man.conf中设置的搜索路径（如果 $MANPATH 没有设置），以及用户的环境变量。</p></td>
+              </tr>
+              <tr>
+                <td><a id="whatis" name="whatis"></a><span class="term"><span><strong class="command">whatis</strong></span></span></td>
+                <td><p>搜索 <span><strong class="command">whatis</strong></span> 数据库，显示包含给定关键字的系统命令的简短描述。</p></td>
+              </tr>
+              <tr>
+                <td><a id="zsoelim" name="zsoelim"></a><span class="term"><span><strong class="command">zsoelim</strong></span></span></td>
+                <td><p>读取文件并用提到的 <span class="emphasis"><em>file</em></span> 的内容来替换 <span class="emphasis"><em>.so file</em></span> 格式的行。</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="make.html" title="Make-3.80">后退</a>
+          <p>Make-3.80</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="mktemp.html" title="Mktemp-1.5">前进</a>
+          <p>Mktemp-1.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

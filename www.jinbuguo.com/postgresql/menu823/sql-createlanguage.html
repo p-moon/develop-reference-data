@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE LANGUAGE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createindex.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createindex.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createoperator.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createoperator.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATELANGUAGE"></a>CREATE LANGUAGE</h1>
+<div class="REFNAMEDIV"><a name="AEN47610"></a><h2>名称</h2>CREATE LANGUAGE&nbsp;--&nbsp;定义一种新过程语言</div>
+<a name="AEN47613"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN47615"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE [ PROCEDURAL ] LANGUAGE <tt class="REPLACEABLE"><i>name</i></tt>
+CREATE [ TRUSTED ] [ PROCEDURAL ] LANGUAGE <tt class="REPLACEABLE"><i>name</i></tt>
+    HANDLER <tt class="REPLACEABLE"><i>call_handler</i></tt> [ VALIDATOR <tt class="REPLACEABLE"><i>valfunction</i></tt> ]</pre>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATELANGUAGE-DESCRIPTION"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE LANGUAGE</tt> 可以在 PostgreSQL 数据库里注册一个新的语言。从而可以用这种新语言定义函数和触发器。只有超级用户可以注册新语言。</p>
+<p><tt class="COMMAND">CREATE LANGUAGE</tt> 将该语言的名字和一个负责执行该语言函数的调用处理器关联起来。请参考<a href="xplang.html">章36</a>获取有关语言调用处理器的更多信息。</p>
+<p>有两种形式的 <tt class="COMMAND">CREATE LANGUAGE</tt> 命令。第一种形式，用户只提供需要的语言的名字，然后 PostgreSQL 服务器参考 <a href="catalog-pg-pltemplate.html"><tt class="STRUCTNAME">pg_pltemplate</tt></a> 系统表来判断正确的参数。第二种形式，用户把语言参数和语言名字一起提供。第二种形式可以用于创建没有在 <tt class="STRUCTNAME">pg_pltemplate</tt> 里面定义的语言，不过这种方法被认为已经过时了。</p>
+<p>如果服务器在 <tt class="STRUCTNAME">pg_pltemplate</tt> 系统表里面找到给出的语言名字的纪录，那么它将使用系统表的数据，即使命令包含语言参数也如此。这个行为简化了加载旧的转储文件的过程，因为这些转储文件很可能包含有关语言支持函数的过时信息。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATELANGUAGE-PARAMETERS"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">TRUSTED</tt></dt>
+<dd><p><tt class="LITERAL">TRUSTED</tt> 说明对该语言的调用处理器是安全的；也就是说，它不会提供给非特权用户任何绕过访问限制的能力。如果忽略这个关键字，只有 PostgreSQL 超级用户可以使用这个语言创建新函数。</p></dd>
+<dt><tt class="LITERAL">PROCEDURAL</tt></dt>
+<dd><p>这是个没有用的字</p></dd>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>新过程语言的名称。语言名是大小写无关的。这个名字应该在数据库的所有语言中唯一。</p>
+<p>出于向下兼容的原因，这个名字可以用单引号包围。</p></dd>
+<dt><tt class="LITERAL">HANDLER</tt> <tt class="REPLACEABLE"><i>call_handler</i></tt></dt>
+<dd><p><tt class="REPLACEABLE"><i>call_handler</i></tt> 是一个以前注册过的函数名字，该函数将被用来执行该过程语言的函数。过程语言的调用处理器必须用一种编译语言(比如 C)书写，调用风格必须是版本-1 的调用风格，并且注册为不接受参数并且返回 <tt class="TYPE">language_handler</tt> 类型的函数。<tt class="TYPE">language_handler</tt> 是用于将函数声明为调用处理器的占位符。</p></dd>
+<dt><tt class="LITERAL">VALIDATOR</tt> <tt class="REPLACEABLE"><i>valfunction</i></tt></dt>
+<dd><p><tt class="REPLACEABLE"><i>valfunction</i></tt> 是一个以前注册过的函数名字，在用该语言创建新函数的时候将用它来校验新函数。如果没有声明校验函数，那么建立新函数的时候就不会检查它。校验函数必须接受一个类型为 <tt class="TYPE">oid</tt> 的参数，它是将要创建的函数的 OID ，并且通常会返回 <tt class="TYPE">void</tt> 。</p>
+<p>校验函数通常会检查函数体，看看有没有语法错误，但是它也可以查看函数的其它属性，比如该语言是否不能处理某种参数类型。校验函数应该用 <code class="FUNCTION">ereport()</code> 函数报告错误。该函数的返回值将被忽略。</p></dd>
+</dl>
+</div>
+<p>如果服务器在 <tt class="STRUCTNAME">pg_pltemplate</tt> 系统表里有对应名称的语言纪录，那么 <tt class="LITERAL">TRUSTED</tt> 选项和支持函数的名字等参数将被忽略。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATELANGUAGE-NOTES"></a><h2>注意</h2>
+<p><a href="app-createlang.html"><span class="APPLICATION">createlang</span></a> 程序是对 <tt class="COMMAND">CREATE LANGUAGE</tt> 命令的一个简单封装。降低了在 shell 命令行上安装过程语言的难度。</p>
+<p>使用 <a href="sql-droplanguage.html"><i>DROP LANGUAGE</i></a> 命令，或者更好是 <a href="app-droplang.html"><span class="APPLICATION">droplang</span></a> 程序来删除一个过程语言。</p>
+<p>系统表 <code class="CLASSNAME">pg_language</code>(参阅 <a href="catalog-pg-language.html">节43.20</a>)记录了更多有关当前安装的过程语言的信息。<tt class="COMMAND">createlang</tt> 也有一个选项列出已安装的语言。</p>
+<p>要使用一种过程语言创建函数，用户必须对该语言有 <tt class="LITERAL">USAGE</tt> 权限。缺省时，对于可信的语言，<tt class="LITERAL">USAGE</tt> 是赋与 <tt class="LITERAL">PUBLIC</tt>(也就是每个人)的。需要时，这个权限可以撤销。</p>
+<p>过程语言是对每个独立数据库本地创建的。不过，语言可以安装到 <tt class="LITERAL">template1</tt> 里面，这样就会导致它自动在所有随后创建的数据库里可用。</p>
+<p>如果服务器在 <tt class="STRUCTNAME">pg_pltemplate</tt> 系统表里还没有对应该语言的纪录，那么调用处理器函数和校验函数(如果有)必须已经存在。但是如果存在这样的纪录，那么这些函数就不必已经存在；如果没有在数据库里出现，它们将会被自动定义。如果实现语言的共享库不可获得，那么可能会导致 <tt class="COMMAND">CREATE LANGUAGE</tt> 失效。</p>
+<p>在 PostgreSQL 7.3 之前，必须声明处理器函数返回占位类型 <tt class="TYPE">opaque</tt> ，而不是 <tt class="TYPE">language_handler</tt> 。为了支持加载旧的转储文件，<tt class="COMMAND">CREATE LANGUAGE</tt> 还将接受声明为返回 <tt class="TYPE">opaque</tt> 的函数，但是它会发出一条通知并且把函数的返回类型改为 <tt class="TYPE">language_handler</tt> 。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATELANGUAGE-EXAMPLES"></a><h2>例子</h2>
+<p>创建标准的过程语言的比较好的方法：</p>
+<pre class="PROGRAMLISTING">CREATE LANGUAGE plpgsql;</pre>
+<p>对于 <tt class="STRUCTNAME">pg_pltemplate</tt> 还不知道的语言，需要下面这样的序列：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION plsample_call_handler() RETURNS language_handler
+    AS '$libdir/plsample'
+    LANGUAGE C;
+CREATE LANGUAGE plsample
+    HANDLER plsample_call_handler;</pre>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATELANGUAGE-COMPAT"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">CREATE LANGUAGE</tt> 是 PostgreSQL 扩展</p>
+</div>
+<div class="REFSECT1"><a name="AEN47723"></a><h2>又见</h2><a href="sql-alterlanguage.html"><i>ALTER LANGUAGE</i></a>, <a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a>, <a href="sql-droplanguage.html"><i>DROP LANGUAGE</i></a>, <a href="sql-grant.html"><i>GRANT</i></a>, <a href="sql-revoke.html"><i>REVOKE</i></a>, <a href="app-createlang.html"><i><i>createlang</i></i></a>, <a href="app-droplang.html"><i><i>droplang</i></i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createindex.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createoperator.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE INDEX</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE OPERATOR</td></tr>
+</table>
+</div>
+</body></html>

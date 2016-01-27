@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.19. Gawk-3.1.5</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="findutils.html" title="Findutils-4.2.27">后退</a>
+          <p>Findutils-4.2.27</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gettext.html" title="Gettext-0.14.5">前进</a>
+          <p>Gettext-0.14.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.19. Gawk-3.1.5</h1>
+      </div>
+      <div class="package">
+        <p>Gawk 是一个处理文本文件的工具包。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.2 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">18.2 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.19.1. 安装 Gawk</h2>
+        </div>
+        <p>为编译 Gawk 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/tools</kbd></pre>
+        <p>由于 <span><strong class="command">configure</strong></span> 脚本的一个 bug ，Gawk 不能正确检测某些 Glibc 支持的 locale ，这将会导致一些问题，比如，Gettext 的测试程序会失败。修复这个 bug 的办法是在 <tt class="filename">config.h</tt> 文件结尾追加丢失的宏定义：</p>
+        <pre class="userinput"><kbd class="command">cat &gt;&gt;config.h &lt;&lt;"EOF"
+<tt class="literal">#define HAVE_LANGINFO_CODESET 1
+#define HAVE_LC_MESSAGES 1</tt>
+EOF</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make check</tt></strong> 。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+      </div>
+      <div class="content">
+        <p>关于这个软件包的详细资料位于<a href="../chapter06/gawk.html#contents-gawk" title="6.35.2. Gawk 的内容">节 6.35.2, Gawk 的内容</a></p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="findutils.html" title="Findutils-4.2.27">后退</a>
+          <p>Findutils-4.2.27</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gettext.html" title="Gettext-0.14.5">前进</a>
+          <p>Gettext-0.14.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

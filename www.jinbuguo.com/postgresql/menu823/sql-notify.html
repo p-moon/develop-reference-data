@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>NOTIFY</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-move.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-move.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-prepare.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-prepare.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-NOTIFY"></a>NOTIFY</h1>
+<div class="REFNAMEDIV"><a name="AEN52704"></a><h2>名称</h2>NOTIFY&nbsp;--&nbsp;生成一个通知</div>
+<a name="AEN52707"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN52709"></a><h2>语法</h2>
+<pre class="SYNOPSIS">NOTIFY <tt class="REPLACEABLE"><i>name</i></tt>        </pre>
+</div>
+<div class="REFSECT1"><a name="AEN52712"></a><h2>描述</h2>
+<p><tt class="COMMAND">NOTIFY</tt> 命令向当前数据库中所有执行过 <tt class="COMMAND">LISTEN <tt class="REPLACEABLE"><i>name</i></tt></tt> ，正在监听特定通知条件的前端应用发送一个通知事件。</p>
+<p><tt class="COMMAND">NOTIFY</tt> 为访问同一个 PostgreSQL 数据库的一组进程提供了一种简单的信号形式或进程间通讯机制。更高级的机制(除了一个简单的通知名以外)可以通过使用数据库中的表从通知者传递数据到接收者。</p>
+<p>传递给前端的通知事件包括通知条件名和发出通知的后端进程 PID 。数据库设计者有责任定义用于某个数据库的条件名和每个通知条件的含义。</p>
+<p>通常，通知条件名与数据库里的表的名字相同，通知事件实际上意味着"我修改了此数据库，请看一眼有什么新东西"。<tt class="COMMAND">NOTIFY</tt> 和 <tt class="COMMAND">LISTEN</tt> 命令并不强制这种联系。例如，数据库设计者可以使用几个不同的条件名来标志一个表的几种不同改变。</p>
+<p>当 <tt class="COMMAND">NOTIFY</tt> 用于通知某一特定表修改的动作的发生，一个实用的编程技巧是将 <tt class="COMMAND">NOTIFY</tt> 放在一个由表更新触发的规则里。用这种方法，通知将在表更新的时候自动触发，而且应用程序员不会碰巧忘记处理它。</p>
+<p><tt class="COMMAND">NOTIFY</tt> 和 SQL 事务用某种重要的方法进行交换。首先，如果 <tt class="COMMAND">NOTIFY</tt> 在事务内部执行，通知事件直到事务提交才会送出。这么做是有道理的，因为如果事务退出了，那么在它里面的所有命令都没有效果(包括 <tt class="COMMAND">NOTIFY</tt>)。但如果有人希望通知事件立即发送，这就不太好了。其次，当一个正在监听的会话在一次事务内收到一个通知信号，直到本次事务完成(提交或退出)之前，该通知事件将不被送到与之相连的客户端。同样，如果一个通知在事务内部发送出去了，而该事务稍后又退出了，就希望通知可以在某种程度上被撤消，因为通知一旦发送出去，服务器便不能从客户端"收回"通知，所以通知时间只是在事务之间传递。这一点就要求使用 <tt class="COMMAND">NOTIFY</tt> 作为实时信号的应用应该确保他们的事务尽可能短。</p>
+<p><tt class="COMMAND">NOTIFY</tt> 在一方面的行为像 Unix 的信号：如果同一条件名在短时间内发出了多条信号，接收者几次执行 <tt class="COMMAND">NOTIFY</tt> 可能只回收到一条通知信息。所以依赖于收到的通知条数的方法是很不可靠的。因而，使用 <tt class="COMMAND">NOTIFY</tt> 唤醒需要关注某事的应用，同时还要使用数据库对象(如序列号)来跟踪事件发生了几次。</p>
+<p>客户端经常会自己发送与正在监听的通知名一样的 <tt class="COMMAND">NOTIFY</tt> 。这时它(客户端)也和其它正在监听的会话一样收到一个通知事件。这样可能导致一些无用的工作(与应用逻辑有关)。例如，对客户端刚写过的表又进行一次读操作以发现是否有更新。可以通过检查服务器进程的 PID(在通知事件中提供)是否与自己的后端的 PID 一致(从 <span class="APPLICATION">libpq</span> 中取得)。当他们一样时，说明这是其自身回弹的信息，可以忽略。不管前面章节是如何讲的，这是一个安全的技巧。PostgreSQL 保持自身的通知和其它到来的通知区分开。所以你屏蔽了自己的通知后不会略过外部的通知。</p>
+</div>
+<div class="REFSECT1"><a name="AEN52746"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>生成信号(通知)的通知条件(任何标识符)</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN52754"></a><h2>例子</h2>
+<p>在 <span class="APPLICATION">psql</span> 里配置和执行一个监听/通知对：</p>
+<pre class="PROGRAMLISTING">LISTEN virtual;
+NOTIFY virtual;
+Asynchronous notification "virtual" received from server process with PID 8448.</pre>
+</div>
+<div class="REFSECT1"><a name="AEN52759"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">NOTIFY</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN52763"></a><h2>又见</h2><a href="sql-listen.html"><i>LISTEN</i></a>, <a href="sql-unlisten.html"><i>UNLISTEN</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-move.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-prepare.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">MOVE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PREPARE</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>sfdisk 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>sfdisk 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+SFDISK(8)                    System Administration                   SFDISK(8)
+
+名称
+       sfdisk - 分区表操作工具
+
+语法
+       sfdisk [options] device
+       sfdisk -s [partition]
+
+描述
+       sfdisk 有4个主要用途：列出分区尺寸，列出分区表，检查分区表，创建分区表[非常危险]。
+
+       sfdisk 不能处理GPT格式的分区表，也不能处理超过2T的大硬盘，这种情况需要使用 GNU parted 工具。
+
+       sfdisk 并不会自动对齐分区，不过 fdisk(8) 可以。
+
+
+   列出分区尺寸
+       sfdisk -s [partition]
+       以块[blocks]为单位列出块设备的大小。
+       这里的[partition]可以是一个实际的分区(例如：/dev/sdb12)，也可以是一个完整的磁盘(例如：/dev/sda)
+
+              % sfdisk -s /dev/hda9
+              81599
+
+       如果省略[partition]参数，那么将依次列出每个磁盘(不含分区)的大小以及总计大小。
+
+              % sfdisk -s
+              /dev/hda: 208896
+              /dev/hdb: 1025136
+              /dev/hdc: 1031063
+              /dev/sda: 8877895
+              /dev/sdb: 1758927
+              total: 12901917 blocks
+
+
+   列出分区表
+       sfdisk -l [device]
+       列出device设备上的分区表。如果省略[device]参数，那么将列出所有磁盘上的分区表。
+
+              % sfdisk -l /dev/hdc
+
+              Disk /dev/hdc: 16 heads, 63 sectors, 2045 cylinders
+              Units = cylinders of 516096 bytes, blocks of 1024 bytes, counting from 0
+
+                 Device Boot Start     End   #cyls   #blocks   Id  System
+              /dev/hdc1          0+    406     407-   205096+  83  Linux native
+              /dev/hdc2        407     813     407    205128   83  Linux native
+              /dev/hdc3        814    2044    1231    620424   83  Linux native
+              /dev/hdc4          0       -       0         0    0  Empty
+
+       [说明]数字结尾的"+"或"-"表示其只是一个近似值而非精确值。
+       要查看精确值，可以使用 sfdisk -l -u S [device] 语法，按扇区查看。
+
+
+   检查分区表
+       sfdisk -V device
+       检查分区表的正确性，并打印出'OK'或者显示不合理之处。
+       例如：Warning: partition 1 does not end at a cylinder boundary
+       -V 选项可以和 -l 选项一起使用。在shell脚本内，可以使用
+       sfdisk -V -q device
+       来仅返回一个代表正确/错误的返回值
+
+
+   创建分区表
+       sfdisk device
+       根据标准输入(STDIN)给出的指示创建device的分区表。
+       这样便可以方便的在shell脚本内进行分区操作。
+       当 sfdisk 检测到其自身运行在终端内时，将会以交互方式操作，
+       否则(也就是在脚本内)，在检测到任何错误的时候，都将导致退出。
+       [警告]一个微小的输入错误都将可能导致数据丢失！
+
+
+选项
+       -v, --version
+              打印版本信息并立即退出
+
+       -h, --help
+              打印帮助信息并立即退出
+
+       -T, --list-types
+              列出所有能够识别的分区类型(system ID)
+
+       -s, --show-size
+              列出分区的大小
+
+       -g, --show-geometry
+              列出内核检测到的设备的几何参数(C-H-S)
+
+       -G, --show-pt-geometry
+              列出根据设备上的分区表计算出的几何参数
+
+       -l, --list
+              列出设备上的分区表
+
+       -d, --dump
+              按照 sfdisk 可以理解的标准格式，打印出设备上目前现有的分区表，例如
+                  % sfdisk -d /dev/hda &gt; hda.out
+              之后还可以用如下命令重新写入分区表
+                  % sfdisk /dev/hda &lt; hda.out
+
+       -V, --verify
+              校验分区表的合理性
+
+       -i, --increment
+              柱面号(从 1 开始计数，而不是 0 )
+
+       -N number
+              仅更改指定序号的分区。例如
+                  % sfdisk /dev/hdb -N5
+                  ,,,*
+              除了将 /dev/sdb 上的第五个分区标记为'bootable'之外，不做其他任何变更。
+              虽然这"第五个"分区很有可能叫做 /dev/sdb5 ，但是你也可能称它为别的名称，
+              例如'/my_equipment/disks/2/5'之类
+
+       -A, --activate[=device_or_number]
+              将指定编号的分区标记为'bootable'，并取消所有其他分区的'bootable'标记。
+
+              如果没有参数则表示列出带有'bootable'标记的分区，例如：
+
+                  % sfdisk --activate /dev/sda
+
+              如果给出了设备参数，那么数字对应的分区将被标记为'bootable'，而其他分区则取消'bootable'标记。
+              例如下面的命令为 1,4 分区添加'bootable'，同时取消所有其他分区的'bootable'标记：
+
+                  % sfdisk --activate=/dev/sda 1 4
+
+              如果只想激活一个分区的'bootable'标记，那么就必须将分区号作为参数。
+              例如，下面的命令表示开启第一个分区的'bootable'标记，同时取消所有其他分区的'bootable'标记：
+
+                  % sfdisk --activate=1 /dev/sda
+
+
+       -c, --id num [Id]
+              如果没有给出[ID]参数，则打印出第num个分区的类型[ID]
+              如果给出[ID]参数，则将第num个分区的类型更改为ID
+              这个选项还有两个意思显而易见的别名：--print-id 和 --change-id
+              例如，打印 /dev/sdb5 的分区类型
+                  % sfdisk --print-id /dev/sdb 5
+                  6
+              接着再将 /dev/sdb5 的分区类型改为"0x83"
+                  % sfdisk --change-id /dev/sdb 5 83
+                  OK
+
+       -u, --unit letter
+              指定输入/输出的数字的单位。默认值是柱面。
+              这里的letter可以是 S[扇区], C[柱面], B[块], M[MB]。
+
+       -x, --show-extended
+              也包含扩展分区(无论对于输入还是输出)。
+
+       -C, --cylinders cylinders
+              强制指定柱面数，忽略内核自己的检测
+
+       -H, --heads heads
+              强制指定磁头数，忽略内核自己的检测
+
+       -S, --sectors sectors
+              强制指定扇区数，忽略内核自己的检测
+
+       -f, --force
+              强制执行，即使看上去是明显的错误动作
+
+       -q, --quiet
+              静默模式，禁止打印提示信息
+
+       -L, --Linux
+              不显示与Linux无关的警告
+
+       -n     模拟执行所有动作但并不实际写入磁盘
+
+       -R, --re-read
+              让内核重新读取分区表。
+              如果内核抱怨说：'device busy for revalidation (usage = 2)'
+              那就表明此设备上当前有尚未卸载的文件系统或者swap分区。
+
+       --no-reread
+              当执行分区表修改动作时，如果sfdisk检测到此设备已经被挂载或者正被用于swap，
+              那么将拒绝执行任何修改动作。使用该选项可以禁止这种检测。
+              [注意] --force 比这个选项更强，它表示无视一切禁忌的强制执行
+
+
+理论
+       位于MBR(Master Boot Record)的磁盘分区表拥有如下数据结构：
+              struct partition {
+                  unsigned char bootable;          /* 0 or 0x80 , 1字节 */
+                  hsc begin_head_sector_cylinder;  /* 3字节 */
+                  unsigned char id;                /* 1字节 */
+                  hsc end_head_sector_cylinder;    /* 3字节 */
+                  unsigned int starting_sector;    /* 4字节 */
+                  unsigned int num_of_sectors;     /* 4字节 */
+              }
+
+       两个 hsc 字段指定了分区的开始和结束 head_sector_cylinder 值。
+       由于hsc字段只有24位，所以无法表示超过8G的值。而且当磁头数小于256的时候，所能表示的最大值更加的小。
+       事实上，Linux根本不看这两个字段的设置，因此这两个字段仅在磁盘引导的时候可能会有影响。
+
+
+输入格式
+       sfdisk可以识别如下格式的输入行，每一行用于描述一个分区：
+       start size id bootable c,h,s c,h,s
+       字段之间可以用空格/逗号/分号进行分隔，首尾的空白都将被忽略。
+       数字可以是八进制/十进制(默认)/十六进制。
+       如果某个字段留空或者缺席，就表示使用其默认值。
+
+       两个 c,h,s 字段应该尽量留空，这样 sfdisk 可以根据几何参数以及 start 和 size 值进行推算。
+
+       bootable 可以指定为[*|-]格式，默认值是"-"也就是没有可引导标记。
+       这个标记仅对DOS有意义：DOS会给带有可引导标记的主分区分配 C: 盘符
+
+       id 应该以无"0x"前缀的格式给出其十六进制值，或者[E|S|L]简写字母：
+       L(83)是默认值，S(82,LINUX_SWAP)，E(5,扩展分区)。
+
+       start 的默认值是首个未分配的扇区/柱面
+       size 的默认值是尽可能大(直到下一个分区或磁盘尾)，设为'+'明确表示尽可能大。
+
+       当使用 -N 选项指定某个特定的分区时，每个字段的默认值就变成了原有分区表内已经存在的值。
+       这时候，可以将 size 设为'+'以明确表示尽可能大(直到下一个分区或磁盘尾)。
+
+
+参见
+       cfdisk(8), fdisk(8), mkfs(8), parted(8), partprobe(8), kpartx(8)
+
+
+util-linux                        August 2011                        SFDISK(8)
+
+</pre>
+
+
+<hr />
+
+
+</body></html>

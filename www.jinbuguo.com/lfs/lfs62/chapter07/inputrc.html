@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>7.8. 创建 /etc/inputrc 文件</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第七章 配置系统启动脚本</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="sysklogd.html" title="配置 sysklogd 脚本">后退</a>
+          <p>配置 sysklogd 脚本</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="profile.html" title="Bash Shell 启动文件">前进</a>
+          <p>Bash Shell 启动文件</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter07.html" title="第七章 配置系统启动脚本">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">7.8. 创建 /etc/inputrc 文件</h1>
+      </div>
+      <p><tt class="filename">inputrc</tt> 文件为特定的情况处理键盘映射，这个文件被 Readline 用作启动文件，Readline 是 Bash 和其它大多数 shell 使用的与输入相关的库。
+      </p>
+      <p>大多数人并不需要自定义键盘映射，所以下面的命令将创建一个适用于所有登陆用户的全局 <tt class="filename">/etc/inputrc</tt> 文件。如果你需要为某个用户覆盖默认的设置，你可以在该用户的主目录中创建一个包含自定义键盘映射的 <tt class="filename">.inputrc</tt> 文件。
+      </p>
+      <p>要想了解更多关于如何编辑 <tt class="filename">inputrc</tt> 文件的信息，运行 <span><strong class="command">info bash</strong></span> 以参考 bash 的 info 页的 <span class="emphasis"><em>Readline Init File</em></span> 这一节，运行 <span><strong class="command">info readline</strong></span> 以参考readline 自己的 info 页也不错。
+      </p>
+      <p>下面是一个基本的全局 <tt class="filename">inputrc</tt> 文件，那些选项的注释也一起包括在文件里。请注意，注释不能和命令放在同一行里。
+      </p>
+      <pre class="userinput"><kbd class="command">cat &gt; /etc/inputrc &lt;&lt; "EOF"
+<tt class="literal"># Begin /etc/inputrc
+# Modified by Chris Lynn &lt;roryo@roryo.dynup.net&gt;
+
+# Allow the command prompt to wrap to the next line
+set horizontal-scroll-mode Off
+
+# Enable 8bit input
+set meta-flag On
+set input-meta On
+
+# Turns off 8th bit stripping
+set convert-meta Off
+
+# Keep the 8th bit for display
+set output-meta On
+
+# none, visible or audible
+set bell-style none
+
+# All of the following map the escape sequence of the
+# value contained inside the 1st argument to the
+# readline specific functions
+
+"\eOd": backward-word
+"\eOc": forward-word
+
+# for linux console
+"\e[1~": beginning-of-line
+"\e[4~": end-of-line
+"\e[5~": beginning-of-history
+"\e[6~": end-of-history
+"\e[3~": delete-char
+"\e[2~": quoted-insert
+
+# for xterm
+"\eOH": beginning-of-line
+"\eOF": end-of-line
+
+# for Konsole
+"\e[H": beginning-of-line
+"\e[F": end-of-line
+
+# End /etc/inputrc</tt>
+EOF</kbd></pre>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="sysklogd.html" title="配置 sysklogd 脚本">后退</a>
+          <p>配置 sysklogd 脚本</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="profile.html" title="Bash Shell 启动文件">前进</a>
+          <p>Bash Shell 启动文件</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter07.html" title="第七章 配置系统启动脚本">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

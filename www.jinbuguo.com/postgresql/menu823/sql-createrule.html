@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE RULE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createrole.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createrole.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createschema.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createschema.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATERULE"></a>CREATE RULE</h1>
+<div class="REFNAMEDIV"><a name="AEN48303"></a><h2>名称</h2>CREATE RULE&nbsp;--&nbsp;定义一个新重写规则</div>
+<a name="AEN48306"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN48308"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE [ OR REPLACE ] RULE <tt class="REPLACEABLE"><i>name</i></tt> AS ON <tt class="REPLACEABLE"><i>event</i></tt>
+    TO <tt class="REPLACEABLE"><i>table</i></tt> [ WHERE <tt class="REPLACEABLE"><i>condition</i></tt> ]
+    DO [ ALSO | INSTEAD ] { NOTHING | <tt class="REPLACEABLE"><i>command</i></tt> | ( <tt class="REPLACEABLE"><i>command</i></tt> ; <tt class="REPLACEABLE"><i>command</i></tt> ... ) }</pre>
+</div>
+<div class="REFSECT1"><a name="AEN48317"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE RULE</tt> 定义一个适用于特定表或者视图的新规则。<tt class="COMMAND">CREATE OR REPLACE RULE</tt> 要么是创建一个新规则，要么是替换一个表上的同名规则。</p>
+<p>PostgreSQL 规则系统允许在更新、插入、删除时执行一个其它的预定义动作。简单的说，规则就是在指定表上执行指定动作的时候，将导致一些额外的动作被执行。另外，一个 <tt class="LITERAL">INSTEAD</tt> 规则可以用另外一个命令取代特定的命令，或者令完全不执行该命令。规则还可以用于实现表视图。规则实际上只是一个命令转换机制，或者说命令宏。这种转换发生在命令开始执行之前。如果你想要针对每个物理行独立发生的操作，那么可能应该使用触发器而不是规则。有关规则的更多信息可以在<a href="rules.html">章35</a>找到。</p>
+<p>目前，<tt class="LITERAL">ON SELECT</tt> 规则必须是无条件的 <tt class="LITERAL">INSTEAD</tt> 规则并且必须有一个由单独一条 <tt class="COMMAND">SELECT</tt> 查询组成的动作。因此，一条 <tt class="LITERAL">ON SELECT</tt> 规则有效地把表转成视图，它的可见内容是规则的 <tt class="COMMAND">SELECT</tt> 查询返回的记录而不是存储在表中的内容。写一条 <tt class="COMMAND">CREATE VIEW</tt> 命令比创建一个表然后在上面定义一条 <tt class="LITERAL">ON SELECT</tt> 规则的风格要好。</p>
+<p>你可以创建一个允许更新的视图的幻觉，方法是在视图上定义 <tt class="LITERAL">ON INSERT</tt>, <tt class="LITERAL">ON UPDATE</tt>, <tt class="LITERAL">ON DELETE</tt> 规则(或者满足你需要的任何上述规则的子集)，用合适的对其它表的更新替换在视图上更新的动作。如果打算支持 <tt class="COMMAND">INSERT RETURNING</tt> 之类，就必须确保在规则的结尾放置恰当的 <tt class="LITERAL">RETURNING</tt> 子句。</p>
+<p>如果你想在视图更新上使用条件规则，那么这里就有一个补充：对你希望在视图上允许的每个动作，你都<span class="emphasis"><i class="EMPHASIS">必须</i></span>有一个无条件的 <tt class="LITERAL">INSTEAD</tt> 规则。如果规则是有条件的或者它不是 <tt class="LITERAL">INSTEAD</tt> ，那么系统仍将拒绝执行更新动作，因为它认为最终会在视图的虚拟表上执行这个动作。如果你想处理条件规则上的所有有用的情况，那只需要增加一个无条件的 <tt class="LITERAL">DO INSTEAD NOTHING</tt> 规则确保系统明白它决不会被调用来更新虚拟表就可以了。然后把条件规则做成非 <tt class="LITERAL">INSTEAD</tt> ；在这种情况下，如果它们被触发，那么它们就增加到缺省的 <tt class="LITERAL">INSTEAD NOTHING</tt> 动作中。不过这种方法目前不支持 <tt class="LITERAL">RETURNING</tt> 查询。</p>
+</div>
+<div class="REFSECT1"><a name="AEN48348"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>创建的规则名。它必须在同一个表上的所有规则名字中唯一。同一个表上的同一个事件类型的规则是按照字母顺序运行的。</p></dd>
+<dt><tt class="REPLACEABLE"><i>event</i></tt></dt>
+<dd><p><tt class="LITERAL">SELECT</tt>, <tt class="LITERAL">INSERT</tt>, <tt class="LITERAL">UPDATE</tt>, <tt class="LITERAL">DELETE</tt> 事件之一</p></dd>
+<dt><tt class="REPLACEABLE"><i>table</i></tt></dt>
+<dd><p>规则作用的表或者视图的名字(可以有模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>condition</i></tt></dt>
+<dd><p>任意返回 <tt class="TYPE">boolean</tt> 的 SQL 条件表达式。条件表达式除了引用 <tt class="LITERAL">NEW</tt> 和 <tt class="LITERAL">OLD</tt> 之外不能引用任何表，并且不能有聚集函数。</p></dd>
+<dt><tt class="OPTION">INSTEAD</tt></dt>
+<dd><p>指示使用该命令<span class="emphasis"><i class="EMPHASIS">代替</i></span>最初的命令。</p></dd>
+<dt><tt class="OPTION">ALSO</tt></dt>
+<dd><p>该命令应该在最初的命令执行之后<span class="emphasis"><i class="EMPHASIS">一起</i></span>执行。</p>
+<p>如果既没有声明 <tt class="LITERAL">ALSO</tt> 也没有声明 <tt class="LITERAL">INSTEAD</tt> ，那么 <tt class="LITERAL">ALSO</tt> 是缺省。</p></dd>
+<dt><tt class="REPLACEABLE"><i>command</i></tt></dt>
+<dd><p>组成规则动作的命令。有效的命令是 <tt class="COMMAND">SELECT</tt>, <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt>, <tt class="COMMAND">NOTIFY</tt> 语句之一。</p></dd>
+</dl>
+</div>
+<p>在 <tt class="REPLACEABLE"><i>condition</i></tt> 和 <tt class="REPLACEABLE"><i>command</i></tt> 里，特殊的表名字 <tt class="LITERAL">NEW</tt> 和 <tt class="LITERAL">OLD</tt> 可以用于指向被引用表里的数值。<tt class="LITERAL">NEW</tt> 在 <tt class="LITERAL">ON INSERT</tt> 和 <tt class="LITERAL">ON UPDATE</tt> 规则里可以指向被插入或更新的新行。<tt class="LITERAL">OLD</tt> 在 <tt class="LITERAL">ON UPDATE</tt> 和 <tt class="LITERAL">ON DELETE</tt> 规则里可以指向现存的被更新或删除的行。</p>
+</div>
+<div class="REFSECT1"><a name="AEN48418"></a><h2>注意</h2>
+<p>为了在表上定义或修改规则，你必须是该表的拥有者。</p>
+<p>在视图上用于 <tt class="LITERAL">INSERT</tt>, <tt class="LITERAL">UPDATE</tt>, <tt class="LITERAL">DELETE</tt> 的规则中可以添加 <tt class="LITERAL">RETURNING</tt> 子句基于视图的字段返回。如果规则被 <tt class="COMMAND">INSERT RETURNING</tt>, <tt class="COMMAND">UPDATE RETURNING</tt>, <tt class="COMMAND">DELETE RETURNING</tt> 命令触发，这些子句将用来计算输出结果。如果规则被不带 <tt class="LITERAL">RETURNING</tt> 的命令触发，那么规则的 <tt class="LITERAL">RETURNING</tt> 子句将被忽略。目前仅允许无条件的 <tt class="LITERAL">INSTEAD</tt> 规则包含 <tt class="LITERAL">RETURNING</tt> 子句，而且在同一个事件内的所有规则中最多只能有一个 <tt class="LITERAL">RETURNING</tt> 子句。这样就确保只有一个 <tt class="LITERAL">RETURNING</tt> 子句可以用于计算结果。如果在任何有效规则中都不存在 <tt class="LITERAL">RETURNING</tt> 子句，该视图上的 <tt class="LITERAL">RETURNING</tt> 查询将被拒绝。</p>
+<p>有一件很重要的事情是要避免循环规则。比如，尽管下面两条规则定义都是 PostgreSQL 可以接受的，但其中的一条 <tt class="COMMAND">SELECT</tt> 命令会导致 PostgreSQL 报告一条错误信息，因为该查询循环了太多次：</p>
+<pre class="PROGRAMLISTING">CREATE RULE "_RETURN" AS
+    ON SELECT TO t1
+    DO INSTEAD 
+        SELECT * FROM t2;
+
+CREATE RULE "_RETURN" AS
+    ON SELECT TO t2
+    DO INSTEAD 
+        SELECT * FROM t1;
+
+SELECT * FROM t1;</pre>
+<p>目前，如果一个规则包含一个 <tt class="COMMAND">NOTIFY</tt> 命令，那么该 <tt class="COMMAND">NOTIFY</tt> 命令将被无条件执行，也就是说，即使规则不施加到任何行上面，该 <tt class="COMMAND">NOTIFY</tt> 也会被执行。比如，在</p>
+<pre class="PROGRAMLISTING">CREATE RULE notify_me AS ON UPDATE TO mytable DO ALSO NOTIFY mytable;
+
+UPDATE mytable SET name = 'foo' WHERE id = 42;</pre>
+<p>里，一个 <tt class="COMMAND">NOTIFY</tt> 事件将在 <tt class="COMMAND">UPDATE</tt> 的时候发出，不管是否有满足 <tt class="LITERAL">id = 42</tt> 条件的行。这是一个实现的限制，将来的版本应该修补这个毛病。</p>
+</div>
+<div class="REFSECT1"><a name="AEN48450"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">CREATE RULE</tt> 是 PostgreSQL 语言的扩展，整个规则重写系统都是如此。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createrole.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createschema.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE ROLE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE SCHEMA</td></tr>
+</table>
+</div>
+</body></html>

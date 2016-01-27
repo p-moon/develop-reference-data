@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>扩展性</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="gin-intro.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="gin.html">快退</a></td><td width="60%" align="center" valign="bottom">章51. GIN 索引</td><td width="10%" align="right" valign="top"><a href="gin.html">快进</a></td><td width="10%" align="right" valign="top"><a href="gin-implementation.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="GIN-EXTENSIBILITY">51.2. 扩展性</a></h1>
+<p>GIN 接口有一个高层次的抽象，仅要求实现被访问数据类型的语义即可。GIN 层自身可以处理并发操作、记录日志、搜索树结构。</p>
+<p>定义一个 GIN 访问方法所要做的所有事情就是实现四个用户定义的方法，这些方法定义了 key 在树中的行为、key 与 key 之间的关系、被索引的值、能够使用索引的查询。简而言之，GIN 将扩展性与普遍性、代码重用、清晰的接口结合在了一起。</p>
+<p>一个 GIN 索引操作符类必须实现的四个方法如下：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>int compare(Datum a, Datum b)</dt>
+<dd><p>比较两个 key(不是被索引的值!)然后返回一个小于/等于/大于零的值，分别表示第一个 key 小于/等于/大于第二个 key</p></dd>
+<dt>Datum* extractValue(Datum inputValue, uint32 *nkeys)</dt>
+<dd><p>返回一个其值用于索引的 key 数组，数组中元素的个数存放在 <tt class="LITERAL">*nkeys</tt> 中。</p></dd>
+<dt>Datum* extractQuery(Datum query, uint32 *nkeys, StrategyNumber n)</dt>
+<dd><p>返回一个其值用于查询的 key 数组。也就是说，<tt class="LITERAL">query</tt> 是可索引操作符右侧的值，而该操作符左侧是被索引的字段。<tt class="LITERAL">n</tt> 操作符类中操作符的策略号(参见 <a href="xindex.html#XINDEX-STRATEGIES">节33.14.2</a>)。通常，<code class="FUNCTION">extractQuery</code> 用来通过考量 <tt class="LITERAL">n</tt> 来决定 <tt class="LITERAL">query</tt> 的数据类型以及需要提取的 key 值。数组中元素的个数存放在 <tt class="LITERAL">*nkeys</tt> 中。</p></dd>
+<dt>bool consistent(bool check[], StrategyNumber n, Datum query)</dt>
+<dd><p>如果索引值满足查询策略号为 <tt class="LITERAL">n</tt> 的操作符(或者如果该操作符在操作符类中被标记为 RECHECK 也可能满足)则返回 TRUE 。<tt class="LITERAL">check</tt> 数组的长度必须与先前由 <code class="FUNCTION">extractQuery</code> 为该查询返回的 key 的数量相同。如果索引值包含相应的查询 key ，那么<tt class="LITERAL">check</tt> 数组中的每一个元素都是 TRUE ，也就是如果 check[i] == TRUE ，那么 <code class="FUNCTION">extractQuery</code> 结果数组的第 i 个 key 存在于索引值当中。在 <code class="FUNCTION">consistent</code> 方法需要查看它的情况下，原始的 <tt class="LITERAL">query</tt> datum(不是抽取出的 key 数组!) 将会被传递。</p></dd>
+</dl>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="gin-intro.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="gin-implementation.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">介绍</td><td width="34%" align="center" valign="top"><a href="gin.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">实现</td></tr>
+</table>
+</div>
+</body></html>

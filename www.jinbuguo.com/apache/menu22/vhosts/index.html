@@ -1,0 +1,65 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>Apache虚拟主机文档 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="../index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">虚拟主机</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache虚拟主机文档</h1>
+
+
+
+    <p>术语"<cite>虚拟主机</cite>"是指在一个机器上运行多个网站(比如：<code>www.company1.com</code>和<code>www.company2.com</code>)。如果每个网站拥有不同的IP地址，则虚拟主机可以是"<a href="ip-based.html">基于IP</a>"的；如果只有一个IP地址，也可以是"<a href="name-based.html">基于主机名</a>"的，其实现对最终用户是透明的。</p>
+
+    <p>Apache是率先支持基于IP的虚拟主机的服务器之一。1.1及其更新版本同时支持基于IP和基于主机名的虚拟主机，今后，不同的虚拟主机有时会被称为"<em>基于主机</em>"或"<em>非IP虚拟主机</em>"。</p>
+
+    <p>下列文档会阐述Apache1.3及其更新版本所支持的虚拟主机的所有细节。</p>
+
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="support" id="support">虚拟主机支持</a></h2>
+
+    <ul>
+      <li><a href="name-based.html">基于主机名的虚拟主机</a>(一个IP地址，多个网站)</li>
+      <li><a href="ip-based.html">基于IP地址的虚拟主机</a>(每个站点拥有一个的独立IP地址)</li>
+      <li><a href="examples.html">虚拟主机的普通配置示例</a></li>
+      <li><a href="fd-limits.html">文件描述符限制</a>(在日志文件过多的情况下会产生的限制)</li>
+      <li><a href="mass.html">动态配置大量虚拟主机</a></li>
+      <li><a href="details.html">深入讨论虚拟主机的匹配</a></li>
+    </ul>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="directives" id="directives">配置指令</a></h2>
+
+    <ul>
+      <li><code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code></li>
+      <li><code class="directive"><a href="../mod/core.html#namevirtualhost">NameVirtualHost</a></code></li>
+      <li><code class="directive"><a href="../mod/core.html#servername">ServerName</a></code></li>
+      <li><code class="directive"><a href="../mod/core.html#serveralias">ServerAlias</a></code></li>
+      <li><code class="directive"><a href="../mod/core.html#serverpath">ServerPath</a></code></li>
+    </ul>
+
+    <p>如果要调试你的虚拟主机配置，你会发现Apache的 <code>-S</code> 命令行开关很有用。比如：</p>
+
+    <div class="example"><p><code>
+    /usr/local/apache2/bin/httpd -S
+    </code></p></div>
+
+    <p>此命令会输出Apache解析配置文件的详细描述，仔细检查IP地址和主机名会有助于纠正配置错误。(其他命令行参数详见：<code class="program"><a href="../programs/httpd.html">httpd</a></code>文档)</p>
+
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

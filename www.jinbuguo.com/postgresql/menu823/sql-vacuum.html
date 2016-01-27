@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>VACUUM</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-update.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-update.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-values.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-values.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-VACUUM"></a>VACUUM</h1>
+<div class="REFNAMEDIV"><a name="AEN55150"></a><h2>名称</h2>VACUUM&nbsp;--&nbsp;垃圾收集以及可选地分析一个数据库</div>
+<a name="AEN55153"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN55155"></a><h2>语法</h2>
+<pre class="SYNOPSIS">VACUUM [ FULL ] [ FREEZE ] [ VERBOSE ] [ <tt class="REPLACEABLE"><i>table</i></tt> ]
+VACUUM [ FULL ] [ FREEZE ] [ VERBOSE ] ANALYZE [ <tt class="REPLACEABLE"><i>table</i></tt> [ (<tt class="REPLACEABLE"><i>column</i></tt> [, ...] ) ] ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN55160"></a><h2>描述</h2>
+<p><tt class="COMMAND">VACUUM</tt> 回收已删除行占据的存储空间。在一般的 PostgreSQL 操作里，那些已经 DELETE 的行或者被 UPDATE 过后过时的行并没有从它们所属的表中物理删除；在完成 <tt class="COMMAND">VACUUM</tt> 之前它们仍然存在。因此有必须周期地运行 <tt class="COMMAND">VACUUM</tt> ，特别是在经常更新的表上。</p>
+<p>如果没有参数，<tt class="COMMAND">VACUUM</tt> 处理当前数据库里每个表，如果有参数，<tt class="COMMAND">VACUUM</tt> 只处理那个表。</p>
+<p><tt class="COMMAND">VACUUM ANALYZE</tt> 先执行一个 <tt class="COMMAND">VACUUM</tt> 然后是给每个选定的表执行一个 <tt class="COMMAND">ANALYZE</tt> 。对于日常维护脚本而言，这是一个很方便的组合。参阅 <a href="sql-analyze.html"><i>ANALYZE</i></a> 获取更多有关其处理的细节。</p>
+<p>简单的 <tt class="COMMAND">VACUUM</tt>(没有 <tt class="LITERAL">FULL</tt>)只是简单地回收空间并且令其可以再次使用。这种形式的命令可以和对表的普通读写并发操作，因为没有请求排他锁。<tt class="COMMAND">VACUUM FULL</tt> 执行更广泛的处理，包括跨块移动行，以便把表压缩到最少的磁盘块数目里。这种形式要慢许多并且在处理的时候需要在表上施加一个排它锁。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55179"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">FULL</tt></dt>
+<dd><p>选择"完全"清理，这样可以恢复更多的空间，但是花的时间更多并且在表上施加了排它锁。</p></dd>
+<dt><tt class="LITERAL">FREEZE</tt></dt>
+<dd><p>选择激进的行"冻结"。指定 <tt class="LITERAL">FREEZE</tt> 相当于执行 <tt class="COMMAND">VACUUM</tt> 时将 <a href="runtime-config-client.html#GUC-VACUUM-FREEZE-MIN-AGE">vacuum_freeze_min_age</a> 参数设为零。<tt class="LITERAL">FREEZE</tt> 选项将在未来的版本中被取消，并且反对使用，你应当使用设置正确的参数值的方法来达到目的。</p></dd>
+<dt><tt class="LITERAL">VERBOSE</tt></dt>
+<dd><p>为每个表打印一份详细的清理工作报告</p></dd>
+<dt><tt class="LITERAL">ANALYZE</tt></dt>
+<dd><p>更新用于优化器的统计信息，以决定执行查询的最有效方法。</p></dd>
+<dt><tt class="REPLACEABLE"><i>table</i></tt></dt>
+<dd><p>要清理的表的名称(可以有模式修饰)。缺省时是当前数据库中的所有表。</p></dd>
+<dt><tt class="REPLACEABLE"><i>column</i></tt></dt>
+<dd><p>要分析的具体的字段名称。缺省是所有字段。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN55218"></a><h2>输出</h2>
+<p>如果指定了 <tt class="LITERAL">VERBOSE</tt> ，那么 <tt class="COMMAND">VACUUM</tt> 将发出处理过程中的信息，以表明当前正在处理那个表。各种有关这些表的统计也会打印出来。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55223"></a><h2>注意</h2>
+<p><tt class="COMMAND">VACUUM</tt> 不能在事务块内执行。</p>
+<p>建议生产数据库经常清理(至少每晚一次)，以保证不断地删除失效的行。尤其是在增删了大量记录之后，对受影响的表执行 <tt class="COMMAND">VACUUM ANALYZE</tt> 命令是一个很好的习惯。这样做将更新系统目录为最近的更改，并且允许 PostgreSQL 查询优化器在规划用户查询时有更好的选择。</p>
+<p>不建议日常使用 <tt class="OPTION">FULL</tt> 选项，但是可以在特殊情况下使用。一个例子就是在你删除了一个表的大部分行之后，希望从物理上缩小该表以减少磁盘空间占用。<tt class="COMMAND">VACUUM FULL</tt> 通常要比单纯的 <tt class="COMMAND">VACUUM</tt> 收缩更多的表尺寸。<tt class="OPTION">FULL</tt> 选项并不清理索引。仍然推荐周期性的运行 <tt class="COMMAND">REINDEX</tt> 命令。实际上，首先删除所有索引，再运行 <tt class="COMMAND">VACUUM FULL</tt> 命令，最后重建索引通常是很快的。</p>
+<p><tt class="COMMAND">VACUUM</tt> 导致 I/O 流量增加，可能会导致其它活动会话的性能恶劣。因此，有时候会建议使用基于开销的 vacuum 延迟特性。参阅<a href="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-VACUUM-COST">节17.4.4</a>获取细节。</p>
+<p>PostgreSQL 包含一个"autovacuum"设施，它可以自动进行日常的 vacuum 维护。关于手动和自动清理的更多细节，参见<a href="routine-vacuuming.html">节22.1</a>。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55244"></a><h2>例子</h2>
+<p>下面是一个在蜕变(regression)数据库里某个表上执行 <tt class="COMMAND">VACUUM</tt> 的一个例子：</p>
+<pre class="PROGRAMLISTING">regression=# VACUUM VERBOSE ANALYZE onek;
+INFO:  vacuuming "public.onek"
+INFO:  index "onek_unique1" now contains 1000 tuples in 14 pages
+DETAIL:  3000 index tuples were removed.
+0 index pages have been deleted, 0 are currently reusable.
+CPU 0.01s/0.08u sec elapsed 0.18 sec.
+INFO:  index "onek_unique2" now contains 1000 tuples in 16 pages
+DETAIL:  3000 index tuples were removed.
+0 index pages have been deleted, 0 are currently reusable.
+CPU 0.00s/0.07u sec elapsed 0.23 sec.
+INFO:  index "onek_hundred" now contains 1000 tuples in 13 pages
+DETAIL:  3000 index tuples were removed.
+0 index pages have been deleted, 0 are currently reusable.
+CPU 0.01s/0.08u sec elapsed 0.17 sec.
+INFO:  index "onek_stringu1" now contains 1000 tuples in 48 pages
+DETAIL:  3000 index tuples were removed.
+0 index pages have been deleted, 0 are currently reusable.
+CPU 0.01s/0.09u sec elapsed 0.59 sec.
+INFO:  "onek": removed 3000 tuples in 108 pages
+DETAIL:  CPU 0.01s/0.06u sec elapsed 0.07 sec.
+INFO:  "onek": found 3000 removable, 1000 nonremovable tuples in 143 pages
+DETAIL:  0 dead tuples cannot be removed yet.
+There were 0 unused item pointers.
+0 pages are entirely empty.
+CPU 0.07s/0.39u sec elapsed 1.56 sec.
+INFO:  analyzing "public.onek"
+INFO:  "onek": 36 pages, 1000 rows sampled, 1000 estimated total rows
+VACUUM</pre>
+</div>
+<div class="REFSECT1"><a name="AEN55249"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">VACUUM</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55253"></a><h2>又见</h2><a href="app-vacuumdb.html"><i><i>vacuumdb</i></i></a>, <a href="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-VACUUM-COST"><i>基于开销的清理延迟</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-update.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-values.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">UPDATE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">VALUES</td></tr>
+</table>
+</div>
+</body></html>

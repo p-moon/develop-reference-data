@@ -1,0 +1,219 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>.htaccess文件 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">如何.../指南</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>.htaccess文件</h1>
+
+
+<p><code>.htaccess</code>文件提供了针对每个目录改变配置的方法。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="related" id="related">.htaccess 文件</a></h2>
+    <table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="related">
+<tr><th>相关模块</th><th>相关指令</th></tr>
+<tr><td><ul><li><code class="module"><a href="../mod/core.html">core</a></code></li><li><code class="module"><a href="../mod/mod_authn_file.html">mod_authn_file</a></code></li><li><code class="module"><a href="../mod/mod_authz_groupfile.html">mod_authz_groupfile</a></code></li><li><code class="module"><a href="../mod/mod_cgi.html">mod_cgi</a></code></li><li><code class="module"><a href="../mod/mod_include.html">mod_include</a></code></li><li><code class="module"><a href="../mod/mod_mime.html">mod_mime</a></code></li></ul></td><td><ul><li><code class="directive"><a href="../mod/core.html#accessfilename">AccessFileName</a></code></li><li><code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code></li><li><code class="directive"><a href="../mod/core.html#options">Options</a></code></li><li><code class="directive"><a href="../mod/mod_mime.html#addhandler">AddHandler</a></code></li><li><code class="directive"><a href="../mod/core.html#sethandler">SetHandler</a></code></li><li><code class="directive"><a href="../mod/core.html#authtype">AuthType</a></code></li><li><code class="directive"><a href="../mod/core.html#authname">AuthName</a></code></li><li><code class="directive"><a href="../mod/mod_authn_file.html#authuserfile">AuthUserFile</a></code></li><li><code class="directive"><a href="../mod/mod_authz_groupfile.html#authgroupfile">AuthGroupFile</a></code></li><li><code class="directive"><a href="../mod/core.html#require">Require</a></code></li></ul></td></tr>
+</table>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="what" id="what">工作原理和使用方法</a></h2>
+
+
+    <p><code>.htaccess</code>文件(或者"分布式配置文件")提供了针对每个目录改变配置的方法，即在一个特定的目录中放置一个包含指令的文件，其中的指令作用于此目录及其所有子目录。</p>
+
+    <div class="note"><h3>说明：</h3>
+      <p>如果需要使用<code>.htaccess</code>以外的其他文件名，可以用<code class="directive"><a href="../mod/core.html#accessfilename">AccessFileName</a></code>指令来改变。例如，需要使用<code>.config</code> ，则可以在服务器配置文件中按以下方法配置：</p>
+
+      <div class="example"><p><code>
+        AccessFileName .config
+      </code></p></div>
+    </div>
+
+    <p>通常，<code>.htaccess</code>文件使用的配置语法和<a href="../configuring.html#syntax">主配置文件</a>一样。<code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code>指令按类别决定了<code>.htaccess</code>文件中哪些指令才是有效的。如果一个指令允许在<code>.htaccess</code>中使用，那么在本手册的说明中，此指令会有一个<a href="../mod/directive-dict.html#Context">覆盖项</a>段，其中说明了为使此指令生效而必须在<code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code>指令中设置的值。</p>
+
+    <p>例如，本手册对<code class="directive"><a href="../mod/core.html#adddefaultcharset">AddDefaultCharset</a></code>指令的阐述表明此指令可以用于<code>.htaccess</code>文件中(见"作用域"项)，而<a href="../mod/directive-dict.html#Context">覆盖项</a>一行是<code>FileInfo</code> ，那么为了使<code>.htaccess</code>中的此指令有效，则至少要设置 <code>AllowOverride FileInfo</code> 。</p>
+
+    <div class="example"><h3>例子：</h3><table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA">
+<tr><td><a href="../mod/directive-dict.html#Context">作用域</a></td><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><td><a href="../mod/directive-dict.html#Override">覆盖项</a></td><td>FileInfo</td></tr>
+</table></div>
+
+    <p>如果不能确定某个指令是否可以用于<code>.htaccess</code>文件，可以查阅手册中对指令的说明，看在"作用域"行中是否有".htaccess" 。</p>
+    </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="when" id="when">(不)使用.htaccess文件的场合</a></h2>
+
+    <p>一般情况下，不应该使用<code>.htaccess</code>文件，除非你对主配置文件没有访问权限。有一种很常见的误解，认为用户认证只能通过<code>.htaccess</code>文件实现，其实并不是这样，把用户认证写在主配置文件中是完全可行的，而且是一种很好的方法。</p>
+
+    <p><code>.htaccess</code>文件应该被用在内容提供者需要针对特定目录改变服务器的配置而又没有root权限的情况下。如果服务器管理员不愿意频繁修改配置，则可以允许用户通过<code>.htaccess</code>文件自己修改配置，尤其是ISP在同一个机器上运行了多个用户站点，而又希望用户可以自己改变配置的情况下。</p>
+
+    <p>虽然如此，一般都应该尽可能地避免使用<code>.htaccess</code>文件。任何希望放在<code>.htaccess</code>文件中的配置，都可以放在主配置文件的<code class="directive"><a href="../mod/core.html#directory">&lt;Directory&gt;</a></code>段中，而且更高效。</p>
+
+    <p>避免使用<code>.htaccess</code>文件有两个主要原因。</p>
+
+    <p>首先是性能。如果<code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code>启用了<code>.htaccess</code>文件，则Apache需要在每个目录中查找<code>.htaccess</code>文件，因此，无论是否真正用到，启用<code>.htaccess</code>都会导致性能的下降。另外，对每一个请求，都需要读取一次<code>.htaccess</code>文件。</p>
+
+    <p>还有，Apache必须在所有上级的目录中查找<code>.htaccess</code>文件，以使所有有效的指令都起作用(参见<a href="#how">指令的生效</a>)，所以，如果请求<code>/www/htdocs/example</code>中的页面，Apache必须查找以下文件：</p>
+
+    <div class="example"><p><code>
+      /.htaccess<br />
+      /www/.htaccess<br />
+      /www/htdocs/.htaccess<br />
+      /www/htdocs/example/.htaccess
+    </code></p></div>
+
+    <p>总共要访问4个额外的文件，即使这些文件都不存在。(注意，这可能仅仅由于允许根目录"<code>/</code>"使用<code>.htaccess</code> ，虽然这种情况并不多。)</p>
+
+    <p>其次是安全。这样会允许用户自己修改服务器的配置，这可能会导致某些意想不到的修改，所以请认真考虑是否应当给予用户这样的特权。但是，如果给予用户较少的特权而不能满足其需要，则会带来额外的技术支持请求，所以，必须明确地告诉用户已经给予他们的权限，说明<code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code>设置的值，并引导他们参阅相应的说明，以免日后生出许多麻烦。</p>
+
+    <p>注意，在<code>/www/htdocs/example</code>目录下的<code>.htaccess</code>文件中放置指令，与在主配置文件中<code>&lt;Directory /www/htdocs/example&gt;</code>段中放置相同指令，是完全等效的。</p>
+
+    <p><code>/www/htdocs/example</code>目录下的<code>.htaccess</code>文件：</p>
+
+    <div class="example"><h3><code>/www/htdocs/example</code>目录下的.htaccess文件的内容：</h3><p><code>
+        AddType text/example .exm
+    </code></p></div>
+
+    <div class="example"><h3><code>httpd.conf</code>文件中摘录的内容：</h3><p><code>
+      &lt;Directory /www/htdocs/example&gt;<br />
+      <span class="indent">
+        AddType text/example .exm<br />
+      </span>
+      &lt;/Directory&gt;
+    </code></p></div>
+
+    <p>但是，把配置放在主配置文件中更加高效，因为只需要在Apache启动时读取一次，而不是在每次文件被请求时都读取。</p>
+
+    <p>将<code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code>设置为<code>none</code>可以完全禁止使用<code>.htaccess</code>文件：</p>
+
+    <div class="example"><p><code>
+      AllowOverride None
+    </code></p></div>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="how" id="how">指令的生效</a></h2>
+
+    <p><code>.htaccess</code>文件中的配置指令作用于<code>.htaccess</code>文件所在的目录及其所有子目录，但是很重要的、需要注意的是，其上级目录也可能会有<code>.htaccess</code>文件，而指令是按查找顺序依次生效的，所以一个特定目录下的<code>.htaccess</code>文件中的指令可能会覆盖其上级目录中的<code>.htaccess</code>文件中的指令，即子目录中的指令会覆盖父目录或者主配置文件中的指令。</p>
+
+    <p>例子：</p>
+
+    <p><code>/www/htdocs/example1</code>目录中的<code>.htaccess</code>文件有如下内容：</p>
+
+    <div class="example"><p><code>
+       Options +ExecCGI
+    </code></p></div>
+
+    <p>(注意：必须设置"<code>AllowOverride Options</code>"以允许在<code>.htaccess</code>中使用"<code class="directive"><a href="../mod/core.html#options">Options</a></code>"指令)</p>
+
+    <p><code>/www/htdocs/example1/example2</code>目录中的<code>.htaccess</code>文件有如下内容：</p>
+
+    <div class="example"><p><code>
+       Options Includes
+    </code></p></div>
+
+    <p>由于第二个<code>.htaccess</code>文件的存在，<code>/www/htdocs/example1/example2</code>中的CGI执行是不允许的，而只允许 <code>Options Includes</code> ，它完全覆盖了之前的设置。</p>
+
+    <h3><a name="merge" id="merge">将.htaccess合并到主配置文件中</a></h3>
+
+    <p>正如在<a href="../sections.html">配置段(容器)</a>中讨论的那样，<code>.htaccess</code>文件能够覆盖<code class="directive"><a href="../mod/core.html#directory">&lt;Directory&gt;</a></code>段中对相应目录的设置，但是也同样会被主配置文件中其它类型的配置段所覆盖。这个特性可以用来强制实施某些配置，甚至在<code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code>已经许可的情况下。举个例子来说，为了强迫在<code>.htaccess</code>中禁止脚本执行但不限制其它的情况下，可以这样：</p>
+
+    <div class="example"><p><code>
+&lt;Directory /&gt;<br />
+<span class="indent">
+Allowoverride All<br />
+</span>
+&lt;/Directory&gt;<br />
+<br />
+&lt;Location /&gt;<br />
+<span class="indent">
+Options +IncludesNoExec -ExecCGI<br />
+</span>
+&lt;/Location&gt;
+    </code></p></div>
+
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="auth" id="auth">认证举例</a></h2>
+
+    <p>如果你只是为了知道如何认证，而直接从这里开始看的，有很重要的一点需要注意，有一种常见的误解，认为实现密码认证必须要使用<code>.htaccess</code>文件，其实是不正确的。把认证指令放在主配置文件的<code class="directive"><a href="../mod/core.html#directory">&lt;Directory&gt;</a></code>段中是一个更好的方法，而<code>.htaccess</code>文件应该仅仅用于无权访问主配置文件的时候。参见<a href="#when">上述</a>关于何时应该与何时不应该使用<code>.htaccess</code>文件的讨论。</p>
+
+    <p>有此声明在先，如果你仍然需要使用<code>.htaccess</code>文件，请继续看以下说明。</p>
+
+    <p><code>.htaccess</code>文件的内容：</p>
+
+    <div class="example"><p><code>
+      AuthType Basic<br />
+      AuthName "Password Required"<br />
+      AuthUserFile /www/passwords/password.file<br />
+      AuthGroupFile /www/passwords/group.file<br />
+      Require Group admins
+    </code></p></div>
+
+    <p>必须设置 <code>AllowOverride AuthConfig</code> 以允许这些指令生效。</p>
+
+    <p>更详细的说明，请参见<a href="auth.html">认证、授权、访问控制</a>。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="ssi" id="ssi">服务器端包含(SSI)举例</a></h2>
+
+    <p><code>.htaccess</code>文件的另一个常见用途是允许一个特定的目录使用服务器端包含(SSI)，可以在需要的目录中放置<code>.htaccess</code>文件，并作如下配置：</p>
+
+    <div class="example"><p><code>
+       Options +Includes<br />
+       AddType text/html shtml<br />
+       AddHandler server-parsed shtml
+    </code></p></div>
+
+    <p>注意，必须同时设置 <code>AllowOverride Options</code> 和 <code>AllowOverride FileInfo</code> 以使这些指令生效。</p>
+
+    <p>更详细的有关服务器端包含的说明，请参见<a href="ssi.html">SSI指南</a>。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="cgi" id="cgi">CGI举例</a></h2>
+
+    <p>可以通过<code>.htaccess</code>文件允许在特定的目录中执行CGI程序，需要作如下配置：</p>
+
+    <div class="example"><p><code>
+       Options +ExecCGI<br />
+       AddHandler cgi-script cgi pl
+    </code></p></div>
+
+    <p>另外，如下配置可以使给定目录下的所有文件被视为CGI程序：</p>
+
+    <div class="example"><p><code>
+       Options +ExecCGI<br />
+       SetHandler cgi-script
+    </code></p></div>
+
+    <p>注意，必须同时设置 <code>AllowOverride Options</code> 和 <code>AllowOverride FileInfo</code> 以使这些指令生效。</p>
+
+    <p>更详细的有关CGI编程和配置的说明，请参见<a href="cgi.html">CGI指南</a>。</p>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="troubleshoot" id="troubleshoot">疑难解答</a></h2>
+
+    <p>如果在<code>.htaccess</code>文件中的某些指令不起作用，可能有多种原因。</p>
+
+    <p>最常见的原因是<code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code>指令没有被正确设置，必须确保没有对此文件区域设置 <code>AllowOverride None</code> 。有一个很好的测试方法，就是在<code>.htaccess</code>文件随便增加点无意义的垃圾内容，如果服务器没有返回了一个错误消息，那么几乎可以断定设置了 <code>AllowOverride None</code> 。</p>
+
+    <p>在访问文档时，如果收到服务器的出错消息，应该检查Apache的错误日志，可以知道<code>.htaccess</code>文件中哪些指令是不允许使用的，也可能会发现需要纠正的语法错误。</p>
+
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>用户定义操作符</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="xtypes.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="extend.html">快退</a></td><td width="60%" align="center" valign="bottom">章33. 扩展 SQL</td><td width="10%" align="right" valign="top"><a href="extend.html">快进</a></td><td width="10%" align="right" valign="top"><a href="xoper-optimization.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="XOPER">33.12. 用户定义操作符</a></h1><a name="AEN37685"></a>
+<p>每个操作符都是对真正干活的对应函数的"语义修饰"；所以你在创建操作符之前必须先创建对应的函数。不过，一个操作符也并<span class="emphasis"><i class="EMPHASIS">不仅仅</i></span>是语义修饰，因为它还带着可以帮助查询规划器优化使用该操作符的附加信息。下一节将用于解释这些附加信息。</p>
+<p> PostgreSQL 支持左目、右目、双目操作符。操作符可以重载；也就是说，同一个操作符可以用于不同数目和类型的操作数。在执行一个查询的时候，系统从名字和提供的操作符类型上判断需要调用哪个操作符。</p>
+<p>下面是一个创建用于两个复数相加的操作符的例子。假设已经创建了 <tt class="TYPE">complex</tt>(见<a href="xtypes.html">节33.11</a>)类型的定义。首先需要做相加工作的函数；然后就可以定义操作符：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION complex_add(complex, complex)
+    RETURNS complex
+    AS '<tt class="REPLACEABLE"><i>filename</i></tt>', 'complex_add'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OPERATOR + (
+    leftarg = complex,
+    rightarg = complex,
+    procedure = complex_add,
+    commutator = +
+);</pre>
+<p>现在可以执行像下面这样的查询：</p>
+<pre class="SCREEN">SELECT (a + b) AS c FROM test_complex;
+
+        c
+-----------------
+ (5.2,6.05)
+ (133.42,144.95)</pre>
+<p>在这里已经演示了如何创建双目操作符。要创建单目操作符，只需要省略 <tt class="LITERAL">leftarg</tt> 或者 <tt class="LITERAL">rightarg</tt> 即可。只有 <tt class="LITERAL">procedure</tt> 子句和参数(argument)子句是 <tt class="COMMAND">CREATE OPERATOR</tt> 里需要的条目。例子里演示的 <tt class="LITERAL">commutator</tt> 子句是一个给查询优化器的可选暗示。关于 <tt class="LITERAL">commutator</tt> 和其它优化器提示的详细信息在下节给出。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="xtypes.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="xoper-optimization.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">用户定义类型</td><td width="34%" align="center" valign="top"><a href="extend.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">操作符优化信息</td></tr>
+</table>
+</div>
+</body></html>

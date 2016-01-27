@@ -1,0 +1,114 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>用户网站目录 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">如何.../指南</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>用户网站目录</h1>
+
+
+<p>在多用户系统中，用<code class="directive"><a href="../mod/mod_userdir.html#userdir">UserDir</a></code>指令可以允许每个用户在其宿主目录中拥有一个网络站点。使用URL <code>http://example.com/~username/</code> 的访问者可以获得用户"<code>username</code>"的宿主目录中的内容或者用<code class="directive"><a href="../mod/mod_userdir.html#userdir">UserDir</a></code>指定的子目录中的内容。</p>
+
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="related" id="related">用户网站目录</a></h2>
+    
+    <table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="related">
+<tr><th>相关模块</th><th>相关指令</th></tr>
+<tr><td><ul><li><code class="module"><a href="../mod/mod_userdir.html">mod_userdir</a></code></li></ul></td><td><ul><li><code class="directive"><a href="../mod/mod_userdir.html#userdir">UserDir</a></code></li><li><code class="directive"><a href="../mod/core.html#directorymatch">DirectoryMatch</a></code></li><li><code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code></li></ul></td></tr>
+</table>
+    </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="userdir" id="userdir">用UserDir设置文件路径</a></h2>
+    
+
+    <p>可以用<code class="directive"><a href="../mod/mod_userdir.html#userdir">UserDir</a></code>指令指定被网络读取的用户网站目录。此指令有几种不同的形式。</p>
+
+    <p>如果路径没有前导斜杠，则被当作该用户宿主目录下的子目录。如果有以下配置：</p>
+
+    <div class="example"><p><code>
+      UserDir public_html
+    </code></p></div>
+
+    <p>则URL <code>http://example.com/~rbowen/file.html</code> 会被解释为文件路径：<code>/home/rbowen/public_html/file.html</code></p>
+
+    <p>如果路径有前导斜杠，则用此路径和用户名构造路径。如果有以下配置：</p>
+
+    <div class="example"><p><code>
+      UserDir /var/html
+    </code></p></div>
+
+    <p>则URL <code>http://example.com/~rbowen/file.html</code> 会被解释为文件路径：<code>/var/html/rbowen/file.html</code></p>
+
+    <p>如果路径中有星号(*)，则星号部分会被用户名所取代。如果有以下配置：</p>
+
+    <div class="example"><p><code>
+      UserDir /var/www/*/docs
+    </code></p></div>
+
+    <p>则URL <code>http://example.com/~rbowen/file.html</code> 会被解释为文件路径：<code>/var/www/rbowen/docs/file.html</code></p>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="enable" id="enable">限定哪些用户可以使用此功能</a></h2>
+    
+
+    <p>使用<code class="directive"><a href="../mod/mod_userdir.html#userdir">UserDir</a></code>可以限定被允许使用此功能的用户：</p>
+
+    <div class="example"><p><code>
+      UserDir enabled<br />
+      UserDir disabled root jro fish
+    </code></p></div>
+
+    <p>上述配置使除了列在<code>disabled</code>中的用户以外的所有用户都可以使用此功能。还可以禁止所有用户而只允许部分用户使用此功能，例如：</p>
+
+    <div class="example"><p><code>
+      UserDir disabled<br />
+      UserDir enabled rbowen krietz
+    </code></p></div>
+
+    <p>更多的例子请参见<code class="directive"><a href="../mod/mod_userdir.html#userdir">UserDir</a></code>文档。</p>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="cgi" id="cgi">启用对每个用户都有效的cgi目录</a></h2>
+  
+
+   <p><code class="directive"><a href="../mod/core.html#directory">&lt;Directory&gt;</a></code>指令可以指定每个用户主目录中的一个特定的目录为"允许cgi"的目录，使每个用户都可以拥有自己的<code>cgi-bin</code>目录。</p>
+
+    <div class="example"><p><code>
+      &lt;Directory /home/*/public_html/cgi-bin/&gt;<br />
+       Options ExecCGI<br />
+       SetHandler cgi-script<br />
+       &lt;/Directory&gt;
+    </code></p></div>
+
+    <p>这样"放肆的"设置使得<code>UserDir</code>被设置成<code>public_html</code> ，CGI程序<code>example.cgi</code>可以用下面的URL从那个目录加载：</p>
+
+    <div class="example"><p><code>
+    http://example.com/~rbowen/cgi-bin/example.cgi
+    </code></p></div>
+
+    </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="htaccess" id="htaccess">允许用户改变配置</a></h2>
+    
+
+    <p>用户可以通过<code>.htaccess</code>文件改变其网络空间的服务器配置，因此必须确保<code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code>指令被正确设置，以限定用户只能使用被允许的指令。其细节请参见<a href="htaccess.html">.htaccess指南</a>。</p>
+
+  </div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

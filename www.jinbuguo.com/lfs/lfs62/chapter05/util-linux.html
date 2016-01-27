@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.30. Util-linux-2.12r</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="texinfo.html" title="Texinfo-4.8">后退</a>
+          <p>Texinfo-4.8</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="stripping.html" title="清理系统">前进</a>
+          <p>清理系统</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">5.30. Util-linux-2.12r</h1>
+      </div>
+      <div class="package">
+        <p>Util-linux 软件包包含许多工具。其中比较重要的是加载、卸载、格式化、分区和管理驱动器，以及打开 tty 端口和处理消息。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">少于 0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">8.9 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">5.30.1. 安装 Util-linux</h2>
+        </div>
+        <p>Util-linux 默认不使用刚才安装在 <tt class="filename">/tools</tt> 目录下的头文件和库文件，我们更改配置脚本来修正这个问题：</p>
+        <pre class="userinput"><kbd class="command">sed -i 's@/usr/include@/tools/include@g' configure</kbd></pre>
+        <p>为编译 Util-linux 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure</kbd></pre>
+        <p>编译一些支持例程：</p>
+        <pre class="userinput"><kbd class="command">make -C lib</kbd></pre>
+        <p>我们只需要这个软件包中的少数几个工具，因此只需要编译这几个工具就可以了：</p>
+        <pre class="userinput"><kbd class="command">make -C mount mount umount
+make -C text-utils more</kbd></pre>
+        <p>这个软件包没有附带测试程序。</p>
+        <p>把这些程序复制到临时工具目录：</p>
+        <pre class="userinput"><kbd class="command">cp mount/{,u}mount text-utils/more /tools/bin</kbd></pre>
+      </div>
+      <div class="content">
+        <p>关于这个软件包的详细资料位于<a href="../chapter06/util-linux.html#contents-utillinux" title="6.56.3. Util-linux 的内容">节 6.56.3, Util-linux 的内容</a></p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="texinfo.html" title="Texinfo-4.8">后退</a>
+          <p>Texinfo-4.8</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="stripping.html" title="清理系统">前进</a>
+          <p>清理系统</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

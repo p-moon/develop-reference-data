@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>依赖性跟踪</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="ddl-others.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="ddl.html">快退</a></td><td width="60%" align="center" valign="bottom">章5. 数据定义</td><td width="10%" align="right" valign="top"><a href="ddl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="dml.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DDL-DEPEND">5.11. 依赖性跟踪</a></h1><a name="AEN2865"></a><a name="AEN2868"></a>
+<p>如果你创建了一个包含许多表，并且带有外键约束、视图、触发器、函数等复杂的数据库结构。那么你就会在对象之间隐含地创建了一个依赖性的网络。比如，一个带有外键约束的表依赖于它所引用的表。</p>
+<p>为了保证整个数据库结构的完整性，PostgreSQL 保证你无法删除那些还被其它对象依赖的对象。比如，试图删除在<a href="ddl-constraints.html#DDL-CONSTRAINTS-FK">节5.3.5</a>里被订单表所依赖的产品表是不能成功的，会有类似下面的错误信息出现：</p>
+<pre class="SCREEN">DROP TABLE products;
+
+NOTICE:  constraint orders_product_no_fkey on table orders depends on table products
+ERROR:  cannot drop table products because other objects depend on it
+HINT:  Use DROP ... CASCADE to drop the dependent objects too.</pre>
+<p>这个错误信息包含一个有用的提示：如果你不想麻烦的分别删除所有依赖对象，你可以运行</p>
+<pre class="SCREEN">DROP TABLE products CASCADE;</pre>
+<p>然后所有被依赖的对象都将被删除(并不删除订单表，只是删除外键约束)。如果你想检查 <tt class="COMMAND">DROP ... CASCADE</tt> 会干什么，运行不带 <tt class="LITERAL">CASCADE</tt> 的 <tt class="COMMAND">DROP</tt> 然后阅读 <tt class="LITERAL">NOTICE</tt> 信息。</p>
+<p>PostgreSQL 里的所有删除命令都支持声明 <tt class="LITERAL">CASCADE</tt> 。当然，具体的依赖性实体取决于对象的类型。你也可以写 <tt class="LITERAL">RESTRICT</tt> 而不是 <tt class="LITERAL">CASCADE</tt> 以获取缺省的行为(仅限于删除那些其它对象所依赖的对象)。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>根据 SQL 标准，要求至少声明 <tt class="LITERAL">RESTRICT</tt> 或 <tt class="LITERAL">CASCADE</tt> 中的一个。实际上没有哪种数据库系统强制这一点，但是缺省的行为是 <tt class="LITERAL">RESTRICT</tt> 还是 <tt class="LITERAL">CASCADE</tt> 则因系统而异。</p>
+</blockquote>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 PostgreSQL 7.3之前的外键约束依赖性和序列字段依赖性在升级过程中都<span class="emphasis"><i class="EMPHASIS">不会</i></span>得到维护或者创建。所有其它的依赖性类型 在从7.3版本以前的数据库升级过程中都将得到恰当的创建。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="ddl-others.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="dml.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">其它数据库对象</td><td width="34%" align="center" valign="top"><a href="ddl.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">数据操作</td></tr>
+</table>
+</div>
+</body></html>

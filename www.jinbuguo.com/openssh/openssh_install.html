@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; color:#600; }
+pre { background: #edc; }
+</style>
+<title>OpenSSH 安装指南 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>OpenSSH-4.7p1 安装指南</h1><h2 id="auth_name">作者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文作者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文作者不保证作品内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留作者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文作者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于作者水平有限，因此不能保证作品内容准确无误。如果你发现了作品中的错误(哪怕是错别字也好)，请来信指出，任何提高作品质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<h2>系统需求</h2>
+<p>你必须在系统上安装有Zlib(1.2.1.2以上)和OpenSSL(0.9.6以上)，这两个是必须的。如果你的操作系统提供了 /dev/random ，那么应该将 OpenSSL 配置为使用此文件作为随机数源。</p>
+<p>下面这些软件包是可选的：PRNGD，EGD，PAM，GNOME，TCP Wrappers，S/Key Libraries，LibEdit，Autoconf，Basic Security Module (BSM) ；仅在你确实需要使用到的时候才需要。</p>
+
+<h2>特权分离(Privilege Separation)</h2>
+<p>所谓特权分离(Privilege Separation)实际上是一种OpenSSH的安全机制，类似于chroot能够提供的安全性。这个特性是默认开启的，配置文件中的 UsePrivilegeSeparation 指令可以开启或关闭这个特性。</p>
+<p>使用此特性的关键之处在于设置一个空目录，并将此目录的权限设置为"000"，宿主设置为"root"。然后还需要设置一个用于特权分离的非特权用户，比如sshd，并将此用户的家目录设置为这个空目录。比如可以使用下面这样的命令：</p>
+<pre>
+  # mkdir -p  /var/empty
+  # chown 0:0 /var/empty
+  # chmod 000 /var/empty
+  # groupadd sshd
+  # useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
+</pre>
+<p>然后在运行配置脚本的时候，使用</p>
+<pre>
+  --with-privsep-path=/var/empty
+  --with-privsep-user=sshd
+</pre>
+<p>来指定目录和用户。</p>
+
+<h2>配置和编译</h2>
+<p>将下载回来的压缩包解压，进入解压后的目录，即可使用 configure 脚本进行配置。下面是 configure 选项的说明：</p>
+<dl>
+<dt>--prefix=PREFIX</dt><dd>安装目录[/usr/local]</dd>
+<dt>--sbindir=DIR</dt><dd>系统管理员使用的可执行程序目录[EPREFIX/sbin]</dd>
+<dt>--sysconfdir=DIR</dt><dd>配置文件目录[PREFIX/etc]</dd>
+<dt>--disable-largefile</dt><dd>禁用大文件(&gt;2G)支持</dd>
+<dt>--disable-strip</dt><dd>禁止在安装时调用strip来剥除不需要的调试符号</dd>
+<dt>--disable-etc-default-login</dt><dd>不使用/etc/default/login文件中提供的PATH环境变量，推荐使用此选项</dd>
+<dt>--disable-lastlog</dt><dd>禁止使用lastlog文件(记录每个用户最后登录成功的信息)</dd>
+<dt>--disable-utmp</dt><dd>禁止使用utmp文件(记录着现在登录的用户)</dd>
+<dt>--disable-utmpx</dt><dd>禁止使用utmpx文件(utmp的扩展)</dd>
+<dt>--disable-wtmp</dt><dd>禁止使用wtmp文件(记录用户登录和退出事件)</dd>
+<dt>--disable-wtmpx</dt><dd>禁止使用wtmpx文件(wtmp的扩展)</dd>
+<dt>--disable-libutil</dt><dd>禁止使用libutil库(包含了很多"标准"函数，比如login()等等)</dd>
+<dt>--disable-pututline</dt><dd>禁止使用pututline()函数(用来记录utmp文件)</dd>
+<dt>--disable-pututxline</dt><dd>禁止使用pututxline()函数(用来记录utmpx文件)</dd>
+<dt>--without-rpath</dt><dd>不在二进制文件中硬编码库文件的路径，也就是禁止添加 -R 连接器选项</dd>
+<dt>--with-cflags</dt><dd>指定额外的编译器选项</dd>
+<dt>--with-cppflags</dt><dd>指定额外的预处理器选项</dd>
+<dt>--with-ldflags</dt><dd>指定额外的连接器选项</dd>
+<dt>--with-libs</dt><dd>指定需要额外连接的库</dd>
+<dt>--with-Werror</dt><dd>使用 -Werror 编译器选项编译代码。也就是将所有警告都当作错误。</dd>
+<dt>--with-solaris-contracts</dt><dd>启用实验性的 Solaris process contracts</dd>
+<dt>--with-osfsia</dt><dd>启用OSF1机器上的SIA(Security Integration Architecture)</dd>
+<dt>--with-zlib=DIR</dt><dd>指定zlib库的安装目录</dd>
+<dt>--without-zlib-version-check</dt><dd>禁止检查zlib的版本是否合适</dd>
+<dt>--with-skey[=PATH]</dt><dd>启用 S/Key 支持。S/Key是一个在密码认证时使用一次性密码的系统。</dd>
+<dt>--with-tcp-wrappers[=DIR]</dt><dd>启用TCP-wrappers支持(/etc/hosts.allow|deny)，还可以指定wrapper库的安装目录。TCP-wrappers可以根据源地址执行访问控制。</dd>
+<dt>--with-libedit[=PATH]</dt><dd>在 sftp 中使用libedit支持</dd>
+<dt>--with-audit=debug|bsm</dt><dd>启用实验性的审计支持，目前只有debug(通过syslog记录额外的信息)和bsm(Sun的Basic Security Module)两种模式可选。</dd>
+<dt>--with-ssl-dir=DIR</dt><dd>指定 OpenSSL 的安装目录</dd>
+<dt>--without-openssl-header-check</dt><dd>禁止对OpenSSL的版本一致性进行检查</dd>
+<dt>--with-ssl-engine</dt><dd>启用OpenSSL的ENGINE支持</dd>
+<dt>--with-pam</dt><dd>启用PAM(Pluggable Authentication Modules)支持，使用此选项后还必须在sshd_config中开启UsePAM指令。</dd>
+<dt>--with-random=FILE</dt><dd>指定操作系统提供的随机源文件(通常是/dev/random或/dev/urandom)</dd>
+<dt>--with-rand-helper</dt><dd>仅在操作系统没有提供随机源的时候才需要使用这个选项来使用一个额外的ssh-rand-helper辅助程序来生成随机数。</dd>
+<dt>--with-prngd-port=PORT</dt><dd>如果操作系统没有提供随机源并且还安装了EGD/PRNGD包，那么可以使用这个选项指定从PRNGD/EGD TCP localhost:PORT读取熵，而不使用内置的熵收集器。</dd>
+<dt>--with-prngd-socket=FILE</dt><dd>如果操作系统没有提供随机源并且还安装了EGD/PRNGD包，那么可以使用这个选项指定从PRNGD/EGD socket FILE(默认为/var/run/egd-pool)读取熵，而不使用内置的熵收集器。</dd>
+<dt>--with-entropy-timeout=N</dt><dd>指定熵收集命令的超时时间(毫秒)</dd>
+<dt>--with-privsep-user=USER</dt><dd>指定运行非特权子进程的用户名</dd>
+<dt>--with-privsep-path=xxx</dt><dd>指定非特权用户的chroot目录(默认为：/var/empty)</dd>
+<dt>--with-sectok</dt><dd>使用libsectok以提供对智能卡的支持</dd>
+<dt>--with-opensc[=PFX]</dt><dd>使用OpenSC以提供对智能卡的支持</dd>
+<dt>--with-selinux</dt><dd>启用SELinux支持</dd>
+<dt>--with-kerberos5=DIR</dt><dd>启用 Kerberos 5 支持</dd>
+<dt>--with-xauth=FILE</dt><dd>指定 xauth 程序的绝对路径</dd>
+<dt>--with-mantype=man|cat|doc</dt><dd>指定man page的类型</dd>
+<dt>--with-md5-passwords</dt><dd>支持读取/etc/passwd或/etc/shadow中经过MD5加密的口令</dd>
+<dt>--without-shadow</dt><dd>表明操作系统未使用影子密码(无需读取/etc/shadow而是直接读取/etc/passwd即可)</dd>
+<dt>--with-ipaddr-display</dt><dd>在X转发时，在$DISPLAY中使用ip地址而不是主机名。这样可以解决和一些有缺陷的X库一起工作时遇到的麻烦。</dd>
+<dt>--with-default-path=PATH</dt><dd>指定服务器运行时默认的 PATH 环境变量的值(冒号分隔的路径列表)</dd>
+<dt>--with-superuser-path=PATH</dt><dd>指定服务器运行时默认的root用户的 PATH 环境变量的值(冒号分隔的路径列表)</dd>
+<dt>--with-4in6</dt><dd>OpenSSH默认尽可能使用IPv6，除非明确给出了"-4"命令行选项。这个选项表示对IPv4地址进行检查，并且将其转换成IPv6的映射地址</dd>
+<dt>--with-bsd-auth</dt><dd>启用BSD认证支持</dd>
+<dt>--with-pid-dir=DIR</dt><dd>指定保存当前服务器主进程进程号的 ssh.pid 文件的存放目录[/var/run/sshd.pid]</dd>
+<dt>--with-lastlog=FILE|DIR</dt><dd>指定 lastlog 文件的位置</dd>
+</dl>
+<p>configure 运行完毕后就可以使用 make 命令进行编译了，你可以在命令行上使用 CFLAGS 和 LDFLAGS 来指定进行编译优化。</p>
+<h2>测试</h2>
+<p>如果编译过程一切正常，那么接下来就可以使用 make tests 进行测试了。</p>
+<p>OpenSSH的测试套件包含两个部分，第一部分是由Makefile驱动的基于文件的测试；第二部分是由regress/test-exec.sh脚本(会被Makefile多次调用)驱动的基于网络(network)或代理命令(proxycommand)的测试。第一部分测试失败将导致Makefile返回一个错误(make程序会退出)，第二部分测试失败将会打印"FATAL"信息并继续执行。</p>
+<p>下面是几个与测试相关的环境变量：</p>
+<dl>
+<dt>SUDO</dt><dd>sudo 命令的路径。需要注意的是，有些系统(特别是使用了PAM的系统)要求必须使用 sudo 来执行某些测试。</dd>
+<dt>TEST_SSH_TRACE</dt><dd>设为"yes"以输出详细且罗嗦的测试信息</dd>
+<dt>TEST_SSH_QUIET</dt><dd>设为"yes"以抑制测试成功的输出信息(仅输出失败信息)</dd>
+<dt>TEST_SSH_x</dt><dd>测试中使用的各个命令的路径，其中的 x=SSH,SSHD,SSHAGENT,SSHADD,SSHKEYGEN,SSHKEYSCAN,SFTP,SFTPSERVER</dd>
+<dt>TEST_SHELL</dt><dd>用于运行测试脚本的shell</dd>
+<dt>TEST_SSH_PORT</dt><dd>用于监听测试的TCP端口</dd>
+<dt>TEST_SSH_SSH_CONFOTPS</dt><dd>在运行每个测试前添加到ssh_config中的配置指令</dd>
+<dt>TEST_SSH_SSHD_CONFOTPS</dt><dd>在运行每个测试前添加到sshd_config中的配置指令</dd>
+</dl>
+<p>已知的几个问题：</p>
+<ul>
+<li>如果你的编译过程依赖于ssh-rand-helper，那么除非预先安装ssh-rand-helper，否则测试将失败。</li>
+<li>类似的，如果你的$PATH环境变量中不包含"scp"，那么multiplex scp测试将会失败。</li>
+<li>由于新版本的GNU coreutils反对使用"head -[n]"语法，这将导致yes-head测试失败，解决的办法是在测试前设置_POSIX2_VERSION=199209环境变量。</li>
+<li>笔者发现测试套件要求 /bin 目录下至少有两个"l"打头的文件，否则 sftp-badcmds 等测试会失败，这应当是一个bug 。</li>
+</ul>
+
+<h2>安装和配置</h2>
+<p>如果测试也通过了，那么接下来就是安装和配置了。安装很简单，一条 make install 命令即可，此命令会同时生成密钥对并安装默认的配置文件。</p>
+<p>但是大多数情况下，我们会自己动手，重新生成密钥对，同时也会重新编辑配置文件。具体的细节可以参考 <a href="ssh-keygen.html">ssh-keygen(1)</a> <a href="sshd_config.html">sshd_config(5)</a> 手册页。</p>
+
+<hr />
+
+</body></html>

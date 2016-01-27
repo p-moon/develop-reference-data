@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>客户端接口</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="external-projects.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="external-projects.html">快退</a></td><td width="60%" align="center" valign="bottom">附录H. 外部项目</td><td width="10%" align="right" valign="top"><a href="external-projects.html">快进</a></td><td width="10%" align="right" valign="top"><a href="external-pl.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="EXTERNAL-INTERFACES">H.1. 客户端接口</a></h1><a name="AEN88629"></a>
+<p>在基本的 PostgreSQL 发布中仅包含两个客户端接口：</p>
+<ul>
+<li><p><a href="libpq.html">libpq</a> 被包含的原因是它是主 C 语言接口，许多其它客户端接口都依赖于它。</p></li>
+<li><p><a href="ecpg.html">ecpg</a> 被包含的原因是它是它依赖于服务器端 SQL 语法，因此对 PostgreSQL 自身的变化非常敏感。</p></li>
+</ul>
+<p>除此以外的所有其它语言的接口都是外部项目并独立发布，<a href="external-interfaces.html#LANGUAGE-INTERFACE-TABLE">表H-1</a>列出了其中的一些。需要注意的是其中的一些发布许可证与 PostgreSQL 不同。要了解更多关于每种语言的接口细节以及许可证等信息，请参考它们各自的文档。</p>
+<div class="TABLE"><a name="LANGUAGE-INTERFACE-TABLE"></a>
+<p><b>表H-1. 外部的客户端接口项目</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>语言</th><th>注释</th><th>网站</th></tr>
+</thead>
+<tbody>
+<tr><td>DBD::Pg</td><td>Perl</td><td>Perl DBI 驱动</td><td><a href="http://search.cpan.org/dist/DBD-Pg/" target="_top">http://search.cpan.org/dist/DBD-Pg/</a></td></tr>
+<tr><td>JDBC</td><td>JDBC</td><td>Type 4 JDBC 驱动</td><td><a href="http://jdbc.postgresql.org/" target="_top">http://jdbc.postgresql.org/</a></td></tr>
+<tr><td>libpqxx</td><td>C++</td><td>New-style C++ 接口</td><td><a href="http://thaiopensource.org/development/libpqxx/" target="_top">http://thaiopensource.org/development/libpqxx/</a></td></tr>
+<tr><td>libpq++</td><td>C++</td><td>Old-style C++ 接口</td><td><a href="http://gborg.postgresql.org/project/libpqpp/" target="_top">http://gborg.postgresql.org/project/libpqpp/</a></td></tr>
+<tr><td>Npgsql</td><td>.NET</td><td>.NET 数据供应者</td><td><a href="http://pgfoundry.org/projects/npgsql/" target="_top">http://pgfoundry.org/projects/npgsql/</a></td></tr>
+<tr><td>ODBCng</td><td>ODBC</td><td>另一个 ODBC 驱动</td><td><a href="http://projects.commandprompt.com/public/odbcng/" target="_top">http://projects.commandprompt.com/public/odbcng/</a></td></tr>
+<tr><td>pgtclng</td><td>Tcl</td><td>&nbsp;</td><td><a href="http://pgfoundry.org/projects/pgtclng/" target="_top">http://pgfoundry.org/projects/pgtclng/</a></td></tr>
+<tr><td>psqlODBC</td><td>ODBC</td><td>最常用的 ODBC 驱动</td><td><a href="http://odbc.postgresql.org/" target="_top">http://odbc.postgresql.org/</a></td></tr>
+<tr><td>psycopg</td><td>Python</td><td>DB API 2.0 兼容</td><td><a href="http://www.initd.org/" target="_top">http://www.initd.org/</a></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="external-projects.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="external-pl.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">外部项目</td><td width="34%" align="center" valign="top"><a href="external-projects.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">过程语言</td></tr>
+</table>
+</div>
+</body></html>

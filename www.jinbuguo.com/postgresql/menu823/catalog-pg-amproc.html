@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_amproc</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-amop.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-attrdef.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-AMPROC">43.5. <tt class="STRUCTNAME">pg_amproc</tt></a></h1><a name="AEN62153"></a>
+<p><tt class="STRUCTNAME">pg_amproc</tt> 存储有关与索引访问方法操作符类相关联的支持过程的信息。每个属于某个操作符类的支持过程都占有一行。</p>
+<div class="TABLE"><a name="AEN62157"></a>
+<p><b>表43-5. <tt class="STRUCTNAME">pg_amproc</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">amopclaid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-opclass.html"><tt class="STRUCTNAME">pg_opclass</tt></a>.oid</tt></td><td>使用这条记录的索引操作符类</td></tr>
+<tr><td><tt class="STRUCTFIELD">amprocsubtype</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-type.html"><tt class="STRUCTNAME">pg_type</tt></a>.oid</tt></td><td>如果是跨类型的过程，就是子类型，否则就是零</td></tr>
+<tr><td><tt class="STRUCTFIELD">amprocnum</tt></td><td><tt class="TYPE">int2</tt></td><td>&nbsp;</td><td>支持过程编号</td></tr>
+<tr><td><tt class="STRUCTFIELD">amproc</tt></td><td><tt class="TYPE">regproc</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>过程的 OID</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-amop.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-attrdef.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_amop</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_attrdef</tt></td></tr>
+</table>
+</div>
+</body></html>

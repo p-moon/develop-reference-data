@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>连接是如何建立起来的</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="query-path.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="overview.html">快退</a></td><td width="60%" align="center" valign="bottom">章42. PostgreSQL 内部概貌</td><td width="10%" align="right" valign="top"><a href="overview.html">快进</a></td><td width="10%" align="right" valign="top"><a href="parser-stage.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CONNECT-ESTAB">42.2. 连接是如何建立起来的</a></h1>
+<p>PostgreSQL 是用一个简单的"每用户一进程"的 client/server 模型实现的。在这种模式里一个<i class="FIRSTTERM">客户端进程</i>只与恰好一个<i class="FIRSTTERM">服务器进程</i>连接。因为不知道具体要建立多少个连接，所以不得不利用一个<i class="FIRSTTERM">主进程</i>在每次连接请求时派生出一个新的服务器进程来。这个主进程叫做 <tt class="LITERAL">postgres</tt> ，它监听着一个特定的 TCP/IP 端口等待进来的连接。每当检测到一个连接请求时，<tt class="LITERAL">postgres</tt> 进程派生出一个新的服务器进程。服务器进程之间使用<i class="FIRSTTERM">信号灯</i>和<i class="FIRSTTERM">共享内存</i>进行通讯，以确保在并发的数据访问过程中的数据完整性。</p>
+<p>客户端进程可以是任何理解 PostgreSQL 协议(在 <a href="protocol.html">章44</a>里描述)的程序。许多客户端都是基于 C 语言库 <span class="APPLICATION">libpq</span> 的程序，但是也存在几个对协议之独立的实现，比如 Java <span class="APPLICATION">JDBC</span> 驱动。</p>
+<p>一旦建立起来连接，客户端进程就可以向<i class="FIRSTTERM">后端</i>(服务器)进程发送查询了。查询是通过纯文本传输的，也就是说在<i class="FIRSTTERM">前端</i>(客户端)不做任何分析处理。服务器分析查询，创建<i class="FIRSTTERM">执行规划</i>，执行该规划并且通过已经建立起来的连接把检索出来的数据行返回给客户端。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="query-path.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="parser-stage.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">查询经过的路径</td><td width="34%" align="center" valign="top"><a href="overview.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">分析器阶段</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,575 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>性能方面的提示 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">杂项文档</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2007年4月5日</div>
+<div id="page-content"><div id="preamble"><h1>性能方面的提示</h1>
+
+
+
+    <p>Apache2.0是一个多用途的web服务器，其设计在灵活性、可移植性和性能中求得平衡。虽然没有在设计上刻意追求性能指标，但是Apache2.0仍然在许多现实环境中拥有很高的性能。</p>
+
+    <p>相比于Apache 1.3 ，2.0版本作了大量的优化来提升处理能力和可伸缩性，而且大多数的改进在默认状态下就可以生效。但是，在编译时和运行时，都有许多可以显著提高性能的选择。本文阐述在安装Apache2.0时，服务器管理员可以改善性能的各种方法。其中，部分配置选择可以使httpd更好地利用硬件和操作系统的兼容性，其他则是以功能换取速度。</p>
+
+  </div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="hardware" id="hardware">硬件和操作系统</a></h2>
+
+    
+
+    <p>影响web服务器性能的最大的因素是内存。一个web服务器应该从不使用交换机制，因为交换产生的滞后使用户总感觉"不够快"，所以用户就可能去按"停止"和"刷新"，从而带来更大的负载。你可以，也应该，控制<code class="directive"><a href="../mod/mpm_common.html#maxclients">MaxClients</a></code>的设置，以避免服务器产生太多的子进程而发生交换。这个过程很简单：通过<code>top</code>命令计算出每个Apache进程平均消耗的内存，然后再为其它进程留出足够多的内存。</p>
+
+    <p>其他因素就很普通了，装一个足够快的CPU，一个足够快的网卡，几个足够快的硬盘，这里说的"足够快"是指能满足实际应用的需求。</p>
+
+    <p>操作系统是很值得关注的又一个因素，已经被证实的很有用的经验有：</p>
+
+    <ul>
+      <li>
+        <p>选择能够得到的最新最稳定的版本并打好补丁。近年来，许多操作系统厂商都提供了可以显著改善性能的TCP协议栈和线程库。</p>
+      </li>
+
+      <li>
+        <p>如果你的操作系统支持<code>sendfile()</code>系统调用，则务必安装带有此功能的版本或补丁(译者注：Linux2.4/2.6内核都支持；对Solaris8的早期版本，则需要安装补丁)。在支持<code>sendfile</code>的系统中，Apache2可以更快地发送静态内容而且占用较少的CPU时间。</p>
+      </li>
+    </ul>
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="runtime" id="runtime">运行时的配置</a></h2>
+
+    
+
+    <table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="related">
+<tr><th>相关模块</th><th>相关指令</th></tr>
+<tr><td><ul><li><code class="module"><a href="../mod/mod_dir.html">mod_dir</a></code></li><li><code class="module"><a href="../mod/mpm_common.html">mpm_common</a></code></li><li><code class="module"><a href="../mod/mod_status.html">mod_status</a></code></li></ul></td><td><ul><li><code class="directive"><a href="../mod/core.html#allowoverride">AllowOverride</a></code></li><li><code class="directive"><a href="../mod/mod_dir.html#directoryindex">DirectoryIndex</a></code></li><li><code class="directive"><a href="../mod/core.html#hostnamelookups">HostnameLookups</a></code></li><li><code class="directive"><a href="../mod/core.html#enablemmap">EnableMMAP</a></code></li><li><code class="directive"><a href="../mod/core.html#enablesendfile">EnableSendfile</a></code></li><li><code class="directive"><a href="../mod/core.html#keepalivetimeout">KeepAliveTimeout</a></code></li><li><code class="directive"><a href="../mod/prefork.html#maxspareservers">MaxSpareServers</a></code></li><li><code class="directive"><a href="../mod/prefork.html#minspareservers">MinSpareServers</a></code></li><li><code class="directive"><a href="../mod/core.html#options">Options</a></code></li><li><code class="directive"><a href="../mod/mpm_common.html#startservers">StartServers</a></code></li></ul></td></tr>
+</table>
+
+    <h3><a name="dns" id="dns">HostnameLookups 和其他DNS考虑</a></h3>
+
+      
+
+      <p>在Apache1.3以前的版本中，<code class="directive"><a href="../mod/core.html#hostnamelookups">HostnameLookups</a></code>默认被设为 <code>On</code> 。它会带来延迟，因为对每一个请求都需要作一次DNS查询。在Apache1.3中，它被默认地设置为 <code>Off</code> 。如果需要日志文件提供主机名信息以生成分析报告，则可以使用日志后处理程序<code class="program"><a href="../programs/logresolve.html">logresolve</a></code> ，以完成DNS查询，而客户端无须等待。</p>
+
+      <p>推荐你最好是在其他机器上，而不是在web服务器上执行后处理和其他日志统计操作，以免影响服务器的性能。</p>
+
+      <p>如果你使用了任何"<code><code class="directive"><a href="../mod/mod_authz_host.html#allow">Allow</a></code> from domain</code>"或"<code><code class="directive"><a href="../mod/mod_authz_host.html#deny">Deny</a></code> from domain</code>"指令(也就是<code>domain</code>使用的是主机名而不是IP地址)，则代价是要进行两次DNS查询(一次正向和一次反向，以确认没有作假)。所以，为了得到最高的性能，应该避免使用这些指令(不用域名而用IP地址也是可以的)。</p>
+
+      <p>注意，可以把这些指令包含在<code>&lt;Location /server-status&gt;</code>段中使之局部化。在这种情况下，只有对这个区域的请求才会发生DNS查询。下例禁止除了<code>.html</code>和<code>.cgi</code>以外的所有DNS查询：</p>
+
+      <div class="example"><p><code>
+        HostnameLookups off<br />
+        &lt;Files ~ "\.(html|cgi)$"&gt;<br />
+        <span class="indent">
+          HostnameLookups on<br />
+        </span>
+        &lt;/Files&gt;
+      </code></p></div>
+
+      <p>如果在某些CGI中偶尔需要DNS名称，则可以调用<code>gethostbyname</code>来解决。</p>
+
+    
+
+    <h3><a name="symlinks" id="symlinks">FollowSymLinks 和 SymLinksIfOwnerMatch</a></h3>
+
+      
+
+      <p>如果网站空间中<em>没有使用</em> <code>Options FollowSymLinks</code> ，或<em>使用</em>了 <code>Options SymLinksIfOwnerMatch</code> ，Apache就必须执行额外的系统调用以验证符号连接。文件名的每一个组成部分都需要一个额外的调用。例如，如果设置了：</p>
+
+      <div class="example"><p><code>
+        DocumentRoot /www/htdocs<br />
+        &lt;Directory /&gt;<br />
+        <span class="indent">
+          Options SymLinksIfOwnerMatch<br />
+        </span>
+        &lt;/Directory&gt;
+      </code></p></div>
+
+      <p>在请求"<code>/index.html</code>"时，Apache将对"<code>/www</code>"、"<code>/www/htdocs</code>"、"<code>/www/htdocs/index.html</code>"执行<code>lstat()</code>调用。而且<code>lstat()</code>的执行结果不被缓存，因此对每一个请求都要执行一次。如果确实需要验证符号连接的安全性，则可以这样：</p>
+
+      <div class="example"><p><code>
+        DocumentRoot /www/htdocs<br />
+        &lt;Directory /&gt;<br />
+        <span class="indent">
+          Options FollowSymLinks<br />
+        </span>
+        &lt;/Directory&gt;<br />
+        <br />
+        &lt;Directory /www/htdocs&gt;<br />
+        <span class="indent">
+          Options -FollowSymLinks +SymLinksIfOwnerMatch<br />
+        </span>
+        &lt;/Directory&gt;
+      </code></p></div>
+
+      <p>这样，至少可以避免对<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>路径的多余的验证。注意，如果<code class="directive"><a href="../mod/mod_alias.html#alias">Alias</a></code>或<code class="directive"><a href="../mod/mod_rewrite.html#rewriterule">RewriteRule</a></code>中含有<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>以外的路径，那么同样需要增加这样的段。为了得到最佳性能，应当放弃对符号连接的保护，在所有地方都设置<code>FollowSymLinks</code> ，并放弃使用<code>SymLinksIfOwnerMatch</code> 。</p>
+
+    
+
+    <h3><a name="htacess" id="htacess">AllowOverride</a></h3>
+
+      
+
+      <p>如果网站空间允许覆盖(通常是用<code>.htaccess</code>文件)，则Apache会试图对文件名的每一个组成部分都打开<code>.htaccess</code> ，例如：</p>
+
+      <div class="example"><p><code>
+        DocumentRoot /www/htdocs<br />
+        &lt;Directory /&gt;<br />
+        <span class="indent">
+          AllowOverride all<br />
+        </span>
+        &lt;/Directory&gt;
+      </code></p></div>
+
+      <p>如果请求"<code>/index.html</code>"，则Apache会试图打开"<code>/.htaccess</code>"、"<code>/www/.htaccess</code>"、"<code>/www/htdocs/.htaccess</code>"。其解决方法和前面所述的 <code>Options FollowSymLinks</code> 类似。为了得到最佳性能，应当对文件系统中所有的地方都使用 <code>AllowOverride None</code> 。</p>
+
+    
+
+    <h3><a name="negotiation" id="negotiation">内容协商</a></h3>
+
+      
+
+      <p>实践中，内容协商的好处大于性能的损失，如果你很在意那一点点的性能损失，则可以禁止使用内容协商。但是仍然有个方法可以提高服务器的速度，就是不要使用通配符，如：</p>
+
+      <div class="example"><p><code>
+        DirectoryIndex index
+      </code></p></div>
+
+      <p>而使用完整的列表，如：</p>
+
+      <div class="example"><p><code>
+        DirectoryIndex index.cgi index.pl index.shtml index.html
+      </code></p></div>
+
+      <p>其中最常用的应该放在前面。</p>
+
+      <p>还有，建立一个明确的<code>type-map</code>文件在性能上优于使用"<code>Options MultiViews</code>"，因为所有需要的信息都在一个单独的文件中，而无须搜索目录。请参考<a href="../content-negotiation.html">内容协商</a>文档以获得更详细的协商方法和创建<code>type-map</code>文件的指导。</p>
+
+    
+
+    <h3>内存映射</h3>
+
+      <p>在Apache2.0需要搜索被发送文件的内容时，比如处理服务器端包含时，如果操作系统支持某种形式的<code>mmap()</code> ，则会对此文件执行内存映射。</p>
+
+      <p>在某些平台上，内存映射可以提高性能，但是在某些情况下，内存映射会降低性能甚至影响到httpd的稳定性：</p>
+
+      <ul>
+        <li>
+          <p>在某些操作系统中，如果增加了CPU，<code>mmap</code>还不如<code>read()</code>迅速。比如，在多处理器的Solaris服务器上，关闭了<code>mmap</code> ，Apache2.0传送服务端解析文件有时候反而更快。</p>
+        </li>
+
+        <li>
+          <p>如果你对作为NFS装载的文件系统中的一个文件进行了内存映射，而另一个NFS客户端的进程删除或者截断了这个文件，那么你的进程在下一次访问已经被映射的文件内容时，会产生一个总线错误。</p>
+        </li>
+      </ul>
+
+      <p>如果有上述情况发生，则应该使用 <code>EnableMMAP off</code> 关闭对发送文件的内存映射。注意：此指令可以被针对目录的设置覆盖。</p>
+
+
+    <h3>Sendfile</h3>
+
+      <p>在Apache2.0能够忽略将要被发送的文件的内容的时候(比如发送静态内容)，如果操作系统支持<code>sendfile()</code> ，则Apache将使用内核提供的<code>sendfile()</code>来发送文件。译者注：Linux2.4/2.6内核都支持。</p>
+
+      <p>在大多数平台上，使用sendfile可以通过免除分离的读和写操作来提升性能。然而在某些情况下，使用sendfile会危害到httpd的稳定性</p>
+
+      <ul>
+        <li>
+          <p>一些平台可能会有Apache编译系统检测不到的有缺陷的sendfile支持，特别是将在其他平台上使用交叉编译得到的二进制文件运行于当前对sendfile支持有缺陷的平台时。</p>
+        </li>
+        <li>
+          <p>对于一个挂载了NFS文件系统的内核，它可能无法可靠的通过自己的cache服务于网络文件。</p>
+        </li>
+      </ul>
+
+      <p>如果出现以上情况，你应当使用"<code>EnableSendfile off</code>"来禁用sendfile 。注意，这个指令可以被针对目录的设置覆盖。</p>
+
+    
+
+    <h3><a name="process" id="process">进程的建立</a></h3>
+
+      
+
+      <p>在Apache1.3以前，<code class="directive"><a href="../mod/prefork.html#minspareservers">MinSpareServers</a></code>, <code class="directive"><a href="../mod/prefork.html#maxspareservers">MaxSpareServers</a></code>, <code class="directive"><a href="../mod/mpm_common.html#startservers">StartServers</a></code>的设置对性能都有很大的影响。尤其是为了应对负载而建立足够的子进程时，Apache需要有一个"渐进"的过程。在最初建立<code class="directive"><a href="../mod/mpm_common.html#startservers">StartServers</a></code>数量的子进程后，为了满足<code class="directive"><a href="../mod/prefork.html#minspareservers">MinSpareServers</a></code>设置的需要，每一秒钟只能建立一个子进程。所以，对一个需要同时处理100个客户端的服务器，如果<code class="directive"><a href="../mod/mpm_common.html#startservers">StartServers</a></code>使用默认的设置<code>5</code>，则为了应对负载而建立足够多的子进程需要95秒。在实际应用中，如果不频繁重新启动服务器，这样还可以，但是如果仅仅为了提供10分钟的服务，这样就很糟糕了。</p>
+
+      <p>"一秒钟一个"的规定是为了避免在创建子进程过程中服务器对请求的响应停顿，但是它对服务器性能的影响太大了，必须予以改变。在Apache1.3中，这个"一秒钟一个"的规定变得宽松了，创建一个进程，等待一秒钟，继续创建第二个，再等待一秒钟，继而创建四个，如此按指数级增加创建的进程数，最多达到每秒32个，直到满足<code class="directive"><a href="../mod/prefork.html#minspareservers">MinSpareServers</a></code>设置的值为止。</p>
+
+      <p>从多数反映看来，似乎没有必要调整<code class="directive"><a href="../mod/prefork.html#minspareservers">MinSpareServers</a></code>, <code class="directive"><a href="../mod/prefork.html#maxspareservers">MaxSpareServers</a></code>, <code class="directive"><a href="../mod/mpm_common.html#startservers">StartServers</a></code> 。如果每秒钟创建的进程数超过4个，则会在<code class="directive"><a href="../mod/core.html#errorlog">ErrorLog</a></code>中产生一条消息，如果产生大量此消息，则可以考虑修改这些设置。可以使用<code class="module"><a href="../mod/mod_status.html">mod_status</a></code>的输出作为参考。</p>
+
+    <p>与进程创建相关的是由<code class="directive"><a href="../mod/mpm_common.html#maxrequestsperchild">MaxRequestsPerChild</a></code>引发的进程的销毁。其默认值是"<code>0</code>"，意味着每个进程所处理的请求数是不受限制的。如果此值设置得很小，比如30，则可能需要大幅增加。在SunOS或者Solaris的早期版本上，其最大值为<code>10000</code>以免内存泄漏。</p>
+
+    <p>如果启用了持久链接，子进程将保持忙碌状态以等待被打开连接上的新请求。为了最小化其负面影响，<code class="directive"><a href="../mod/core.html#keepalivetimeout">KeepAliveTimeout</a></code>的默认值被设置为<code>5</code>秒，以谋求网络带宽和服务器资源之间的平衡。在任何情况下此值都不应当大于<code>60</code>秒，参见<a href="http://www.research.digital.com/wrl/techreports/abstracts/95.4.html">most of the benefits are lost</a>。</p>
+
+    
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="compiletime" id="compiletime">编译时的配置</a></h2>
+
+
+    <h3>选择一个MPM</h3>
+
+      <p>Apache 2.x 支持插入式并行处理模块，称为<a href="../mpm.html">多路处理模块(MPM)</a>。在编译Apache时你必须选择也只能选择一个MPM，这里有几个针对非UNIX系统的MPM：<code class="module"><a href="../mod/beos.html">beos</a></code>, <code class="module"><a href="../mod/mpm_netware.html">mpm_netware</a></code>, <code class="module"><a href="../mod/mpmt_os2.html">mpmt_os2</a></code>, <code class="module"><a href="../mod/mpm_winnt.html">mpm_winnt</a></code>。对类UNIX系统，有几个不同的MPM可供选择，他们都会影响到httpd的速度和可伸缩性：</p>
+
+      <ul>
+
+        <li><code class="module"><a href="../mod/worker.html">worker</a></code>MPM使用多个子进程，每个子进程中又有多个线程。每个线程处理一个请求。该MPM通常对高流量的服务器是一个不错的选择。因为它比<code class="module"><a href="../mod/prefork.html">prefork</a></code>MPM需要更少的内存且更具有伸缩性。</li>
+
+        <li><code class="module"><a href="../mod/prefork.html">prefork</a></code>MPM使用多个子进程，但每个子进程并不包含多线程。每个进程只处理一个链接。在许多系统上它的速度和<code class="module"><a href="../mod/worker.html">worker</a></code>MPM一样快，但是需要更多的内存。这种无线程的设计在某些情况下优于<code class="module"><a href="../mod/worker.html">worker</a></code>MPM：它可以应用于不具备线程安全的第三方模块(比如php3/4/5)，且在不支持线程调试的平台上易于调试，而且还具有比<code class="module"><a href="../mod/worker.html">worker</a></code>MPM更高的稳定性。</li>
+
+      </ul>
+
+      <p>关于MPM的更多内容，请参考其<a href="../mpm.html">文档</a>。</p>
+
+    
+
+    <h3><a name="modules" id="modules">模块</a></h3>
+
+        
+
+        <p>既然内存用量是影响性能的重要因素，你就应当尽量去除你不需要的模块。如果你将模块编译成<a href="../dso.html">DSO</a> ，取消不必要的模块就是一件非常简单的事情：注释掉<code class="directive"><a href="../mod/mod_so.html#loadmodule">LoadModule</a></code>指令中不需要的模块。</p>
+
+        <p>如果你已经将模块静态链接进Apache二进制核心，你就必须重新编译Apache并去掉你不想要的模块。</p>
+
+        <p>增减模块牵涉到的一个问题是：究竟需要哪些模块、不需要哪些模块？这取决于服务器的具体情况。一般说来，<em>至少</em>要包含下列模块：<code class="module"><a href="../mod/mod_mime.html">mod_mime</a></code>, <code class="module"><a href="../mod/mod_dir.html">mod_dir</a></code>, <code class="module"><a href="../mod/mod_log_config.html">mod_log_config</a></code> 。你也可以不要<code>mod_log_config</code> ，但是一般不推荐这样做。</p>
+
+    	<h3 name="atomics" id="atomics">原子操作</h3>
+
+      <p>一些模块，比如<code class="module"><a href="../mod/mod_cache.html">mod_cache</a></code>和<code class="module"><a href="../mod/worker.html">worker</a></code>使用APR(Apache可移植运行时)的原子API。这些API提供了能够用于轻量级线程同步的原子操作。</p>
+
+      <p>默认情况下，APR在每个目标OS/CPU上使用其最有效的特性执行这些操作。比如许多现代CPU的指令集中有一个原子的比较交换(compare-and-swap, CAS)操作指令。在一些老式平台上，APR默认使用一种缓慢的、基于互斥执行的原子API以保持对没有CAS指令的老式CPU的兼容。如果你只打算在新式的CPU上运行Apache，你可以在编译时使用 <code>--enable-nonportable-atomics</code> 选项：</p>
+
+      <div class="example"><p><code>
+        ./buildconf<br />
+        ./configure --with-mpm=worker --enable-nonportable-atomics=yes
+      </code></p></div>
+
+      <p><code>--enable-nonportable-atomics</code> 选项只和下列平台相关：</p>
+
+      <ul>
+
+        <li>SPARC上的Solaris<br />
+            默认情况下，APR使用基于互斥执行的原子操作。如果你使用 <code>--enable-nonportable-atomics</code> 选项，APR将使用SPARC v8plus操作码来加快基于硬件的CAS操作。注意，这仅对UltraSPARC CPU有效。
+        </li>
+
+        <li>x86上的Linux<br />
+            默认情况下，APR在Linux上使用基于互斥执行的原子操作。如果你使用 <code>--enable-nonportable-atomics</code> 选项，APR将使用486操作码来加快基于硬件的CAS操作。注意，这仅对486以上的CPU有效。
+        </li>
+
+      </ul>
+
+
+    <h3>mod_status 和 "ExtendedStatus On"</h3>
+
+      
+
+      <p>如果Apache在编译时包含了<code class="module"><a href="../mod/mod_status.html">mod_status</a></code> ，而且在运行时设置了"<code>ExtendedStatus On</code>"，那么Apache会对每个请求调用两次<code>gettimeofday()</code>(或者根据操作系统的不同，调用<code>times()</code>)以及(1.3版之前)几个额外的<code>time()</code>调用，使状态记录带有时间标志。为了得到最佳性能，可以设置"<code>ExtendedStatus off</code>"(这也是默认值)。</p>
+
+    
+
+    <h3>多socket情况下的串行accept</h3>
+
+      
+
+    <div class="warning"><h3>警告</h3>
+      <p>这部分内容尚未完全根据Apache2.0中的变化进行更新 。一些信息依然有效，使用中请注意。</p>
+    </div>
+
+      <p>这里要说的是 Unix socket API 的一个缺点。假设web服务器使用了多个<code class="directive"><a href="../mod/mpm_common.html#listen">Listen</a></code>语句监听多个端口或者多个地址，Apache会使用<code>select()</code>以检测每个socket是否就绪。<code>select()</code>会表明一个socket有<em>零</em>或<em>至少一个</em>连接正等候处理。由于Apache的模型是多子进程的，所有空闲进程会同时检测新的连接。一个很天真的实现方法是这样的(这些例子并不是源代码，只是为了说明问题而已)：</p>
+
+      <div class="example"><p><code>
+        for (;;) {<br />
+        <span class="indent">
+          for (;;) {<br />
+          <span class="indent">
+            fd_set accept_fds;<br />
+            <br />
+            FD_ZERO (&amp;accept_fds);<br />
+            for (i = first_socket; i &lt;= last_socket; ++i) {<br />
+            <span class="indent">
+              FD_SET (i, &amp;accept_fds);<br />
+            </span>
+            }<br />
+            rc = select (last_socket+1, &amp;accept_fds, NULL, NULL, NULL);<br />
+            if (rc &lt; 1) continue;<br />
+            new_connection = -1;<br />
+            for (i = first_socket; i &lt;= last_socket; ++i) {<br />
+            <span class="indent">
+              if (FD_ISSET (i, &amp;accept_fds)) {<br />
+              <span class="indent">
+                new_connection = accept (i, NULL, NULL);<br />
+                if (new_connection != -1) break;<br />
+              </span>
+              }<br />
+            </span>
+            }<br />
+            if (new_connection != -1) break;<br />
+          </span>
+          }<br />
+          process the new_connection;<br />
+        </span>
+        }
+      </code></p></div>
+
+      <p>这种天真的实现方法有一个严重的"饥饿"问题。如果多个子进程同时执行这个循环，则在多个请求之间，进程会被阻塞在<code>select</code> ，随即进入循环并试图<code>accept</code>此连接，但是只有一个进程可以成功执行(假设还有一个连接就绪)，而其余的则会被<em>阻塞</em>在<code>accept</code> 。这样，只有那一个socket可以处理请求，而其他都被锁住了，直到有足够多的请求将它们唤醒。此"饥饿"问题在<a href="http://bugs.apache.org/index/full/467">PR#467</a>中有专门的讲述。目前至少有两种解决方案。</p>
+
+      <p>一种方案是使用非阻塞型socket ，不阻塞子进程并允许它们立即继续执行。但是这样会浪费CPU时间。设想一下，<code>select</code>有10个子进程，当一个请求到达的时候，其中9个被唤醒，并试图<code>accept</code>此连接，继而进入<code>select</code>循环，无所事事，并且其间没有一个子进程能够响应出现在其他socket上的请求，直到退出<code>select</code>循环。总之，这个方案效率并不怎么高，除非你有很多的CPU，而且开了很多子进程。</p>
+
+      <p>另一种也是Apache所使用的方案是，使内层循环的入口串行化，形如(不同之处以高亮显示)：</p>
+
+      <div class="example"><p><code>
+        for (;;) {<br />
+        <span class="indent">
+          <strong>accept_mutex_on ();</strong><br />
+          for (;;) {<br />
+          <span class="indent">
+            fd_set accept_fds;<br />
+            <br />
+            FD_ZERO (&amp;accept_fds);<br />
+            for (i = first_socket; i &lt;= last_socket; ++i) {<br />
+            <span class="indent">
+              FD_SET (i, &amp;accept_fds);<br />
+            </span>
+            }<br />
+            rc = select (last_socket+1, &amp;accept_fds, NULL, NULL, NULL);<br />
+            if (rc &lt; 1) continue;<br />
+            new_connection = -1;<br />
+            for (i = first_socket; i &lt;= last_socket; ++i) {<br />
+            <span class="indent">
+              if (FD_ISSET (i, &amp;accept_fds)) {<br />
+              <span class="indent">
+                new_connection = accept (i, NULL, NULL);<br />
+                if (new_connection != -1) break;<br />
+              </span>
+              }<br />
+            </span>
+            }<br />
+            if (new_connection != -1) break;<br />
+          </span>
+          }<br />
+          <strong>accept_mutex_off ();</strong><br />
+          process the new_connection;<br />
+        </span>
+        }
+      </code></p></div>
+
+      <p><a id="serialize" name="serialize">函数</a><code>accept_mutex_on</code>和<code>accept_mutex_off</code>实现了一个互斥信号灯，在任何时刻只被为一个子进程所拥有。实现互斥的方法有多种，其定义位于<code>src/conf.h</code>(1.3以前的版本)或<code>src/include/ap_config.h</code>(1.3或以后的版本)中。在一些根本没有锁定机制的体系中，使用多个<code class="directive"><a href="../mod/mpm_common.html#listen">Listen</a></code>指令就是不安全的。</p>
+
+      <p><code class="directive"><a href="../mod/mpm_common.html#acceptmutex">AcceptMutex</a></code>指令被用来改变在运行时使用的互斥方案。</p>
+
+      <dl>
+        <dt><code>AcceptMutex flock</code></dt>
+
+        <dd>
+          <p>这种方法调用系统函数<code>flock()</code>来锁定一个加锁文件(其位置取决于<code class="directive"><a href="../mod/mpm_common.html#lockfile">LockFile</a></code>指令)。</p>
+        </dd>
+
+        <dt><code>AcceptMutex fcntl</code></dt>
+
+        <dd>
+          <p>这种方法调用系统函数<code>fcntl()</code>来锁定一个加锁文件(其位置取决于<code class="directive"><a href="../mod/mpm_common.html#lockfile">LockFile</a></code>指令)。</p>
+        </dd>
+
+        <dt><code>AcceptMutex sysvsem</code></dt>
+
+        <dd>
+          <p>(1.3及更新版本)这种方案使用SysV风格的信号灯以实现互斥。不幸的是，SysV风格的信号灯有一些副作用，其一是，Apache有可能不能在结束以前释放这种信号灯(见<code>ipcs()</code>的man page)，另外，这种信号灯API给与网络服务器有相同uid的CGI提供了拒绝服务攻击的机会(所有CGI，除非用了类似<code class="program"><a href="../programs/suexec.html">suexec</a></code>或<code>cgiwrapper</code>)。鉴于此，在多数体系中都不用这种方法，除了IRIX(因为前两种方法在IRIX中代价太高)。</p>
+        </dd>
+
+        <dt><code>AcceptMutex pthread</code></dt>
+
+        <dd>
+          <p>(1.3及更新版本)这种方法使用了POSIX互斥，按理应该可以用于所有完整实现了POSIX线程规范的体系中，但是似乎只能用在Solaris2.5及更新版本中，甚至只能在某种配置下才正常运作。如果遇到这种情况，则应该提防服务器的挂起和失去响应。只提供静态内容的服务器可能不受影响。译者注：此选项不能用于Linux。</p>
+        </dd>
+
+        <dt><code>AcceptMutex posixsem</code></dt>
+
+        <dd>
+          <p>(2.0及更新版本)这种方法使用了POSIX信号灯。如果一个运行中的线程占有了互斥segfault ，则信号灯的所有者将不会被恢复，从而导致服务器的挂起和失去响应。</p>
+        </dd>
+
+      </dl>
+
+      <p>如果你的系统提供了上述方法以外的串行机制，那就可能需要为APR增加代码(或者提交一个补丁给Apache)。</p>
+
+      <p>还有一种曾经考虑过但从未予以实施的方案是使循环部分地串行化，即只允许一定数量的进程进入循环。这种方法仅在多个进程可以同时进行的多处理器的系统中才是有价值的，而且这样的串行方法并没有占用整个带宽。它也许是将来研究的一个领域，但是由于高度并行的网络服务器并不符合规范，所以其被优先考虑的程度会比较低。</p>
+
+      <p>当然，为了得到最佳性能，最后就根本不使用多个<code class="directive"><a href="../mod/mpm_common.html#listen">Listen</a></code>语句。但是上述内容还是值得读一读。</p>
+
+    
+
+    <h3>单socket情况下的串行accept</h3>
+
+      
+
+      <p>上述对多socket的服务器进行了一流的讲述，那么对单socket的服务器又怎样呢？理论上似乎应该没有什么问题，因为所有进程在连接到来的时候可以由<code>accept()</code>阻塞，而不会产生进程"饥饿"的问题，但是在实际应用中，它掩盖了与上述非阻塞方案几乎相同的问题。按大多数TCP栈的实现方法，在单个连接到来时，内核实际上唤醒了所有阻塞在<code>accept</code>的进程，但只有一个能得到此连接并返回到用户空间，而其余的由于得不到连接而在内核中处于休眠状态。这种休眠状态为代码所掩盖，但的确存在，并产生与多socket中采用非阻塞方案相同的负载尖峰的浪费。</p>
+
+      <p>同时，我们发现在许多体系结构中，即使在单socket的情况下，实施串行化的效果也不错，因此在几乎所有的情况下，事实上就都这样处理了。在Linux(2.0.30，双Pentium pro 166/128M RAM)下的测试显示，对单socket，串行化比不串行化每秒钟可以处理的请求少了不到3%，但是，不串行化对每一个请求多了额外的100ms的延迟，此延迟可能是因为长距离的网络线路所致，并且仅发生在LAN中。如果需要改变对单socket的串行化，可以定义<code>SINGLE_LISTEN_UNSERIALIZED_ACCEPT</code> ，使单socket的服务器彻底放弃串行化。</p>
+
+    
+
+    <h3>延迟的关闭</h3>
+
+      
+
+      <p>正如<a href="http://www.ics.uci.edu/pub/ietf/http/draft-ietf-http-connection-00.txt">draft-ietf-http-connection-00.txt</a>  section 8所述，HTTP服务器为了<strong>可靠</strong>地实现此协议，需要单独地在每个方向上关闭通讯(重申一下，一个TCP连接是双向的，两个方向之间是独立的)。在这一点上，其他服务器经常敷衍了事，但从1.2版本开始被Apache正确实现了。</p>
+
+      <p>但是增加了此功能以后，由于一些Unix版本的短见，随之也出现了许多问题。TCP规范并没有规定<code>FIN_WAIT_2</code>必须有一个超时，但也没有明确禁止。在没有超时的系统中，Apache1.2经常会陷于<code>FIN_WAIT_2</code>状态中。多数情况下，这个问题可以用供应商提供的TCP/IP补丁予以解决。而如果供应商不提供补丁(指SunOS4 -- 尽管用户们持有允许自己修补代码的许可证)，那么只能关闭此功能。</p>
+
+      <p>实现的方法有两种，其一是socket选项<code>SO_LINGER</code> ，但是似乎命中注定，大多数TCP/IP栈都从未予以正确实现。即使在正确实现的栈中(指Linux2.0.31)，此方法也被证明其代价比下一种方法高昂。</p>
+
+      <p>Apache对此的实现代码大多位于函数<code>lingering_close</code>(位于<code>http_main.c</code>)中。此函数大致形如：</p>
+
+      <div class="example"><p><code>
+        void lingering_close (int s)<br />
+        {<br />
+        <span class="indent">
+          char junk_buffer[2048];<br />
+          <br />
+          /* shutdown the sending side */<br />
+          shutdown (s, 1);<br />
+          <br />
+          signal (SIGALRM, lingering_death);<br />
+          alarm (30);<br />
+          <br />
+          for (;;) {<br />
+          <span class="indent">
+            select (s for reading, 2 second timeout);<br />
+            if (error) break;<br />
+            if (s is ready for reading) {<br />
+            <span class="indent">
+              if (read (s, junk_buffer, sizeof (junk_buffer)) &lt;= 0) {<br />
+              <span class="indent">
+                break;<br />
+              </span>
+              }<br />
+              /* just toss away whatever is here */<br />
+            </span>
+            }<br />
+          </span>
+          }<br />
+          <br />
+          close (s);<br />
+        </span>
+        }
+      </code></p></div>
+
+      <p>此代码在连接结束时多了一些开销，但这是可靠实现所必须的。由于HTTP/1.1越来越流行，而且所有连接都是稳定的，此开销将由更多的请求共同分担。如果你要玩火去关闭这个功能，可以定义<code>NO_LINGCLOSE</code> ，但绝不推荐这样做。尤其是，随着HTTP/1.1中管道化稳定连接的启用，<code>lingering_close</code>已经成为绝对必须。而且，<a href="http://www.w3.org/Protocols/HTTP/Performance/Pipeline.html">管道化连接速度更快</a>，应该考虑予以支持。</p>
+
+    
+
+    <h3>Scoreboard 文件</h3>
+
+      
+
+      <p>Apache父进程和子进程通过scoreboard进行通讯。通过共享内存来实现当然是最理想的。在我们曾经实践过或者提供了完整移植的操作系统中，都使用共享内存，其余的则使用磁盘文件。磁盘文件不仅速度慢，而且不可靠(功能也少)。仔细阅读你的体系所对应的<code>src/main/conf.h</code>文件，并查找<code>USE_MMAP_SCOREBOARD</code>或<code>USE_SHMGET_SCOREBOARD</code> 。定义其中之一(或者分别类似HAVE_MMAP和HAVE_SHMGET)，可以使共享内容的相关代码生效。如果你的系统提供其他类型的共享内容，则需要修改<code>src/main/http_main.c</code>文件，并把必需的挂钩添加到服务器中。(也请发送一个补丁给我们)</p>
+
+      <div class="note">注意：在对Linux的Apache1.2移植版本之前，没有使用内存共享，此失误使Apache的早期版本在Linux中表现很差。</div>
+
+    
+
+    <h3>DYNAMIC_MODULE_LIMIT</h3>
+
+      
+
+      <p>如果你不想使用动态加载模块(或者是因为看见了这段话，或者是为了获得最后一点点性能上的提高)，可以在编译服务器时定义 <code>-DDYNAMIC_MODULE_LIMIT=0</code> ，这样可以节省为支持动态加载模块而分配的内存。</p>
+
+    
+
+  </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="trace" id="trace">附录：踪迹的详细分析</a></h2>
+
+    
+
+    <p>在Solaris8的MPM中，Apache2.0.38使用一个系统调用以收集踪迹：</p>
+
+    <div class="example"><p><code>
+      truss -l -p <var>httpd_child_pid</var>.
+    </code></p></div>
+
+    <p><code>-l</code> 参数使truss记录每个执行系统调用的LWP(lightweight process--Solaris核心级线程)的ID。</p>
+
+    <p>其他系统可能使用不同的系统调用追踪工具，诸如<code>strace</code>, <code>ktrace</code>, <code>par</code> ，其输出都是相似的。</p>
+
+    <p>下例中，一个客户端向httpd请求了一个10KB的静态文件。对非静态或内容协商请求的记录会有很大不同(有时也很难看明白)。</p>
+
+    <div class="example"><pre>/67:    accept(3, 0x00200BEC, 0x00200C0C, 1) (sleeping...)
+/67:    accept(3, 0x00200BEC, 0x00200C0C, 1)            = 9</pre></div>
+
+    <p>下例中，监听线程是 LWP #67 。</p>
+
+    <div class="note">注意对<code>accept()</code>串行化支持的匮乏。与这个特殊平台对应的MPM在默认情况下使用非串行的accept ，除了在监听多个端口的时候。</div>
+
+    <div class="example"><pre>/65:    lwp_park(0x00000000, 0)                         = 0
+/67:    lwp_unpark(65, 1)                               = 0</pre></div>
+
+    <p>接受了一个连接后，监听线程唤醒一个工作线程以处理此请求。下例中，处理请求的那个工作线程是 LWP #65 。</p>
+
+    <div class="example"><pre>/65:    getsockname(9, 0x00200BA4, 0x00200BC4, 1)       = 0</pre></div>
+
+    <p>为了实现虚拟主机，Apache需要知道接受连接的本地socket地址。在许多情况下，有可能无须执行此调用(比如没有虚拟主机，或者<code class="directive"><a href="../mod/mpm_common.html#listen">Listen</a></code>指令中没有使用通配地址)，但是目前并没有对此作优化处理。</p>
+
+    <div class="example"><pre>/65:    brk(0x002170E8)                                 = 0
+/65:    brk(0x002190E8)                                 = 0</pre></div>
+
+    <p>此<code>brk()</code>调用是从堆中分配内存的，它在系统调用记录中并不多见，因为httpd在多数请求处理中使用了自己的内存分配器(<code>apr_pool</code>和<code>apr_bucket_alloc</code>)。下例中，httpd刚刚启动，所以它必须调用<code>malloc()</code>以分配原始内存块用于自己的内存分配器。</p>
+
+    <div class="example"><pre>/65:    fcntl(9, F_GETFL, 0x00000000)                   = 2
+/65:    fstat64(9, 0xFAF7B818)                          = 0
+/65:    getsockopt(9, 65535, 8192, 0xFAF7B918, 0xFAF7B910, 2190656) = 0
+/65:    fstat64(9, 0xFAF7B818)                          = 0
+/65:    getsockopt(9, 65535, 8192, 0xFAF7B918, 0xFAF7B914, 2190656) = 0
+/65:    setsockopt(9, 65535, 8192, 0xFAF7B918, 4, 2190656) = 0
+/65:    fcntl(9, F_SETFL, 0x00000082)                   = 0</pre></div>
+
+    <p>接着，工作线程使客户端连接处于非阻塞模式。<code>setsockopt()</code>和<code>getsockopt()</code>调用是Solaris的libc对socket执行<code>fcntl()</code>所必须的。</p>
+
+    <div class="example"><pre>/65:    read(9, " G E T   / 1 0 k . h t m".., 8000)     = 97</pre></div>
+
+    <p>工作线程从客户端读取请求。</p>
+
+    <div class="example"><pre>/65:    stat("/var/httpd/apache/httpd-8999/htdocs/10k.html", 0xFAF7B978) = 0
+/65:    open("/var/httpd/apache/httpd-8999/htdocs/10k.html", O_RDONLY) = 10</pre></div>
+
+    <p>这里，httpd被配置为"<code>Options FollowSymLinks</code>"和"<code>AllowOverride None</code>"。所以，无须对每个被请求文件路径中的目录执行<code>lstat()</code>，也不需要检查<code>.htaccess</code>文件，它简单地调用<code>stat()</code>以检查此文件是否存在，以及是一个普通的文件还是一个目录。</p>
+
+    <div class="example"><pre>/65:    sendfilev(0, 9, 0x00200F90, 2, 0xFAF7B53C)      = 10269</pre></div>
+
+    <p>此例中，httpd可以通过单个系统调用<code>sendfilev()</code>发送HTTP响应头和被请求的文件。Sendfile因操作系统会有所不同，有些系统中，在调用<code>sendfile()</code>以前，需要调用<code>write()</code>或<code>writev()</code>以发送响应头。</p>
+
+    <div class="example"><pre>/65:    write(4, " 1 2 7 . 0 . 0 . 1   -  ".., 78)      = 78</pre></div>
+
+    <p>此<code>write()</code>调用在访问日志中对请求作了记录。注意，其中没有对<code>time()</code>的调用的记录。与Apache1.3不同，Apache2.0使用<code>gettimeofday()</code>以查询时间。在有些操作系统中，比如Linux和Solaris，<code>gettimeofday</code>有一个优化的版本，其开销比一个普通的系统调用要小一点。</p>
+
+    <div class="example"><pre>/65:    shutdown(9, 1, 1)                               = 0
+/65:    poll(0xFAF7B980, 1, 2000)                       = 1
+/65:    read(9, 0xFAF7BC20, 512)                        = 0
+/65:    close(9)                                        = 0</pre></div>
+
+    <p>工作线程对连接作延迟的关闭。</p>
+
+    <div class="example"><pre>/65:    close(10)                                       = 0
+/65:    lwp_park(0x00000000, 0)         (sleeping...)</pre></div>
+
+    <p>最后，工作线程关闭发送完的文件和块，直到监听进程把它指派给另一个连接。</p>
+
+    <div class="example"><pre>/67:    accept(3, 0x001FEB74, 0x001FEB94, 1) (sleeping...)</pre></div>
+
+    <p>其间，监听进程可以在把一个连接指派给一个工作进程后立即接受另一个连接(但是如果所有工作进程都处于忙碌状态，则会受MPM中的一些溢出控制逻辑的制约)。虽然在此例中并不明显，在工作线程刚接受了一个连接之后，下一个<code>accept()</code>会(在高负荷的情况下更会)立即并行产生。</p>
+
+  </div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

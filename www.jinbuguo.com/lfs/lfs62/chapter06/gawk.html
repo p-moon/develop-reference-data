@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.35. Gawk-3.1.5</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="grub.html" title="GRUB-0.97">后退</a>
+          <p>GRUB-0.97</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gettext.html" title="Gettext-0.14.5">前进</a>
+          <p>Gettext-0.14.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.35. Gawk-3.1.5</h1>
+      </div>
+      <div class="package">
+        <p>Gawk 软件包包含用于管理文本文件的程序。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.2 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">18.2 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.35.1. 安装 Gawk</h2>
+        </div>
+        <p>在某些情况下，Gawk-3.1.5会释放一块没有分配的内存。应用下面的patch可以解决问题：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../gawk-3.1.5-segfault_fix-1.patch</kbd></pre>
+        <p>为编译 Gawk 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr --libexecdir=/usr/lib</kbd></pre>
+        <p>由于在 <span><strong class="command">configure</strong></span> 脚本中的一个 bug ，Gawk 就不会发现 Glibc 中的某些方面的locale支持。 这个bug会导致很多问题。例如，Gettext 测试单元会失败。解决这个问题的方法就是在 <tt class="filename">config.h</tt> 中添加丢失的宏定义：</p>
+        <pre class="userinput"><kbd class="command">cat &gt;&gt;config.h &lt;&lt;"EOF"
+<tt class="literal">#define HAVE_LANGINFO_CODESET 1
+#define HAVE_LC_MESSAGES 1</tt>
+EOF</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make check</tt></strong> 。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-gawk" name="contents-gawk"></a>
+          <h2 class="sect2">6.35.2. Gawk 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">awk(→gawk),
+              gawk, gawk-3.1.5, grcat, igawk, pgawk, pgawk-3.1.5, pwcat</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3687133" name="id3687133"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="awk" name="awk"></a><span class="term"><span><strong class="command">awk</strong></span></span></td>
+                <td><p>指向 <span><strong class="command">gawk</strong></span> 的链接</p></td>
+              </tr>
+              <tr>
+                <td><a id="gawk" name="gawk"></a><span class="term"><span><strong class="command">gawk</strong></span></span></td>
+                <td><p> <span><strong class="command">awk</strong></span> 的GNU版本，用来管理文本文件的程序。</p></td>
+              </tr>
+              <tr>
+                <td><a id="gawk-version" name="gawk-version"></a><span class="term"><span><strong class="command">gawk-3.1.5</strong></span></span></td>
+                <td><p><span><strong class="command">gawk</strong></span> 的硬链接</p></td>
+              </tr>
+              <tr>
+                <td><a id="grcat" name="grcat"></a><span class="term"><span><strong class="command">grcat</strong></span></span></td>
+                <td><p>读取组数据库 <tt class="filename">/etc/group</tt></p></td>
+              </tr>
+              <tr>
+                <td><a id="igawk" name="igawk"></a><span class="term"><span><strong class="command">igawk</strong></span></span></td>
+                <td><p>赋予 <span><strong class="command">gawk</strong></span> 包含文件的能力</p></td>
+              </tr>
+              <tr>
+                <td><a id="pgawk" name="pgawk"></a><span class="term"><span><strong class="command">pgawk</strong></span></span></td>
+                <td><p><span><strong class="command">gawk</strong></span> 的概要分析(profiling)版本</p></td>
+              </tr>
+              <tr>
+                <td><a id="pgawk-version" name="pgawk-version"></a><span class="term"><span><strong class="command">pgawk-3.1.5</strong></span></span></td>
+                <td><p><span><strong class="command">pgawk</strong></span> 的硬链接</p></td>
+              </tr>
+              <tr>
+                <td><a id="pwcat" name="pwcat"></a><span class="term"><span><strong class="command">pwcat</strong></span></span></td>
+                <td><p><tt class="filename">/etc/passwd</tt> 读取密码数据库</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="grub.html" title="GRUB-0.97">后退</a>
+          <p>GRUB-0.97</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="gettext.html" title="Gettext-0.14.5">前进</a>
+          <p>Gettext-0.14.5</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

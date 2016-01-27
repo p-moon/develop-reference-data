@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>扩展性是如何实现的</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="extend.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="extend.html">快退</a></td><td width="60%" align="center" valign="bottom">章33. 扩展 SQL</td><td width="10%" align="right" valign="top"><a href="extend.html">快进</a></td><td width="10%" align="right" valign="top"><a href="extend-type-system.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="EXTEND-HOW">33.1. 扩展性是如何实现的</a></h1>
+<p> PostgreSQL 可扩展的原因是它的操作是由表驱动的。如果你熟悉标准的关系数据库系统，你就知道它们把数据库、表、字段等信息存储在一个被称为系统表(有些系统称为数据字典)的地方。这些表与其它表没什么不同，只不过 DBMS 把它自己内部的信息存放于此罢了。PostgreSQL 与其它系统的不同之处在于它在系统表里存储了更多的信息：除了关于表和列/字段的信息之外，还有关于它们的类型、函数、访问方式之类的信息。这些表可以被用户修改，而且由于 PostgreSQL 的内部操作是以这些表为基础的，这就意味着 PostgreSQL 可以被用户进行扩展。相比之下，传统的数据库系统只能通过修改源代码或加载由 DBMS 供应商提供的特殊模块来扩展。</p>
+<p>PostgreSQL 还可以通过动态加载的方法与用户书写的代码结合在一起。也就是说，用户可以把一个目标代码文件(通常是共享库)声明为一个新类型或函数的实现，这时 PostgreSQL 将根据需要加载它们。用 SQL 书写的代码甚至更容易加入到服务器中去。这种可以"在线"更改操作的能力使 PostgreSQL 特别适合于新应用和新存储结构的快速定型。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="extend.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="extend-type-system.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">扩展 SQL</td><td width="34%" align="center" valign="top"><a href="extend.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PostgreSQL 类型系统</td></tr>
+</table>
+</div>
+</body></html>

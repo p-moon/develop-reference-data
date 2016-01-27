@@ -1,0 +1,554 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_mime － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_mime</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>根据文件扩展名决定应答的行为(处理器/过滤器)和内容(MIME类型/语言/字符集/编码)</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>mime_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_mime.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>本模块通过文件的扩展名将不同的"元信息"与文件关联起来。元信息在文档的文件名与文档的MIME类型、语言、字符集、编码方式之间建立关联。最终元信息会传送到服务器并参与内容协商，这样最终在考虑用户指定参数的基础上，在几个可能的文件里选择一个提供服务。关于<a href="../content-negotiation.html">内容协商</a>的更多信息，请参阅<code class="module"><a href="../mod/mod_negotiation.html">mod_negotiation</a></code>模块。</p>
+
+    <p><code class="directive"><a href="#addcharset">AddCharset</a></code>, <code class="directive"><a href="#addencoding">AddEncoding</a></code>, <code class="directive"><a href="#addlanguage">AddLanguage</a></code>, <code class="directive"><a href="#addtype">AddType</a></code>指令都可以用于在文件的扩展名与文件的元信息之间建立映射关系。它们分别指明了文档的字符集、编码方式、语言、<a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">MIME类型</a>(内容类型)。指令<code class="directive"><a href="#typesconfig">TypesConfig</a></code>用来指定一个文件，它也包含了扩展名到MIME类型的映射关系。</p>
+
+    <p>另外，<code class="module"><a href="../mod/mod_mime.html">mod_mime</a></code>还可以定义<a href="../handler.html">处理器</a>和<a href="../filter.html">过滤器</a>来生成或处理信息。指令<code class="directive"><a href="#addhandler">AddHandler</a></code>, <code class="directive"><a href="#addoutputfilter">AddOutputFilter</a></code>, <code class="directive"><a href="#addinputfilter">AddInputFilter</a></code>控制了提供文档的模块或脚本的运作方式。<code class="directive"><a href="#multiviewsmatch">MultiviewsMatch</a></code>指令设定<code class="module"><a href="../mod/mod_negotiation.html">mod_negotiation</a></code>模块在尝试Multiview匹配时，如何处理文件扩展名。</p>
+
+    <p>当<code class="module"><a href="../mod/mod_mime.html">mod_mime</a></code>模块在元信息与文件的扩展名之间建立映射以后，<code class="module"><a href="../mod/core.html">core</a></code>提供了一组指令用来建立某个给定范围内(也就是<code class="directive"><a href="../mod/core.html#location">&lt;Location&gt;</a></code>, <code class="directive"><a href="../mod/core.html#directory">&lt;Directory&gt;</a></code>, <code class="directive"><a href="../mod/core.html#files">&lt;Files&gt;</a></code>)所有相关文件与特定的元信息之间的关联。这些指令包括<code class="directive"><a href="../mod/core.html#forcetype">ForceType</a></code>, <code class="directive"><a href="../mod/core.html#sethandler">SetHandler</a></code>, <code class="directive"><a href="../mod/core.html#setinputfilter">SetInputFilter</a></code>, <code class="directive"><a href="../mod/core.html#setoutputfilter">SetOutputFilter</a></code> 。<code class="module"><a href="../mod/core.html">core</a></code>的指令会覆盖任何在<code class="module"><a href="../mod/mod_mime.html">mod_mime</a></code>模块中定义的文件扩展名映射。</p>
+
+    <p>注意，改变一个文件的元信息，不会改变<code>Last-Modified</code>头的值。因此，以前被缓存的副本可能还会被用户或代理服务器使用。如果你改变了元信息(语言、内容类型、字符集、编码方式)，你需要"触及"所有相关文件(更新他们的最后修改时间)，以保证所有的访问者都收到正确的内容标题。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="multipleext" id="multipleext">带多扩展名的文件</a></h2>
+    <p>文件可以有多个扩展名，这些扩展名的顺序<em>一般情况</em>下是无关紧要的。例如：如果文件<code>welcome.html.fr</code>被映射为内容类型是<code>text/html</code> 、语言是法语的话，文件<code>welcome.fr.html</code>将被映射为完全相同的内容。如果一个以上的扩展名映射到同种类型的元信息上，那么将使用最右边的那个。比如：<code>.gif</code>的<a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">MIME类型</a>是<code>image/gif</code> 、<code>.html</code>的<a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">MIME类型</a>是<code>text/html</code> ，那么<code>welcome.gif.html</code>的<a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">MIME类型</a>将是<code>text/html</code> 。</p>
+
+    <p><a href="#charset-lang">语言</a>和<a href="#contentencoding">内容编码</a>会按照积累的方式处理，因为一个文件可以被指定为多种语言或编码。因此，<code>welcome.html.en.de</code>文件将会按照<code>Content-Language: en, de</code>和<code>Content-Type: text/html</code>发送。</p>
+
+    <p>在处理带多个扩展名的文件并且这些扩展名同时关联<a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">MIME类型</a>和处理器时，要特别小心。这种情况下通常是由与处理器相关的模块来处理得到结果。比如，文件扩展名<code>.imap</code>(通过<code class="module"><a href="../mod/mod_imagemap.html">mod_imagemap</a></code>模块)与<code>imap-file</code>处理器相关联，同时，<code>.html</code>文件扩展名的<a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">MIME类型</a>是<code>text/html</code> ，那么文件<code>world.imap.html</code>将同时与<code>imap-file</code>处理器和<code>text/html</code><a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">MIME类型</a>相关联。在处理这种情况的时候，<code>imap-file</code>处理器会被选用，因此，这个文件会被当作由<code class="module"><a href="../mod/mod_imagemap.html">mod_imagemap</a></code>模块处理的图像映射文件。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="contentencoding" id="contentencoding">内容编码</a></h2>
+    <p>一个具有特定MIME类型的文件能够用一种特定的方法进行额外的编码，以简化它在互联网上的传输。这通常指的是压缩，比如<code>gzip</code> ；也可以是加密，例如<code>pgp</code> ；还可以是像UUencoding那样的编码，UUencoding是用来在ASCII(文本)格式的文件里，传输二进制文件的编码方式。</p>
+
+    <p><a href="http://www.ietf.org/rfc/rfc2616.txt">HTTP/1.1 RFC</a>第14.11节是这样解释的：</p>
+
+    <blockquote cite="http://www.ietf.org/rfc/rfc2616.txt">
+      <p>实体头的"Content-Encoding"域是媒体类型的修饰符。如果存在，它的值指明了对实体本身进行额外编码的方式，以及为了得到"Content-Type"头所参照的媒体类型而必须采用的解码机制。"Content-Encoding"主要用来允许一个文件在不破坏它底层媒体类型的基础上，进行压缩。</p>
+    </blockquote>
+
+    <p>通过使用一种以上的文件扩展名(参见上面关于<a href="#multipleext">带多扩展名的文件</a>一节)，你可以指定文件是一种特定的<em>类型</em>，还可以同时指定它特定的<em>编码方式</em>。</p>
+
+    <p>例如，你有一个文件，它是Microsoft Word文档，同时为了减小它的大小，它还被压缩了。如果<code>.doc</code>扩展名表示Microsoft Word文件类型，而<code>.zip</code>扩展名表示pkzip文件编码方式，那么文件<code>Resume.doc.zip</code>就会被认出是一个用pkzip压缩过的Word文档。</p>
+
+    <p>Apache把一个<code>Content-encoding</code>头和请求的资源一起发送，以便告诉浏览器资源编码的方式。</p>
+
+    <div class="example"><p><code>Content-encoding: pkzip</code></p></div>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="charset-lang" id="charset-lang">字符集和语言</a></h2>
+    <p>除了文件类型和文件编码方式外，还有一个重要的信息是文件的语言以及文件显示时的字符集。例如一个文档可能是用越南语或古斯拉夫语写的，并且也应该显示成这种语言。这样的信息也要在HTTP头里进行传输。</p>
+
+    <p>字符集、语言、编码方式、内容类型等信息都是用在内容协商(参阅<code class="module"><a href="../mod/mod_negotiation.html">mod_negotiation</a></code>模块)处理过程中的。它们决定了当许多包含了不同的字符集、语言、编码方式、内容类型的文档都存在时，具体将哪个文档返回给客户端。所有由<code class="directive"><a href="#addcharset">AddCharset</a></code>, <code class="directive"><a href="#addencoding">AddEncoding</a></code>, <code class="directive"><a href="#addlanguage">AddLanguage</a></code>, <code class="directive"><a href="#addtype">AddType</a></code>指令定义的文件扩展名关联(还有在<code class="directive"><a href="../mod/mod_mime_magic.html#mimemagicfile">MimeMagicFile</a></code>指令中列出的文件扩展名)都参与了这个选择过程。使用<code class="directive"><a href="#addhandler">AddHandler</a></code>, <code class="directive"><a href="#addinputfilter">AddInputFilter</a></code>, <code class="directive"><a href="#addoutputfilter">AddOutputFilter</a></code>指令建立的关联，可以用<code class="directive"><a href="#multiviewsmatch">MultiviewsMatch</a></code>指令来决定参与或不参与匹配。</p>
+
+    <h3><a name="charset" id="charset">字符集</a></h3>
+      <p>为了传递更深层次的信息，Apache在传送一个<code>Content-Language</code>头以指定文档语言的基础上，还在随后的<code>Content-Type</code>头中指明了具体的字符集，以便更精确地描述这一信息。</p>
+
+      <div class="example"><p><code>
+        Content-Language: en, fr<br />
+	Content-Type: text/plain; charset=ISO-8859-1
+      </code></p></div>
+
+      <p>语言的标识是这个语言名字的二字母缩写。<code>charset</code>是使用的字符集的精确名字。</p>
+    
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="AddCharset" id="AddCharset">AddCharset</a> <a name="addcharset" id="addcharset">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>在给定的文件扩展名与特定的字符集之间建立映射</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>AddCharset <var>charset</var> <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p><code class="directive">AddCharset</code>指令在特定的文件扩展名与特定的字符集之间建立映射。<var>charset</var>是以<var>extension</var>为扩展名的文件的<a href="http://www.iana.org/assignments/character-sets">MIME字符集参数</a>。这个映射关系会强制添加在所有现存的映射关系上，并覆盖所有现存的<var>extension</var>扩展名映射。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      AddLanguage ja .ja<br />
+      AddCharset EUC-JP .euc<br />
+      AddCharset ISO-2022-JP .jis<br />
+      AddCharset SHIFT_JIS .sjis
+    </code></p></div>
+
+    <p>有了以上定义以后，文档<code>xxxx.ja.jis</code>会被当成是使用字符集<code>ISO-2022-JP</code>的日文文档(文档<code>xxxx.jis.ja</code>也一样)。<code class="directive">AddCharset</code>指令除了用于通知客户端文档的字符集编码方式以便正确地翻译和显示以外，还用于<a href="../content-negotiation.html">内容协商</a>(根据用户的优先选择信息，从几个文档中选择一个返回给用户)。</p>
+
+    <p><var>extension</var>参数是大小写无关的，并且可以带或不带前导点。</p>
+
+<h3>参见</h3>
+<ul>
+<li><code class="module"><a href="../mod/mod_negotiation.html">mod_negotiation</a></code></li>
+<li><code class="directive"><a href="../mod/core.html#adddefaultcharset">AddDefaultCharset</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="AddEncoding" id="AddEncoding">AddEncoding</a> <a name="addencoding" id="addencoding">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>在文件扩展名与特定的编码方式之间建立映射关系</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>AddEncoding <var>MIME-enc</var> <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p><code class="directive">AddEncoding</code>指令在文件扩展名与特定的编码方式之间建立映射关系。指令定义以<var>extension</var>为扩展名的文件是由<var>MIME-enc</var>方式编码的。这个映射关系会添加在所有有效的映射关系上，并覆盖所有相同的<var>extension</var>扩展名映射。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      AddEncoding x-gzip .gz<br />
+      AddEncoding x-compress .Z
+    </code></p></div>
+
+    <p>有了上述定义后，包含<code>.gz</code>扩展名的文件被认为是用<code>x-gzip</code>方式编码的，而带<code>.Z</code>扩展名的文件则被认为是用<code>x-compress</code>方式编码的。</p>
+
+    <p>老的客户端期望<code>x-gzip</code>和<code>x-compress</code> ，然而，按标准来说，它们分别等同于<code>gzip</code>和<code>compress</code> 。Apache在进行编码方式映射时，会忽略"<code>x-</code>"前缀。当响应需要包含编码方式时，Apache会使用客户端请求的格式(例如：<code>x-foo</code>或<code>foo</code>)来应答。如果客户端没有指明特定的格式，Apache会使用<code>AddEncoding</code>指令给定的编码方式。为了简化这一问题，你应该为这两个特定的编码方式始终使用<code>x-gzip</code>和<code>x-compress</code> 。对于象<code>deflate</code>这样比较新的编码方式，指定时不要带"<code>x-</code>"前缀。</p>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="AddHandler" id="AddHandler">AddHandler</a> <a name="addhandler" id="addhandler">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>在文件扩展名与特定的处理器之间建立映射</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>AddHandler <var>handler-name</var> <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p>指定带<var>extension</var>扩展名的文件应被<var><a href="../handler.html">handler-name</a></var>处理器来处理。这个映射关系会添加在所有有效的映射关系上，并覆盖所有相同的<var>extension</var>扩展名映射。例如，为了把扩展名为<code>.cgi</code>的文件作为CGI脚本来处理，你应该定义：</p>
+
+    <div class="example"><p><code>
+      AddHandler cgi-script .cgi
+    </code></p></div>
+
+    <p>一旦将上述定义放在你的http.conf文件中，所有包含<code>.cgi</code>扩展名的文件，都会被当成是CGI程序。</p>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+<h3>参见</h3>
+<ul>
+<li><code class="directive"><a href="../mod/core.html#sethandler">SetHandler</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="AddInputFilter" id="AddInputFilter">AddInputFilter</a> <a name="addinputfilter" id="addinputfilter">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>在文件扩展名与特定的输入过滤器之间建立映射</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>AddInputFilter <var>filter</var>[;<var>filter</var>...] <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.26 及以后的版本中可用</td></tr>
+</table>
+    <p><code class="directive">AddInputFilter</code>指令在文件扩展名<var>extension</var>与对服务器收到的客户请求进行处理与转发的输入<a href="../filter.html">过滤器</a>之间建立映射。这是除包括<code class="directive"><a href="../mod/core.html#setinputfilter">SetInputFilter</a></code>指令在内的所有过滤器定义指令之外的定义。这个映射会与所有有效的定义合并，并覆盖所有相同的<var>extension</var>扩展名映射。</p>
+
+    <p>如果要指定一个以上的过滤器，它们必须用分号来分隔，并按它们处理文档的顺序来排列。<var>filter</var>与<var>extension</var>参数都是大小无关的，<var>extension</var>可以带或不带前导点。</p>
+
+<h3>参见</h3>
+<ul>
+<li><code class="directive"><a href="#removeinputfilter">RemoveInputFilter</a></code></li>
+<li><code class="directive"><a href="../mod/core.html#setinputfilter">SetInputFilter</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="AddLanguage" id="AddLanguage">AddLanguage</a> <a name="addlanguage" id="addlanguage">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>在文件扩展名与特定的语言之间建立映射</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>AddLanguage <var>MIME-lang</var> <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p><code class="directive">AddLanguage</code>指令在文件扩展名与特定的语言之间建立映射。指令定义以<var>extension</var>为扩展名的文件是以<var>MIME-lang</var>语言写成的。这个映射关系会添加在所有有效的映射关系上，并覆盖所有相同的<var>extension</var>扩展名映射。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      AddEncoding x-compress .Z<br />
+      AddLanguage en .en<br />
+      AddLanguage fr .fr
+    </code></p></div>
+
+    <p>这样一来，文档<code>xxxx.en.Z</code>将会被当成是一个压缩的英文文档(<code>xxxx.Z.en</code>也一样)。虽然内容的语言会返回给客户端，但浏览器一般未必会使用这一信息。<code class="directive">AddLanguage</code>指令更多的用于<a href="../content-negotiation.html">内容协商</a>，以决定哪个文档应当被返回给用户。</p>
+
+    <p>如果同一个扩展名被赋予多个语言，那么使用最后出现的那个。因此在下列情况中：</p>
+
+    <div class="example"><p><code>
+      AddLanguage en .en<br />
+      AddLanguage en-gb .en<br />
+      AddLanguage en-us .en
+    </code></p></div>
+
+    <p>带<code>.en</code>扩展名的文档会被当成是<code>en-us</code> 。</p>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+<h3>参见</h3>
+<ul>
+<li><code class="module"><a href="../mod/mod_negotiation.html">mod_negotiation</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="AddOutputFilter" id="AddOutputFilter">AddOutputFilter</a> <a name="addoutputfilter" id="addoutputfilter">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>在文件扩展名与特定的输出过滤器之间建立映射关系</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>AddOutputFilter <var>filter</var>[;<var>filter</var>...] <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.26 及以后的版本中可用</td></tr>
+</table>
+    <p><code class="directive">AddOutputFilter</code>指令在文件扩展名<var>extension</var>与对服务将返回给客户的信息进行处理的输出<a href="../filter.html">过滤器</a>之间建立映射。这是除包括<code class="directive"><a href="../mod/core.html#setoutputfilter">SetOutputFilter</a></code>和<code class="directive"><a href="../mod/core.html#addoutputfilterbytype">AddOutputFilterByType</a></code>指令在内的所有过滤器定义指令之外定义。这个映射会与所有有效的定义合并，并覆盖所有相同的<var>extension</var>扩展名映射。</p>
+
+    <p>例如，下述配置会在处理所有<code>.shtml</code>文件时，进行服务器端包含，并同时使用<code class="module"><a href="../mod/mod_deflate.html">mod_deflate</a></code>模块压缩后输出。</p>
+
+    <div class="example"><p><code>
+      AddOutputFilter INCLUDES;DEFLATE shtml
+    </code></p></div>
+
+    <p>如果要指定一个以上的过滤器，它们必须用分号来分隔，并按它们处理文档的顺序来排列。<var>filter</var>和<var>extension</var>参数都是大小写无关的，<var>extension</var>可以带或不带前导点。</p>
+
+<h3>参见</h3>
+<ul>
+<li><code class="directive"><a href="#removeoutputfilter">RemoveOutputFilter</a></code></li>
+<li><code class="directive"><a href="../mod/core.html#setoutputfilter">SetOutputFilter</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="AddType" id="AddType">AddType</a> <a name="addtype" id="addtype">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>在给定的文件扩展名与特定的内容类型之间建立映射</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>AddType <var>MIME-type</var> <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p><code class="directive">AddType</code>指令在给定的文件扩展名与特定的内容类型之间建立映射关系。<var>MIME-type</var>指明了包含<var>extension</var>扩展名的文件的<a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">媒体类型</a>。这个映射关系会添加在所有有效的映射关系上，并覆盖所有相同的<var>extension</var>扩展名映射。本指令可用来增加没有在媒体类型文件(参阅<code class="directive"><a href="#typesconfig">TypesConfig</a></code>指令)中定义的映射关系。</p>
+    
+    <div class="example"><h3>示例</h3><p><code>
+      AddType image/gif .gif
+    </code></p></div>
+
+    <div class="note">
+      推荐使用<code class="directive">AddType</code>指令增加新的媒体类型映射关系，而不是改变<code class="directive"><a href="#typesconfig">TypesConfig</a></code>文件。
+    </div>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+<h3>参见</h3>
+<ul>
+<li><code class="directive"><a href="../mod/core.html#defaulttype">DefaultType</a></code></li>
+<li><code class="directive"><a href="../mod/core.html#forcetype">ForceType</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DefaultLanguage" id="DefaultLanguage">DefaultLanguage</a> <a name="defaultlanguage" id="defaultlanguage">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>为所有文件设定特定的默认语言</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DefaultLanguage <var>MIME-lang</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p><code class="directive">DefaultLanguage</code>指令告诉Apache，当该指令作用域范围内(例如，所有当前<code class="directive"><a href="../mod/core.html#directory">&lt;Directory&gt;</a></code>指令封装范围内)的文件没有明确的语言扩展名(例如由<code class="directive"><a href="#addlanguage">AddLanguage</a></code>指令定义的<code>.fr</code>或<code>.de</code>)时，文件应该被认为是由<var>MIME-lang</var>语言构成的。举例来说，这就允许在不必对每个文件进行重命名的情况下，把整个目录中的文件标记为包含荷兰语内容。注意不同于用扩展名来指定语言，<code class="directive">DefaultLanguage</code>指令只能指定一种语言。</p>
+
+    <p>如果没有提供有效的<code class="directive">DefaultLanguage</code>指令同时文件也不包含由<code class="directive"><a href="#addlanguage">AddLanguage</a></code>定义的语言扩展名，那么该文件将被认为没有语言属性。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      DefaultLanguage en
+    </code></p></div>
+
+<h3>参见</h3>
+<ul>
+<li><code class="module"><a href="../mod/mod_negotiation.html">mod_negotiation</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="ModMimeUsePathInfo" id="ModMimeUsePathInfo">ModMimeUsePathInfo</a> <a name="modmimeusepathinfo" id="modmimeusepathinfo">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>将<code>path_info</code>当成是文件名的一个组成部分</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>ModMimeUsePathInfo On|Off</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>ModMimeUsePathInfo Off</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>directory</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.41 及以后的版本中可用</td></tr>
+</table>
+    <p><code class="directive">ModMimeUsePathInfo</code>指令用来设定在使用由<code class="module"><a href="../mod/mod_mime.html">mod_mime</a></code>提供的指令时，是否将URL的<code>path_info</code>与文件名结合起来进行处理。默认值为 <code>Off</code> ，也就是说URL的<code>path_info</code>部分被忽略。</p>
+
+    <p>当你使用虚拟文件系统的时候，推荐使用本指令。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      ModMimeUsePathInfo On
+    </code></p></div>
+
+    <p>对<code>/bar/foo.shtml</code>这样的请求来说，"<code>/bar</code>"是一个位置信息，如果<code class="directive">ModMimeUsePathInfo</code>指令为 <code>On</code> ，<code class="module"><a href="../mod/mod_mime.html">mod_mime</a></code>会将请求解析成<code>/bar/foo.shtml</code> ，于是象"<code>AddOutputFilter INCLUDES .shtml</code>"这样的指令就会使用<code>INCLUDES</code>过滤器来处理这个请求。如果没有设定<code class="directive">ModMimeUsePathInfo</code>指令，则不会使用<code>INCLUDES</code>过滤器。</p>
+
+	<h3>参见</h3>
+<ul>
+<li><code class="directive"><a href="../mod/core.html#acceptpathinfo">AcceptPathInfo</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="MultiviewsMatch" id="MultiviewsMatch">MultiviewsMatch</a> <a name="multiviewsmatch" id="multiviewsmatch">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>在使用MultiViews查询所匹配的文件时要包含的文件类型</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>MultiviewsMatch Any|NegotiatedOnly|Filters|Handlers [Handlers|Filters]</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>MultiviewsMatch NegotiatedOnly</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.26 及以后的版本中可用</td></tr>
+</table>
+    <p><code class="directive">MultiviewsMatch</code>指令在实现<code class="module"><a href="mod_negotiation.html">mod_negotiation</a></code>模块的Multiviews功能时，提供了三种不同的处理方法。Multiviews允许对一个文件的请求，可以用任何在基础请求后面跟上协商扩展名的情况来匹配，例如：<code>index.html</code>可以用<code>index.html.en</code>, <code>index.html.fr</code>, <code>index.html.gz</code>来匹配。</p>
+
+    <p><code>NegotiatedOnly</code>选项规定每个跟在基础名字后面的扩展名必须关联到一个在内容协商时已知的<code class="module"><a href="../mod/mod_mime.html">mod_mime</a></code>扩展名，例如：字符集、内容类型、语言、编码方式。这是一种最严格也是副作用最少的实现方法，它是默认的处理方式。</p>
+
+    <p>为了包含与处理器和/或过滤器关联的扩展名，可以设定<code class="directive">MultiviewsMatch</code>指令为<code>Handlers</code>或<code>Filters</code> ，也可以两个都选。如果其它所有因素都相等，则会选择最小的那个文件来提供服务。例如，在一个500字节的<code>index.html.cgi</code>文件和一个1000字节的<code>index.html.pl</code>文件中做选择时，<code>.cgi</code>文件会胜出。如果<code>.asis</code>文件与<code>asis-handler</code>处理器关联，对<code>.asis</code>文件的请求就会使用处理器选项指明的处理器。</p>
+
+    <p>即使<code class="module"><a href="../mod/mod_mime.html">mod_mime</a></code>不认识的扩展名，你最终也可以通过使用<code>Any</code>选项来使它匹配用户的请求。Apaceh1.3就是按这个方式处理的，这会导致无法预测的结果，比如匹配了网站管理员从来不希望使用的.old或.bak文件。</p>
+
+    <p>例如，下面的配置允许在Multviews查询中使用处理器和过滤器，但会拒绝未知的文件：</p>
+
+    <div class="example"><p><code>
+      MultiviewsMatch Handlers Filters
+    </code></p></div>
+
+<h3>参见</h3>
+<ul>
+<li><code class="directive"><a href="../mod/core.html#options">Options</a></code></li>
+<li><code class="module"><a href="../mod/mod_negotiation.html">mod_negotiation</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RemoveCharset" id="RemoveCharset">RemoveCharset</a> <a name="removecharset" id="removecharset">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>删除任何给定的扩展名与内容字符集之间的关联</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RemoveCharset <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.24 及以后的版本中可用</td></tr>
+</table>
+    <p><code class="directive">RemoveCharset</code>指令删除任何给定的扩展名与内容字符集之间的关联。子目录中的<code>.htaccess</code>文件可以通过这条指令取消从父目录或服务器配置文件中继承过来的扩展名与内容字符集之间的关联关系。</p>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      RemoveCharset .html .shtml
+    </code></p></div>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RemoveEncoding" id="RemoveEncoding">RemoveEncoding</a> <a name="removeencoding" id="removeencoding">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>删除任何给定的扩展名与内容编码方式之间的关联</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RemoveEncoding <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p><code class="directive">RemoveEncoding</code>指令删除任何给定的扩展名与内容编码方式之间的关联。子目录中的<code>.htaccess</code>文件可以通过这条指令取消从父目录或服务器配置文件中继承过来的扩展名与内容编码方式之间的关联关系。举例来说，它可以这样来使用：</p>
+
+    <div class="example"><h3>/foo/.htaccess:</h3><p><code>
+      AddEncoding x-gzip .gz<br />
+      AddType text/plain .asc<br />
+      &lt;Files *.gz.asc&gt;<br />
+      <span class="indent">
+        RemoveEncoding .gz<br />
+      </span>
+      &lt;/Files&gt;
+    </code></p></div>
+
+    <p>这样，<code>foo.gz</code>被认为是用gzip方式编码的，但<code>foo.gz.asc</code>将被认为是一个未编码的纯文本文件。</p>
+
+    <div class="note"><h3>注意</h3>
+      <p><code class="directive">RemoveEncoding</code>指令在所有<code class="directive"><a href="#addencoding">AddEncoding</a></code>指令<em>之后</em>处理，因此如果在同一个目录配置里两者都出现的话，<code class="directive">RemoveEncoding</code>指令将会取消后面的<code class="directive"><a href="#addencoding">AddEncoding</a></code>指令的作用。</p>
+    </div>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RemoveHandler" id="RemoveHandler">RemoveHandler</a> <a name="removehandler" id="removehandler">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>删除任何指定扩展名与处理器之间的关联</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RemoveHandler <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p><code class="directive">RemoveHandler</code>指令删除任何指定的扩展名与处理器之间的关联。子目录中的<code>.htaccess</code>文件可以通过这条指令取消从父目录或服务器配置文件中继承过来的扩展名与处理器之间的关联关系。举例来说，它可以这样来使用：</p>
+
+    <div class="example">
+    	<h3>/foo/.htaccess</h3>
+    	<p><code>
+      AddHandler server-parsed .html
+    </code></p></div>
+
+    <div class="example">
+    	<h3>/foo/bar/.htaccess</h3>
+    	<p><code>
+      RemoveHandler .html
+    </code></p></div>
+
+    <p>这样<code>/foo/bar</code>目录中的<code>.html</code>文件将被当成普通文件来处理，而不是由parsing处理器(参阅<code class="module"><a href="../mod/mod_include.html">mod_include</a></code>模块)来处理。</p>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RemoveInputFilter" id="RemoveInputFilter">RemoveInputFilter</a> <a name="removeinputfilter" id="removeinputfilter">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>删除指定扩展名与输入过滤器之间的关联</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RemoveInputFilter <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.26 及以后的版本中可用</td></tr>
+</table>   
+    <p><code class="directive">RemoveInputFilter</code>指令删除指定的扩展名与输入过滤器之间的关联。子目录中的<code>.htaccess</code>文件可以通过这条指令取消从父目录或服务器配置文件中继承过来的扩展名与输入过滤器之间的关联关系。</p>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+<h3>参见</h3>
+<ul>
+<li><code class="directive"><a href="#addinputfilter">AddInputFilter</a></code></li>
+<li><code class="directive"><a href="../mod/core.html#setinputfilter">SetInputFilter</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RemoveLanguage" id="RemoveLanguage">RemoveLanguage</a> <a name="removelanguage" id="removelanguage">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>删除指定的扩展名与内容语言之间的关联</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RemoveLanguage <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.24 及以后的版本中可用</td></tr>
+</table>
+    <p><code class="directive">RemoveLanguage</code>指令删除指定的扩展名与内容语言之间的关联。子目录中的<code>.htaccess</code>文件可以通过这条指令取消从父目录或服务器配置文件中继承过来的扩展名与内容语言之间的关联关系。</p>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RemoveOutputFilter" id="RemoveOutputFilter">RemoveOutputFilter</a> <a name="removeoutputfilter" id="removeoutputfilter">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>删除指定扩展名与输出过滤器之间的关联</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RemoveOutputFilter <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 2.0.26 及以后的版本中可用</td></tr>
+</table>    
+    <p><code class="directive">RemoveOutputFilter</code>指令删除指定的扩展名与输出过滤器之间的关联。子目录中的<code>.htaccess</code>文件可以通过这条指令取消从父目录或服务器配置文件中继承过来的扩展名与输出过滤器之间的关联关系。</p>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      RemoveOutputFilter shtml
+    </code></p></div>
+
+<h3>参见</h3>
+<ul>
+<li><code class="directive"><a href="#addoutputfilter">AddOutputFilter</a></code></li>
+</ul>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RemoveType" id="RemoveType">RemoveType</a> <a name="removetype" id="removetype">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>删除指定扩展名与内容类型之间的关联</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RemoveType <var>extension</var> [<var>extension</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p><code class="directive">RemoveType</code>指令删除指定的扩展名与<a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">内容类型</a>之间的关联。子目录中的<code>.htaccess</code>文件可以通过这条指令取消从父目录或服务器配置文件中继承过来的扩展名与内容类型之间的关联关系。举例来说，它可以这样使用：</p>
+
+    <div class="example">
+    	<h3>/foo/.htaccess</h3>
+    	<p><code>
+      RemoveType .cgi
+    </code></p></div>
+
+    <p>这将删除<code>/foo/</code>目录及其所有子目录下<code>.cgi</code>文件的特定处理方式，从而使这些文件按<code class="directive"><a href="../mod/core.html#defaulttype">DefaultType</a></code>指令设定的默认类型来处理。</p>
+
+    <div class="note"><h3>注意</h3>
+      <p><code class="directive">RemoveType</code>指令会在所有的<code class="directive"><a href="#addtype">AddType</a></code>指令<em>之后</em>处理，因此，当同一个目录配置中，同时存在这两种指令的时候，前面的<code class="directive">RemoveType</code>指令将会取消后面的<code class="directive"><a href="#addtype">AddType</a></code>指令的作用。</p>
+    </div>
+
+    <p><var>extension</var>参数是大小无关的，并且可以带或不带前导点。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="TypesConfig" id="TypesConfig">TypesConfig</a> <a name="typesconfig" id="typesconfig">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>指定<code>mime.types</code>文件的位置</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>TypesConfig <var>file-path</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>TypesConfig conf/mime.types</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_mime</td></tr>
+</table>
+    <p><code class="directive">TypesConfig</code>指令设定<a class="glossarylink" href="../glossary.html#mime-type" title="see glossary">MIME类型</a>配置文件的位置。<var>File-path</var>是相对于<code class="directive"><a href="../mod/core.html#serverroot">ServerRoot</a></code>的路径。媒体类型配置文件列出了文件扩展名与内容类型的默认映射关系。大多数管理员使用既定的<code>mime.types</code>文件，它关联了文件扩展名和由IANA注册的内容类型。最新的列表可以在<a href="http://www.iana.org/assignments/media-types/index.html">http://www.iana.org/assignments/media-types/index.html</a>得到。这样做可以大大简化<code>httpd.conf</code>文件里的媒体类型定义，在需要时，也可以用<code class="directive"><a href="#addtype">AddType</a></code>指令来更改这些定义。你不应该编辑<code>mime.types</code>文件，因为在服务器升级的时候，它会被覆盖。</p>
+
+    <p>文件包含类似于<code class="directive"><a href="#addtype">AddType</a></code>指令参数格式的行：</p>
+
+    <div class="example"><p><code>
+      <var>MIME-type</var> [<var>extension</var>] ...
+    </code></p></div>
+
+    <p>扩展名的大小写是无关紧要的。空行和以井号(<code>#</code>)打头的行会被忽略。</p>
+
+    <div class="note">
+      请<strong>不要</strong>要求Apache HTTP服务器项目组在已发布的<code>mime.types</code>文件中增加新的项，除非(1)它们已经在IANS注册过了，或者(2)它们被广泛地使用，并且在多平台上没有文件扩展名冲突发生。<code>category/x-subtype</code>请求会被自动拒绝，因为任何新的二字母的扩展名很可能会与已经非常拥挤的语言及字符集命名空间冲突。
+    </div>
+
+<h3>参见</h3>
+<ul>
+<li><code class="module"><a href="../mod/mod_mime_magic.html">mod_mime_magic</a></code></li>
+</ul>
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

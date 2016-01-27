@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>创建一个数据库</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="manage-ag-overview.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="managing-databases.html">快退</a></td><td width="60%" align="center" valign="bottom">章19. 管理数据库</td><td width="10%" align="right" valign="top"><a href="managing-databases.html">快进</a></td><td width="10%" align="right" valign="top"><a href="manage-ag-templatedbs.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="MANAGE-AG-CREATEDB">19.2. 创建一个数据库</a></h1>
+<p>为了创建和删除数据库，必须先运行 PostgreSQL 服务器(参阅<a href="server-start.html">节16.3</a>)。</p>
+<p>数据库是用 SQL 命令 <a href="sql-createdatabase.html"><i>CREATE DATABASE</i></a> 创建的：</p>
+<pre class="SYNOPSIS">CREATE DATABASE <tt class="REPLACEABLE"><i>name</i></tt>;</pre>
+<p>这里的 <tt class="REPLACEABLE"><i>name</i></tt> 遵循 SQL 标识符的一般规则。当前角色自动成为此新数据库的所有者。同时，以后删除这个数据库也是这个用户的特权(同时还会删除其中的所有对象，即使那些对象有不同的所有者也这样)。</p>
+<p>创建数据库是一个有限制的操作。参阅<a href="role-attributes.html">节18.2</a>获取如何赋予权限的信息。</p>
+<p>因为你需要与数据库服务器连接才能执行 <tt class="COMMAND">CREATE DATABASE</tt> 命令，那么还有一个问题是<span class="emphasis"><i class="EMPHASIS">第一个</i></span>数据库是怎样创建的?第一个数据库总是由 <tt class="COMMAND">initdb</tt> 命令在初始化数据存储区的时候创建的(参阅<a href="creating-cluster.html">节16.2</a>)。这个数据库叫 <tt class="LITERAL">postgres</tt> 而且不能被删除。因此要创建第一个"真正"的数据库时你可以与 <tt class="LITERAL">postgres</tt> 连接。</p>
+<p><tt class="COMMAND">initdb</tt> 也会同时创建另一个名为 <tt class="LITERAL">template1</tt> 的数据库。在创建一个新的数据库时，实际上就是克隆(复制)了 <tt class="LITERAL">template1</tt> 数据库。这就意味着你对 <tt class="LITERAL">template1</tt> 所做的任何修改都会传播到所有随后创建的数据库中。因此把模板数据库用于实际工作中并不明智，但是如果有意地使用这个特性，那它可以带来许多方便(译注：比如增加用户定义函数等等)。更多细节见<a href="manage-ag-templatedbs.html">节19.3</a>。</p>
+<p>另外，为了方便，你还可以用 <tt class="COMMAND">createdb</tt> 程序来创建新数据库：</p>
+<pre class="SYNOPSIS">createdb <tt class="REPLACEABLE"><i>dbname</i></tt></pre>
+<p><tt class="COMMAND">createdb</tt> 没变什么魔术，它和 <tt class="LITERAL">postgres</tt> 连接并执行 <tt class="COMMAND">CREATE DATABASE</tt> 命令。<a href="app-createdb.html"><span class="APPLICATION">createdb</span></a> 的手册页包含使用它的细节。尤其是不带任何参数调用 <tt class="COMMAND">createdb</tt> 将创建与当前用户名同名的数据库，这可能是也可能不是你想要的。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b><a href="client-authentication.html">章20</a>包含有关如何限制哪些用户可以连接某个特定数据库的信息。</p>
+</blockquote>
+</div>
+<p>有时候你想为其它人创建一个数据库。那个角色应该成为新数据库的所有者，这样他就可以自己配置和管理这个数据库。要实现这个目标，使用下列命令中的一条：</p>
+<pre class="PROGRAMLISTING">CREATE DATABASE <tt class="REPLACEABLE"><i>dbname</i></tt> OWNER <tt class="REPLACEABLE"><i>rolename</i></tt>;</pre>
+<pre class="PROGRAMLISTING">createdb -O <tt class="REPLACEABLE"><i>rolename</i></tt> <tt class="REPLACEABLE"><i>dbname</i></tt></pre>
+<p>前者用于 SQL 环境，后者用于命令行。只有数据库的超级用户才能为其它用户创建数据库。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="manage-ag-overview.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="manage-ag-templatedbs.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">概述</td><td width="34%" align="center" valign="top"><a href="managing-databases.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">模板数据库</td></tr>
+</table>
+</div>
+</body></html>

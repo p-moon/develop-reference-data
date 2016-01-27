@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.43. Less-394</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="kbd.html" title="Kbd-1.12">后退</a>
+          <p>Kbd-1.12</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="make.html" title="Make-3.80">前进</a>
+          <p>Make-3.80</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.43. Less-394</h1>
+      </div>
+      <div class="package">
+        <p>Less 软件包包含一个文本文件查看器。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">2.6 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.43.1. 安装 Less</h2>
+        </div>
+        <p>为编译 Less 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr --sysconfdir=/etc</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--sysconfdir=/etc</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项告诉程序建立软件包时在 <tt class="filename">/etc</tt> 目录里查找配制文件。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>这个软件包没有附带测试程序。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-less" name="contents-less"></a>
+          <h2 class="sect2">6.43.2. Less 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">less, lessecho, lesskey</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3691609" name="id3691609"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="less" name="less"></a><span class="term"><span><strong class="command">less</strong></span></span></td>
+                <td><p>一个文件显示或分页程序。它显示某文件的内容，并可以分卷、寻找字符串、跳转到某一标记。</p></td>
+              </tr>
+              <tr>
+                <td><a id="lessecho" name="lessecho"></a><span class="term"><span><strong class="command">lessecho</strong></span></span></td>
+                <td><p>在 Unix 系统中，可以用来扩展元字符，比如 <span class="emphasis"><em>*</em></span> 和 <span class="emphasis"><em>?</em></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="lesskey" name="lesskey"></a><span class="term"><span><strong class="command">lesskey</strong></span></span></td>
+                <td><p>为 <span><strong class="command">less</strong></span> 定义按健</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="kbd.html" title="Kbd-1.12">后退</a>
+          <p>Kbd-1.12</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="make.html" title="Make-3.80">前进</a>
+          <p>Make-3.80</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

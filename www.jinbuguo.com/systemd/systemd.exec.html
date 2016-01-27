@@ -1,0 +1,500 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>systemd.exec 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>systemd.exec 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+systemd.exec(5)                          systemd-228                         systemd.exec(5)
+
+<h3>名称</h3>
+    systemd.exec - 执行环境配置
+
+<h3>概要</h3>
+    service.service, socket.socket, mount.mount, swap.swap
+
+<h3>描述</h3>
+    本手册页列出了 service, socket, mount, swap 单元所共有的、用于定义进程执行环境的配置选项。
+    根据单元类型的不同，这些共有的选项分别位于单元文件的 [Service], [Socket], [Mount], [Swap] 小节。
+    上述四种单元各自专用的配置选项位于 <a href="systemd.service.html">systemd.service(5)</a>, <a href="systemd.socket.html">systemd.socket(5)</a>, <a href="systemd.swap.html">systemd.swap(5)</a>, <a href="systemd.mount.html">systemd.mount(5)</a> 手册页。
+    适用于全部类型单元的配置选项位于 <a href="systemd.unit.html">systemd.unit(5)</a> 手册页。
+
+<h3>自动依赖</h3>
+    某些选项会导致自动添加额外的依赖关系。
+
+    设置了 WorkingDirectory=, RootDirectory= 的单元，将自动获得对访问指定路径所需的所有 mount 单元的 Requires= 与 After= 依赖。
+    这等同于将这些 mount 单元明确的在 RequiresMountsFor= 中列出来。
+
+    同样的，设置了 PrivateTmp= 的单元，将自动获得对访问 /tmp 与 /var/tmp 所需的所有 mount 单元的 Requires= 与 After= 依赖。
+
+    那些没有将标准输出(StandardOutput=)与标准错误(StandardError=)连接到 null, tty, socket 的单元，
+    将自动获得 After=journald.socket 依赖。
+
+<h3>选项</h3>
+    WorkingDirectory=
+        设置进程的工作目录。必须设为一个绝对路径或"~"(表示 User= 用户的家目录)。
+        默认值是根目录(当 systemd 作为系统实例运行时)或用户的家目录(当 systemd 作为用户实例运行时)。
+        如果给目录加上"-"前缀，那么表示即使此目录不存在，也不算致命错误。
+        注意，设置此选项将会导致自动添加额外的依赖关系(见上文)。
+
+    RootDirectory=
+        设置以 <a href="http://man7.org/linux/man-pages/man2/chroot.2.html">chroot(2)</a> 方式执行进程时的根目录。必须设为绝对路径。
+        如果设置了此选项，必须确保进程及其辅助文件在 chroot() 监狱中确实可用。
+        注意，设置此选项将会导致自动添加额外的依赖关系(见上文)。
+
+    User=, Group=
+        设置进程在执行时使用的用户与组。既可以设为设为数字形式的ID也可以字符串形式的名称。
+        如果没有明确设置 Group= 选项，则使用 User= 所属的默认组。
+
+    SupplementaryGroups=
+        设置进程在执行时使用的附加组。值是一个空格分隔的组名或组ID列表。可以多次使用此选项，以添加更多的附加组。
+        若设为空，则表示清空先前已设置的列表。注意，此选项并不是覆盖系统现有的附加组，而只是在现有的附加组基础上进行扩展。
+
+    Nice=
+        设置进程的默认谦让值。可以设为 -20(最高优先级) 到 19(最低优先级) 之间的整数值。详见 <a href="http://man7.org/linux/man-pages/man2/setpriority.2.html">setpriority(2)</a> 手册页。
+
+    OOMScoreAdjust=
+        设置进程因内存不足而被杀死的优先级。可设为 -1000(禁止被杀死) 到 1000(最先被杀死)之间的整数值。详见 <a href="https://www.kernel.org/doc/Documentation/filesystems/proc.txt">proc.txt</a> 文档。
+
+    IOSchedulingClass=
+        设置进程的IO调度类型。可设为 0 到 3 之间的数字或对应的 none, realtime, best-effort, idle 字符串。详见 <a href="http://man7.org/linux/man-pages/man2/ioprio_set.2.html">ioprio_set(2)</a> 手册。
+
+    IOSchedulingPriority=
+        设置进程的IO调度优先级。可设为 0(最高优先级) 到 7(最低优先级) 之间的数字。
+        实际可用的优先级取决于 IOSchedulingClass= 的设置。参见 <a href="http://man7.org/linux/man-pages/man2/ioprio_set.2.html">ioprio_set(2)</a> 手册。
+
+    CPUSchedulingPolicy=
+        设置进程的CPU调度策略。可设为 other, batch, idle, fifo, rr 之一。详见 <a href="http://man7.org/linux/man-pages/man2/sched_setscheduler.2.html">sched_setscheduler(2)</a> 手册。
+
+    CPUSchedulingPriority=
+        设置进程的CPU调度优先级。有效值范围取决于 CPUSchedulingPolicy= 的设置。详见 <a href="http://man7.org/linux/man-pages/man2/sched_setscheduler.2.html">sched_setscheduler(2)</a> 手册。
+        例如对于实时调度策略(fifo, rr)来说，可以设为 1(最低优先级) 到 99(最高优先级) 之间的整数。
+
+    CPUSchedulingResetOnFork=
+        是否为派生(fork)的子进程重置CPU调度策略与优先级。默认值为 false 
+        若设为 true 则表示：当父进程的CPU调度策略与优先级高于默认值时，将重置其派生的子进程的CPU调度策略与优先级为默认值。
+        这样就可以阻止派生的子进程继承不应有的高优先级。详见 <a href="http://man7.org/linux/man-pages/man2/sched_setscheduler.2.html">sched_setscheduler(2)</a> 手册。
+
+    CPUAffinity=
+        设置进程的CPU亲和性。值是一个空格或逗号分隔的CPU编号与CPU编号范围列表。CPU编号范围可以用"编号下限-编号上限"格式表示。
+        若多次设置此选项，则表示将多个选项值的CPU亲和性以掩码的方式相融合。
+        若设为空，则表示重置掩码并清空先前设置的所有CPU编号列表。详见 <a href="http://man7.org/linux/man-pages/man2/sched_setaffinity.2.html">sched_setaffinity(2)</a> 手册。
+
+    UMask=
+        设置文件创建掩码。详见 <a href="http://man7.org/linux/man-pages/man2/umask.2.html">umask(2)</a> 手册页。默认值为 0022
+
+    Environment=
+        设置进程的环境变量，值是一个空格分隔的 VAR=VALUE 列表。参见 <a href="http://man7.org/linux/man-pages/man7/environ.7.html">environ(7)</a> 手册页。
+        可以多次使用此选项以增加新的变量或者修改已有的变量(同一个变量以最后一次的设置为准)。
+        若设为空，则表示清空先前所有已设置的变量。
+        注意：(1)不会在字符串内部进行变量展开(也就是"$"没有特殊含义)；(2)如果值中包含空格，则必须在字符串两边使用双引号(")定界。
+        例如：Environment="VAR1=word1 word2" VAR2=word3 "VAR3=$word 5 6"
+        设置了 "VAR1", "VAR2", "VAR3" 三个变量，其值分别为 "word1 word2", "word3", "$word 5 6" 。
+
+    EnvironmentFile=
+        与 Environment= 类似，不同之处在于此选项是从文本文件中读取环境变量的设置。
+        文件中的空行以及以分号(;)或井号(#)开头的行会被忽略，其他行的格式必须符合 VAR=VALUE 的shell变量赋值语法。
+        行尾的反斜杠(\)将被视为续行符，这与shell语法类似。若想在变量值中包含空格，必须在值的两端加上双引号(")。
+
+        文件必须用绝对路径表示(可以包含通配符)。但可在路径前加上"-"前缀表示忽略不存在的文件。
+        可以多次使用此选项，以从多个不同的文件中读取设置。若设为空，则表示清空所有先前已从文件中读取的环境变量。
+
+        这里列出的文件将在进程启动前的瞬间被读取，因此可以由前一个单元生成配置文件，再由后一个单元去读取它。
+
+        从文件中读取的环境变量会覆盖 Environment= 中设置的同名变量。
+        文件的读取顺序就是它们出现在单元文件中的顺序，并且对于同一个变量，以最后读取的文件中的设置为准。
+
+    PassEnvironment=
+        将某些 systemd 的环境变量(也就是PID=1的进程所持有的环境变量)传递给该单元所派生的进程，接受一个空格分隔的变量名称列表。
+        可以多次使用此选项以增加新的变量。若设为空，则表示清空先前所有已设置的变量。
+        如果此处设置的变量并不是 systemd 的环境变量，那么将被悄无声息的忽略掉。
+
+        注意，通过此选项传递过来的环境变量的值会被 Environment= 或 EnvironmentFile= 选项中的同名变量所覆盖。
+        参见 <a href="http://man7.org/linux/man-pages/man7/environ.7.html">environ(7)</a> 以了解更多环境变量的细节。
+
+    StandardInput=
+        设置进程的标准输入(STDIN)，可设为 null, tty, tty-force, tty-fail, socket 之一。
+
+        null 表示 /dev/null ，也就是所有的读取都只会得到一个文件结束标记(EOF)。这是默认值。
+
+        tty 表示 TTY(由 TTYPath= 设置)，也就是该进程将会成为终端的控制进程。若终端已被其他进程控制，则一直等到其他进程释放为止。
+
+        tty-force 与 tty 类似，不同之处在于，该进程将会强制立即取得终端的控制权，并剥夺其他进程的控制权。
+
+        tty-fail 与 tty 类似，不同之处在于，若终端已被其他进程控制，则会导致该进程自身启动失败。
+
+        socket 仅可用于基于套接字激活的服务单元，并且要求在套接字单元文件(<a href="systemd.socket.html">systemd.socket(5)</a>)中只设置了一个套接字。
+        主要用于兼容那些依赖于传统的 <a href="https://www.freebsd.org/cgi/man.cgi?inetd(8)">inetd(8)</a> 的守护进程。
+
+        注意，设置此选项将会导致自动添加额外的依赖关系(见上文)。
+
+    StandardOutput=
+        设置进程的标准输出(STDOUT)。默认值是 <a href="systemd-system.conf.html">systemd-system.conf(5)</a> 中的 DefaultStandardOutput= (默认为"journal")。
+        可设为 inherit, null, tty, journal, syslog, kmsg, journal+console, syslog+console, kmsg+console, socket 之一。
+
+        inherit 表示使用 StandardInput= 设置的值。
+
+        null 表示 /dev/null ，也就是所有写入都会被丢弃。
+
+        tty 表示 TTY(由 TTYPath= 设置)，如果仅用于输出，那么进程将无需取得终端的控制权，亦无需等待其他进程释放终端控制权。
+
+        journal 表示 systemd 日志服务(通过<a href="journalctl.html">journalctl(1)</a>访问)。注意，所有发到 syslog 或 kmsg 的日志都会隐含的复制一份到 journal 中。
+        也就是说，journal 是 syslog 与 kmsg 的超集。
+
+        syslog 表示 <a href="http://man7.org/linux/man-pages/man3/syslog.3.html">syslog(3)</a> 日志服务。注意，此时所有日志都会隐含的复制一份到 journal 中。
+
+        kmsg 表示内核日志缓冲区(通过<a href="http://man7.org/linux/man-pages/man1/dmesg.1.html">dmesg(1)</a>访问)注意，此时所有日志都会隐含的复制一份到 journal 中。
+
+        journal+console, syslog+console, kmsg+console 与上面三个值类似，不同之处在于所有日志都会再复制一份到系统的控制台上。
+
+        socket 的解释与 StandardInput= 中的完全相同。
+
+        注意，设置此选项将会导致自动添加额外的依赖关系(见上文)。
+
+    StandardError=
+        设置进程的标准错误(STDERR)。默认值是 <a href="systemd-system.conf.html">systemd-system.conf(5)</a> 中的 DefaultStandardError= (默认为"inherit")。
+        取值范围及含义与 StandardOutput= 相同。但有个例外：inherit 表示使用 StandardOutput= 设置的值。
+
+    TTYPath=
+        设置用于 STDIN, STDOUT, STDERR 的终端设备节点文件(参见前面三个选项)。默认值是 /dev/console 
+
+    TTYReset=
+        是否在进程执行前与进程退出后重置 TTYPath= 终端设备。默认值是"no"
+
+    TTYVHangup=
+        是否在进程执行前与进程退出后断开所有已打开 TTYPath= 终端设备的客户端。默认值是"no"
+
+    TTYVTDisallocate=
+        当 TTYPath= 是一个虚拟控制台终端时，是否尝试在进程执行前与进程退出后释放该终端，
+        以确保清空屏幕与回滚缓冲区。默认值是"no"
+
+    SyslogIdentifier=
+        设置日志标识符(发送日志消息时加在行首的字符串)。默认值是进程的名称。
+        此选项仅在将 StandardOutput= 或 StandardError= 设为 journal(+console), syslog(+console), kmsg(+console) 之一时有意义。
+
+    SyslogFacility=
+        设置<a href="http://man7.org/linux/man-pages/man3/syslog.3.html">syslog(3)</a>的 facility 值。仅在将 StandardOutput= 或 StandardError= 设为 syslog 时有意义。
+        可设为 kern, user, mail, daemon(默认值), auth, syslog, lpr, news, uucp, cron, authpriv, ftp,
+        local0, local1, local2, local3, local4, local5, local6, local7 之一。
+
+    SyslogLevel=
+        设置默认的<a href="http://man7.org/linux/man-pages/man3/syslog.3.html">syslog(3)</a>日志级别。仅在将 StandardOutput= 或 StandardError= 设为 syslog 或 kmsg 时有意义。
+        可设为 emerg, alert, crit, err, warning, notice, info(默认值), debug 之一。
+        注意，进程可以在某些日志行的头部附加一个自定义的日志级别标记，以覆盖此处设置的默认级别。
+        但是可以通过设置 SyslogLevelPrefix=false 来禁止识别自定义的日志级别(见后)。参见 <a href="http://www.freedesktop.org/software/systemd/man/sd-daemon.html">sd-daemon(3)</a> 手册。
+
+    SyslogLevelPrefix=
+        此选项仅在 StandardOutput= 或 StandardError= 为 syslog, kmsg, journal 时有意义。
+        默认值 true 表示按照日志行头部附加的日志级别发送日志(在实际发送时头部的日志级别标记将被移除)。
+        设为 false 则表示将日志行按原样发送而不作任何解析。参见 <a href="http://www.freedesktop.org/software/systemd/man/sd-daemon.html">sd-daemon(3)</a> 手册。
+
+    TimerSlackNSec=
+        设置进程的定时器的弹性。若仅设置一个整数而没有单位，那么单位是纳秒。
+        也可以在整数后加上单位后缀："ms"(毫秒), "min"(分钟), "h"(小时), "d"(天), "w"(周)
+        定时器的弹性大小控制着进程被操作系统定时器唤醒的时间精度(也就是最小时间片)。详见 <a href="http://man7.org/linux/man-pages/man2/prctl.2.html">prctl(2)</a> 手册。
+
+    LimitCPU=, LimitFSIZE=, LimitDATA=, LimitSTACK=, LimitCORE=, LimitRSS=, LimitNOFILE=, LimitAS=, LimitNPROC=, 
+    LimitMEMLOCK=, LimitLOCKS=, LimitSIGPENDING=, LimitMSGQUEUE=, LimitNICE=, LimitRTPRIO=, LimitRTTIME=
+        设置进程的各种软/硬资源限制。设为字符串 infinity 表示不作限制。详见 <a href="http://man7.org/linux/man-pages/man2/setrlimit.2.html">setrlimit(2)</a> 手册。
+        对于字节值，可以使用以1024为基数的 K, M, G, T, P, E 后缀。
+        对于时间值，可以使用 us, ms, s, min, h, d, week, month, year 后缀(详见 <a href="systemd.time.html">systemd.time(7)</a> 手册)。
+        若未指定时间后缀，对 LimitCPU= 来说单位是秒，而对 LimitRTTIME= 来说单位是微秒。
+        同时需要注意的是，实际有效的时间值会受最小分辨率的影响。
+        例如 LimitCPU= 最小分辨率是一秒，所以小于一秒的数值会向上取整到秒。
+
+        注意，对进程的资源限制是针对单个进程的，当父进程派生出一个子进程的时候，
+        子进程便获得了一个全新的资源集(重新计算资源限制)，而不是共享父进程的资源限制，这可能会导致资源超限。
+        此外，LimitRSS= 在Linux平台是没有意义的(因为没有被Linux实现)。
+        建议使用 <a href="systemd.resource-control.html">systemd.resource-control(5)</a> 中的资源限制方法，而不是此处这些针对单个进程的限制，
+        因为 <a href="systemd.resource-control.html">systemd.resource-control(5)</a> 的限制是针对整个单元的，并且可以在运行时动态调整，所以是更好的选择。
+        例如，MemoryLimit= 就是对 LimitRSS= 的上佳替代。
+
+            指令                 等价的 ulimit 命令     单位
+            LimitCPU=            ulimit -t              秒
+            LimitFSIZE=          ulimit -f              字节
+            LimitDATA=           ulimit -d              字节
+            LimitSTACK=          ulimit -s              字节
+            LimitCORE=           ulimit -c              字节
+            LimitRSS=            ulimit -m              字节
+            LimitNOFILE=         ulimit -n              文件描述符的数量
+            LimitAS=             ulimit -v              字节
+            LimitNPROC=          ulimit -u              进程的数量
+            LimitMEMLOCK=        ulimit -l              字节
+            LimitLOCKS=          ulimit -x              锁的数量
+            LimitSIGPENDING=     ulimit -i              信号队列的长度(排队的信号数量)
+            LimitMSGQUEUE=       ulimit -q              字节
+            LimitNICE=           ulimit -e              谦让级别
+            LimitRTPRIO=         ulimit -r              实时优先级
+            LimitRTTIME=         不存在                 微秒
+
+    PAMName=
+        设置建立PAM会话所使用的PAM服务名称。此选项仅在与 User= 连用的时候才有意义。
+        若设置，那么进程将以设置的名称被注册为一个PAM会话。
+        若未设置，那么将不会为进程打开任何PAM会话。详见 <a href="http://man7.org/linux/man-pages/man8/pam.8.html">pam(8)</a> 手册。
+
+    CapabilityBoundingSet=
+        设置进程的 capability 集合(bounding, effective, permitted, inheritable)中应该包含哪些 <a href="http://man7.org/linux/man-pages/man7/capabilities.7.html">capabilities(7)</a> 。
+        选项值是一个空格分隔的、可被<a href="https://www.mankier.com/3/cap_from_name">cap_from_name(3)</a>读取的 capability 名称列表，
+        例如 CAP_SYS_ADMIN, CAP_DAC_OVERRIDE, CAP_SYS_PTRACE 
+        列表中的 capabilities 将会被包含在 capability 集合中，而所有其他不在列表中的 capabilities 则会被剔除。
+        如果列表以"~"符号开头，那么表示取反，也就是所有列表之外的 capabilities 将会被包含在 capability 集合中。
+        注意，此选项的适用范围比 Capabilities= 更大，并且优先级更高。
+        若未设置此选项，则表示不修改进程的 capability 集合。若多次设置此选项，则表示将多个设置的 capability 集合合并。
+        若设为空则表示清空所有已设置的 capability 集合。
+        若设为一个单独的"~"字符，则表示清空先前的所有设置，并重置为包含所有的 capabilities 
+
+    SecureBits=
+        设置进程的安全位。参见 <a href="http://man7.org/linux/man-pages/man7/capabilities.7.html">capabilities(7)</a> 手册。值是一个空格分隔的列表，可用列表项如下：
+         keep-caps, keep-caps-locked, no-setuid-fixup, no-setuid-fixup-locked, noroot, noroot-locked
+        可以多次使用此选项，以合并(OR)多个安全位。若设为空，则表示将安全位重置为"0"。
+
+    Capabilities=
+        设置进程的 capability 集合(effective, permitted, inherited)中应该包含哪些 <a href="http://man7.org/linux/man-pages/man7/capabilities.7.html">capabilities(7)</a> 。
+        选项值是一个空格分隔的、可被<a href="https://www.mankier.com/3/cap_from_name">cap_from_name(3)</a>读取的 capability 名称列表，
+        因为这里设置的 capability 集合会受到可执行文件既有的 capability 集合支配和过滤，
+        所以使用 CapabilityBoundingSet= 选项是更好的选择。
+
+    ReadWriteDirectories=, ReadOnlyDirectories=, InaccessibleDirectories=
+        为进程设置一个新的文件系统名字空间。也就是限制进程可访问的文件系统范围。
+        每个选项的值都是一个空格分隔的目录(绝对路径)列表。
+        对于 ReadWriteDirectories= 中的目录，进程从名字空间内访问与从外部访问的权限是一样的。
+        对于 ReadOnlyDirectories= 中的目录，进程从名字空间内访问时仅有只读权限(即使从外部访问是拥有写入权限)。
+        对于 InaccessibleDirectories= 中的目录，进程从名字空间内访问时没有任何权限(既不能读取也不能写入)。
+        注意，如果在这些目录的子目录中随后又挂载了新的文件系统，那么这些选项所设置的限制并不会扩展到这些新挂载的文件系统上。
+        可以多次使用这些选项，增加更多的受限目录。若设为空，则表示撤消所有先前设置的受限目录列表。
+
+        可以在 ReadOnlyDirectories= 与 InaccessibleDirectories= 的绝对路径前加上"-"前缀，表示忽略不存在的目录。
+        注意，使用这些选项后，文件系统的挂载将无法从主机向服务传递，但从服务向主机的传递依然有效。
+        因此，不可将这些选项用于需要在主名字空间中挂载文件系统的服务。
+
+    PrivateTmp=
+        设为 true 表示在进程的文件系统名字空间中挂载私有的 /tmp 与 /var/tmp 目录(不与名字空间外的其他进程共享)。
+        这样做会增加进程的临时文件的安全性，但同时也让进程之间无法通过 /tmp 或 /var/tmp 目录进行通信。
+        同时，当服务停止之后，所有先前在 /tmp 与 /var/tmp 中创建的文件都将被删除。
+        默认值是 false 
+        可以通过 JoinsNamespaceOf= 选项(参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册)将多个单元运行在同一个名字空间的私有 /tmp 与 /var/tmp 中。
+        注意，使用此选项之后，文件系统的挂载将无法从主机向服务传递，但从服务向主机的传递依然有效。
+        因此，不可将该选项用于需要在主名字空间中挂载文件系统的服务。
+
+    PrivateDevices=
+        设为 true 表示为进程设置一个新的 /dev 名字空间，并仅在其中添加虚拟设备(没有任何物理设备)。
+        虚拟设备的例子：/dev/null, /dev/zero, /dev/random, /dev/ptmx, /dev/pts/
+        物理设备的例子：/dev/sda, /dev/md0
+        这可以有效关闭进程对物理设备的访问。默认值是 false 
+        设为 true 将会强行从 CapabilityBoundingSet= 中移除 CAP_MKNOD 项，
+        并且强行设置 DevicePolicy=closed (详见 <a href="systemd.resource-control.html">systemd.resource-control(5)</a> 手册)。
+        注意，使用此选项之后，文件系统的挂载将无法从主机向服务传递，但从服务向主机的传递依然有效。
+        因此，不可将该选项用于需要在主名字空间中挂载文件系统的服务。
+
+    PrivateNetwork=
+        设为 true 表示为进程设置一个新的网络名字空间，并在其中仅配置一个"lo"本地回环设备(没有任何物理网络设备)。
+        这可以有效关闭进程对物理网络的访问。默认值是 false 
+        可以通过 JoinsNamespaceOf= 选项(参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册)将多个单元运行在同一个私有的网络名字空间中。
+        注意，此选项将会从主机断开所有套接字(AF_NETLINK 与 AF_UNIX)，
+        同时，进程亦无法访问那些位于抽象套接字名字空间中的AF_UNIX套接字(不过依然可以访问位于文件系统上的AF_UNIX套接字)。
+
+    ProtectSystem=
+        默认值为 off
+        若设为 true 则表示为该单元以只读模式挂载 /usr 与 /boot 目录。
+        若设为"full"则表示为该单元以只读模式挂载 /etc 与 /usr 与 /boot 目录。
+        这样可以有效禁止该单元对操作系统以及配置文件的任何修改。
+        推荐为所有需要长时间运行的服务开启此选项，除非该单元确实需要对系统进行修改。
+        注意，因为具有 CAP_SYS_ADMIN capability 的进程可以无视此设置，
+        所以还需要使用 CapabilityBoundingSet= 去除 CAP_SYS_ADMIN capability
+
+    ProtectHome=
+        默认值为 off
+        若设为 true 则表示对该单元屏蔽 /home, /root, /run/user 目录(内容为空且不可写入)
+        若设为"read-only"则表示 /home, /root, /run/user 目录对该单元仅为只读(不可写入)
+        推荐为所有需要长时间运行的服务开启此选项(特别是面向网络的服务)，以确保其无法访问隐式数据。
+        注意，因为具有 CAP_SYS_ADMIN capability 的进程可以无视此设置，
+        所以还需要使用 CapabilityBoundingSet= 去除 CAP_SYS_ADMIN capability
+
+    MountFlags=
+        设置文件系统的挂载传递标记：shared(默认值), slave, private ，参见 <a href="http://man7.org/linux/man-pages/man2/mount.2.html">mount(2)</a> 手册。
+        这些标记控制着文件系统挂载点的挂载和卸载动作如何在单元的名字空间内与主机之间传递。
+        shared 表示挂载和卸载将会在主机和容器之间同步(双向可见)，
+        slave 表示容器内的挂载和卸载将不会传递到主机，但在主机中挂载的文件系统依然对容器内的进程可见。
+        private 表示主机的挂载和卸载将不会传递到容器，同时容器中的挂载亦不会传递到主机中(双向不可见)。
+        注意，若使用了下列文件系统名字空间相关的选项：
+        PrivateTmp=, PrivateDevices=, ProtectSystem=, ProtectHome=,
+        ReadOnlyDirectories=, InaccessibleDirectories=, ReadWriteDirectories=
+        那么本选项的默认值将会自动从 shared 降级到 slave ，
+        因为这些选项要求挂载和卸载必须不能从单元的名字空间传递到主机。
+
+    UtmpIdentifier=
+        设置一个4字符长度的标识符，以用于在 <a href="http://man7.org/linux/man-pages/man5/utmp.5.html">utmp(5)</a> 与 wtmp 中标识自己。若长度超过4个字符，则截取4个结尾字符。
+        该选项应该仅用于 <a href="/man/agetty.html">agetty(8)</a> 之类的服务，以及好像是被 getty 进程运行的服务(见下文 UtmpMode= 选项)，
+        因为它必须在执行前和退出后在 utmp/wtmp 中创建和清除记录。
+        该选项可以识别 %I 风格的字符串。默认值为空，也就是不在 utmp/wtmp 中创建和清除日志。
+
+    UtmpMode=
+        此选项仅在设置了 UtmpIdentifier= 选项的时候才有意义，表示为此服务生成哪种类型的 <a href="http://man7.org/linux/man-pages/man5/utmp.5.html">utmp(5)</a>/wtmp 记录。
+        "init"(默认值)表示仅生成 INIT_PROCESS 项，被调用的进程必须实现与getty兼容的 utmp/wtmp 逻辑。
+        "login"表示依次生成 INIT_PROCESS 与 LOGIN_PROCESS 项，被调用的进程必须实现与<a href="http://linux.die.net/man/1/login">login(1)</a>兼容的 utmp/wtmp 逻辑。
+        "user"表示依次生成 INIT_PROCESS, LOGIN_PROCESS, USER_PROCESS 项，被调用的进程必须作为一个会话首进程(session leader)运行。
+
+    SELinuxContext=
+        设置进程的 SELinux 安全上下文。设置此项会覆盖自动域名转换，不过，安全策略依然需要对转换进行授权。
+        此选项仅在 SELinux 确实被开启的情况下才有意义。若加上"-"前缀则标识忽略一切错误。详见 <a href="http://linux.die.net/man/3/setexeccon">setexeccon(3)</a> 文档。
+
+    AppArmorProfile=
+        设置进程的 profile 名称，进程将在启动时切换到此 profile 
+        设置的 profile 必须已经加载到内核中，否则该单元将无法启动。
+        此选项仅在 AppArmor 确实被开启的情况下才有意义。若加上"-"前缀则表示忽略一切错误。
+
+    SmackProcessLabel=
+        设置进程的 SMACK64 安全标签。进程将以设定的标签启动，SMACK 将会根据此标签决定是否允许该进程启动。
+        若允许，进程将继续以此标签运行，除非该可执行文件有其自身的 SMACK64EXEC 标签(此时将会切换到其自身标签运行)。
+        默认值是 systemd 的运行时标签。该选项仅在 SMACK 已启用的情况下才有意义。
+        若加上"-"前缀则表示忽略一切错误。设为空表示撤消先前的设置。
+
+    IgnoreSIGPIPE=
+        默认值 true 表示忽略发送给进程的 SIGPIPE 信号，因为该信号通常仅对shell管道有意义。
+
+    NoNewPrivileges=
+        若设为 true 则表示该服务的所有进程与子进程都不可以获得任何新权限。
+        此选项比 SecureBits= 的限制更强悍，因为该选项还禁止以任何方式更改进程的UID
+        该选项是最简单也是最有效的防止进程提升其既有权限的方法。
+
+    SystemCallFilter=
+        设置进程的系统调用过滤器。值是一个空格分隔的系统调用名称列表(默认为白名单)。
+        如果进程使用了列表之外的系统调用，将会立即被 SIGSYS 信号杀死。
+        可以在列表开头添加"~"字符表示反转(变成黑名单)，也就是仅禁止使用列表中列出的系统调用。
+        如果以用户模式运行，并且设置了此选项，则同时也隐含设置了 NoNewPrivileges=yes 
+
+        该选项依赖于内核的 Secure Computing Mode 2 接口('seccomp filtering')，常用于强制建立一个最小化的沙盒环境。
+        注意，execve, rt_sigreturn, sigreturn, exit_group, exit 系统调用是默认隐含于白名单中的。
+        可以多次使用此选项已融合多个过滤器。如果设为空，则表示清空先前所有已设置的过滤器。
+
+        如果同时设置了白名单和黑名单，那么以首先出现的列表为基准，后出现的名单将基于第一个名单对列表项进行加减。
+        例如，首个列表为白名单，包含 read, write 两项，随后又是一个仅包含一个 write 的黑名单，
+        那么最终最终结果将是一个仅包含 read 的白名单。
+
+    SystemCallErrorNumber=
+        若将此选项设置为一个"errno"名称(EPERM, EACCES, EUCLEAN ...)，那么当进程触犯 SystemCallFilter= 规则时，
+        将会得到一个这里设定的"errno"，而不是被 SIGSYS 信号杀死。
+        若未设置此选项或设为空，则按常规使用 SIGSYS 信号杀死违规进程。
+
+    SystemCallArchitectures=
+        设置进程可以使用哪些体系结构的系统调用，选项值是一个空格分隔的体系结构标识符列表。
+        可以使用的标识符有："x86", "x86-64", "x32", "arm", "native"(编译 systemd 时的目标架构)。
+        该选项可用于强制仅允许执行特定体系结构的二进制程序。比如禁止在 x86-64 机器上执行32位的 x86 二进制程序。
+        如果以用户模式运行，并且设置了此选项，则同时也隐含设置了 NoNewPrivileges=yes 
+        该选项的默认值为空，表示不作任何限制。但若设置为非空，则 native 将被隐含的包含在列表中。
+
+    RestrictAddressFamilies=
+        一个空格分隔的套接字类型(AF_UNIX, AF_INET, AF_INET6)列表(默认为白名单)，
+        用于限制进程可以访问的套接字类型。若在列表前加上"~"前缀，则表示列表是黑名单。
+        注意，此选项仅可用于限制 <a href="http://man7.org/linux/man-pages/man2/socket.2.html">socket(2)</a> 系统调用。
+        通过其他方式传递给进程的套接字(例如，通过套接字激活的单元，参见 <a href="systemd.socket.html">systemd.socket(5)</a>)不受此选项的影响。
+        通过 socketpair() 创建的套接字(仅能创建 AF_UNIX 套接字)亦不受此选项的影响。
+        注意，此选项在 32-bit x86 架构上无效(但在 x86-64 架构上有效)，因而会被忽略。
+        如果以用户模式运行，并且设置了此选项，则同时也隐含设置了 NoNewPrivileges=yes 
+        若未设置此选项，则不设任何限制，进程可以访问任何类型的套接字。
+        若设为空，则表示清空先前已有的黑白名单。
+
+        此选项可用于限制进程与远程主机的沟通，特别是通过互联网与外部沟通。
+        注意，一般情况下，应该将仅可用于本机通信的 AF_UNIX 套接字放置到白名单中，
+        例如通过 <a href="http://man7.org/linux/man-pages/man2/syslog.2.html">syslog(2)</a> 发送日志就需要使用 AF_UNIX 套接字。
+
+    Personality=
+        当进程调用 <a href="http://man7.org/linux/man-pages/man2/uname.2.html">uname(2)</a> 时，应该返回哪种体系结构标识符，可设为 x86 或 x86-64
+        这主要用于在 x86-64 平台上运行 32-bit 服务的场合。
+        若未设置，则返回未经修改的原始值(取决于主机的内核)。
+
+    RuntimeDirectory=, RuntimeDirectoryMode=
+        设置运行时目录：RuntimeDirectory= 是一组空格分隔的目录名称列表；RuntimeDirectoryMode= 是目录的访问权限(例如"0755")。
+        若设置此选项，在单元启动时，将会在 /run (对于系统服务) 或 $XDG_RUNTIME_DIR (对于用户服务) 目录中，
+        按照 RuntimeDirectoryMode= 指定的权限创建一系列 RuntimeDirectory= 指定的目录，
+        并且将目录的宿主与宿组分别设为 User= 与 Group= 指定的用户与组。并且在单元停止时，删除这些目录。
+        在 RuntimeDirectory= 中设置的目录名称必须是相对路径，并且不能包括结尾"/"符号。
+        这些选项对于非特权守护进程意义重大，因为这些进程自身缺乏直接在 /run 中创建目录的权限。
+        对于需要更复杂配置或者生存期保证的运行时目录，可以考虑使用 <a href="tmpfiles.d.html">tmpfiles.d(5)</a>
+
+<h3>环境变量</h3>
+    进程在启动的时候，会有一个干净的初始环境，最初仅包含本小节列出的环境变量。
+    对于由系统实例(PID=1)启动的进程来说，它们并不从 systemd(PID=1) 继承任何环境变量；
+    但是对于由用户实例(PID≠1)启动的进程来说，则会从 systemd(PID≠1) 继承全部环境变量。
+
+    $PATH
+        冒号分隔的目录列表(绝对路径)，此值固定为 /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+    $LANG
+        本地化设置。可以通过 <a href="locale.conf.html">locale.conf(5)</a> 文件设置，也可以通过内核命令行(参见 <a href="systemd.html">systemd(1)</a> 与 <a href="kernel-command-line.html">kernel-command-line(7)</a>)设置。
+
+    $USER, $LOGNAME, $HOME, $SHELL
+        用户名, 用户名, 家目录, 登录shell
+        这几个变量仅对设置了 User= 选项的单元有效(包括 systemd 用户实例)。参见 <a href="http://linux.die.net/man/5/passwd">passwd(5)</a>
+
+    $XDG_RUNTIME_DIR
+        保存运行时数据的目录。此变量针对 systemd 用户实例以及用户会话设置。参见 <a href="pam_systemd.html">pam_systemd(8)</a>
+
+    $XDG_SESSION_ID, $XDG_SEAT, $XDG_VTNR
+        会话ID, 席位名称, 会话虚拟终端
+        由 <a href="pam_systemd.html">pam_systemd(8)</a> 对登录会话设置。
+        $XDG_SEAT 仅在会话被附加到一个席位时才设置； $XDG_VTNR 仅在会话被附加到一个虚拟终端时才设置
+
+    $MAINPID
+        单元主进程的PID(如果能确定的话)。仅对由 ExecReload= 之类启动的控制进程设置。
+
+    $MANAGERPID
+        systemd 用户实例的PID ，仅为从 systemd 用户实例派生的进程设置。
+
+    $LISTEN_FDS, $LISTEN_PID
+        传递给服务的用于套接字激活的文件描述符的相关信息。参见 <a href="http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html">sd_listen_fds(3)</a> 手册。
+
+    $TERM
+        终端类型。仅为连接到终端的单元设置(StandardInput=tty, StandardOutput=tty, StandardError=tty)
+        参见 <a href="http://man7.org/linux/man-pages/man5/termcap.5.html">termcap(5)</a> 手册。
+
+<h3>参见</h3>
+    <a href="systemd.html">systemd(1)</a>, <a href="systemctl.html">systemctl(1)</a>, <a href="journalctl.html">journalctl(8)</a>, <a href="systemd.unit.html">systemd.unit(5)</a>, <a href="systemd.service.html">systemd.service(5)</a>, <a href="systemd.socket.html">systemd.socket(5)</a>, <a href="systemd.swap.html">systemd.swap(5)</a>,
+    <a href="systemd.mount.html">systemd.mount(5)</a>, <a href="systemd.kill.html">systemd.kill(5)</a>, <a href="systemd.resource-control.html">systemd.resource-control(5)</a>, <a href="systemd.time.html">systemd.time(7)</a>, <a href="systemd.directives.html">systemd.directives(7)</a>, <a href="tmpfiles.d.html">tmpfiles.d(5)</a>, <a href="http://man7.org/linux/man-pages/man3/exec.3.html">exec(3)</a>
+
+
+systemd.exec(5)                          systemd-228                         systemd.exec(5)
+</pre>
+
+
+<hr />
+
+
+</body></html>

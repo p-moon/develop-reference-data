@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.29. Diffutils-2.8.1</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="bzip2.html" title="Bzip2-1.0.3">后退</a>
+          <p>Bzip2-1.0.3</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="e2fsprogs.html" title="E2fsprogs-1.39">前进</a>
+          <p>E2fsprogs-1.39</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.29. Diffutils-2.8.1</h1>
+      </div>
+      <div class="package">
+        <p>Diffutils 软件包里的程序向你显示两个文件或目录的差异，常用来生成软件的补丁。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">6.3 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.29.1. 安装 Diffutils</h2>
+        </div>
+        <p>POSIX 要求 <span><strong class="command">diff</strong></span> 命令能够根据当前的locale处理 whitespace（空白符）。
+          下面的patch可以解决这个问题：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../diffutils-2.8.1-i18n-1.patch</kbd></pre>
+        <p>上面的这个patch将会导致用一个无效的程序<span><strong class="command">help2man</strong></span>来重新编译 <tt class="filename">diff.1</tt> man 帮助。结果导致 <span><strong class="command">diff</strong></span> 的 man 不可读。我们可以通过改变 <tt class="filename">man/diff.1</tt> 的时间戳来避免这个问题：</p>
+        <pre class="userinput"><kbd class="command">touch man/diff.1</kbd></pre>
+        <p>为编译 Diffutils 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>这个软件包没有附带测试程序。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-diffutils" name="contents-diffutils"></a>
+          <h2 class="sect2">6.29.2. Diffutils 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">cmp, diff, diff3, sdiff</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3684884" name="id3684884"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="cmp" name="cmp"></a><span class="term"><span><strong class="command">cmp</strong></span></span></td>
+                <td><p>比较两个文件，并指出它们是否不同及不同的字节。</p></td>
+              </tr>
+              <tr>
+                <td><a id="diff" name="diff"></a><span class="term"><span><strong class="command">diff</strong></span></span></td>
+                <td><p>比较两个文件或目录，并指出哪些文件的哪些行不同。</p></td>
+              </tr>
+              <tr>
+                <td><a id="diff3" name="diff3"></a><span class="term"><span><strong class="command">diff3</strong></span></span></td>
+                <td><p>逐行比较三个文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="sdiff" name="sdiff"></a><span class="term"><span><strong class="command">sdiff</strong></span></span></td>
+                <td><p>合并两个文件，并以交互方式输出结果</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="bzip2.html" title="Bzip2-1.0.3">后退</a>
+          <p>Bzip2-1.0.3</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="e2fsprogs.html" title="E2fsprogs-1.39">前进</a>
+          <p>E2fsprogs-1.39</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

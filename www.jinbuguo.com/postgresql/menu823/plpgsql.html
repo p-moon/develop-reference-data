@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PL/pgSQL - SQL 过程语言</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="xplang-install.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="xplang.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="pltcl.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plpgsql-overview.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="PLPGSQL"></a>章37. PL/pgSQL - SQL 过程语言</h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>37.1. <a href="plpgsql-overview.html">概述</a></dt>
+<dd><dl>
+<dt>37.1.1. <a href="plpgsql-overview.html#PLPGSQL-ADVANTAGES">使用 PL/pgSQL 的优点</a></dt>
+<dt>37.1.2. <a href="plpgsql-overview.html#PLPGSQL-ARGS-RESULTS">所支持的参数和结果数据类型</a></dt>
+</dl></dd>
+<dt>37.2. <a href="plpgsql-development-tips.html">开发 PL/pgSQL 的一些提示</a></dt>
+<dt>37.3. <a href="plpgsql-structure.html">PL/pgSQL 的结构</a></dt>
+<dt>37.4. <a href="plpgsql-declarations.html">声明</a></dt>
+<dd><dl>
+<dt>37.4.1. <a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-ALIASES">函数参数的别名</a></dt>
+<dt>37.4.2. <a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-TYPE">拷贝类型</a></dt>
+<dt>37.4.3. <a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-ROWTYPES">行类型</a></dt>
+<dt>37.4.4. <a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS">记录类型</a></dt>
+<dt>37.4.5. <a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-RENAMING-VARS"><tt class="LITERAL">RENAME</tt></a></dt>
+</dl></dd>
+<dt>37.5. <a href="plpgsql-expressions.html">表达式</a></dt>
+<dt>37.6. <a href="plpgsql-statements.html">基本语句</a></dt>
+<dd><dl>
+<dt>37.6.1. <a href="plpgsql-statements.html#PLPGSQL-STATEMENTS-ASSIGNMENT">赋值</a></dt>
+<dt>37.6.2. <a href="plpgsql-statements.html#PLPGSQL-STATEMENTS-SQL-NORESULT">执行一个没有结果的查询</a></dt>
+<dt>37.6.3. <a href="plpgsql-statements.html#PLPGSQL-STATEMENTS-SQL-ONEROW">执行一个仅有单行结果的查询</a></dt>
+<dt>37.6.4. <a href="plpgsql-statements.html#PLPGSQL-STATEMENTS-NULL">什么也不做</a></dt>
+<dt>37.6.5. <a href="plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN">执行动态命令</a></dt>
+<dt>37.6.6. <a href="plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS">获取结果状态</a></dt>
+</dl></dd>
+<dt>37.7. <a href="plpgsql-control-structures.html">控制结构</a></dt>
+<dd><dl>
+<dt>37.7.1. <a href="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-RETURNING">从函数返回</a></dt>
+<dt>37.7.2. <a href="plpgsql-control-structures.html#PLPGSQL-CONDITIONALS">条件</a></dt>
+<dt>37.7.3. <a href="plpgsql-control-structures.html#PLPGSQL-CONTROL-STRUCTURES-LOOPS">简单循环</a></dt>
+<dt>37.7.4. <a href="plpgsql-control-structures.html#PLPGSQL-RECORDS-ITERATING">遍历命令结果</a></dt>
+<dt>37.7.5. <a href="plpgsql-control-structures.html#PLPGSQL-ERROR-TRAPPING">捕获错误</a></dt>
+</dl></dd>
+<dt>37.8. <a href="plpgsql-cursors.html">游标</a></dt>
+<dd><dl>
+<dt>37.8.1. <a href="plpgsql-cursors.html#PLPGSQL-CURSOR-DECLARATIONS">声明游标变量</a></dt>
+<dt>37.8.2. <a href="plpgsql-cursors.html#PLPGSQL-CURSOR-OPENING">打开游标</a></dt>
+<dt>37.8.3. <a href="plpgsql-cursors.html#PLPGSQL-CURSOR-USING">使用游标</a></dt>
+</dl></dd>
+<dt>37.9. <a href="plpgsql-errors-and-messages.html">错误和消息</a></dt>
+<dt>37.10. <a href="plpgsql-trigger.html">触发器过程</a></dt>
+<dt>37.11. <a href="plpgsql-porting.html">从 Oracle PL/SQL 进行移植</a></dt>
+<dd><dl>
+<dt>37.11.1. <a href="plpgsql-porting.html#AEN40696">移植样例</a></dt>
+<dt>37.11.2. <a href="plpgsql-porting.html#PLPGSQL-PORTING-OTHER">其它注意事项</a></dt>
+<dt>37.11.3. <a href="plpgsql-porting.html#PLPGSQL-PORTING-APPENDIX">附录</a></dt>
+</dl></dd>
+</dl>
+</div>
+<a name="AEN39271"></a>
+<p>PL/pgSQL 是 PostgreSQL 数据库系统的一个可加载的过程语言。PL/pgSQL 的设计目标是创建一种可加载的过程语言，可以</p>
+<ul>
+<li><p>用于创建函数和触发器过程</p></li>
+<li><p>为 SQL 语言增加控制结构</p></li>
+<li><p>执行复杂的计算</p></li>
+<li><p>继承所有用户定义类型、函数、操作符</p></li>
+<li><p>定义为被服务器信任的语言</p></li>
+<li><p>容易使用</p></li>
+</ul>
+<p>除了用于用户定义类型的输入/输出转换和计算函数以外，任何可以在 C 语言函数里定义的东西都可以在 PL/pgSQL 里使用。比如，可以创建复杂的条件计算函数，并随后将之用于定义操作符或者用于函数索引中。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="xplang-install.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plpgsql-overview.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">安装过程语言</td><td width="34%" align="center" valign="top"><a href="server-programming.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">概述</td></tr>
+</table>
+</div>
+</body></html>

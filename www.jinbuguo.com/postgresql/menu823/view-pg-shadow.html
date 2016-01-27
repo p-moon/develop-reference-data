@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_shadow</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="view-pg-settings.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="view-pg-stats.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="VIEW-PG-SHADOW">43.45. <tt class="STRUCTNAME">pg_shadow</tt></a></h1><a name="AEN66191"></a>
+<p><tt class="STRUCTNAME">pg_shadow</tt> 存在是为了向下兼容：它模拟了一个 PostgreSQL 版本 8.1 之前的系统表。它显示了所有标记了 <tt class="STRUCTFIELD">rolcanlogin</tt> 的角色的属性。</p>
+<p>这个系统表的名字来自于该表不能被公众可读，因为它包含口令。<a href="view-pg-user.html"><tt class="STRUCTNAME">pg_user</tt></a> 是一个在 <tt class="STRUCTNAME">pg_shadow</tt> 上公开可读的视图，只是把口令域填成了空白。</p>
+<div class="TABLE"><a name="AEN66201"></a>
+<p><b>表43-45. <tt class="STRUCTNAME">pg_shadow</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">usename</tt></td><td><tt class="TYPE">name</tt></td><td><tt class="LITERAL"><a href="catalog-pg-authid.html"><tt class="STRUCTNAME">pg_authid</tt></a>.rolname</tt></td><td>用户名</td></tr>
+<tr><td><tt class="STRUCTFIELD">usesysid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-authid.html"><tt class="STRUCTNAME">pg_authid</tt></a>.oid</tt></td><td>用户的 ID</td></tr>
+<tr><td><tt class="STRUCTFIELD">usecreatedb</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>用户可以创建数据库</td></tr>
+<tr><td><tt class="STRUCTFIELD">usesuper</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>用户是超级用户</td></tr>
+<tr><td><tt class="STRUCTFIELD">usecatupd</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>用户可以更新系统表。即使超级用户，如果这个字段不是真，也不能更新系统表。</td></tr>
+<tr><td><tt class="STRUCTFIELD">passwd</tt></td><td><tt class="TYPE">text</tt></td><td>&nbsp;</td><td>口令(可能是加密的)</td></tr>
+<tr><td><tt class="STRUCTFIELD">valuntil</tt></td><td><tt class="TYPE">abstime</tt></td><td>&nbsp;</td><td>口令失效的时间(只用于口令认证)</td></tr>
+<tr><td><tt class="STRUCTFIELD">useconfig</tt></td><td><tt class="TYPE">text[]</tt></td><td>&nbsp;</td><td>运行时配置变量的会话缺省</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="view-pg-settings.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="view-pg-stats.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_settings</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_stats</tt></td></tr>
+</table>
+</div>
+</body></html>

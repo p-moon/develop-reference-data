@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>规划器/优化器</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="rule-system.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="overview.html">快退</a></td><td width="60%" align="center" valign="bottom">章42. PostgreSQL 内部概貌</td><td width="10%" align="right" valign="top"><a href="overview.html">快进</a></td><td width="10%" align="right" valign="top"><a href="executor.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PLANNER-OPTIMIZER">42.5. 规划器/优化器</a></h1>
+<p><i class="FIRSTTERM">规划器/优化器</i>的任务是创建一个优化了执行规划。一个特定的 SQL 查询(因此也就是一个查询树)实际上可以以多种不同的方式执行，每种都生成相同的结果集。如果可能，查询优化器将检查每个可能的执行规划，最终选择认为运行最快的执行计划。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>有些情况下，检查一个查询所有可能的执行方式会花去很多时间和内存空间。特别是在正在执行的查询涉及大量连接操作的时候。为了在合理的时间里判断一个合理的(而不是优化的)查询计划。PostgreSQL 使用<a href="geqo.html"><i>基因查询优化器</i></a>。</p>
+</blockquote>
+</div>
+<p>规划器的搜索过程实际上是与叫做 <i class="FIRSTTERM">paths</i> 的数据结构一起结合运转的，这个数据结构是一个很简单的规划的精简版本，它只包括规划器用来决策所必须的信息。在找到最经济的路径之后，就制作一个完整的<i class="FIRSTTERM">规划树</i>传递给执行器。它有足够的详细信息，代表着需要执行的计划，执行器可以读懂并运行之。在本章剩余部分，将忽略路径和规划之间的区别。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN61532">42.5.1. 生成可能的规划</a></h2>
+<p>规划器/优化器通过为扫描查询里出现的每个关系(表)生成规划，可能的规划是由每个关系上有哪些可用的索引决定的。对一个关系总是可以进行一次顺序查找，所以总是会创建只使用顺序查找的规划。假设一个关系上定义着一个索引(例如 B-tree 索引)，并且一条查询包含约束 <tt class="LITERAL">relation.attribute OPR constant</tt> 。如果 <tt class="LITERAL">relation.attribute</tt> 碰巧匹配 B-tree 索引的关键字并且 <tt class="LITERAL">OPR</tt> 又是列出在索引的<i class="FIRSTTERM">操作符类</i>中的操作符中的一个，那么将会创建另一个使用 B-tree 索引扫描该关系的规划。如果还有别的索引，而且查询里面的约束又和那个索引的关键字匹配，则还会生成更多的规划。</p>
+<p>在寻找完扫描一个关系的所有可能的规划后，接着创建连接各个关系的规划。规划器/优化器首先考虑在 <tt class="LITERAL">WHERE</tt> 条件里存在连接子句的连接(比如，存在像 <tt class="LITERAL">where rel1.attr1=rel2.attr2</tt> 这样的约束)。没有连接子句的连接对只有在没有别的选择的时候才考虑，也就是说，一个关系没有和任何其它关系的连接子句可用。规划器/优化器为它们认为可能的所有的连接关系对生成规划。有三种可能的连接策略：</p>
+<ul>
+<li><p><i class="FIRSTTERM">嵌套循环连接</i>：对左边的关系里面找到的每条行都对右边关系进行一次扫描。这个策略容易实现，但是可能会很耗费时间。但是，如果右边的关系可以用索引扫描，那么这个可能就是个好策略。可以用来自左边关系的当前行的数值为键字进行对右边关系的索引扫描。</p></li>
+<li><p><i class="FIRSTTERM">融合排序连接</i>：在连接开始之前，每个关系都对连接字段进行排序。然后对两个关系并发扫描，匹配的行就组合起来形成连接行。这种联合更有吸引力，因为每个关系都只用扫描一次。要求的排序步骤可以通过明确的排序步骤，或者是使用连接键字上的索引按照恰当的顺序扫描关系。</p></li>
+<li><p><i class="FIRSTTERM">Hash 连接</i>：首先扫描右边的关系，并用连接的字段作为散列键字加载进入一个 Hash 表，然后扫描左边的关系，并将找到的每行用作散列键字来以定位表里匹配的行。</p></li>
+</ul>
+<p>如果查询里的关系多于两个，最后的结果必须通过一个连接步骤树建立，每个步骤有两个输入。规划器检查不同的连接顺序可能，找出开销最小的。</p>
+<p>完成的查询树由对基础关系的顺序或者索引扫描组成，并根据需要加上嵌套循环、融合、以及 Hash 连接节点，加上任何需要的辅助步骤，比如排序节点或者聚集函数计算节点等。大多数这些规划节点类型都有额外的做<i class="FIRSTTERM">选择</i>(抛弃那些不符合指定布尔条件的行)和<i class="FIRSTTERM">投影</i>(基于给出的字段数值计算一个派生出的字段集，也就是在需要时计算标量表达式)。规划器的一个责任是从 <tt class="LITERAL">WHERE</tt> 子句中附加选择条件以及为规划树最合适的节点计算所需要的输出表达式。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="rule-system.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="executor.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PostgreSQL 规则系统</td><td width="34%" align="center" valign="top"><a href="overview.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">执行器</td></tr>
+</table>
+</div>
+</body></html>

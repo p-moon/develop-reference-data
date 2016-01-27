@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>索引的系统表记录</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="indexam.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="indexam.html">快退</a></td><td width="60%" align="center" valign="bottom">章49. 索引访问方法接口定义</td><td width="10%" align="right" valign="top"><a href="indexam.html">快进</a></td><td width="10%" align="right" valign="top"><a href="index-functions.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INDEX-CATALOG">49.1. 索引的系统表记录</a></h1>
+<p>每个索引访问方法都在系统表 <tt class="STRUCTNAME">pg_am</tt> 里面用一行来描述(参阅<a href="catalog-pg-am.html">节43.3</a>)。一个 <tt class="STRUCTNAME">pg_am</tt> 行的主要内容是引用 <a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a> 里面的记录，用来标识索引访问方法提供的索引访问函数。这些函数的接口(API)在本章后面描述。另外，<tt class="STRUCTNAME">pg_am</tt> 的数据行生命了几个索引访问方法的固定属性，比如，它是否支持多字段索引。目前还没有创建、删除 <tt class="STRUCTNAME">pg_am</tt> 记录的特殊支持；任何想写这么一个新的访问方法的人都需要能够自己向这个表里面插入合适的新行。</p>
+<p>要想有真正用处，一个索引访问方法还必须有一个或多个<i class="FIRSTTERM">操作符类</i>，定义在 <a href="catalog-pg-opclass.html"><tt class="STRUCTNAME">pg_opclass</tt></a>, <a href="catalog-pg-amop.html"><tt class="STRUCTNAME">pg_amop</tt></a>, <a href="catalog-pg-amproc.html"><tt class="STRUCTNAME">pg_amproc</tt></a> 里面。这些记录允许规划器判断哪些查询的条件可以适用于用这个索引访问方法创建的索引。操作符类在<a href="xindex.html">节33.14</a>里面定义，是读取本章的前提之一。</p>
+<p>一个独立的索引是由一行 <a href="catalog-pg-class.html"><tt class="STRUCTNAME">pg_class</tt></a> 记录以物理关系的方式描述的，加上一个 <a href="catalog-pg-index.html"><tt class="STRUCTNAME">pg_index</tt></a> 行，表示该索引的逻辑内容 —也就是说，它所拥有的索引字段集，以及被相关的操作符类捕获的这些字段的语义。索引字段(键值)可以是下层表的字段，也可以是该表的数据哈工上的表达式。索引访问方法通常不关心索引的键值来自何妨(它总是操作预处理完毕的键值)，但是它会对 <tt class="STRUCTNAME">pg_index</tt> 里面的操作符类信息很感兴趣。所有这些表记录都可以当作 <tt class="STRUCTNAME">Relation</tt> 数据结构的一部分访问，这个数据结构会在对该索引的所有操作上都传递到对应的函数中。</p>
+<p><tt class="STRUCTNAME">pg_am</tt> 中的有些标志字段的含义并不那么直观。<tt class="STRUCTFIELD">amcanunique</tt> 的需求在<a href="index-unique-checks.html">节49.5</a>里讨论，<tt class="STRUCTFIELD">amcanmulticol</tt> 标志断言该索引访问方法支持多字段索引，<tt class="STRUCTFIELD">amoptionalkey</tt> 断言它允许对那种在第一个索引字段上没有给出可索引限制子句的扫描。如果 <tt class="STRUCTFIELD">amcanmulticol</tt> 为假，那么 <tt class="STRUCTFIELD">amoptionalkey</tt> 实际上说的是该访问方法是否允许不带限制子句的全索引扫描。那些支持多字段索引的访问访法<span class="emphasis"><i class="EMPHASIS">必须</i></span>支持那些在省略了除第一个字段以外的其它字段的约束的扫描；不过，系统允许这些访问访法要求在第一个字段上出现一些限制，这一点是通过把 <tt class="STRUCTFIELD">amoptionalkey</tt> 设置为假来实现的。<tt class="STRUCTFIELD">amindexnulls</tt> 断言该索引记录是为 NULL 键值创建的。因为大多数可以索引的操作符都是严格的，因此不能对 NULL 输入返回 TRUE ，所以，第一眼看见会觉得不为 NULL 存储索引记录的想法很吸引人：因为他们不可能被一个索引扫描返回。不过，这个想法在一个给出的索引字段上没有限制子句的索引扫描的情况下就不行了；这样的扫描应该包括 NULL 行。实际上，这意味着设置了 <tt class="STRUCTFIELD">amoptionalkey</tt> 为真的索引必须索引 NULL ，因为规划器可能会决定在根本没有扫描键字的时候使用这样的索引。这样的索引必须可以在完全没有扫描键字的情况下运行。另外一个限制是一个支持多字段索引的索引访问方法<span class="emphasis"><i class="EMPHASIS">必须</i></span>支持第一个字段后面的字段的 NULL 的索引，因为规划器会认为这个索引可以用于那些没有限制这些字段的查询。比如，假设有个索引在(a,b)上，而一个查询的条件是 <tt class="LITERAL">WHERE a = 4</tt> 。系统会认为这个索引可以用于扫描 <tt class="LITERAL">a = 4</tt> 的数据行，如果索引忽略了 <tt class="LITERAL">b</tt> 为空的数据行，那么就是错误的。不过，如果第一个索引字段值是空，那么忽略它是 OK 的。因此，只是在索引访问方法索引了所有行，包括任意 NULL 的组合，之后，<tt class="STRUCTFIELD">amindexnulls</tt> 才可以设置为真值。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="indexam.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="index-functions.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">索引访问方法接口定义</td><td width="34%" align="center" valign="top"><a href="indexam.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">索引访问方法函数</td></tr>
+</table>
+</div>
+</body></html>

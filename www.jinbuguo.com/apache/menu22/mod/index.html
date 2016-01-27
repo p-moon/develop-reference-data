@@ -1,0 +1,115 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>模块索引 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="module-index"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>模块索引</h1>
+
+
+    <p>以下是Apache发行版中所有模块的列表。字母顺序列表参见<a href="directives.html">指令索引</a>和稍微详细一点的<a href="quickreference.html">指令速查</a>。<br />
+      另外还有<a href="directive-dict.html">描述指令的术语</a>和<a href="module-dict.html">描述模块的术语</a>以供参考。</p>
+  </div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section"><h2><a id="core" name="core">核心功能和多路处理模块</a></h2>
+<dl>
+<dt><a href="core.html">core</a></dt><dd>Apache HTTP服务器核心提供的功能，始终有效。</dd>
+<dt><a href="mpm_common.html">mpm_common</a></dt><dd class="separate">收集了被多个多路处理模块(MPM)实现的公共指令。</dd>
+<dt><a href="beos.html">beos</a></dt><dd>专门针对BeOS优化过的多路处理模块(MPM)</dd>
+<dt><a href="event.html">event</a></dt><dd>一个标准<code class="module"><a href="../mod/worker.html">worker</a></code>MPM的实验性变种。</dd>
+<dt><a href="mpm_netware.html">mpm_netware</a></dt><dd>专门为Novell NetWare优化的线程化的多路处理模块(MPM)</dd>
+<dt><a href="mpmt_os2.html">mpmt_os2</a></dt><dd>专门针对OS/2优化过的混合多进程多线程多路处理模块(MPM)</dd>
+<dt><a href="prefork.html">prefork</a></dt><dd>一个非线程型的、预派生的MPM</dd>
+<dt><a href="mpm_winnt.html">mpm_winnt</a></dt><dd>用于Windows NT/2000/XP/2003 系列的MPM</dd>
+<dt><a href="worker.html">worker</a></dt><dd>线程型的MPM，实现了一个混合的多线程多处理MPM，允许一个子进程中包含多个线程。</dd>
+</dl></div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section"><h2><a id="other" name="other">其它普通模块</a></h2>
+<p class="letters"><a href="#A">&nbsp;A&nbsp;</a> | <a href="#C">&nbsp;C&nbsp;</a> | <a href="#D">&nbsp;D&nbsp;</a> | <a href="#E">&nbsp;E&nbsp;</a> | <a href="#F">&nbsp;F&nbsp;</a> | <a href="#H">&nbsp;H&nbsp;</a> | <a href="#I">&nbsp;I&nbsp;</a> | <a href="#L">&nbsp;L&nbsp;</a> | <a href="#M">&nbsp;M&nbsp;</a> | <a href="#N">&nbsp;N&nbsp;</a> | <a href="#P">&nbsp;P&nbsp;</a> | <a href="#R">&nbsp;R&nbsp;</a> | <a href="#S">&nbsp;S&nbsp;</a> | <a href="#U">&nbsp;U&nbsp;</a> | <a href="#V">&nbsp;V&nbsp;</a></p>
+<dl><dt><a href="mod_actions.html" id="A" name="A">mod_actions</a></dt><dd>根据特定的媒体类型或请求方法，激活特定的CGI脚本</dd>
+<dt><a href="mod_alias.html">mod_alias</a></dt><dd>提供从文件系统的不同部分到文档树的映射和URL重定向</dd>
+<dt><a href="mod_asis.html">mod_asis</a></dt><dd>发送自己包含HTTP头内容的文件</dd>
+<dt><a href="mod_auth_basic.html">mod_auth_basic</a></dt><dd>使用基本认证</dd>
+<dt><a href="mod_auth_digest.html">mod_auth_digest</a></dt><dd>使用MD5摘要认证(更安全，但是只有最新的浏览器才支持)</dd>
+<dt><a href="mod_authn_alias.html">mod_authn_alias</a></dt><dd>基于实际认证支持者创建扩展的认证支持者，并为它起一个别名以便于引用</dd>
+<dt><a href="mod_authn_anon.html">mod_authn_anon</a></dt><dd>提供匿名用户认证支持</dd>
+<dt><a href="mod_authn_dbd.html">mod_authn_dbd</a></dt><dd>使用SQL数据库为认证提供支持</dd>
+<dt><a href="mod_authn_dbm.html">mod_authn_dbm</a></dt><dd>使用DBM数据库为认证提供支持</dd>
+<dt><a href="mod_authn_default.html">mod_authn_default</a></dt><dd>在未正确配置认证模块的情况下简单拒绝一切认证信息</dd>
+<dt><a href="mod_authn_file.html">mod_authn_file</a></dt><dd>使用纯文本文件为认证提供支持</dd>
+<dt><a href="mod_authnz_ldap.html">mod_authnz_ldap</a></dt><dd>允许使用一个LDAP目录存储用户名和密码数据库来执行基本认证和授权</dd>
+<dt><a href="mod_authz_dbm.html">mod_authz_dbm</a></dt><dd>使用DBM数据库文件为组提供授权支持</dd>
+<dt><a href="mod_authz_default.html">mod_authz_default</a></dt><dd>在未正确配置授权支持模块的情况下简单拒绝一切授权请求</dd>
+<dt><a href="mod_authz_groupfile.html">mod_authz_groupfile</a></dt><dd>使用纯文本文件为组提供授权支持</dd>
+<dt><a href="mod_authz_host.html">mod_authz_host</a></dt><dd>供基于主机名、IP地址、请求特征的访问控制</dd>
+<dt><a href="mod_authz_owner.html">mod_authz_owner</a></dt><dd>基于文件的所有者进行授权</dd>
+<dt><a href="mod_authz_user.html">mod_authz_user</a></dt><dd>基于每个用户提供授权支持</dd>
+<dt><a href="mod_autoindex.html">mod_autoindex</a></dt><dd>自动对目录中的内容生成列表，类似于"ls"或"dir"命令</dd>
+<dt><a href="mod_cache.html" id="C" name="C">mod_cache</a></dt><dd>基于URI键的内容动态缓冲(内存或磁盘)</dd>
+<dt><a href="mod_cern_meta.html">mod_cern_meta</a></dt><dd>允许Apache使用CERN httpd元文件，从而可以在发送文件时对头进行修改</dd>
+<dt><a href="mod_cgi.html">mod_cgi</a></dt><dd>在非线程型MPM(<code class="module"><a href="../mod/prefork.html">prefork</a></code>)上提供对CGI脚本执行的支持</dd>
+<dt><a href="mod_cgid.html">mod_cgid</a></dt><dd>在线程型MPM(<code class="module"><a href="../mod/worker.html">worker</a></code>)上用一个外部CGI守护进程执行CGI脚本</dd>
+<dt><a href="mod_charset_lite.html">mod_charset_lite</a></dt><dd>允许对页面进行字符集转换</dd>
+<dt><a href="mod_dav.html" id="D" name="D">mod_dav</a></dt><dd>允许Apache提供<a href="http://www.webdav.org/">DAV</a>协议支持</dd>
+<dt><a href="mod_dav_fs.html">mod_dav_fs</a></dt><dd>为<code class="module"><a href="../mod/mod_dav.html">mod_dav</a></code>访问服务器上的文件系统提供支持</dd>
+<dt><a href="mod_dav_lock.html">mod_dav_lock</a></dt><dd>为<code class="module"><a href="../mod/mod_dav.html">mod_dav</a></code>锁定服务器上的文件提供支持</dd>
+<dt><a href="mod_dbd.html">mod_dbd</a></dt><dd>管理SQL数据库连接，为需要数据库功能的模块提供支持</dd>
+<dt><a href="mod_deflate.html">mod_deflate</a></dt><dd>压缩发送给客户端的内容</dd>
+<dt><a href="mod_dir.html">mod_dir</a></dt><dd>指定目录索引文件以及为目录提供"尾斜杠"重定向</dd>
+<dt><a href="mod_disk_cache.html">mod_disk_cache</a></dt><dd>基于磁盘的缓冲管理器</dd>
+<dt><a href="mod_dumpio.html">mod_dumpio</a></dt><dd>将所有I/O操作转储到错误日志中</dd>
+<dt><a href="mod_echo.html" id="E" name="E">mod_echo</a></dt><dd>一个很简单的协议演示模块</dd>
+<dt><a href="mod_env.html">mod_env</a></dt><dd>允许Apache修改或清除传送到CGI脚本和SSI页面的环境变量</dd>
+<dt><a href="mod_example.html">mod_example</a></dt><dd>一个很简单的Apache模块API演示模块</dd>
+<dt><a href="mod_expires.html">mod_expires</a></dt><dd>允许通过配置文件控制HTTP的"<code>Expires:</code>"和"<code>Cache-Control:</code>"头内容</dd>
+<dt><a href="mod_ext_filter.html">mod_ext_filter</a></dt><dd>使用外部程序作为过滤器</dd>
+<dt><a href="mod_file_cache.html" id="F" name="F">mod_file_cache</a></dt><dd>提供文件描述符缓存支持，从而提高Apache性能</dd>
+<dt><a href="mod_filter.html">mod_filter</a></dt><dd>根据上下文实际情况对输出过滤器进行动态配置</dd>
+<dt><a href="mod_headers.html" id="H" name="H">mod_headers</a></dt><dd>允许通过配置文件控制任意的HTTP请求和应答头信息</dd>
+<dt><a href="mod_ident.html" id="I" name="I">mod_ident</a></dt><dd>实现RFC1413规定的ident查找</dd>
+<dt><a href="mod_imagemap.html">mod_imagemap</a></dt><dd>处理服务器端图像映射</dd>
+<dt><a href="mod_include.html">mod_include</a></dt><dd>实现服务端包含文档(SSI)处理</dd>
+<dt><a href="mod_info.html">mod_info</a></dt><dd>生成Apache配置情况的Web页面</dd>
+<dt><a href="mod_isapi.html">mod_isapi</a></dt><dd>仅限于在Windows平台上实现ISAPI扩展</dd>
+<dt><a href="mod_ldap.html" id="L" name="L">mod_ldap</a></dt><dd>为其它LDAP模块提供LDAP连接池和结果缓冲服务</dd>
+<dt><a href="mod_log_config.html">mod_log_config</a></dt><dd>允许记录日志和定制日志文件格式</dd>
+<dt><a href="mod_log_forensic.html">mod_log_forensic</a></dt><dd>实现"对比日志"，即在请求被处理之前和处理完成之后进行两次记录</dd>
+<dt><a href="mod_logio.html">mod_logio</a></dt><dd>对每个请求的输入/输出字节数以及HTTP头进行日志记录</dd>
+<dt><a href="mod_mem_cache.html" id="M" name="M">mod_mem_cache</a></dt><dd>基于内存的缓冲管理器</dd>
+<dt><a href="mod_mime.html">mod_mime</a></dt><dd>根据文件扩展名决定应答的行为(处理器/过滤器)和内容(MIME类型/语言/字符集/编码)</dd>
+<dt><a href="mod_mime_magic.html">mod_mime_magic</a></dt><dd>通过读取部分文件内容自动猜测文件的MIME类型</dd>
+<dt><a href="mod_negotiation.html" id="N" name="N">mod_negotiation</a></dt><dd>提供<a href="../content-negotiation.html">内容协商</a>支持</dd>
+<dt><a href="mod_nw_ssl.html">mod_nw_ssl</a></dt><dd>仅限于在NetWare平台上实现SSL加密支持</dd>
+<dt><a href="mod_proxy.html" id="P" name="P">mod_proxy</a></dt><dd>提供HTTP/1.1的代理/网关功能支持</dd>
+<dt><a href="mod_proxy_ajp.html">mod_proxy_ajp</a></dt><dd><code class="module"><a href="../mod/mod_proxy.html">mod_proxy</a></code>的扩展，提供Apache JServ Protocol支持</dd>
+<dt><a href="mod_proxy_balancer.html">mod_proxy_balancer</a></dt><dd><code class="module"><a href="../mod/mod_proxy.html">mod_proxy</a></code>的扩展，提供负载平衡支持</dd>
+<dt><a href="mod_proxy_connect.html">mod_proxy_connect</a></dt><dd><code class="module"><a href="../mod/mod_proxy.html">mod_proxy</a></code>的扩展，提供对处理HTTP <code>CONNECT</code>方法的支持</dd>
+<dt><a href="mod_proxy_ftp.html">mod_proxy_ftp</a></dt><dd><code class="module"><a href="../mod/mod_proxy.html">mod_proxy</a></code>的FTP支持模块</dd>
+<dt><a href="mod_proxy_http.html">mod_proxy_http</a></dt><dd><code class="module"><a href="../mod/mod_proxy.html">mod_proxy</a></code>的HTTP支持模块</dd>
+<dt><a href="mod_rewrite.html" id="R" name="R">mod_rewrite</a></dt><dd>一个基于一定规则的实时重写URL请求的引擎</dd>
+<dt><a href="mod_setenvif.html" id="S" name="S">mod_setenvif</a></dt><dd>根据客户端请求头字段设置环境变量</dd>
+<dt><a href="mod_so.html">mod_so</a></dt><dd>允许运行时加载DSO模块</dd>
+<dt><a href="mod_speling.html">mod_speling</a></dt><dd>自动纠正URL中的拼写错误</dd>
+<dt><a href="mod_ssl.html">mod_ssl</a></dt><dd>使用安全套接字层(SSL)和传输层安全(TLS)协议实现高强度加密传输</dd>
+<dt><a href="mod_status.html">mod_status</a></dt><dd>生成描述服务器状态的Web页面</dd>
+<dt><a href="mod_suexec.html">mod_suexec</a></dt><dd>使用与调用web服务器的用户不同的用户身份来运行CGI和SSI程序</dd>
+<dt><a href="mod_unique_id.html" id="U" name="U">mod_unique_id</a></dt><dd>为每个请求生成唯一的标识以便跟踪</dd>
+<dt><a href="mod_userdir.html">mod_userdir</a></dt><dd>允许用户从自己的主目录中提供页面(使用"/~username")</dd>
+<dt><a href="mod_usertrack.html">mod_usertrack</a></dt><dd>使用Session跟踪用户(会发送很多Cookie)，以记录用户的<em>点击流</em></dd>
+<dt><a href="mod_version.html" id="V" name="V">mod_version</a></dt><dd>提供基于版本的配置段支持</dd>
+<dt><a href="mod_vhost_alias.html">mod_vhost_alias</a></dt><dd>提供大批量虚拟主机的动态配置支持</dd>
+</dl></div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

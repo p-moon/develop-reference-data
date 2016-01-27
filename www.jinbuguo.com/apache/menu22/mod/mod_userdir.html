@@ -1,0 +1,107 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_userdir － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_userdir</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>允许用户从自己的主目录中提供页面(使用"/~username")</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>userdir_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_userdir.c</td></tr>
+</table>
+<h3>概述</h3>
+
+<p>此模块允许使用类似<code>http://example.com/~user/</code>的语法来访问用户网站目录。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="UserDir" id="UserDir">UserDir</a> <a name="userdir" id="userdir">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>用户网站目录的位置</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>UserDir <em>directory-filename</em></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_userdir</td></tr>
+</table>
+
+    <p><code class="directive">UserDir</code>指令指定了用户目录下的一个实实在在的目录，存放了该用户提供访问的文档。<em>Directory-filename</em>可以是以下几种形式之一：</p>
+
+    <ul>
+      <li>一个目录名或如下所示的匹配模式：</li>
+      <li>关键词<code>disabled</code>停止<em>所有</em>用户名到目录的转换，但不包括明确使用<code>enabled</code>启用的(见下面)目录。</li>
+      <li>关键词<code>disabled</code>并跟随一个以空格分隔的用户名列表(其中的用户即使出现在<code>enabled</code>的用户列表中，也<em>不会</em>进行目录转换)。</li>
+      <li>关键词<code>enabled</code>并跟随一个以空格分隔的用户名列表。此列表中的用户允许进行目录转换，即使有一个全局的<code>disabled</code>关闭了此操作，但是，如果同时出现在<code>disabled</code>的用户列表中，则不执行转换操作。</li>
+    </ul>
+
+    <p>如果在<code>Userdir</code>指令中，既没有<code>enabled</code>也没有<code>disabled</code>关键词，则其参数将被视为文件匹配模式，用于转换成目录名。对<code>http://www.foo.com/~bob/one/two.html</code>的请求会被转换为：</p>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA">
+<tr><th>UserDir 指令</th><th>转换后的路径</th></tr>
+<tr><td>UserDir public_html</td><td>~bob/public_html/one/two.html</td></tr>
+<tr><td>UserDir /usr/web</td><td>/usr/web/bob/one/two.html</td></tr>
+<tr><td>UserDir /home/*/www</td><td>/home/bob/www/one/two.html</td></tr>
+</table>
+
+    <p>下列指令将发送重定向到客户端：</p> 
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA">
+<tr><th>UserDir 指令</th><th>转换后的路径</th></tr>
+<tr><td>UserDir http://www.foo.com/users</td><td>http://www.foo.com/users/bob/one/two.html</td></tr>
+<tr><td>UserDir
+http://www.foo.com/*/usr</td><td>http://www.foo.com/bob/usr/one/two.html</td></tr>
+<tr><td>UserDir
+http://www.foo.com/~*/</td><td>http://www.foo.com/~bob/one/two.html</td></tr>
+</table> 
+
+<div class="note">
+<strong>注意：使用此指令时要很小心，例如"<code>UserDir ./</code>"可能会把"<code>/~root</code>映射到"<code>/</code>"而这可能不是我们想要的。强烈建议在配置文件中包含一个"<code>UserDir disabled root</code>"声明。更多信息请参见<code class="directive"><a href="../mod/core.html#directory">Directory</a></code>指令和<a href="../misc/security_tips.html">安全提示</a>。</strong>
+</div>
+
+<p>举例：</p>
+
+<p>允许某些用户使用<code>UserDir</code>指令，而禁止其他用户：</p>
+
+<div class="example"><p><code>
+UserDir disabled<br />
+UserDir enabled user1 user2 user3
+</code></p></div>
+
+<p>允许大多数用户使用<code>UserDir</code>指令，而禁止一小部分用户：</p>
+
+<div class="example"><p><code>
+UserDir enabled<br />
+UserDir disabled user4 user5 user6
+</code></p></div>
+
+<p>还可以指定任选其一的(alternative)用户网站目录：</p>
+<div class="example"><p><code>
+Userdir public_html /usr/web http://www.foo.com/
+</code></p></div>
+<p>对http://www.foo.com/~bob/one/two.html的请求，会首先尝试获取"~bob/public_html/one/two.html"，其次是"/usr/web/bob/one/two.html"，最后产生一个到http://www.foo.com/bob/one/two.html的重定向。</p>
+<p>如果要增加重定向，则必须放在列表的最后。因为Apache不能判断重定向是否成功，所以如果不放在最后，那么它只是一个替换地址。</p>
+
+<p>2.1.4及以后的版本中，默认不开启用户网站目录。在未设置<code class="directive"><a href="#userdir">UserDir</a></code>指令的情况下将使用"<code>UserDir public_html</code>"默认值。</p>
+
+
+<h3>参见</h3>
+<ul>
+<li><a href="../howto/public_html.html">用户网站目录</a></li>
+</ul>
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

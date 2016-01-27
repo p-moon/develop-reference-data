@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PostgreSQL 类型系统</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="extend-how.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="extend.html">快退</a></td><td width="60%" align="center" valign="bottom">章33. 扩展 SQL</td><td width="10%" align="right" valign="top"><a href="extend.html">快进</a></td><td width="10%" align="right" valign="top"><a href="xfunc.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="EXTEND-TYPE-SYSTEM">33.2. PostgreSQL 类型系统</a></h1><a name="AEN36169"></a><a name="AEN36171"></a><a name="AEN36174"></a><a name="AEN36176"></a>
+<p>PostgreSQL 数据类型可以分为基本类型、复合类型、域、伪类型。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN36181">33.2.1. 基本类型</a></h2>
+<p>基本类型是那些在 SQL 语言层次更低级别(通常是 C 语言)上实现的类型(比如 <tt class="TYPE">int4</tt> 类型)，它们通常与抽像数据类型对应。PostgreSQL 对这些数据类型只能通过用户提供的函数来操作，并且对这些数据类型行为的理解只限于用户所描述的范围。基本类型进一步分成标量和数组类型。对于每种标量类型，系统都会自动创建一个对应的数组类型，可以保存该标量类型的变长数组。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN36187">33.2.2. 复合类型</a></h2>
+<p>复合类型(或者说行类型)是用户创建表时创建的。也可以用 <a href="sql-createtype.html"><i>CREATE TYPE</i></a> 创建一个"独立的"、没有关联表的复合类型。复合类型只是一个带着相关字段名称的基本类型的列表。复合类型的数值是一行字段值或者一条字段值组成的记录。用户可以从 SQL 查询里访问其字段。参考<a href="rowtypes.html">节8.11</a>获取更多复合类型的相关信息。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN36194">33.2.3. 域</a></h2>
+<p>域基于一种特定的基本类型，从很多角度来看，它们也可以和其对应的基本类型交换。但是，域可以有约束，把它的有效值限制在其对应的基本类型的有效值范围的一个子集中。</p>
+<p>域可以用 SQL 命令 <a href="sql-createdomain.html"><i>CREATE DOMAIN</i></a> 创建。它们的创建和使用不在本章讨论。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN36200">33.2.4. 伪类型</a></h2>
+<p>系统里有集中用于特殊目的的"伪类型"。伪类型不能作为表的字段类型，也不能作为复合类型的属性，但是它们可以用于声明函数的参数和结果类型。这样就在类型系统里提供了一个标识特殊类型函数的机制。<a href="datatype-pseudo.html#DATATYPE-PSEUDOTYPES-TABLE">表8-20</a>列出了现有的伪类型。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="EXTEND-TYPES-POLYMORPHIC">33.2.5. 多态类型</a></h2><a name="AEN36207"></a><a name="AEN36209"></a><a name="AEN36211"></a><a name="AEN36214"></a>
+<p><tt class="TYPE">anyelement</tt> 和 <tt class="TYPE">anyarray</tt> 是两种特别有趣的伪类型，它们被称作<i class="FIRSTTERM">多态类型</i>。任何用这些类型定义的函数就叫做<i class="FIRSTTERM">多态函数</i>。一种多态函数可以在许多不同的数据类型上操作，它们根据调用中实际传递进来的数据类型判断具体的类型。</p>
+<p>多态参数和结果是相互绑定的，并且在分析查询调用的函数时解析成特定的数据类型。每个声明成 <tt class="TYPE">anyelement</tt> 的位置(参数或者返回类型)都允许拥有一个特定的实际数据类型，但是在任何给定的调用过程中，它们都必须是<span class="emphasis"><i class="EMPHASIS">同样</i></span>的类型。每个声明为 <tt class="TYPE">anyarray</tt> 的位置都可以是任何数组数据类型，类似的，它们也必许都是同样的类型。如果有些位置声明为 <tt class="TYPE">anyarray</tt> 而其它位置声明为 <tt class="TYPE">anyelement</tt> ，那么在 <tt class="TYPE">anyarray</tt> 位置上的类型必须是元素类型与那些出现在 <tt class="TYPE">anyelement</tt> 位置上的类型相同的数组。</p>
+<p>因此，如果多个参数位置声明为多态类型，其实际效果是只允许某些实际参数类型的组合出现。比如，一个函数声明为 <tt class="LITERAL">equal(anyelement, anyelement)</tt> 将接受任何两个输入值，只要它们的数据类型相同。</p>
+<p>如果一个函数的返回值声明为多态类型，那么至少有一个参数位置也是多态的，并且提供给参数的类型决定本次调用实际返回的类型。比如，如果没有数组下标机制，那么我们可以定义一个实现下标的函数 <tt class="LITERAL">subscript(anyarray, integer) returns anyelement</tt> 。这个声明约束第一个实际参数是一个数组类型，并且允许分析器从第一个参数的实际类型推导出正确的返回类型。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="extend-how.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="xfunc.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">扩展性是如何实现的</td><td width="34%" align="center" valign="top"><a href="extend.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">用户定义函数</td></tr>
+</table>
+</div>
+</body></html>

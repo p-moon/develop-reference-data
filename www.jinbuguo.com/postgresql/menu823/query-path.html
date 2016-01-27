@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>查询经过的路径</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="overview.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="overview.html">快退</a></td><td width="60%" align="center" valign="bottom">章42. PostgreSQL 内部概貌</td><td width="10%" align="right" valign="top"><a href="overview.html">快进</a></td><td width="10%" align="right" valign="top"><a href="connect-estab.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="QUERY-PATH">42.1. 查询经过的路径</a></h1>
+<p>下面是一个简短的描述，描述一个查询从开始到得到结果要经过的阶段。</p>
+<div class="PROCEDURE">
+<ol type="1">
+<li class="STEP"><p>首先必须先建立起从应用程序到 PostgreSQL 服务器的连接。应用程序向服务器发送查询然后接收从服务器返回的结果。</p></li>
+<li class="STEP"><p><i class="FIRSTTERM">分析器阶段</i>检查从应用程序(客户端)发送过来的查询，核对语法并创建一个<i class="FIRSTTERM">查询树</i>。</p></li>
+<li class="STEP"><p><i class="FIRSTTERM">重写系统</i>接收分析阶段来的查询树且搜索任何应用到查询树上的<i class="FIRSTTERM">规则</i>(存储在<i class="FIRSTTERM">系统表</i>里)，并根据给出的<i class="FIRSTTERM">规则体</i>进行转换。</p>
+<p>重写系统的一个应用就是实现<i class="FIRSTTERM">视图</i>。当一个查询访问一个视图时(也就是一个<i class="FIRSTTERM">虚拟表</i>)，重写系统改写用户的查询，使之成为一个访问在<i class="FIRSTTERM">视图定义</i>里给出的对<i class="FIRSTTERM">基本表</i>的查询。</p></li>
+<li class="STEP"><p><i class="FIRSTTERM">规划器/优化器</i>接收(改写后的)查询树然后创建一个<i class="FIRSTTERM">查询规划</i>，这个查询规划是<i class="FIRSTTERM">执行器</i>的输入。</p>
+<p>它(规划器/优化器)首先创建所有得出相同结果的可能的<i class="FIRSTTERM">路径</i>。例如，如果待扫描的关系上有一个索引，那么扫描的路径就有两个。一个可能是简单的顺序查找，而另一个可能就是使用索引的查找。下一步是计算出不同路径的执行开销，并且选择和返回开销最少的那条。开销最小的路径然后会被展开成为一个可以供执行器使用的完整的查询规划。</p></li>
+<li class="STEP"><p>执行器递归地走过<i class="FIRSTTERM">规划树</i>并且按照规划指定的方式检索数据行。执行器在对关系进行扫描时使用<i class="FIRSTTERM">存储系统</i>进行<i class="FIRSTTERM">排序</i>和<i class="FIRSTTERM">连接</i>，计算<i class="FIRSTTERM">条件</i>并且最终交回生成的数据行。</p></li>
+</ol>
+</div>
+<p>在随后的小节里，将对上面的每一个步骤进行更详细的讨论，以便让对 PostgreSQL 的内部控制和数据结构有一个更准确的理解。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="overview.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="connect-estab.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PostgreSQL 内部概貌</td><td width="34%" align="center" valign="top"><a href="overview.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">连接是如何建立起来的</td></tr>
+</table>
+</div>
+</body></html>

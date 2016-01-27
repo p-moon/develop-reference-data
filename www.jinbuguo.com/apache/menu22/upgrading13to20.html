@@ -1,0 +1,105 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="./style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="./style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="./style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>从1.3升级到2.0 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page">
+<div id="page-header"><p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="./images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="./images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="./index.html">版本2.2</a></div>
+
+<div id="translation-info">　　 <a href="./translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>从1.3升级到2.0</h1>
+
+
+  <p>为了帮助大伙儿升级，我们为现在的Apache用户提供了一份重要信息的文档说明。这些只是一些简要说明，你可以从<a href="new_features_2_0.html">新特性</a>文档或<code>src/CHANGES</code>文件中得到更多信息。</p>
+</div>
+  <div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="compile-time" id="compile-time">编译时配置的改变</a></h2>
+    
+
+    <ul>
+      <li>Apache现在使用autoconf和libtool系统来进行安装进程的配置。这个系统用起来很像Apache1.3的APACI系统，但并不相同。</li>
+
+      <li>在普通的选择编译模块的基础上，Apache2.0把请求进程的主要部分移到了多路处理模块(MPM)里。</li>
+    </ul>
+  </div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="run-time" id="run-time">运行时配置的改变</a></h2>
+    
+
+    <ul>
+      <li>Apache1.3服务器核心中的很多指令现在都放到了MPM里面。如果你希望服务器的行为能够尽量的类似于Apache1.3 ，你应当选择<code class="module"><a href="./mod/prefork.html">prefork</a></code>MPM。其他的MPM将拥有不同的指令来控制进程创建和请求过程。</li>
+
+      <li><a href="mod/mod_proxy.html">proxy module</a>已经被修补以兼容HTTP/1.1。其中重要的改变之一是：代理的访问控制现在是放在<code class="directive"><a href="./mod/mod_proxy.html#proxy">&lt;Proxy&gt;</a></code>段而不是<code>&lt;Directory proxy:&gt;</code>段里面了。</li>
+
+      <li>许多模块中<code>PATH_INFO</code> (在真实文件名后附加路径信息)的处理有了变化。以前作为处理器而现在作为过滤器出现的模块现在可能不再接受包含<code>PATH_INFO</code>的请求。诸如<a href="mod/mod_include.html">INCLUDES</a>或<a href="http://www.php.net/">PHP</a>过滤器将在处理核心的最顶层得到实现，从而拒绝包含<code>PATH_INFO</code>的请求。你可以用<code class="directive"><a href="./mod/core.html#acceptpathinfo">AcceptPathInfo</a></code>指令来迫使处理核心接受包含<code>PATH_INFO</code>的请求，从而恢复服务器端包含中使用<code>PATH_INFO</code>的能力。</li>
+
+      <li><code class="directive"><a href="./mod/mod_negotiation.html#cachenegotiateddocs">CacheNegotiatedDocs</a></code>指令现在使用 On 或 Off 参数了。原有的<code class="directive">CacheNegotiatedDocs</code>应该代之以<code>CacheNegotiatedDocs on</code></li>
+
+      <li>        <code class="directive"><a href="./mod/core.html#errordocument">ErrorDocument</a></code>指令不再用引号开始的参数来指定文本内容了。取而代之的是用双引号把文本内容括起来。比如原有的配置：
+        <div class="example"><p><code>
+          ErrorDocument 403 "Some Message
+        </code></p></div>
+        应该代之以：
+        <div class="example"><p><code>
+          ErrorDocument 403 "Some Message"
+        </code></p></div>
+
+        只要第二个参数不是有效的URL或路径名，它就会被当作是一个文本信息。</li>
+
+      <li><code>AccessConfig</code>和 <code>ResourceConfig</code>指令不复存在了。现有的这些指令可以用<code class="directive"><a href="./mod/core.html#include">Include</a></code>指令代替以实现相同的功能。如果你使用的是这些指令的默认值而没有把它们放到配置文件里的话，你可能需要把&quot;<code>Include conf/access.conf</code>&quot;和&quot;<code>Include
+      conf/srm.conf</code>&quot;加到你的<code>httpd.conf</code>里。为了确保Apache用象以前一样的顺序读取这些配置文件，应该把<code class="directive"><a href="./mod/core.html#include">Include</a></code>指令放到<code>httpd.conf</code>的结束部分，并将包含<code>srm.conf</code>的语句放在包含<code>access.conf</code>的语句的前面。</li>
+
+      <li><code>BindAddress</code>和<code>Port</code>指令不再存在了。相同的功能由更加灵活的<code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code>指令提供。</li>
+
+      <li>Apache1.3中<code>Port</code>指令的另一功能是设定自引用的URL的端口。Apache2.0中对等的是新的<code class="directive"><a href="./mod/core.html#servername">ServerName</a></code>语法：它已经被修改成在一条指令里同时为自引用的URL指定服务器名和端口号。</li>
+
+      <li><code>ServerType</code>指令不复存在了。用于伺服请求的方法现在取决于MPM的选择。目前还没有设计出用于被inetd(端口监视程序)载入的MPM。</li>
+
+      <li><code>mod_log_agent</code>和<code>mod_log_referer</code>被去掉了。取代以使用<code class="directive"><a href="./mod/mod_log_config.html#customlog">CustomLog</a></code>指令的<code class="module"><a href="./mod/mod_log_config.html">mod_log_config</a></code>模块。</li>
+
+      <li><code>AddModule</code>和<code>ClearModuleList</code>指令不复存在了。这些指令原用于确定模块以正确的顺序被激活。而新的Apache2.0 API允许模块明确的指定它们的顺序，从而这些指令就不再有存在的必要了。</li>
+
+      <li><code>FancyIndexing</code>指令被去掉了，取而代之的是<code class="directive"><a href="./mod/mod_autoindex.html#indexoptions">IndexOptions</a></code>指令的<code>FancyIndexing</code>选项。</li>
+
+      <li>由模块<code class="module"><a href="./mod/mod_negotiation.html">mod_negotiation</a></code>提供的MultiViews内容协商机制在其默认文件匹配方面变得更加严格了，只匹配允许协商的文件。可以用<code class="directive"><a href="./mod/mod_mime.html#multiviewsmatch">MultiviewsMatch</a></code> 指令恢复到原来的匹配模式。</li>
+
+      <li>(<em>2.0.51以后</em>)
+<code>ErrorHeader</code>指令的功能合并到<code class="directive"><a href="./mod/mod_headers.html#header">Header</a></code>指令中去了。因为原来的是一个谬误。应当使用：
+<div class="example"><p><code>
+        Header always set foo bar
+      </code></p></div>
+
+      <p>代替原来的使用方式。</p>
+      </li>
+    </ul>
+  </div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="misc" id="misc">杂项的改变</a></h2>
+    
+
+    <ul>
+      <li>Apache1.3中的实验模块<code class="module"><a href="./mod/mod_auth_digest.html">mod_auth_digest</a></code>现在是基本模块了。</li>
+
+      <li>Apache1.3中的实验模块<code>mod_mmap_static</code>现在被<code class="module"><a href="./mod/mod_file_cache.html">mod_file_cache</a></code>代替了。</li>
+
+      <li>发行包经过了重新组织，从而不再包含一个独立的src目录。取而代之的是将源代码有逻辑的组织在发行包的主目录下面。编译后的服务器的安装将从各自的目录下进行。</li>
+    </ul>
+  </div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="third-party" id="third-party">第三方模块</a></h2>
+    
+
+    <p>Apache2.0中的服务器API有了巨大的变化。现有的为Apache1.3设计的模块未经修改将<strong>不能</strong>运行在Apache2.0上。详情请参见<a href="developer/index.html">开发者文档</a>。</p>
+  </div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="./translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p></div>
+</body></html>

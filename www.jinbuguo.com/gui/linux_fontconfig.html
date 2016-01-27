@@ -1,0 +1,941 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; color:#600; }
+pre { background: #edc; }
+table { vertical-align:middle; border:solid 1px #111; border-collapse:collapse; margin:4px; background:#fff; }
+caption, th { font-weight:bold; }
+th, td { border:solid 1px #999; padding:4px; }
+</style>
+<title>Linux字体美化实战(Fontconfig配置) [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>Linux字体美化实战(Fontconfig配置)</h1><h2 id="auth_name">作者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文作者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文作者不保证作品内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留作者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文作者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于作者水平有限，因此不能保证作品内容准确无误。如果你发现了作品中的错误(哪怕是错别字也好)，请来信指出，任何提高作品质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+
+<h2>序言</h2>
+<p>【重要】要阅读本文，你必须首先对Fontconfig的工作原理与配置语法有一定的了解，否则建议首先阅读一下我翻译的<a href="fonts.conf.html">《fonts.conf 中文手册》</a>。只有理解了Fontconfig的工作原理与配置机制，才能真正掌握Linux字体美化的核心与关键。</p>
+<p>本文以作者自己使用的"<a href="fonts.conf.xml">fonts.conf</a>"文件为实例(建议点开后"查看源代码")，一步一步讲解Linux字体的美化过程，并尽量清晰的讲解每个美化步骤与配置指令的意图和原因，使读者在“知其然”的同时还能“知其所以然”。</p>
+
+<h2>选字体</h2>
+<p>本文的主题是Linux环境下的字体美化，但是首先得要有字体，然后才能谈美化。所以第一件事就是“选字体”。</p>
+
+<h3>字体的分类</h3>
+<p>目前，世界上的字体至少有几万种，并且还在不断增加中。但是基本上都可以归为以下五类：</p>
+<dl>
+<dt>monospace[等宽]</dt><dd>是指字符宽度相同的字体，用于需要字符严格对齐的场合，例如控制台和源代码以及ASCII艺术。与此相对，字符宽度各不相同的字体称为比例字体(其余四类字体都是)。不过，对于中文字体而言，并不存在等宽与比例的差别，因为所有中文字都是等宽的。我们平常所说的“xx等宽中文”其实只是说该字体的西文部分是等宽的。</dd>
+<dt>sans-serif[无衬线]</dt><dd>是指笔画末端没有修饰(衬线)的字体，通常用于屏幕显示。中文的黑体与圆体就属于此类字体。[注意]很多非专业人士会将粗体与黑体混为一谈，造成概念上的混淆，应注意区分。</dd>
+<dt>serif[有衬线]</dt><dd>是指笔画末端有修饰(衬线)的字体，通常用于打印。中文的宋体与仿宋就属于此类字体。</dd>
+<dt>cursive[书法]</dt><dd>以手写风格呈现的字体，又称为“模拟笔迹”，仅用于需要表达强烈个性风格的场合。例如被很多平面设计师鄙视的"Comic Sans MS"，以及中文的隶书、楷书、行楷、行书、草书等都属于此类字体。</dd>
+<dt>calligraphic[艺术]</dt><dd>拥有强烈的艺术风格，同时又不以手写风格呈现的字体，中文通常称为“美术字”，亦仅用于需要表达强烈个性风格的场合。</dd>
+</dl>
+<p>上述的每一类字体都可以再进一步细分，但本文的目标不是研究字体的分类，所以点到即止。</p>
+<p>对于像笔者这样的“普通用户”而言，并不关心如何选择充满个性而又丰富多彩的书法字与艺术字，因为它们的主要使用者是平面设计师这样的专业用户，我更关心的是前三种字体。所以本节<b>主要关注等宽、无衬线、有衬线三种字体</b>的选择。</p>
+
+<h3>点阵与矢量</h3>
+<p>点阵字体的优点在于低像素下依然可以保持清晰锐利的笔画，但其不能缩放的缺点也非常致命。而矢量字体则相反，可以任意缩放，但在低像素下的表现并不突出。传统的做法是将点阵与矢量配合使用：低像素时使用点阵、高像素时使用矢量。不过在笔者看来，这仅仅是早期的一个权宜之策罢了，当下的矢量字体渲染技术已经非常成熟，特别是在LCD已经全面取代CRT的情况下，组合使用次像素渲染、抗锯齿、字体微调三种技术，矢量字体在低像素下的显示效果已经非常优秀，甚至在某种程度上已经超越了点阵字体。就中文字体的实际情况来说，点阵字体最小一般只能到11~12px，而且选择的余地非常小，只有寥寥几款看上去更像黑体的所谓“xx宋体”；而优秀的中文矢量字体，在配置得当的情况下，可以在10px时依然清晰可辨。基于如上原因，本文将<b>仅使用矢量字体</b>，而不使用任何点阵字体。</p>
+
+<h3>选中的字体</h3>
+<p>世上的字体千千万，并不是安装的越多越好。一方面，很多同类字体大同小异，没必要全部安装；另一方面，过多的字体会影响系统的运行效率，而且增加配置的复杂度。所以不能一味贪多，只需要安装几个具有代表性的字体即可。同时在字符覆盖范围上，只需要覆盖东亚文字(中日韩)与西方文字(拉丁/希腊/西里尔)即可，没必要追求覆盖所有字符[反正也看不懂]。下面分门别类的依次说明每类字体的筛选要求、最终胜出的字体的来源，还有为使每种字体达到最佳显示效果，应该使用的渲染参数(最小10px)。</p>
+<h4>西文等宽字体</h4>
+<p>筛选要求：</p>
+<ol>
+<li>每个西文字符的宽度正好是中文的一半[spacing=90]</li>
+<li>可以清晰区分"1lI"和"O0o"</li>
+<li>原生粗体</li>
+<li>行高合适[使用"字体查看器"目测即可]</li>
+</ol>
+<p>字体来源：最终胜出的是一款来自日本的<a href="http://mix-mplus-ipa.sourceforge.jp/migu/">"Migu 1M"开源字体</a>(migu-1m-20130617.zip)，下载后解压，从中提取"migu-1m-bold.ttf"与"migu-1m-regular.ttf"两个文件即可。在实际选择的过程中，笔者发现，能满足后三条的字体有很多，但是能满足第一条的却凤毛麟角，"Ubuntu Mono"可算其中之一，但是美观度嘛，真心不敢恭维。此外，"Migu 1M"字体也是本文所使用的西文字体。</p>
+<p>渲染参数：</p>
+<pre>
+antialias=true
+hinting=true
+autohint=false
+hintstyle=hintslight
+lcdfilter=lcddefault
+</pre>
+<h4>西文无衬线字体</h4>
+<p>筛选要求：</p>
+<ol>
+<li>可以清晰区分"1lI"和"O0o"</li>
+<li>字符间距与"Arial"相当(包括粗体)</li>
+<li>原生四体(常规/粗体/斜体/粗斜体)</li>
+<li>行高合适[使用"字体查看器"目测即可]</li>
+</ol>
+<p>字体来源：最终胜出的是来自Google的<a href="https://code.google.com/p/noto/source/browse/">"Note"系列开源字体</a>中的"Noto Sans"字体，下载zip包后解压，从中提取"fonts/individual/hinted/NotoSans-*.ttf"四个文件即可。此外，之所以要求字符间距与"Arial"相当，是因为"Arial"的使用相当广泛，而其字符间距较小，如果我们选取的字体字符间距过大，则有可能会破坏某些网页的布局。在实际选择的过程中，笔者发现，能满足后两条的字体有很多，但是能满足前两条的却不多。特别第一条，大多数字体都无法清晰区分"1lI"和"O0o"。</p>
+<p>渲染参数：</p>
+<pre>
+antialias=true
+hinting=true
+autohint=false
+hintstyle=hintslight(10px,12px)
+hintstyle=hintfull(其他)
+lcdfilter=lcddefault
+</pre>
+<h4>西文有衬线字体</h4>
+<p>筛选要求：</p>
+<ol>
+<li>可以清晰区分"1lI"和"O0o"</li>
+<li>字符间距与"Times New Roman"相当(包括粗体)</li>
+<li>原生四体(常规/粗体/斜体/粗斜体)</li>
+<li>行高合适[使用"字体查看器"目测即可]</li>
+</ol>
+<p>字体来源：最终胜出的是来自Google的<a href="https://code.google.com/p/noto/source/browse/">"Note"系列开源字体</a>中的"Tinos"字体，下载zip包后解压，从中提取"fonts/individual/hinted/Tinos-*.ttf"四个文件即可。此外，之所以要求字符间距与"Times New Roman"相当，是因为"Times New Roman"的使用相当广泛，而其字符间距较小，如果我们选取的字体字符间距过大，则有可能会破坏某些网页的布局。在实际选择的过程中，笔者发现，能满足后两条的字体有很多，但是能满足前两条的却不多。特别第一条，大多数字体都无法清晰区分"1lI"和"O0o"。就算是最终胜出的字体，也顶多算勉强合格。</p>
+<p>渲染参数：</p>
+<pre>
+antialias=true
+hinting=true
+autohint=false
+hintstyle=hintslight(Regular/Bold=10px)
+hintstyle=hintfull(其他)
+lcdfilter=lcddefault
+</pre>
+<h4>中文黑体(无衬线)</h4>
+<p>筛选要求：</p>
+<ol>
+<li>汉字笔画符合中国大陆的国家标准</li>
+<li>完整覆盖简体/繁体/粤语/CJK扩展A区/日文字符[使用"字符映射表"即可查看(注意勾选"只显示来自此字体的字形")]</li>
+<li>原生粗体</li>
+<li>行高合适[使用"字体查看器"目测即可]</li>
+</ol>
+<p>字体来源：最终胜出的是来自Google的<a href="https://code.google.com/p/noto/source/browse/">"Note"系列开源字体</a>中的"思源黑体"，下载zip包后解压，从中提取"third_party/noto_cjk/NotoSansHans-*.otf"两个文件即可。其实在黑体的选择过程中，我在来自苹果的"冬青黑体"与来自Adobe的"思源黑体"之间摇摆了很久，美观度上，"冬青黑体"某些时候略占微弱优势，但在字符集的覆盖面上，"思源黑体"具有压倒性的优势，尤其是生僻字与各种中日韩符号。加上其开源的特性，最终选择了"思源黑体"。需要提醒的是，不要使用"NotoSansCJK"，因为需要解决'locl'问题(如果有谁解决了这个问题请告诉我)。至于被微软吹上天的雅黑，面对它的中文标点符号，我只能“呵呵”了。</p>
+<p>渲染参数：</p>
+<pre>
+antialias=true
+hinting=true
+autohint=false
+hintstyle=hintslight
+lcdfilter=lcddefault
+</pre>
+<h4>中文宋体(有衬线)、中文仿宋(有衬线)、中文楷体(书法)</h4>
+<p>筛选要求：</p>
+<ol>
+<li>汉字笔画符合中国大陆的国家标准</li>
+<li>完整覆盖简体/繁体/粤语/CJK扩展A区/日文字符[使用"字符映射表"即可查看(注意勾选"只显示来自此字体的字形")]</li>
+<li>行高合适[使用"字体查看器"目测即可]</li>
+</ol>
+<p>字体来源：最终胜出的是来自<a href="http://www.adobe.com/cn/products/creativesuite.html">Adobe CS 6</a>的"Adobe 宋体 Std"、"Adobe 仿宋 Std"、"Adobe 楷体 Std"，下载任意一个软件的试用版，即可从中提取如下文件："AdobeSongStd-Light.otf","AdobeFangsongStd-Regular.otf","AdobeKaitiStd-Regular.otf"。</p>
+<p>注意，从 Creative Cloud 开始不再捆绑仿宋与楷体，必须从 Adobe Typekit 订阅(因此只能非官方途径更新)。此外，"Adobe 宋体 Std"还可以从<a href="http://get.adobe.com/reader/">Adobe Reader</a>中提取，在Windows平台安装后，提取"C:\Program Files\Adobe\Reader 11.0\Resource\CIDFont\AdobeSongStd-Light.otf"文件即可。</p>
+<p>渲染参数：</p>
+<pre>
+antialias=true
+hinting=true
+autohint=false
+hintstyle=hintfull
+lcdfilter=lcddefault
+</pre>
+<h4>韩文字体</h4>
+<p>字体来源：依然是来自Google的<a href="https://code.google.com/p/noto/source/browse/">"Note"系列开源字体</a>中的"思源黑体"，下载zip包后解压，从中提取"third_party/noto_cjk/NotoSansKR-*.otf"两个文件即可。</p>
+<p>渲染参数：</p>
+<pre>
+antialias=true
+hinting=true
+autohint=false
+hintstyle=hintslight
+lcdfilter=lcddefault
+</pre>
+<h4>符号字体</h4>
+<p>字体来源：C:\Windows\Fonts\seguisym.ttf</p>
+<p>渲染参数：</p>
+<pre>
+antialias=true
+hinting=true
+autohint=false
+hintstyle=hintfull
+lcdfilter=lcddefault
+</pre>
+<h3>常见字体</h3>
+<p>除了上面选出的字体之外，我们还需要知道常见的中西文字体还包括哪些，后面撰写"<a href="fonts.conf.xml">fonts.conf</a>"配置文件的时候，需要使用这个信息。下表列出了来自 Windows, MS Office, Mac OS X, iOS, Android, Linux 中常见的中西文字体。</p>
+<table>
+<caption>西文常见字体</caption>
+<tr><th>等宽</th><th>无衬线</th><th>有衬线</th></tr>
+<tr><td valign="top" nowrap="nowrap">Monospace<br />mono</td><td valign="top" nowrap="nowrap">Sans<br />sans serif<br />sans-serif</td><td valign="top" nowrap="nowrap">Serif</td></tr>
+<tr>
+<td valign="top" nowrap="nowrap">
+Andale Mono<br />
+Andale Mono WT<br />
+Bitstream Vera Sans Mono<br />
+Biwidth<br />
+Consolas<br />
+Courier<br />
+Courier New<br />
+Cousine<br />
+DejaVu Sans Mono<br />
+Droid Sans Mono<br />
+Fira Mono<br />
+Fixed<br />
+Fixedsys<br />
+FreeMono<br />
+Inconsolata<br />
+Liberation Mono<br />
+Lucida Console<br />
+Lucida Sans Typewriter<br />
+Luxi Mono<br />
+Menlo<br />
+Monaco<br />
+Nimbus Mono L<br />
+Source Code Pro<br />
+Terminal<br />
+Terminus<br />
+Ubuntu Mono<br />
+Unibit<br />
+Unifont
+</td>
+<td valign="top" nowrap="nowrap">
+Akzidenz-Grotesk<br />
+Andika<br />
+Arev Sans<br />
+Arial<br />
+Arial Black<br />
+Arial Narrow<br />
+Arial Unicode MS<br />
+Arimo<br />
+Avenir<br />
+Avenir Next<br />
+Avenir Next Condensed<br />
+Bitstream Vera Sans<br />
+Calibri<br />
+Candara<br />
+Cantarell<br />
+Carlito<br />
+Century Gothic<br />
+Charcoal<br />
+Chicago<br />
+Copperplate Gothic<br />
+Corbel<br />
+DejaVu Sans<br />
+DejaVu Sans Condensed<br />
+Droid Sans<br />
+Droid Sans Fallback<br />
+Fira Sans<br />
+Franklin Gothic Bold<br />
+Franklin Gothic Heavy<br />
+Franklin Gothic Medium<br />
+FreeSans<br />
+Frutiger<br />
+Frutiger Linotype<br />
+Futura<br />
+Gadget<br />
+Geneva<br />
+Gill Sans<br />
+Gill Sans MT<br />
+Gotham<br />
+Haettenschweiler<br />
+Helvetica<br />
+Helvetica Neue<br />
+Impact<br />
+Liberation Sans<br />
+Liberation Sans Narrow<br />
+Linux Biolinum<br />
+Lucida Grande<br />
+Lucida Sans<br />
+Lucida Sans Unicode<br />
+Luxi Sans<br />
+Microsoft Sans Serif<br />
+MS Sans Serif<br />
+Myriad<br />
+Myriad Pro<br />
+News Gothic MT<br />
+Nimbus Sans L<br />
+Noto Sans<br />
+Noto Sans UI<br />
+Open Sans<br />
+Optima<br />
+Roboto<br />
+Roboto Condensed<br />
+Segoe<br />
+Segoe UI<br />
+Source Sans Pro<br />
+Tahoma<br />
+Thonburi<br />
+Trebuchet MS<br />
+Tw Cen MT<br />
+Ubuntu<br />
+Ubuntu Condensed<br />
+Univers<br />
+Verdana
+</td>
+<td valign="top" nowrap="nowrap">
+Baskerville<br />
+Baskerville Old Face<br />
+Bell MT<br />
+Big Caslon<br />
+Bitstream Charter<br />
+Bitstream CyberBase<br />
+Bitstream Cyberbit<br />
+Bitstream Vera Serif<br />
+Bodoni MT<br />
+Book Antiqua<br />
+Bookman Old Style<br />
+Californian FB<br />
+Calisto MT<br />
+Cambria<br />
+Centaur<br />
+Century<br />
+Century Schoolbook<br />
+Century Schoolbook L<br />
+Charis SIL<br />
+Code2000<br />
+Code2001<br />
+Constantia<br />
+Cooper Black<br />
+DejaVu Serif<br />
+DejaVu Serif Condensed<br />
+Didot<br />
+Droid Serif<br />
+Elephant<br />
+FreeSerif<br />
+Gabriola<br />
+Garamond<br />
+Gentium<br />
+Georgia<br />
+Goudy Old Style<br />
+High Tower Text<br />
+Hoefler Text<br />
+Junicode<br />
+Liberation Serif<br />
+Linux Libertine<br />
+Lucida Bright<br />
+Lucida Fax<br />
+Luxi Serif<br />
+MS Serif<br />
+New Athena Unicode<br />
+New York<br />
+Nimbus Roman No9 L<br />
+Noto Serif<br />
+Old Standard TT<br />
+Palatino<br />
+Palatino Linotype<br />
+Perpetua<br />
+Rockwell<br />
+Sitka<br />
+Sitka Banner<br />
+Sitka Display<br />
+Sitka Heading<br />
+Sitka Small<br />
+Sitka Subheading<br />
+Sitka Text<br />
+Source Serif Pro<br />
+Times<br />
+Times New Roman<br />
+Tinos<br />
+Utopia
+</td>
+</tr>
+</table>
+<p>[说明]下面的“中文常见字体”列表中，字族名前面圆括号里的"等宽"、"无衬"、"有衬"表示的是该字体的西文部分的风格。</p>
+<table>
+<caption>中文常见字体</caption>
+<tr><th>黑体</th><th>宋体</th><th>仿宋</th><th>楷体</th></tr>
+<tr>
+<td valign="top" nowrap="nowrap">
+(无衬)"Source Han Sans"<br />
+(无衬)"Source Han Sans CN"<br />
+(无衬)"Source Han Sans SC"<br />
+(无衬)"Source Han Sans TC"<br />
+(无衬)"Source Han Sans TWHK"<br />
+(无衬)"思源黑体"<br />
+(无衬)"思源黑體"<br />
+(无衬)"思源黑体 CN"<br />
+(无衬)"思源黑體 TWHK"<br />
+(无衬)"Noto Sans CJK"<br />
+(无衬)"Noto Sans CJK Simplified Chinese"<br />
+(无衬)"Noto Sans CJK Traditional Chinese"<br />
+(无衬)"Noto Sans S Chinese"<br />
+(无衬)"Noto Sans T Chinese"<br />
+(无衬)"Hiragino Sans GB"<br />
+(无衬)"冬青黑體簡體中文"<br />
+(无衬)"冬青黑体简体中文"<br />
+(无衬)"Adobe Heiti Std"<br />
+(无衬)"Adobe 黑体 Std"<br />
+(无衬)"Adobe Fan Heiti Std"<br />
+(无衬)"Adobe 繁黑體 Std"<br />
+(无衬)"Hei"<br />
+(无衬)"LiHei Pro"<br />
+(无衬)"STHeiti"<br />
+(等宽)"SimHei"<br />
+(等宽)"黑体"<br />
+(无衬)"Heiti TC"<br />
+(无衬)"黑體-繁"<br />
+(无衬)"黑体-繁"<br />
+(无衬)"Heiti SC"<br />
+(无衬)"黑體-簡"<br />
+(无衬)"黑体-简"<br />
+(无衬)"STXihei"<br />
+(无衬)"华文细黑"<br />
+(无衬)"Lantinghei SC"<br />
+(无衬)"蘭亭黑-簡"<br />
+(无衬)"兰亭黑-简"<br />
+(无衬)"Lantinghei TC"<br />
+(无衬)"蘭亭黑-繁"<br />
+(无衬)"兰亭黑-繁"<br />
+(无衬)"Microsoft JhengHei"<br />
+(无衬)"Microsoft JhengHei UI"<br />
+(无衬)"微軟正黑體"<br />
+(无衬)"Microsoft YaHei"<br />
+(无衬)"Microsoft YaHei UI"<br />
+(无衬)"微软雅黑"<br />
+(无衬)"WenQuanYi Bitmap Song"<br />
+(无衬)"WenQuanYi Micro Hei"<br />
+(无衬)"文泉驛微米黑"<br />
+(无衬)"文泉驿微米黑"<br />
+(等宽)"WenQuanYi Micro Hei Mono"<br />
+(等宽)"文泉驛等寬微米黑"<br />
+(等宽)"文泉驿等宽微米黑"<br />
+(无衬)"WenQuanYi Zen Hei"<br />
+(无衬)"文泉驛正黑"<br />
+(无衬)"文泉驿正黑"<br />
+(等宽)"WenQuanYi Zen Hei Mono"<br />
+(等宽)"文泉驛等寬正黑"<br />
+(等宽)"文泉驿等宽正黑"<br />
+(无衬)"WenQuanYi Zen Hei Sharp"<br />
+(无衬)"文泉驛點陣正黑"<br />
+(无衬)"文泉驿点阵正黑"
+</td>
+<td valign="top" nowrap="nowrap">
+(有衬)"Adobe Song Std"<br />
+(有衬)"Adobe 宋体 Std"<br />
+(有衬)"Adobe Ming Std"<br />
+(有衬)"Adobe 明體 Std"<br />
+(等宽)"AR PL UMing CN"<br />
+(等宽)"AR PL UMing HK"<br />
+(等宽)"AR PL UMing TW"<br />
+(等宽)"AR PL UMing TW MBE"<br />
+(有衬)"Apple LiSung"<br />
+(有衬)"GB18030 Bitmap"<br />
+(有衬)"LiSong Pro"<br />
+(等宽)"Ming(for ISO10646)"<br />
+(有衬)"STSong"<br />
+(有衬)"华文宋体"<br />
+(有衬)"STZhongsong"<br />
+(有衬)"华文中宋"<br />
+(有衬)"SimSun"<br />
+(有衬)"宋体"<br />
+(等宽)"NSimSun"<br />
+(等宽)"新宋体"<br />
+(等宽)"SimSun-ExtB"<br />
+(有衬)"SimSun-18030"<br />
+(有衬)"宋体-18030"<br />
+(等宽)"NSimSun-18030"<br />
+(等宽)"新宋体-18030"<br />
+(有衬)"Songti SC"<br />
+(有衬)"宋體-簡"<br />
+(有衬)"宋体-简"<br />
+(有衬)"Songti TC"<br />
+(有衬)"宋體-繁"<br />
+(有衬)"宋体-繁"<br />
+(有衬)"AR PLBaosong2GBK Light"<br />
+(有衬)"文鼎ＰＬ报宋二GBK"<br />
+(等宽)"AR PL SungtiL GB"<br />
+(等宽)"文鼎ＰＬ简报宋"<br />
+(有衬)"AR PLMingU20 Light"<br />
+(有衬)"文鼎ＰＬ明體U20-L"<br />
+(等宽)"AR PL Mingti2L Big5"<br />
+(等宽)"文鼎ＰＬ細上海宋"<br />
+(有衬)"AR PL ShanHeiSun Uni"<br />
+(有衬)"文鼎PL细上海宋Uni"<br />
+(有衬)"文鼎PL細上海宋Uni"<br />
+(有衬)"AR PL New Sung"<br />
+(有衬)"文鼎ＰＬ新宋"<br />
+(等宽)"AR PL New Sung Mono"<br />
+(等宽)"文鼎ＰＬ新宋 Mono"<br />
+(等宽)"MingLiU"<br />
+(等宽)"細明體"<br />
+(等宽)"MingLiU-ExtB"<br />
+(等宽)"細明體-ExtB"<br />
+(有衬)"PMingLiU"<br />
+(有衬)"新細明體"<br />
+(有衬)"PMingLiU-ExtB"<br />
+(有衬)"新細明體-ExtB"<br />
+(等宽)"MingLiU_HKSCS"<br />
+(等宽)"細明體_HKSCS"<br />
+(等宽)"MingLiU_HKSCS-ExtB"<br />
+(等宽)"細明體_HKSCS-ExtB"
+</td>
+<td valign="top" nowrap="nowrap">
+(有衬)"Adobe Fangsong Std"<br />
+(有衬)"Adobe 仿宋 Std"<br />
+(等宽)"FangSong_GB2312"<br />
+(等宽)"仿宋_GB2312"<br />
+(等宽)"FangSong"<br />
+(等宽)"仿宋"<br />
+(有衬)"STFangsong"<br />
+(有衬)"华文仿宋"
+</td>
+<td valign="top" nowrap="nowrap">
+(有衬)"Adobe Kaiti Std"<br />
+(有衬)"Adobe 楷体 Std"<br />
+(等宽)"AR PL UKai CN"<br />
+(等宽)"AR PL UKai HK"<br />
+(等宽)"AR PL UKai TW"<br />
+(等宽)"AR PL UKai TW MBE"<br />
+(有衬)"BiauKai"<br />
+(有衬)"Kai"<br />
+(等宽)"DFKai-SB"<br />
+(等宽)"標楷體"<br />
+(有衬)"STKaiti"<br />
+(有衬)"华文楷体"<br />
+(等宽)"KaiTi"<br />
+(等宽)"楷体"<br />
+(有衬)"Kaiti SC"<br />
+(有衬)"楷體-簡"<br />
+(有衬)"楷体-简"<br />
+(有衬)"Kaiti TC"<br />
+(有衬)"楷體-繁"<br />
+(有衬)"楷体-繁"<br />
+(等宽)"SimKai"<br />
+(等宽)"KaiTi_GB2312"<br />
+(等宽)"楷体_GB2312"<br />
+(等宽)"AR PL KaitiM GB"<br />
+(等宽)"文鼎ＰＬ简中楷"<br />
+(等宽)"AR PL New Kai"<br />
+(等宽)"文鼎ＰＬ新中楷"<br />
+(等宽)"AR PL KaitiM Big5"<br />
+(等宽)"文鼎ＰＬ中楷"<br />
+(有衬)"AR PL ZenKai Uni"<br />
+(有衬)"文鼎PL中楷Uni"
+</td>
+</tr>
+</table>
+
+
+<h2><a href="fonts.conf.xml">fonts.conf</a>详解</h2>
+<h3>配置文件的结构</h3>
+<p>整个配置文件由如下几个部分依次拼接而成：</p>
+<ol>
+<li>目录设置(&lt;dir&gt;, &lt;cachedir&gt;, &lt;include&gt;)</li>
+<li>杂项设置(&lt;config&gt;)</li>
+<li>扫描阶段(&lt;match target="scan"&gt;)</li>
+<li>匹配阶段(&lt;alias&gt;, &lt;match target="pattern"&gt;)</li>
+<li>渲染阶段(&lt;match target="font"&gt;)</li>
+</ol>
+
+<h3>目录设置</h3>
+<pre>
+&lt;!-- 字体目录 --&gt;
+&lt;dir&gt;/opt/fonts/core&lt;/dir&gt;
+&lt;!-- &lt;dir&gt;/opt/fonts/ext&lt;/dir&gt; --&gt;
+</pre>
+<p>由于这些字体都是自己选取的，不受系统的包管理器控制，所以安装到"/opt/fonts"目录中。至于为什么还要分为"core"与"ext"两个子目录，出于如下原因：对某些用户而言，本文使用的字体不足以满足其需求，他们需要安装更多的字体，但是这些字体又不需要放到 xorg.conf 中的 FontPath 里面，所以单独再隔开一个目录，效果会比较好。</p>
+<pre>
+&lt;!-- 缓存目录 --&gt;
+&lt;cachedir&gt;/var/cache/fontconfig&lt;/cachedir&gt;
+</pre>
+<p>缓存目录没啥好说的，整个系统范围内的字体信息都缓存到同一个地方而已。</p>
+<pre>
+&lt;!-- 额外的配置目录 --&gt;
+&lt;!-- &lt;include&gt;/etc/fonts/conf.d&lt;/include&gt; --&gt;
+</pre>
+<p>对于额外的配置目录，本文没有使用，而是将所有的配置指令都直接放在了 fonts.conf 文件中。这不是官方推荐的做法，因为软件包升级的时候，fonts.conf 会被强制覆盖，官方推荐将自定义的配置放在 local.conf 文件中。但是本文出于两个原因违背了官方的推荐：(1)官方推荐的做法将一个配置文件打散为N多个部分，虽然获得了一定的灵活性，但是不便于理解与维护。而本文只是一个示范，易于理解是首要的。(2)软件包升级之后，再覆盖一下也很方便。</p>
+
+<h3>杂项设置</h3>
+<pre>
+&lt;config&gt;
+	&lt;blank&gt;&lt;!-- 空白字符 --&gt;
+		&lt;int&gt;0x0020&lt;/int&gt;&lt;int&gt;0x00A0&lt;/int&gt;&lt;int&gt;0x00AD&lt;/int&gt;&lt;int&gt;0x034F&lt;/int&gt;
+		&lt;int&gt;0x0600&lt;/int&gt;&lt;int&gt;0x0601&lt;/int&gt;&lt;int&gt;0x0602&lt;/int&gt;&lt;int&gt;0x0603&lt;/int&gt;
+		&lt;int&gt;0x06DD&lt;/int&gt;&lt;int&gt;0x070F&lt;/int&gt;&lt;int&gt;0x115F&lt;/int&gt;&lt;int&gt;0x1160&lt;/int&gt;
+		&lt;int&gt;0x1680&lt;/int&gt;&lt;int&gt;0x17B4&lt;/int&gt;&lt;int&gt;0x17B5&lt;/int&gt;&lt;int&gt;0x180E&lt;/int&gt;
+		&lt;range&gt;&lt;int&gt;0x2000&lt;/int&gt;&lt;int&gt;0x200F&lt;/int&gt;&lt;/range&gt;
+		&lt;range&gt;&lt;int&gt;0x2028&lt;/int&gt;&lt;int&gt;0x202F&lt;/int&gt;&lt;/range&gt;
+		&lt;range&gt;&lt;int&gt;0x205F&lt;/int&gt;&lt;int&gt;0x2063&lt;/int&gt;&lt;/range&gt;
+		&lt;range&gt;&lt;int&gt;0x206A&lt;/int&gt;&lt;int&gt;0x206F&lt;/int&gt;&lt;/range&gt;
+		&lt;int&gt;0x2800&lt;/int&gt;&lt;int&gt;0x3000&lt;/int&gt;&lt;int&gt;0x3164&lt;/int&gt;&lt;int&gt;0xFEFF&lt;/int&gt;
+		&lt;int&gt;0xFFA0&lt;/int&gt;&lt;int&gt;0xFFF9&lt;/int&gt;&lt;int&gt;0xFFFA&lt;/int&gt;&lt;int&gt;0xFFFB&lt;/int&gt;
+	&lt;/blank&gt;
+	&lt;!-- 每小时扫描一次配置文件与字体的变化 --&gt;
+	&lt;rescan&gt;&lt;int&gt;3600&lt;/int&gt;&lt;/rescan&gt;
+&lt;/config&gt;
+</pre>
+<p>&lt;blank&gt;段指明了哪些Unicode字符应该显示为空白，这是直接从官方默认的配置中抄来的，除了出于缩短配置文件长度的目的，把一系列连续的&lt;int&gt;用&lt;range&gt;进行了取代之外，没有任何修改。关于&lt;blank&gt;的详细解释，请参考<a href="fonts.conf.html">《fonts.conf 中文手册》</a>。</p>
+<p>官方默认的配置是每30秒扫描一次配置文件与字体的变化，这里修改为每小时扫描一次。因为频繁的扫描会增加系统的负载，而配置文件与字体在设定好之后，并不会频繁变动，每小时扫描一次足矣。</p>
+
+<h3>扫描阶段</h3>
+<p>扫描阶段是最早发生的阶段，它的作用是告诉应用程序：系统上安装了哪些字体，这些字体的每个属性的值是什么。通常用来纠正或修改字体的固有属性。</p>
+<p>[提示]要想看到&lt;match target="scan"&gt;对"foo.ttf"的效果，可以分别使用如下两个命令，对比它们的输出结果就可以了：</p>
+<pre>
+fc-query /path/to/foo.ttf
+fc-scan /path/to/foo.ttf
+</pre>
+<h4>西文字体举例</h4>
+<pre>
+&lt;match target="scan"&gt;
+	&lt;test name="family"&gt;&lt;string&gt;Migu 1M&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="family"&gt;&lt;string&gt;Monospace&lt;/string&gt;&lt;/edit&gt;
+	&lt;edit name="lang"&gt;&lt;langset&gt;&lt;string&gt;en&lt;/string&gt;&lt;/langset&gt;&lt;/edit&gt;
+	&lt;edit name="charset"&gt;
+		&lt;charset&gt;
+			&lt;!-- 基本拉丁(ASCII) --&gt;
+			&lt;range&gt;&lt;int&gt;0x0020&lt;/int&gt;&lt;int&gt;0x007E&lt;/int&gt;&lt;/range&gt;
+			&lt;!-- 此处省略了其他&lt;range&gt;与&lt;int&gt;单元，完整的配置请查看<a href="fonts.conf.xml">fonts.conf</a> --&gt;
+		&lt;/charset&gt;
+	&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>&lt;edit name="family"&gt;的作用是将不直观的字族名称"Migu 1M"修改为通用名称"Monospace"，目的在于更清晰的表示这是默认的等宽字体。此外，改为通用名称还有一个好处，那就是可以在字体选择列表中节约一行，因为无论你的系统上是否真的安装了名为"Monospace"的字体，都会显示这么一行，既然如此，那不如将默认的等宽字体直接改为通用名称算了。类似的，另外两个西文字体的重命名("Sans"与"Serif")，也是出于同样的原因。</p>
+<p>&lt;edit name="lang"&gt;的作用是强制将该字体支持的语言指定为"en"，配合后面匹配阶段的指令(&lt;edit name="lang"&gt;&lt;string&gt;en&lt;/string&gt;&lt;/edit&gt;)，可以确保优先使用西文字体显示西文字符，以实现对中文字体中丑陋的西文部分的替换(因为"lang"属性优先于弱绑定的字族名)。类似的，另外两个西文字体也进行了同样的修改。</p>
+<p>&lt;edit name="charset"&gt;的作用是明确指定该字体所含字符的Unicode码点，主要用于屏蔽字体中的某些字符。以"Migu 1M"字体来说，因为它是个来自日本的字体，里面不仅包含了我们需要的西文字符，也包含了许多CJK统一表意字符以及全角标点符号等非西文字符，如果我们不加屏蔽的使用，就会出现许多汉字的笔画不符合中国大陆的国家标准(日文写法)，以及中文标点符号不美观之类的问题，所以必须加以屏蔽。类似的，另外两个西文字体("Sans"与"Serif")，由于它们都包含了不美观的中文标点符号，以及一些不想使用的非西文字符(拉丁/希腊/西里尔之外的字符)，所以也用同样的方法进行了屏蔽。</p>
+<h4>中文字体举例</h4>
+<pre>
+&lt;match target="scan"&gt;
+	&lt;test name="postscriptname"&gt;&lt;string&gt;AdobeSongStd-Light&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="family"&gt;&lt;string&gt;zhSong&lt;/string&gt;&lt;/edit&gt;
+	&lt;edit name="style"&gt;&lt;string&gt;Regular&lt;/string&gt;&lt;/edit&gt;
+	&lt;edit name="weight"&gt;&lt;int&gt;80&lt;/int&gt;&lt;/edit&gt;
+	&lt;edit name="lang"&gt;&lt;langset&gt;&lt;string&gt;zh-cn&lt;/string&gt;&lt;/langset&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>与前述西文字体类似，这里使用&lt;edit name="family"&gt;将字族名修改为"zhSong"(不存在的字族名)，以确保它不会被网页上指定的字体(强绑定)匹配到，配合后面匹配阶段的指令(&lt;alias&gt;与&lt;edit name="lang"&gt;&lt;string&gt;en&lt;/string&gt;&lt;/edit&gt;)，可以确保优先使用西文字体显示西文字符，以实现对中文字体中丑陋的西文部分的替换(因为"lang"属性优先于弱绑定的字族名)。类似的，其他三个核心中文字体也进行了同样的修改。</p>
+<p>&lt;edit name="style"&gt;将字体样式的名称修改为"Regular"，以确保所有字体的样式都在显示上保持一致性，否则将会在字体样式中显示"L"而不是"Regular"。同样的，使用&lt;edit name="weight"&gt;将字重值修改为"80"也是为了保持和其他字体的一致性。</p>
+<p>&lt;edit name="lang"&gt;的作用是强制将该字体支持的语言指定为"zh-cn"，配合后面匹配阶段的指令(&lt;edit name="lang"&gt;&lt;string&gt;en&lt;/string&gt;&lt;/edit&gt;)，可以确保优先使用西文字体显示西文字符，以实现对中文字体中丑陋的西文部分的替换(因为"lang"属性优先于弱绑定的字族名)。类似的，其他三个核心中文字体也进行了同样的修改。</p>
+<h4>其他字体举例</h4>
+<pre>
+&lt;match target="scan"&gt;
+	&lt;test name="postscriptname"&gt;&lt;string&gt;NotoSansKR-Bold&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="family"&gt;&lt;string&gt;zzFailBack&lt;/string&gt;&lt;string&gt;zzKorean&lt;/string&gt;&lt;/edit&gt;
+	&lt;edit name="familylang"&gt;&lt;string&gt;en&lt;/string&gt;&lt;string&gt;en&lt;/string&gt;&lt;/edit&gt;
+	&lt;edit name="lang"&gt;&lt;langset&gt;&lt;string&gt;ko&lt;/string&gt;&lt;/langset&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>对于韩文字体(非中西文字体)，将字族名修改为"zzFailBack"+"zzKorean"(也就是有两个字族名)，前一个是首选名字，会在字体列表中显示出来，后一个是字体自身的名字，用于在配置文件中区分各个字体。而将所有非中西文字体以及符号字体统一赋予一个首选的"zzFailBack"名称，目的在于将所有非中西文字体在字体列表中归结为同一个项目，以节约列表空间。</p>
+
+<h3>调试工具</h3>
+<p>要充分理解字体匹配过程的细节，需要一个犀利的工具，帮助详细查看Fontconfig的整个工作过程。这个工具就是环境变量"FC_DEBUG"以及"fc-match"。此外，要使用好"fc-match"，还必须要熟悉"Font Name"(字体模板的格式)的结构。例如以最详细的调试模式，查看对"宋体,15磅,简体中文文档"的匹配过程，可以使用如下命令：</p>
+<pre>FC_DEBUG=8191 fc-match -s '宋体-15:lang=zh-cn'</pre>
+<p>又例如，可以使用如下命令查看火狐浏览器在渲染页面时，与Fontconfig的互动过程：</p>
+<pre>FC_DEBUG=5 firefox http://www.example.com/foo.html</pre>
+<p>[提示]输出的调试信息中，前面有很长一部分是显示火狐自身用户界面(例如菜单文字)时的信息，后面才是网页渲染相关的信息。</p>
+
+<h3>匹配阶段</h3>
+<h4>"family"列表的修改</h4>
+<p>匹配阶段最主要的工作就是修改"family"列表。</p>
+<p>首先第一步，使用已安装的字体替换所有<b>未安装的常见字体</b>，规则如下：</p>
+<ol>
+<li>保持原有绑定不变</li>
+<li>将常见西文字体替换为对应的字体类</li>
+<li>将常见中文字体替换为对应的"西文字体类+zhXXX"(参见上一节的"中文常见字体"表)</li>
+</ol>
+<pre>
+&lt;!-- 第一步，替换所有未安装的常见字体 --&gt;
+&lt;alias binding="same"&gt;&lt;family&gt;mono&lt;/family&gt;&lt;prefer&gt;&lt;family&gt;Monospace&lt;/family&gt;&lt;/prefer&gt;&lt;/alias&gt;
+&lt;alias binding="same"&gt;&lt;family&gt;Candara&lt;/family&gt;&lt;prefer&gt;&lt;family&gt;Sans&lt;/family&gt;&lt;/prefer&gt;&lt;/alias&gt;
+&lt;alias binding="same"&gt;&lt;family&gt;文鼎ＰＬ中楷&lt;/family&gt;&lt;prefer&gt;&lt;family&gt;Monospace&lt;/family&gt;&lt;family&gt;zhKai&lt;/family&gt;&lt;/prefer&gt;&lt;/alias&gt;
+&lt;alias binding="same"&gt;&lt;family&gt;AR PL ZenKai Uni&lt;/family&gt;&lt;prefer&gt;&lt;family&gt;Serif&lt;/family&gt;&lt;family&gt;zhKai&lt;/family&gt;&lt;/prefer&gt;&lt;/alias&gt;
+&lt;!-- 这里省略了300多个其他类似的&lt;alias&gt;单元，完整的配置请查看<a href="fonts.conf.xml">fonts.conf</a> --&gt;
+</pre>
+<p>经过上述一系列替换动作之后，每一个能够被识别的<b>常见字体</b>，都找到了替身。</p>
+<p>下面是一段仅针对火狐浏览器的配置，作用是删除"family"列表头部不可识别的字体，以确保"family"列表的第一项可以被识别。</p>
+<pre>
+&lt;!-- 第二步，剔除列表头部不可识别的字体(仅对firefox)，重复5次，确保剔除干净，为后面补全"zhXXX"与设置"isDengKuan"标记打基础 --&gt;
+&lt;match&gt;
+	&lt;test name="prgname"&gt;&lt;string&gt;firefox&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="first" name="family" compare="not_contains"&gt;&lt;string&gt;@font-face:&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="first" name="family" compare="not_eq"&gt;&lt;string&gt;Monospace&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="first" name="family" compare="not_eq"&gt;&lt;string&gt;Sans&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="first" name="family" compare="not_eq"&gt;&lt;string&gt;Serif&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="first" name="family" compare="not_eq"&gt;&lt;string&gt;zhHei&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="first" name="family" compare="not_eq"&gt;&lt;string&gt;zhSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="first" name="family" compare="not_eq"&gt;&lt;string&gt;zhFangSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="first" name="family" compare="not_eq"&gt;&lt;string&gt;zhKai&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="family" mode="delete"&gt;&lt;/edit&gt;
+&lt;/match&gt;
+&lt;!-- 这里省略了其他4个完全相同的配置段 --&gt;
+</pre>
+<p>首先，只有类似浏览器这种需要处理外来不可控文档的场合，才会出现不可识别的字体，而对于可控文档(例如文本编辑器)，使用的是字体选择器选定的字体，不会出现无法识别的情况。其次，删除不可识别字体是一个破坏性的操作，可能会造成不良后果，必须谨慎为之，所以才将上述配置严格限定于仅作用于火狐浏览器(&lt;test name="prgname"&gt;)。</p>
+<p>你也许会问，那些不可识别的字体，反正也不会被匹配到，也就是说，它们并不影响字体的匹配结果，为什么还要删除它们呢？原因注释里说的很清楚，是为后面补全"zhXXX"与设置"isDengKuan"标记打基础。为了达到这个目标，必须确保"family"列表的第一项是可以识别的：要么是网页内嵌的字体(以'@font-face:'开头)，要么是系统上已经安装的核心字体。至于为什么，读到后面你自然就明白了。</p>
+<p>下面是西文字体的补全操作，相当于设置默认的西文字体。指令本身一看就懂，不需要过多的解释。</p>
+<pre>
+&lt;!-- 第三步，如果不存在任何西文字体类，那么追加一个默认的西文字体类(弱绑定) --&gt;
+&lt;match&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;Monospace&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;Sans&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;Serif&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="family" mode="append_last"&gt;&lt;string&gt;Sans&lt;/string&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>经过上面的西文字体补全操作之后，现在"family"列表中必定存在至少一个西文字体类。这样就可以根据西文字体来进行中文字体的补全操作了(相当于设置默认的中文字体)：</p>
+<pre>
+&lt;!-- 第四步，如果不存在任何核心中文(zhXXX)，那么根据西文字体类补上对应的"zhXXX"(弱绑定) --&gt;
+&lt;match&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhHei&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhFangSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhKai&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;Serif&lt;/string&gt;&lt;/test&gt;&lt;!-- 没有Serif --&gt;
+	&lt;edit name="family" mode="append_last"&gt;&lt;string&gt;zhHei&lt;/string&gt;&lt;/edit&gt;&lt;!-- 那么仅有Monospace与Sans --&gt;
+&lt;/match&gt;
+&lt;match&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhHei&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhFangSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhKai&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;Monospace&lt;/string&gt;&lt;/test&gt;&lt;!-- 没有Monospace --&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;Sans&lt;/string&gt;&lt;/test&gt;&lt;!-- 并且没有Sans --&gt;
+	&lt;edit name="family" mode="append_last"&gt;&lt;string&gt;zhSong&lt;/string&gt;&lt;/edit&gt;&lt;!-- 那么仅有Serif --&gt;
+&lt;/match&gt;
+&lt;!-- 继续第四步，如果"family"列表中依然没有"zhXXX"，那就表示出现了Monospace,Sans与Serif混杂的情况。那么根据列表第一项决定对应的"zhXXX"(弱绑定) --&gt;
+&lt;match&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhHei&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhFangSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhKai&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="first"&gt;&lt;string&gt;Serif&lt;/string&gt;&lt;/test&gt;&lt;!-- 第一项是Serif --&gt;
+	&lt;edit name="family" mode="append_last"&gt;&lt;string&gt;zhSong&lt;/string&gt;&lt;/edit&gt;
+&lt;/match&gt;
+&lt;match&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhHei&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhFangSong&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="family" qual="all" compare="not_eq"&gt;&lt;string&gt;zhKai&lt;/string&gt;&lt;/test&gt;
+	&lt;!-- 如果依然没有"zhXXX"，那就表示列表第一项是Monospace,Sans或无法识别(例如"@font-face:*") --&gt;
+	&lt;edit name="family" mode="append_last"&gt;&lt;string&gt;zhHei&lt;/string&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>经过上面的中文字体补全操作之后，现在"family"列表中必定存在至少一个中文字体，并且尽可能保持与西文字体的风格一致。</p>
+<pre>
+&lt;!-- 最后一步，在列表结尾补上韩文与符号字体(弱绑定) --&gt;
+&lt;match&gt;
+	&lt;edit name="family" mode="append_last"&gt;&lt;string&gt;zzKorean&lt;/string&gt;&lt;string&gt;zzSymbol&lt;/string&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+
+<h4>其他属性</h4>
+<pre>
+&lt;match&gt;
+	&lt;!-- 设置合理的像素密度，确保pt与px之间能够合理转换 --&gt;
+	&lt;edit name="dpi"&gt;&lt;double&gt;96&lt;/double&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>像素密度(DPI)是一个非常重要的参数，它是pt(磅)与px(像素)之间相互转换的桥梁。"磅"是一个绝对长度单位，具体说来就是：1磅=1/72英寸=0.35278毫米。但是"像素"却是一个相对长度单位。以我的显示屏为例，其分辨率是1280x800像素，物理尺寸是331x207毫米(也就是13.0315x8.1496英寸)，那么，水平DPI=1280/13.0315=98.22，垂直DPI=800/8.1496=98.16，也就是说，我的显示器实际DPI大约是"98.2"(像素/英寸)。进一步可知，对于我的显示器而言，1像素=(1/98.2)英寸=0.2586558毫米。如果应用程序要求显示16px大小的文字，那很简单，直接按16px显示就可以了。但是如果应用程序要求显示16pt(=16/72英寸=5.6444毫米)大小的文字，那么就得用(16*98.2)/72也就是21.82个像素来显示(实际会四舍五入为22px)。</p>
+<p>现在你知道DPI的意义了。但是，对这个属性值的设置却并非像前面描述的那样直截了当。下面一个一个的来说明。</p>
+<p>先说Fontconfig的默认值"75"吧，这是一个非常不合理的值，目前大多数显示器的实际DPI都比这个值要大，所以我们不能采用。</p>
+<p>再说说真实值吧，对于我的显示器来说就是"98.2"，这是一个理论上最正确的值，因为它能保证100%精确还原字符的真实大小，如果你对精确还原字符的真实大小很介意(例如经常需要打印预览)，那么真实值就是你的不二之选。</p>
+<p>再说说Windows的默认值"96"吧，这是一个泛滥成灾的设置，也比"75"更接近主流显示器的实际DPI。正是因为它的泛滥成灾，也在某种程度上成为了事实上的标准。如果你希望同磅值下，显示的字体像素数量"和Windows一样"或者"随大流"、"和大家一样"，那么可以使用这个值。但是就别指望100%精确还原字符的真实大小了。呵呵，你看到例子中的值，就知道笔者是个"随大流"的人了，因为98.2和96还是很接近的。</p>
+<p>再说说那些"144"甚至"192"这样明显偏大的值吧，这些值是为视力不佳的用户准备的。因为对于同一个显示屏而言，磅值相同的情况下，DPI越大，显示的一个字符需要使用到的像素就越多。所以如果你希望刻意放大字符，可以考虑增大DPI的值。</p>
+<p>特别需要提醒的是，这里设置的DPI值，必须要和"xorg.conf"的设置保持一致。具体说来就是"DisplaySize"的值不能简单的填写显示器的实际尺寸(除非你使用了DPI的真实值)，而要通过如下公式进行设置："DisplaySize  水平像素数x25.4/DPI  垂直像素数x25.4/DPI" 。</p>
+<p>最后再澄清一个流传甚广的说法："DPI的值必须是6甚至12的倍数"。这个说法的本意，是为了照顾点阵字体的显示效果，既然本文完全使用矢量字体，而且未来的趋势也将是矢量字体一统天下，你就忘记它吧。</p>
+<pre>
+&lt;match&gt;
+	&lt;!-- 确保弱绑定西文字体优先于弱绑定中文字体 --&gt;
+	&lt;edit name="lang"&gt;&lt;string&gt;en&lt;/string&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>对于弱绑定"family"来说，其匹配优先级低于"lang"，这就会导致当"lang=zh-cn"的时候(例如浏览中文网页)，弱绑定中文字体的优先级高于弱绑定西文字体，而这是我们所不愿看到的。因此强制将"lang"属性设为"en"可以确保西文字体优先于中文字体，从而确保对中文字体中丑陋的西文部分的替换。</p>
+<pre>
+&lt;match&gt;
+	&lt;!-- 设置等宽标记 --&gt;
+	&lt;edit name="isDengKuan"&gt;&lt;eq&gt;&lt;name&gt;family&lt;/name&gt;&lt;string&gt;Monospace&lt;/string&gt;&lt;/eq&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>这是个无中生有的标记，用于标记首选字体是否为等宽字体。当"family"列表的第一项是"Monospace"的时候，其值为"true"，否则，其值为"false"。经过前面针对火狐浏览器的5个连续剔除列表头部不可识别字体的动作之后，至少在99%的情况下，"family"列表头部的不可识别字体都被剔除干净了。这样就可以保证对等宽识别的正确率至少有99%。至于这个标记的用途，继续往后看就知道了。</p>
+
+<h3>渲染阶段</h3>
+<p>渲染阶段的核心目标是：让字体中的每一个字符，都以其最佳效果在屏幕上显示出来。</p>
+<h4>字体渲染三板斧</h4>
+<p>改善矢量字体的显示效果，最重要的是下面三种技术：</p>
+<ul>
+<li>抗锯齿(antialias)</li>
+<li>微调(hinting)</li>
+<li>亚像素渲染[仅适用于LCD显示屏]</li>
+</ul>
+<p>抗锯齿(antialias)是一个改善字体显示效果的利器。抗锯齿算法不是本文的重点，想了解详细信息可以google之。站在使用者的立场，我们只需要知道，开启它可以大幅度的改善字体显示效果，并且没有什么不良影响。甚至在苹果的 Mac OS X 和 iOS 上，已经抛弃了字体微调技术(hinting)，而完全依赖于抗锯齿技术来改善字体的显示效果。</p>
+<p>微调(hinting)分为两种：内嵌微调与自动微调。内嵌微调是字体设计者耗费大量的时间和精力、精心制作的、内嵌在字体文件中的额外指令，本质上是人工微调；而自动微调(autohint)是FreeType内嵌的一套微调算法，通用于所有矢量字体，本质上是机器微调。一般说来，内嵌微调比自动微调的显示效果更佳。与微调相关的属性有三个：</p>
+<dl>
+<dt>hinting</dt><dd>微调功能的总开关，一旦关闭便彻底禁用微调(包括内嵌微调与自动微调)。</dd>
+<dt>autohint</dt><dd>是否优先使用自动微调。设为"true"表示只使用自动微调，不使用内嵌微调；设为"false"表示优先使用内嵌微调，但对于没有内嵌微调的字体仍会使用自动微调。</dd>
+<dt>hintstyle</dt><dd>微调的程度(同时作用于内嵌微调与自动微调)：(1)"hintnone"表示禁用微调(包括自动微调与内嵌微调)，通常用于字号非常小的场合；(2)"hintslight"表示优先保持字符的形态，但是可能会降低笔画的锐利度，通常更适合于自动微调以及小字号下的内嵌微调；(3)"hintmedium"表示在字符形态与笔画锐利度之间进行折中，但实际效果通常相当于"hintfull"；(4)"hintfull"表示优先提高笔画的锐利度，但是可能破坏字符的形态，通常更适合于内嵌微调；[注意]这里对微调风格的解释仅是一个提示，切勿教条化，对于特定的字体、特定的字号，哪种微调风格的效果最佳，最可靠的途径是通过自己的眼睛去亲自查看与对比。此外，还由于每个人的口味不同，风格有所偏向，特别是对于"hintslight"与"hintfull"，不同的人可能会有相反的喜好。</dd>
+</dl>
+<p>亚像素渲染是一个针对LCD显示屏的技术(切勿用于CRT显示屏)，与微软的ClearType技术同属一类。其基本原理是，将显示器的R,G,B各个次像素也分别进行控制，让其进行微妙的调整，相当于提升了分辨率，从而显示出更细腻平滑的笔画。与亚像素渲染相关的属性有两个：</p>
+<dl>
+<dt>rgba</dt><dd><a href="http://www.lagom.nl/lcd-test/subpixel.php">LCD子像素的排列顺序</a>，不同的LCD排列顺序未必相同，可能的取值如下：(1)"unknown"表示未知；(2)横向(水平)"Red Green Blue"顺序，这是最常见的排列顺序；(3)横向(水平)"Blue Green Red"顺序；(4)纵向(垂直)"Red Green Blue"顺序，例如把显示器垂直放置的时候；(5)纵向(垂直)"Blue Green Red"顺序；(6)"none"无子像素(例如传统的CRT显示器)，其实就是关闭亚像素渲染。</dd>
+<dt>lcdfilter</dt><dd><a href="http://spasche.net/files/lcdfiltering/">LCD filter</a> 的风格：(1)"lcdnone"表示彻底关闭 LCD filter，不推荐，因为它会导致笔画边缘出现彩色边纹；(2)"lcddefault"表示最大限度的消除彩色边纹，但是可能会增加笔画的模糊程度。多数场合这是最佳选择；(3)"lcdlight"表示减轻笔画的模糊程度，但不能最大限度的消除彩色边纹。少数场合也许效果更好；(4)"lcdlegacy"是为了与传统的"libXft color filter"兼容而设置，未来会被删除；</dd>
+</dl>
+<h4>设置默认的渲染参数</h4>
+<pre>
+&lt;!-- 第一步，设置默认的渲染参数 --&gt;
+&lt;match target="font"&gt;
+	&lt;!-- 修整像素大小(小于10px的调整到10px，否则四舍五入到整数) --&gt;
+	&lt;edit name="pixelsize"&gt;
+		&lt;if&gt;
+			&lt;less&gt;&lt;name&gt;pixelsize&lt;/name&gt;&lt;double&gt;10&lt;/double&gt;&lt;/less&gt;
+			&lt;int&gt;10&lt;/int&gt;
+			&lt;round&gt;&lt;name&gt;pixelsize&lt;/name&gt;&lt;/round&gt;
+		&lt;/if&gt;
+	&lt;/edit&gt;
+
+	&lt;!-- 开启抗锯齿(smooth) --&gt;
+	&lt;edit name="antialias"&gt;&lt;bool&gt;true&lt;/bool&gt;&lt;/edit&gt;
+
+	&lt;!-- 优先使用内嵌微调，同时默认开足微调 --&gt;
+	&lt;edit name="hinting"&gt;&lt;bool&gt;true&lt;/bool&gt;&lt;/edit&gt;
+	&lt;edit name="autohint"&gt;&lt;bool&gt;false&lt;/bool&gt;&lt;/edit&gt;
+	&lt;!-- 依个人喜好,你也可能喜欢默认"hintslight"(此时可将下面的"第七步"全部注释掉) --&gt;
+	&lt;edit name="hintstyle"&gt;&lt;const&gt;hintfull&lt;/const&gt;&lt;/edit&gt;
+
+	&lt;!-- LCD特征设置 --&gt;
+	&lt;edit name="rgba"&gt;&lt;const&gt;rgb&lt;/const&gt;&lt;/edit&gt;
+	&lt;edit name="lcdfilter"&gt;&lt;const&gt;lcddefault&lt;/const&gt;&lt;/edit&gt;
+
+	&lt;!-- 禁用内嵌点阵 --&gt;
+	&lt;edit name="embeddedbitmap"&gt;&lt;bool&gt;false&lt;/bool&gt;&lt;/edit&gt;
+
+	&lt;!-- 禁用合成粗体 --&gt;
+	&lt;edit name="embolden"&gt;&lt;bool&gt;false&lt;/bool&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>修整像素大小的指令很简单，主要是将像素值四舍五入到整数，同时确保最低显示10px大小的字符。因为对于汉字来说，10px基本是极限，再小就几乎没法阅读了。另外，将像素值四舍五入到整数也是为后面进一步修正像素大小做准备。</p>
+<p>对于抗锯齿、微调、LCD亚像素渲染，前面"字体渲染三板斧"已有详细解说，这里不再赘述。</p>
+<p>禁用内嵌点阵也非常明了。例如Windows中的"宋体"就内嵌了很多点阵，我们的策略既然是使用纯矢量，自然应该关闭它，以保持一致性。</p>
+<p>至于禁用合成粗体，其实这个属性的默认值就是"false"，这里写出来主要是为了进一步明确这个默认值。</p>
+<p>接下来的默认动作是为没有原生斜体/粗体的字体使用合成斜体/粗体：</p>
+<pre>
+&lt;!-- 第二步，为没有原生斜体的字体使用合成斜体 --&gt;
+&lt;match target="font"&gt;
+	&lt;test name="slant" compare="eq"&gt;&lt;const&gt;roman&lt;/const&gt;&lt;/test&gt;
+	&lt;test name="slant" compare="not_eq" target="pattern"&gt;&lt;const&gt;roman&lt;/const&gt;&lt;/test&gt;
+	&lt;edit name="slant"&gt;&lt;const&gt;oblique&lt;/const&gt;&lt;/edit&gt;
+	&lt;edit name="matrix"&gt;
+		&lt;times&gt;
+			&lt;name&gt;matrix&lt;/name&gt;
+			&lt;matrix&gt;
+				&lt;double&gt;1&lt;/double&gt;&lt;double&gt;0.2&lt;/double&gt;
+				&lt;double&gt;0&lt;/double&gt;&lt;double&gt;1&lt;/double&gt;
+			&lt;/matrix&gt;
+		&lt;/times&gt;
+	&lt;/edit&gt;
+&lt;/match&gt;
+&lt;!-- 第三步，为没有原生粗体的字体使用合成粗体 --&gt;
+&lt;match target="font"&gt;
+	&lt;test name="weight" compare="less"&gt;&lt;int&gt;105&lt;/int&gt;&lt;/test&gt;
+	&lt;test name="weight" compare="more" target="pattern"&gt;&lt;int&gt;105&lt;/int&gt;&lt;/test&gt;
+	&lt;edit name="weight"&gt;&lt;const&gt;bold&lt;/const&gt;&lt;/edit&gt;
+	&lt;edit name="embolden"&gt;&lt;bool&gt;true&lt;/bool&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>上述配置本身简单易懂，这里想详细说说的是合成粗体的工作原理，因为后面进一步修正像素大小的时候，如果预先知道合成粗体的工作原理，会更容易理解。</p>
+<p>所谓"合成粗体"，是指在常规体的基础上，通过算法生成的粗体，这是一种模拟出来的粗体，而不是原生的粗体。具体算法如下：(1)当标称大小为11px或更小时，通过就地加浓笔画来模拟粗体，因此显示出来的字符的视觉大小就是其标称的大小，例如，标称大小为10px的合成粗体就正好占用10px的屏幕空间。(2)当标称大小为12-35px时，通过在水平和垂直方向各平移一像素并重绘一次来模拟粗体，因此显示出来的合成粗体会比其标称大小大一个像素，例如标称大小为16px的合成粗体，其实际的视觉大小是17px。(3)当标称大小为36-59px时，通过在水平和垂直方向各平移2像素并重绘两次来模拟粗体，因此实际大小会比标称大小大2个像素，例如标称大小为52px的合成粗体，其实际的视觉大小是54px。(4)如果字号更大，合成粗体的平移量还会更大。例如：60-83px，平移3像素；84-107px，平移4像素……。换句话说，平移的像素值可以通过如下公式进行计算：平移像素值=trunc((视觉大小+13.5)/25)，其中trunc函数的作用是去尾取整。</p>
+<h4>进一步修正像素大小</h4>
+<p>通过上面对合成粗体的讲解，我引入了两个概念："标称大小"与"视觉大小"，这里进一步明确一下两者的含义。所谓"标称大小"是指"pixelsize"属性的值，而"视觉大小"是指显示在屏幕上实际大小。对于合成粗体与等宽西文来说，两者有可能不等，但除此之外的其他情况，两者总是相等的。对于合成粗体，两者的差异上面已经讲过，这里不再赘述。对于带有原生粗体的等宽西文(Monospace)而言，由于它的每个西文字符宽度都严格等于半个中文字符宽度，所以当"标称大小"为奇像素的时候(例如17px)，由于无法显示半像素字符(8.5px)，只能略偏大显示(9px)。因此对于等宽西文(Monospace)而言，偶像素下，"标称大小"与"视觉大小"相同，但在奇像素下，"视觉大小"就要比"标称大小"大一个像素。</p>
+<pre>
+&lt;!-- 第四步，标记"视觉大小"(原本的标称值)是否为奇数，为接下来修正等宽条件下的"标称大小"做准备 --&gt;
+&lt;match target="font"&gt;
+	&lt;edit name="isOddPx"&gt;
+		&lt;eq&gt;
+			&lt;round&gt;&lt;divide&gt;&lt;plus&gt;&lt;name&gt;pixelsize&lt;/name&gt;&lt;double&gt;0.5&lt;/double&gt;&lt;/plus&gt;&lt;double&gt;2&lt;/double&gt;&lt;/divide&gt;&lt;/round&gt;
+			&lt;ceil&gt;&lt;divide&gt;&lt;plus&gt;&lt;name&gt;pixelsize&lt;/name&gt;&lt;double&gt;0.5&lt;/double&gt;&lt;/plus&gt;&lt;double&gt;2&lt;/double&gt;&lt;/divide&gt;&lt;/ceil&gt;
+		&lt;/eq&gt;
+	&lt;/edit&gt;
+&lt;/match&gt;
+&lt;!-- 第五步，修正合成粗体的"标称大小"，尽力确保其"视觉大小"与原本的标称值一致 --&gt;
+&lt;match target="font"&gt;
+	&lt;test name="embolden"&gt;&lt;bool&gt;true&lt;/bool&gt;&lt;/test&gt;
+	&lt;!-- 标称大小=视觉大小-trunc((视觉大小+13.5)/25) --&gt;
+	&lt;edit name="pixelsize"&gt;
+		&lt;minus&gt;
+			&lt;name&gt;pixelsize&lt;/name&gt;
+			&lt;trunc&gt;&lt;divide&gt;&lt;plus&gt;&lt;name&gt;pixelsize&lt;/name&gt;&lt;double&gt;13.5&lt;/double&gt;&lt;/plus&gt;&lt;double&gt;25&lt;/double&gt;&lt;/divide&gt;&lt;/trunc&gt;
+		&lt;/minus&gt;
+	&lt;/edit&gt;
+&lt;/match&gt;
+&lt;!-- 第六步，在等宽条件下，为确保中西文对齐，进一步修正"标称大小"(也会影响"视觉大小") --&gt;
+&lt;match target="font"&gt;
+	&lt;test name="isDengKuan"&gt;&lt;bool&gt;true&lt;/bool&gt;&lt;/test&gt;
+	&lt;!-- 如果"视觉大小"是奇数 --&gt;
+	&lt;test name="isOddPx"&gt;&lt;bool&gt;true&lt;/bool&gt;&lt;/test&gt;
+	&lt;!-- 那么上调为偶像素，因为Monospace在奇像素下总是大一级显示 --&gt;
+	&lt;edit name="pixelsize"&gt;&lt;plus&gt;&lt;name&gt;pixelsize&lt;/name&gt;&lt;int&gt;1&lt;/int&gt;&lt;/plus&gt;&lt;/edit&gt;
+&lt;/match&gt;
+&lt;!-- 第六步续，进一步专门处理等宽条件下"标称大小"为11px,12px的合成粗体 --&gt;
+&lt;match target="font"&gt;
+	&lt;test name="isDengKuan"&gt;&lt;bool&gt;true&lt;/bool&gt;&lt;/test&gt;
+	&lt;test name="embolden"&gt;&lt;bool&gt;true&lt;/bool&gt;&lt;/test&gt;
+	&lt;test name="pixelsize" compare="more"&gt;&lt;double&gt;10.5&lt;/double&gt;&lt;/test&gt;
+	&lt;test name="pixelsize" compare="less"&gt;&lt;double&gt;12.5&lt;/double&gt;&lt;/test&gt;
+	&lt;!-- 统一调整为12px常规体，只有这样才能对齐 --&gt;
+	&lt;edit name="pixelsize"&gt;&lt;int&gt;12&lt;/int&gt;&lt;/edit&gt;
+	&lt;edit name="embolden"&gt;&lt;bool&gt;false&lt;/bool&gt;&lt;/edit&gt;
+	&lt;edit name="weight"&gt;&lt;int&gt;80&lt;/int&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>上述配置中的最后一个段落，专门处理等宽条件下标称大小为11px,12px的合成粗体。因为11px,12px是个特例，在粗体条件下无法保持中西文对齐，只能调整为12px常规体，才能做到中西文对齐。</p>
+<h4>针对单个字体的调整</h4>
+<pre>
+&lt;!-- 第七步，针对每个字体单独调整渲染参数 --&gt;
+&lt;match target="font"&gt;
+	&lt;test name="family"&gt;&lt;string&gt;Monospace&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="hintstyle"&gt;&lt;const&gt;hintslight&lt;/const&gt;&lt;/edit&gt;
+&lt;/match&gt;
+&lt;match target="font"&gt;
+	&lt;test name="family"&gt;&lt;string&gt;Sans&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="hintstyle"&gt;
+		&lt;if&gt;
+			&lt;or&gt;
+				&lt;eq&gt;&lt;name&gt;pixelsize&lt;/name&gt;&lt;int&gt;10&lt;/int&gt;&lt;/eq&gt;
+				&lt;eq&gt;&lt;name&gt;pixelsize&lt;/name&gt;&lt;int&gt;12&lt;/int&gt;&lt;/eq&gt;
+			&lt;/or&gt;
+			&lt;const&gt;hintslight&lt;/const&gt;
+			&lt;const&gt;hintfull&lt;/const&gt;
+		&lt;/if&gt;
+	&lt;/edit&gt;
+&lt;/match&gt;
+&lt;match target="font"&gt;
+	&lt;test name="family"&gt;&lt;string&gt;Serif&lt;/string&gt;&lt;/test&gt;
+	&lt;test name="pixelsize"&gt;&lt;int&gt;10&lt;/int&gt;&lt;/test&gt;
+	&lt;test name="slant"&gt;&lt;int&gt;0&lt;/int&gt;&lt;/test&gt;
+	&lt;edit name="hintstyle"&gt;&lt;const&gt;hintslight&lt;/const&gt;&lt;/edit&gt;
+&lt;/match&gt;
+&lt;match target="font"&gt;
+	&lt;test name="family"&gt;&lt;string&gt;zhHei&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="hintstyle"&gt;&lt;const&gt;hintslight&lt;/const&gt;&lt;/edit&gt;
+&lt;/match&gt;
+&lt;match target="font"&gt;
+	&lt;test name="postscriptname" compare="contains"&gt;&lt;string&gt;NotoSansKR&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="hintstyle"&gt;&lt;const&gt;hintslight&lt;/const&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+<p>这里的调整只涉及到了微调风格。至于在不同大小、不同粗细、不同风格下，使用什么样的渲染参数效果最好，就只能靠自己的眼睛了。虽然可以使用FontForge查看字体的属性，获取相关信息，但是笔者依然推荐用自己的眼睛去检查更可靠。</p>
+<h4>删除多余的标记</h4>
+<pre>
+&lt;!-- 最后，删除等宽标记与奇偶标记 --&gt;
+&lt;match target="font"&gt;
+	&lt;edit name="isDengKuan" mode="delete"&gt;&lt;/edit&gt;
+	&lt;edit name="isOddPx" mode="delete"&gt;&lt;/edit&gt;
+&lt;/match&gt;
+</pre>
+
+<hr />
+
+</body></html>

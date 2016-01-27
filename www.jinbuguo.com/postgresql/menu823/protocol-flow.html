@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>消息流</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="protocol-overview.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="protocol.html">快退</a></td><td width="60%" align="center" valign="bottom">章44. 前/后端协议</td><td width="10%" align="right" valign="top"><a href="protocol.html">快进</a></td><td width="10%" align="right" valign="top"><a href="protocol-message-types.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="PROTOCOL-FLOW">44.2. 消息流</a></h1>
+<p>本节描述消息流。以及每种消息类型的语意(每种信息的准确表现细节在<a href="protocol-message-formats.html">节44.4</a>里)。因连接的状态不同，存在几种不同的子协议：启动、查询、函数调用、<tt class="COMMAND">COPY</tt> 、结束。还有用于通知响应和命令取消的特殊信息，这些特殊信息可能在启动阶段过后的任何时间产生。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN66744">44.2.1. 启动</a></h2>
+<p>要开始一个会话，前端打开一个与服务器的连接并且发送一个启动消息。这个消息包括用户名以及用户希望与之连接的数据库；它还标识要使用的特定的协议版本。另外，启动信息可以包括用于运行时参数的额外设置。服务器然后就使用这些信息以及它的配置文件的内容(比如 <tt class="FILENAME">pg_hba.conf</tt>)以判断这个连接是否可以接受，以及需要什么样的额外的认证(如果需要)。</p>
+<p>然后服务器就发送合适的认证请求信息，前端必须用合适的认证响应信息来响应(比如一个口令)。理论上讲，这样的认证请求/响应循环可能需要多次迭代，但是目前的认证方法都不需要超过一次的请求和响应。有些方法则根本不需要前端的响应，因此就没有认证请求发生。</p>
+<p>认证周期的结束要么是以服务器的拒绝连接(ErrorResponse)结束，要么是以认证成功(AuthenticationOk)结束的。</p>
+<p>这个阶段来自服务器可能消息是：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>ErrorResponse</dt>
+<dd><p>连接请求被拒绝。然后服务器马上关闭连接。</p></dd>
+<dt>AuthenticationOk</dt>
+<dd><p>认证交换成功完成。</p></dd>
+<dt>AuthenticationKerberosV5</dt>
+<dd><p>现在前端必须与服务器进行一次 KerberosV5 认证对话(在这里没有描述，Kerberos 规范的一部分)。如果对话成功，服务器响应一个 AuthenticationOk(认证成功)信息，否则它响应一个 ErrorResponse(错误响应)。</p></dd>
+<dt>AuthenticationCleartextPassword</dt>
+<dd><p>现在前端必须明文形式发送一个包含口令的 PasswordMessage(未加密口令)包。如果这是正确的口令，服务器用一个 AuthenticationOk 包响应，否则它响应一个 ErrorResponse 包。</p></dd>
+<dt>AuthenticationCryptPassword</dt>
+<dd><p>现在前端必须发送一个 PasswordMessage 包，该包包含用 crypt(3)加密的口令，加密时使用了在 AuthenticationCryptPassword 消息里声明的 2 字节盐粒。如果这是正确口令，服务器用一个 AuthenticationOk 响应，否则它用一个 ErrorResponse 响应。</p></dd>
+<dt>AuthenticationMD5Password</dt>
+<dd><p>现在前端必须发送一个包含用 MD5 加密的口令的 PasswordMessage ，加密时使用了在 AuthenticationMD5Password 消息里声明的 4 字符盐粒。如果这是正确口令，服务器用一个 AuthenticationOk 响应，否则它用一个 ErrorResponse 响应。</p></dd>
+<dt>AuthenticationSCMCredential</dt>
+<dd><p>这个响应只对那些支持 SCM 信任消息的本地 Unix 域连接出现。前端必须发出一条 SCM 信任消息然后发送一个数据字节。数据字节的内容并不会被注意；它的作用只是确保服务器等待了足够长的时间来接受信任信息。如果信任是可以接受的，那么服务器用 AuthenticationOk 响应，否则用 ErrorResponse 响应。</p></dd>
+</dl>
+</div>
+<p>如果前端不支持服务器要求的认证方式，那么它应该马上关闭连接。</p>
+<p>在收到 AuthenticationOk 包之后，前端必须等待来自后端的更多消息。在这个阶段会启动一个后端进程，而前端只是一个感兴趣的看热闹的。启动尝试仍然有可能失败 (ErrorResponse)，但是通常情况下，后端将发送一些 ParameterStatus 消息、BackendKeyData 、以及最后 ReadyForQuery 。</p>
+<p>在这个阶段，后端将尝试应用任何在启动消息里给出额外的运行时参数设置。如果成功，这些值将成为会话缺省。错误将导致 ErrorResponse 并退出。</p>
+<p>这个阶段来自后端的可能消息是：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>BackendKeyData</dt>
+<dd><p>这个消息提供了密钥(secret-key)数据，前端如果想要在稍后发出取消的请求，则必须保存这个数据。前端不应该响应这个信息，但是应该继续侦听等待 ReadyForQuery 消息。</p></dd>
+<dt>ParameterStatus</dt>
+<dd><p>这个消息告诉前端有关后端参数的当前(初始化)设置，比如 <a href="runtime-config-client.html#GUC-CLIENT-ENCODING">client_encoding</a> 或 <a href="runtime-config-client.html#GUC-DATESTYLE">DateStyle</a> 等。前端可以忽略这些信息，或者记录其设置用于将来使用；参阅<a href="protocol-flow.html#PROTOCOL-ASYNC">节44.2.6</a>获取更多细节。前端不应该响应这些信息，而是应该继续侦听 ReadyForQuery 消息。</p></dd>
+<dt>ReadyForQuery</dt>
+<dd><p>后端启动成功，前端现在可以发出命令。</p></dd>
+<dt>ErrorResponse</dt>
+<dd><p>后端启动失败。在发送完这个消息之后连接被关闭。</p></dd>
+<dt>NoticeResponse</dt>
+<dd><p>发出了一个警告信息。前端应该显示这个信息，并且继续等待 ReadyForQuery 或 ErrorResponse 。</p></dd>
+</dl>
+</div>
+<p>后端在每个查询循环后都会发出一个相同的 ReadyForQuery 消息。前端可以合理地认为 ReadyForQuery 是一个查询循环的开始(而 BackendKeyData 表明启动阶段的成功完成)，或者认为 ReadyForQuery 是启动阶段和每个随后查询循环的结束，具体是那种情况取决于前端的编码需要。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN66809">44.2.2. 简单查询</a></h2>
+<p>一个查询循环是由前端发送一条 Query 消息给后端进行初始化的。这条消息包含一个用文本字符串表达的 SQL 命令(或者一些命令)。后端根据查询命令字符串的内容发送一条或者更多条响应消息给前端，并且最后是一条 ReadyForQuery 响应信息。ReadyForQuery 通知前端它可以安全地发送新命令了。实际上前端不必在发送其它命令之前等待 ReadyForQuery ，但是这样一来，前端必须负责区分早先发出的命令失败，而稍后发出的命令成功的情况。</p>
+<p>从后端来的可能的消息是：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>CommandComplete</dt>
+<dd><p>一个 SQL 命令正常结束。</p></dd>
+<dt>CopyInResponse</dt>
+<dd><p>后端已经准备好从前端拷贝数据到一个表里面去。又见<a href="protocol-flow.html#PROTOCOL-COPY">节44.2.5</a>。</p></dd>
+<dt>CopyOutResponse</dt>
+<dd><p>后端已经准备好从一个表里拷贝数据到前端里面去。又见<a href="protocol-flow.html#PROTOCOL-COPY">节44.2.5</a>。</p></dd>
+<dt>RowDescription</dt>
+<dd><p>表示为了响应一个 <tt class="COMMAND">SELECT</tt>, <tt class="COMMAND">FETCH</tt> 等的查询，将要返回一个行。这条消息的内容描述了这行的字段布局。这条消息后面将跟着每个返回给前端的行一个的 DataRow 消息。</p></dd>
+<dt>DataRow</dt>
+<dd><p><tt class="COMMAND">SELECT</tt>, <tt class="COMMAND">FETCH</tt> 等查询返回的结果集中的一行。</p></dd>
+<dt>EmptyQueryResponse</dt>
+<dd><p>识别了一个空的查询字符串。</p></dd>
+<dt>ErrorResponse</dt>
+<dd><p>出错了。</p></dd>
+<dt>ReadyForQuery</dt>
+<dd><p>查询字符串的处理完成。发送一个独立的消息来标识这个是因为查询字符串可能包含多个 SQL 命令。CommandComplete 只是标记一条 SQL 命令处理完毕，而不是整个字符串。ReadyForQuery 总会被发送，不管是处理成功结束还是产生错误。</p></dd>
+<dt>NoticeResponse</dt>
+<dd><p>发送了一个与查询有关的警告信息。注意信息是附加在其它响应上的，也就是说,后端将继续处理该命令。</p></dd>
+</dl>
+</div>
+<p><tt class="COMMAND">SELECT</tt> (或其它返回结果集的查询，比如 <tt class="COMMAND">EXPLAIN</tt> 或 <tt class="COMMAND">SHOW</tt>)查询的响应信息通常包含 RowDescription ，零个或者多个 DataRow 消息，以及最后的 CommandComplete 。从前端来回的 <tt class="COMMAND">COPY</tt> 调用<a href="protocol-flow.html#PROTOCOL-COPY">节44.2.5</a> 里提到的特殊的协议。所有其它查询类型通常只生成一个 CommandComplete 消息。</p>
+<p>因为查询字符串可能包含若干个查询(用分号分隔)，所以在后端完成查询字符串的处理之前可能有好几个这样的响应序列。如果整个字符串已经处理完，后端已经准备好接受新查询字符串的时候则发出 ReadyForQuery 消息。</p>
+<p>如果收到一个完全空(除了空白之外没有内容)的查询字符串，那么响应是一条 EmptyQueryResponse 后面跟着 ReadyForQuery 。</p>
+<p>在出现错误的时候，发出一个 ErrorResponse 消息，后面跟着 ReadyForQuery 。查询字符串的所有后继的处理都被 ErrorResponse 中止(即使里面还有查询也这么干)。请注意这些事情可能在处理一个查询产生的消息序列的中途发生。</p>
+<p>在简单查询模式，检索出来的数值的格式总是文本的，除非给出的命令是一个从一个声明了 <tt class="LITERAL">BINARY</tt> 选项的游标上 <tt class="COMMAND">FETCH</tt> 。在这种情况下，检索出来的数值是二进制格式的。在 RowDescription 消息里给出的格式代码告诉用了那种格式。</p>
+<p>前端在等待其它类型的消息时必须准备接收 ErrorResponse 和 NoticeResponse 消息。参阅<a href="protocol-flow.html#PROTOCOL-ASYNC">节44.2.6</a>后端因为外部的时间可能生成的消息。</p>
+<p>建议的方法是把前端代码写成状态机的风格，它可以在任何时刻接受任何有意义的信息，而不是写成假设消息的准确序列的代码。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="PROTOCOL-FLOW-EXT-QUERY">44.2.3. 扩展查询</a></h2>
+<p>扩展的查询协议把上面描述的简单协议分裂成若干个步骤。准备的步骤可以多次复用以提高效率。另外，还可以获得额外的特性，比如把数据值作为独立的参数提供的可能性，而不是把它们直接插入一个查询字符串。</p>
+<p>在扩展的协议里，前端首先发送一个 Parse 消息，它包含一个文本查询字符串，另外还有一些有关参数占位符的数据类型的信息，以及一个最终预备语句对象的名字(一个空字符串选择未命名的预备语句)。响应要么是一个 ParseComplete 要么是 ErrorResponse 。参数数据类型可以用 OID 来声明；如果没有给出，那么分析器将试图用它对付无类型的字符串常量的方法来推导其数据类型。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>一个参数数据类型可以通过设置为零，或者让参数类型 OID 的数目比查询字符串里的参数符号(<tt class="LITERAL">$</tt><tt class="REPLACEABLE"><i>n</i></tt>)的数目少的方法不予声明。另外一个特例是参数的类型可以声明为 <tt class="TYPE">void</tt>(也就是伪类型 <tt class="TYPE">void</tt> 的 OID)。这是为了允许用于某些函数参数的参数符号实际上是 OUT 参数。通常情况下，没有什么环境会用到 <tt class="TYPE">void</tt> 参数，但是如果在函数的参数列表里出现了这么一个参数符号，那么它实际上会被忽略。比如，一个像这样的函数调用： <tt class="LITERAL">foo($1,$2,$3,$4)</tt> ，如果 <tt class="LITERAL">$3</tt> 和 <tt class="LITERAL">$4</tt> 声明为类型是 <tt class="TYPE">void</tt> ，那么这个函数调用可以匹配一个带有两个 IN 和两个 OUT 参数的函数。</p>
+</blockquote>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在一个 Parse 消息里包含的查询字符串不能包含超过一个 SQL 语句；否则就会报告一个语法错误。这个限制在简单查询协议中并不存在，但是它存在于扩展的协议中，因为允许预备语句或者入口包含多个命令将导致协议过度地复杂。</p>
+</blockquote>
+</div>
+<p>如果成功创建了一个命名的准备好语句对象，那么它将持续到当前会话结束，除非明确删除。一个未命名的预备语句只持续到下一个声明未命名的语句为目标的 Parse 语句发出为止(请注意一个简单的查询消息也删除未命名语句)。命名的语句必须明确地关闭，然后才能用一个 Parse 消息重新定义，但是未命名的语句并不要求这个动作。命名的预备语句也可以在 SQL 命令级创建和访问，方法是使用 <tt class="COMMAND">PREPARE</tt> 和 <tt class="COMMAND">EXECUTE</tt></p>
+<p>只要预备语句还存在，那么就可以使用 Bind 消息很容易地使之进入执行状态。Bind 消息给出源预备语句的名字(空字符串表示未命名的预备语句)，目标入口的名字(空字符串表示未命名的入口)，以及用于那些在预备语句中出现的所有参数占位符的数值。提供的参数集必须匹配那些预备语句需要的东西。如果你在 Parse 消息里声明任何 <tt class="TYPE">void</tt> 参数，那么在 Bind 消息里给它们传递 NULL 值。Bind 还声明用于查询返回的任何数据的格式；格式可以一次声明，也可以每个字段进行声明。响应要么是 BindComplete 要么是 ErrorResponse 。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>输出的格式是文本还是二进制是由 Bind 里给出的格式代码决定的，不管用的是什么 SQL 命令。在使用扩展的查询协议的时候，游标声明里的 <tt class="LITERAL">BINARY</tt> 属性是无关的。</p>
+</blockquote>
+</div>
+<p>对已命名预备语句对象的查询规划发生在收到 Parse 消息的时候。如果一个查询会带着不同参数重复执行，那么发送单个带着参数化的查询的 Parse 消息，后面跟着多个 Bind 和 Execute 消息会很有帮助。这样将避免在每次执行的时候重新规划该查询。</p>
+<p>如果 Parse 消息没有定义参数，那么未命名的预备语句很可能自于 Parse 处理的时候规划。但是如果有参数，那么查询规划就会推迟到该语句的第一个 Bind 消息。规划器在对该查询进行规划的时候将考虑在 Bind 消息里提供的实际参数值。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>为一个参数化了的查询生成的查询规划可能比用实际参数替换后的查询生成的查询规划效率差些。在给一个赋予了有名预备语句对象的参数化查询进行规划的时候，查询规划器无法基于实际参数值做决策(比如，索引选择性)。在使用无名语句的时候避免了这个开销，因为直到参数值可用的时候才进行规划。如果收到引用无名的预备语句的第二个或者是以后的 Bind 消息同时没有干涉的 Parse 消息，那么这个查询就不会被规划。在第一个 Bind 消息里使用的参数值可能生成一个只对所有可能的参数值中的一小部分有效的规划。要为一套信的参数集强制该查询的重新规划，要发送另外一个 Parse 把替换该无名预备语句对象替换掉。</p>
+</blockquote>
+</div>
+<p>如果成功创建了一个命名的预备语句对象，那么它将持续到当前会话结束，除非明确删除。一个未命名的预备语句只持续到下一个声明未命名的语句为目标的 Parse 语句发出为止(请注意一个简单的查询消息也删除未命名语句)。命名的语句必须明确地关闭，然后才能用一个 Parse 消息重新定义，但是未命名的语句并不要求这个动作。命名的预备语句也可以在 SQL 命令级创建和访问，方法是使用 <tt class="COMMAND">DECLARE CURSOR</tt> 和 <tt class="COMMAND">FETCH</tt></p>
+<p>只要存在一个入口，那么就可以用一个 Execute 消息执行它。Execute 消息声明入口的名字(空字符串表示未命名入口)和一个最大的结果行计数(零表示"抓取所有行")。结果行计数只对包含返回结果集的入口有意义；在其它情况下，该命令总是执行到结束，而行计数会被忽略。Execute 可能的响应和那些通过简单查询协议发出的查询一样，只不过 Execute 不会导致后端发出 ReadyForQuery 或者 RowDescription 。</p>
+<p>如果 Execute 在一个入口的执行完成之前终止(因为达到了一个非零的结果行计数)，它将发送一个 PortalSuspended 消息；这个消息的出现告诉前端应该在同一个入口上发出另外一个 Execute 以完成操作。在入口的执行完成之前，不会发出表示源 SQL 命令结束的 CommandComplete 消息。因此 Execute 阶段总是由下列消息之一出现标志着结束的：CommandComplete 、EmptyQueryResponse(如果入口是从一个空字符串创建出来的)、ErrorResponse 、PortalSuspended 。</p>
+<p>每个扩展查询消息序列完成后，前端都应该发出一条 Sync 消息。这个无参数的消息导致后端关闭当前事务——如果当前事务不是在一个 <tt class="COMMAND">BEGIN</tt>/<tt class="COMMAND">COMMIT</tt> 事务块中的话("关闭"的意思就是在没有错误的情况下提交，或者是有错误的情况下回滚)。然后响应一条 ReadyForQuery 消息。Sync 的目的是提供一个错误恢复的重新同步的点。如果在处理任何扩展查询消息的时候侦测到任何错误，那么后端发出 ErrorResponse ，然后读取并抛弃消息，直到一个 sync 的到来，然后发出 ReadyForQuery 并且返回到正常的消息处理中。但是要注意如果<span class="emphasis"><i class="EMPHASIS">正在</i></span> 处理 Sync 的时候发生了错误，那么不会忽略任何东西 —这样就保证了为每个 Sync 发出一个并且只是一个的 ReadyForQuery 。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b> Sync 并不导致一个用 <tt class="COMMAND">BEGIN</tt> 打开的事务块关闭。可以侦测到这种情况，因为 ReadyForQuery 消息包含事务状态信息。</p>
+</blockquote>
+</div>
+<p>除了这些基本的，必须的操作之外，在扩展查询协议里还有几种可选的操作可以使用。</p>
+<p>Describe 消息(入口变体)声明一个现有的入口的名字(或者一个未命名入口就是空字符串)。响应是一个 RowDescription 消息，它描述了执行入口将要返回的行；或者是一个 NoData 消息(如果入口并不包含会返回行的查询)；或者是一个 ErrorResponse(如果没有这个入口)。</p>
+<p>Describe 消息(语句变体)声明一个现有的预备语句的名字(如果是一个未命名的预备语句则是一个空字符串)。响应是一个描述该语句需要的参数的 ParameterDescription 消息，后面跟着一个描述语句最终执行后返回的行的 RowDescription 消息(或者是 NoData 消息，如果该语句不返回行)。如果没有这样的预备语句，则返回 ErrorResponse 。请注意因为还没有发出 Bind ，所以后端还不知道用于返回字段的格式；在这种情况下，RowDescription 消息里面的格式代码字段将是零。</p>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b>在大多数情况下，前端在发出 Execute 之前应该发出某种 Describe 的变体，以保证它知道如何解析它将得到的结果。</p>
+</blockquote>
+</div>
+<p>Close 消息关闭一个现有的预备语句或者入口，并且释放资源。对一个不存在的语句或者入口名字发出 Close 不是一个错误。响应通常是 CloseComplete ，但如果在释放资源的时候发生了一些困难也可以是 ErrorResponse 。请注意关闭一个准备好地语句隐含地关闭任何从该语句构造出来地打开的入口。</p>
+<p>Flush 消息并不导致任何特定的输出的生成，但是强制后端发送任何还在它的输出缓冲区中停留的数据。Flush 必须在除 Sync 外的任何扩展查询命令后面发出(如果前端希望在发出更多的命令之前检查该命令的结果的话)。如果不 Flush ，后端返回的消息将组合成最小可能的数据包个数，以减少网络负荷。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>简单查询消息大概等于一系列使用未命名的预备语句和无参数的入口对象的 Parse 、Bind 、入口 Describe 、Execute 、Close 、Sync 。一个区别是它会在查询字符串中接受多个 SQL 语句，并在会话中为每个语句自动执行绑定/描述/执行序列。另外一个区别是它不会返回 ParseComplete 、Bindcomplete 、CloseComplete 、NoData 消息。</p>
+</blockquote>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN66923">44.2.4. 函数调用</a></h2>
+<p>函数调用子协议允许客户端请求一个对存在于数据库 <tt class="STRUCTNAME">pg_proc</tt> 系统表中的任意函数的直接调用。客户端必须在该函数上有执行的权限。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>函数调用子协议是一个遗留的特性，在新代码里可能最好避免用它。类似的结果可以通过设置一个 <tt class="LITERAL">SELECT function($1, ...)</tt> 预备语句获得。这样函数调用循环就可以用 Bind/Execute 代替。</p>
+</blockquote>
+</div>
+<p>一个函数调用循环是由前端向后端发送一条 FunctionCall 消息初始化的。然后后端根据函数调用的结果发送一条或者更多响应消息，并且在最后是一条 ReadyForQuery 响应消息。ReadyForQuery 通知前端它可以安全地发送一条新的查询或者函数调用了。</p>
+<p>从后端来的可能的响应信息是：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>ErrorResponse</dt>
+<dd><p>发生了一个错误。</p></dd>
+<dt>FunctionCallResponse</dt>
+<dd><p>函数调用完成并且在消息中返回一个结果。请注意，函数调用协议只能处理单个标量结果，不能处理行类型或者结果集。</p></dd>
+<dt>ReadyForQuery</dt>
+<dd><p>函数调用处理完成。ReadyForQuery 将总是被发送，不管是成功完成处理还是发生一个错误。</p></dd>
+<dt>NoticeResponse</dt>
+<dd><p>发出了一条有关该函数调用的警告信息。通知是附加在其它响应上的，也就是说，后端将继续处理命令。</p></dd>
+</dl>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="PROTOCOL-COPY">44.2.5. COPY 操作</a></h2>
+<p><tt class="COMMAND">COPY</tt> 命令允许在服务器和客户端之间高速的大批量数据传输。拷贝入和拷贝出操作每个都把连接切换到一个独立的子协议中，并且持续到操作结束。</p>
+<p>拷贝入模式(数据传输到服务器)是在后端执行一个 <tt class="COMMAND">COPY FROM STDIN</tt> 语句的时候初始化的。后端发送一个 CopyInResponse 消息给前端。前端应该发送零条或者更多 CopyData 消息，形成一个输出数据的流。消息的边界和行的边界没有任何相关性要求，尽管通常那就是合理的边界选择。前端可以通过发送一个 CopyDone 消息来终止拷贝入操作(允许成功终止)，也可以发出一个 CopyFail 消息(它将导致 <tt class="COMMAND">COPY</tt> 语句带着错误失败)。然后后端就恢复回它在 <tt class="COMMAND">COPY</tt> 开始之前的命令处理模式，可能是简单查询协议，也可能是扩展查询协议。然后它会发送 CommandComplete(如果成功)或者 ErrorResponse(如果失败)。</p>
+<p>如果在拷贝入模式下后端检测到了错误(包括接受接收到 CopyFiail 消息，或者是任何除了 CopyData 或者 CopyDone 之外的前端消息)，那么后端将发出一个 ErrorResponse 消息。如果 <tt class="COMMAND">COPY</tt> 命令是通过一个扩展的查询消息发出的，那么后端从现在开始将抛弃前端消息，直到一个 Sync 消息到大，然后它将发出 ReadyForQuery 并且返回到正常的处理中。如果 <tt class="COMMAND">COPY</tt> 命令是在一个简单查询消息里发出的，那么该消息剩余部分被丢弃然后发出 ReadyForQuery 消息。不管是哪种情况，任何前端发出的 CopyData, CopyDone, CopyFail 消息都将被简单地抛弃。</p>
+<p>后端将会忽略拷贝入模式时接收到的 Flush 和 Sync 消息。收到任何其它包含会导致拷贝入状态退出(如前所述)错误的非拷贝信息类型。Flush 和 Sync 的例外是为了方便客户端库在执行 Execute 消息后始终发送 Flush 或 Sync 而不检查所执行的命令是否是一个 <tt class="COMMAND">COPY FROM STDIN</tt> 命令。</p>
+<p>拷贝出模式(数据从服务器发出)是在后端执行一个 <tt class="COMMAND">COPY TO STDOUT</tt> 语句的时候初始化的。后端发出一个 CopyOutResponse 消息给前端，后面跟着零或者多个 CopyData 消息(总是每行一个)，然后跟着 CopyDone 。然后后端回退到它在 <tt class="COMMAND">COPY</tt> 开始之前的命令处理模式，然后发送 CommandComplete 。前端不能退出传输(除非是关闭连接或者发出一个 Cancel 请求)，但是它可以抛弃不需要的 CopyData 和 CopyDone 消息。</p>
+<p>在拷贝出模式中，如果后端检测到错误，那么它将发出一个 ErrorResponse 消息并且回到正常的处理。前端应该把收到 ErrorResponse(或者实际上除了 CopyData 或者 CopyDone 之外的任何消息类型)当作终止拷贝出模式的标志。</p>
+<p>CopyInResponse 和 CopyOutResponse 消息包括告诉前端每行的字段数以及每个字段使用的格式代码的信息。就目前的实现而言，某个COPY操作的所有字段都使用同样的格式，但是消息设计并不做这个假设。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="PROTOCOL-ASYNC">44.2.6. 异步操作</a></h2>
+<p>有几种情况下后端会发送一些并非由特定的前端的命令流提示的消息。在任何时候前端都必须准备处理这些信息，即使是并未涉及到查询的处理的时候。至少，应该在开始读取查询响应之前检查这些情况。</p>
+<p>NoticeResponse 消息有可能是因为外部的活动而生成的；比如，如果数据库管理员进行一次"快速"数据库关闭，那么后端将在关闭连接之前发送一个 NoticeResponse 来表明这些。因此，前端应该总是准备接受和显示 NoticeResponse 消息，即使连接通常是空闲的时候也如此。</p>
+<p>如果后端认为前端应该知道的任何参数的活跃数值发生了变化，那么都会产生 ParameterStatus 消息。这些最常见发生的地方是前端执行的一个 <tt class="COMMAND">SET</tt> 命令的响应，并且这个时候实际上是同步(但是也有可能是数据库管理员改变了配置文件然后 <span class="SYSTEMITEM">SIGHUP</span> 了服务器导致的参数状态的变化)。同样，如果一个 <tt class="COMMAND">SET</tt> 命令回滚，那么也会生成合适的 ParameterStatus 消息以报告当前有效的数值。</p>
+<p>目前，系统内有一套会生成 ParameterStatus 消息的写成硬代码的参数：他们是 <tt class="LITERAL">server_version</tt>, <tt class="LITERAL">server_encoding</tt>, <tt class="LITERAL">client_encoding</tt>, <tt class="LITERAL">is_superuser</tt>, <tt class="LITERAL">session_authorization</tt>, <tt class="LITERAL">DateStyle</tt>, <tt class="LITERAL">TimeZone</tt>, <tt class="LITERAL">integer_datetimes</tt>, <tt class="LITERAL">standard_conforming_strings</tt> 。请注意 <tt class="LITERAL">server_version</tt>, <tt class="LITERAL">server_encoding</tt>, <tt class="LITERAL">integer_datetimes</tt> 是伪参数，启动后不能修改。这些可能在将来改变，或者甚至是变成可以配置的。因此，前端应该简单地忽略那些它不懂或者不关心的 ParameterStatus 。</p>
+<p>如果前端发出一个 <tt class="COMMAND">LISTEN</tt> 命令，那么后端将在为同一个通知名执行了 <tt class="COMMAND">NOTIFY</tt> 命令后发送一个 NotificationResponse 消息(不要和 NoticeResponse 混淆)。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>目前，NotificationResponse 只能在一个事务外面发送，因此它将不会在一个命令响应序列中间出现，但是它可能在 ReadyForQuery 之前出现。不过，在前端逻辑中做上述假设是不明智的。好的做法是在协议的任何点上都可以接受 NotificationResponse 。</p>
+</blockquote>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN66999">44.2.7. 取消正在处理的请求</a></h2>
+<p>在一条查询正在处理的时候，可能取消该查询的处理。这样的取消请求不是直接通过打开的连接发送给后端的，这么做是因为实现的有效性：不希望后端在处理查询的过程中不停地检查前端来的输入。取消请求应该相对而言比较少见，所以把取消做得稍微笨拙一些，以便不影响正常状况的性能。</p>
+<p>要发送一条取消请求，前端打开一个与服务器的新连接并且发送一条 CancelRequest 消息，而不是通常在新连接中经常发送的 StartupPacket 消息。服务器将处理这个请求然后关闭连接。出于安全原因，对取消请求消息不做直接的响应。</p>
+<p>除非 CancelRequest 消息包含与连接启动过程中传递给前端的相同的键数据(PID 和安全键字)，否则它将被忽略。如果该请求匹配当前运行着的后端的 PID 和安全键字，则退出当前查询的处理(目前的实现里采用的方法是向正在处理该查询的后端进程发送一个特殊的信号)。</p>
+<p>取消信号可能有也可能没有做用(例如，如果它在后端完成查询的处理后到达)，那么它就没有做用。如果取消起作用了，其结果是当前命令带着一个错误信息提前退出。</p>
+<p>这么做是对安全和有效性通盘考虑的结果，前端没有直接的方法获知一个取消请求是否成功。它必须继续等待后端对查询响应。执行取消仅仅是增加了当前查询快些结束的可能性，以及增加了当前查询会带着一条错误信息失败而不是成功执行的可能性。</p>
+<p>因为取消请求是通过新的连接发送给服务器而不是通过平常的前端/后端通讯链接，所以取消请求可能是任意进程执行的，而不仅仅是要取消查询的前端。这样可能对创建多进程应用有某种灵活性的好处。但是同时这样也带来了安全风险，因为这样任何一个非认证用户都可能试图取消查询。这个安全风险通过要求在取消请求中提供一个动态生成的安全键字排除。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN67007">44.2.8. 终止</a></h2>
+<p>通常的终止过程的优雅方法是前端发送一条 Terminate(终止)消息并且立刻关闭连接。一旦收到消息，后端马上关闭连接并且退出。</p>
+<p>在少数情况下(比如一个管理员命令数据库关闭)，后端可能在没有任何前端请求的情况下断开连接。在这种情况下，后端将在它断开连接之前尝试发送一个错误或者通知信息，给出断开的原因。</p>
+<p>其它终止的情况发生在各种失效的场合，比如某一方的内核转储，失去通讯链路，丢失了消息边界同步等。不管是前端还是后端看到了一个意外的连接关闭，那么它应该清理现场并且终止。如果前端不想终止自己，那么它可以通过替换服务器的方法重启一个新的后端。如果收到了一个无法识别的消息，那么也建议关闭连接，因为出现这种情况可能意味着是丢失了消息边界的同步。</p>
+<p>不管是正常还是不正常的终止，任何打开的事务都会回滚，而不是提交。不过，应该注意的是如果一个前端在一个非 <tt class="COMMAND">SELECT</tt> 查询正在处理的时候断开，那么后端很可能在注意到断开之前先完成查询的处理。如果查询处于任何事务块之外(<tt class="COMMAND">BEGIN</tt> ... <tt class="COMMAND">COMMIT</tt> 序列)，那么其结果很可能在得知断开之前被提交。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN67016">44.2.9. SSL 会话加密</a></h2>
+<p>如果编译 PostgreSQL 的时候打开了 SSL 支持，那么前后端通讯就可以用 SSL 加密。这样就提供了一种在攻击者可能捕获会话通讯数据包的环境下保证通讯安全的方法。有关使用 SSL 加密 PostgreSQL 会话的更多信息，请参阅<a href="ssl-tcp.html">节16.7</a>。</p>
+<p>要开始一次 SSL 加密连接，前端先是发送一个 SSLRequest 消息，而不是 StartupMessage 。然后服务器以一个包含 <tt class="LITERAL">S</tt> 或 <tt class="LITERAL">N</tt> 的字节响应，分别表示它愿意还是不愿意进行 SSL 。如果前端对响应不满意，那么它可以关闭连接。要在 <tt class="LITERAL">S</tt> 之后继续，那么先进行与服务器的 SSL 启动握手(没有在这里描述，这是 SSL 规范的一部分)。如果这些成功了，那么继续发送普通的 StartupMessage 。这种情况下，StartupMessage 和所有随后的数据都将由 SSL 加密。要在 <tt class="LITERAL">N</tt> 之后继续，则发送普通的 StartupMessage 然后不带加密进行处理。</p>
+<p>前端应该也准备处理一个来自服务器的给 SSLRequest 的 ErrorMessage 响应。这种情况只有在服务器给 PostgreSQL 的 SSL 支持增加了附加的期望的情况下才会出现。在这种情况下，连接必需关闭，但是前端可以选择打开一个新的连接然后不带 SSL 进行连接。</p>
+<p>一个初始化的 SSLRequest 也可以用于打开来用于发送一条 CancelRequest 消息的连接中。</p>
+<p>如果协议本身并未提供某种方法强制 SSL 加密，那么管理员可以把服务器配置为拒绝未加密的会话，这是认证检查的一个副产品。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="protocol-overview.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="protocol-message-types.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">概述</td><td width="34%" align="center" valign="top"><a href="protocol.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">消息数据类型</td></tr>
+</table>
+</div>
+</body></html>

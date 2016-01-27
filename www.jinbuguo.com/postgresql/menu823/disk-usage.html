@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>判断磁盘的使用量</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="diskusage.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="diskusage.html">快退</a></td><td width="60%" align="center" valign="bottom">章26. 监控磁盘使用情况</td><td width="10%" align="right" valign="top"><a href="diskusage.html">快进</a></td><td width="10%" align="right" valign="top"><a href="disk-full.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DISK-USAGE">26.1. 判断磁盘的使用量</a></h1><a name="AEN26069"></a>
+<p>每个表都有一个主堆(primary heap)磁盘文件，大多数数据都存储在这里。如果一个表存在值可能会很长的字段，则另外还有一个用于存储因为数值太长而不适合存储在主表中的数据的 TOAST 文件(参阅<a href="storage-toast.html">节52.2</a>)。如果存在这个扩展表，那么将会同时存在一个 TOAST 索引。当然，同时还可能有索引和基表关联。每个表和索引都存放在单独的磁盘文件里(超过 1GB 可能会被分割成多个)。这些文件的命名原则在<a href="storage-file-layout.html">节52.1</a>里描述。</p>
+<p>可以使用三种方法监视磁盘空间：使用<a href="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE">表9-48</a>中列出的 SQL 函数、使用 <tt class="COMMAND">VACUUM</tt> 信息、在命令行上使用 <tt class="FILENAME">contrib/oid2name</tt> 中的工具。报告普通表、带有索引和长值(TOAST)的表、数据库、表空间的信息最简单的方法是使用 SQL 函数。</p>
+<p>在最近刚刚清理(或者分析过)的数据库上使用 <span class="APPLICATION">psql</span> 的话，可以使用查询来查看任意表的磁盘使用：</p>
+<pre class="PROGRAMLISTING">SELECT relfilenode, relpages FROM pg_class WHERE relname = 'customer';
+
+ relfilenode | relpages 
+-------------+----------
+       16806 |       60
+(1 row)</pre>
+<p>每个页通常都是 8K 字节。注意，<tt class="STRUCTFIELD">relpages</tt> 只被 <tt class="COMMAND">VACUUM</tt>, <tt class="COMMAND">ANALYZE</tt> 和几个 DDL 命令(例如 <tt class="COMMAND">CREATE INDEX</tt>)更新。如果你想直接检查表的磁盘文件，那么可以使用 <tt class="STRUCTFIELD">relfilenode</tt> 字段值。</p>
+<p>要显示 TOAST 表使用的空间，我们可以使用一个类似下面这样的查询：</p>
+<pre class="PROGRAMLISTING">SELECT relname, relpages
+    FROM pg_class,
+         (SELECT reltoastrelid FROM pg_class
+          WHERE relname = 'customer') ss
+    WHERE oid = ss.reltoastrelid
+       OR oid = (SELECT reltoastidxid FROM pg_class
+                 WHERE oid = ss.reltoastrelid)
+    ORDER BY relname;
+
+       relname        | relpages 
+----------------------+----------
+ pg_toast_16806       |        0
+ pg_toast_16806_index |        1</pre>
+<p>也可以很容易地显示索引的尺寸：</p>
+<pre class="PROGRAMLISTING">SELECT c2.relname, c2.relpages
+    FROM pg_class c, pg_class c2, pg_index i
+    WHERE c.relname = 'customer'
+        AND c.oid = i.indrelid
+        AND c2.oid = i.indexrelid
+    ORDER BY c2.relname;
+
+       relname        | relpages 
+----------------------+----------
+ customer_id_indexdex |       26</pre>
+<p>很容易用下面的信息找出最大的表和索引：</p>
+<pre class="PROGRAMLISTING">SELECT relname, relpages FROM pg_class ORDER BY relpages DESC;
+
+       relname        | relpages 
+----------------------+----------
+ bigtable             |     3290
+ customer             |     3144</pre>
+<p>还可以使用 <tt class="FILENAME">contrib/oid2name</tt> 显示磁盘用量，参见该目录中的 <tt class="FILENAME">README.oid2name</tt> 文件以获取示例，它包括一个为每个数据库显示磁盘用量的脚本。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="diskusage.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="disk-full.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">监控磁盘使用情况</td><td width="34%" align="center" valign="top"><a href="diskusage.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">磁盘满导致的失效</td></tr>
+</table>
+</div>
+</body></html>

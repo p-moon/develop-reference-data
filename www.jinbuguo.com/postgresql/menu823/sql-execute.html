@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>EXECUTE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-end.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-end.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-explain.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-explain.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-EXECUTE"></a>EXECUTE</h1>
+<div class="REFNAMEDIV"><a name="AEN51666"></a><h2>名称</h2>EXECUTE&nbsp;--&nbsp;执行一个预备语句</div>
+<a name="AEN51669"></a><a name="AEN51671"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN51674"></a><h2>语法</h2>
+<pre class="SYNOPSIS">EXECUTE <tt class="REPLACEABLE"><i>name</i></tt> [ (<tt class="REPLACEABLE"><i>parameter</i></tt> [, ...] ) ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN51678"></a><h2>描述</h2>
+<p><tt class="COMMAND">EXECUTE</tt> 执行一个前面准备好的预备语句。因为一个预备语句只在会话的生命期里存在，那么预备语句必须是在当前会话的前些时候用 <tt class="COMMAND">PREPARE</tt> 语句创建的。</p>
+<p>如果创建预备语句的 <tt class="COMMAND">PREPARE</tt> 语句声明了一些参数，那么传递给 <tt class="COMMAND">EXECUTE</tt> 语句的必须是一个兼容的参数集，否则就会生成一个错误。请注意(和函数不同)，预备语句不会基于参数的类型或者个数重载：在一次数据库会话过程中，预备语句的名字必须是唯一的。</p>
+<p>有关创建和使用预备语句的更多信息，请参阅 <a href="sql-prepare.html"><i>PREPARE</i></a></p>
+</div>
+<div class="REFSECT1"><a name="AEN51688"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>要执行的预备语句的名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>parameter</i></tt></dt>
+<dd><p>给预备语句的一个参数的具体数值。它必须是一个生成与创建这个预备语句的 <tt class="COMMAND">PREPARE</tt> 语句指定参数位置的参数相兼容的数据类型的表达式。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN51701"></a><h2>输出</h2>
+<p><tt class="COMMAND">EXECUTE</tt> 返回的命令标签是预备语句的命令标签，不是 <tt class="LITERAL">EXECUTE</tt> 的。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51706"></a><h2>例子</h2>
+<p>例子在 <a href="sql-prepare.html"><i>PREPARE</i></a> 文档的<a href="sql-prepare.html#SQL-PREPARE-EXAMPLES"><i>例子</i></a>小节给出。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51711"></a><h2>兼容性</h2>
+<p>SQL 标准包括一个 <tt class="COMMAND">EXECUTE</tt> 语句，但它只用于嵌入式 SQL 。PostgreSQL 实现的 <tt class="COMMAND">EXECUTE</tt> 的语法也略微不同。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51716"></a><h2>又见</h2><a href="sql-deallocate.html"><i>DEALLOCATE</i></a>, <a href="sql-prepare.html"><i>PREPARE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-end.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-explain.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">END</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">EXPLAIN</td></tr>
+</table>
+</div>
+</body></html>

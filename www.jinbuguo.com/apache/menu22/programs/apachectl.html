@@ -1,0 +1,95 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>apachectl - Apache HTTP服务器控制接口 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">支持程序</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>apachectl - Apache HTTP服务器控制接口</h1>
+
+
+     <p><code>apachectl</code>是Apache HTTP服务器的前端程序。其设计意图是帮助管理员控制Apache  <code class="program"><a href="../programs/httpd.html">httpd</a></code>后台守护进程的功能。</p>
+
+     <p><code>apachectl</code>脚本有两种操作模式。首先，作为简单的<code class="program"><a href="../programs/httpd.html">httpd</a></code>的前端程序，设置所有必要的环境变量，然后启动<code class="program"><a href="../programs/httpd.html">httpd</a></code> ，并传递所有的命令行参数。其次，作为SysV初始化脚本，接受简单的一个单词的参数，如：<code>start</code>, <code>restart</code>, <code>stop</code> ，并把他们翻译为适当的信号发送给<code class="program"><a href="../programs/httpd.html">httpd</a></code> 。</p>
+
+     <p>如果你的Apache安装在非标准的路径中，你将需要修改<code>apachectl</code>脚本使其中的路径正确地指向<code class="program"><a href="../programs/httpd.html">httpd</a></code>程序。此外，还可以指定任何必要的<code class="program"><a href="../programs/httpd.html">httpd</a></code>命令行参数。细节可以参见脚本中的注解。</p>
+
+     <p><code>apachectl</code>脚本如果执行成功，则返回0 ；如果出错，则其返回值&gt;0 。更多细节可以参见脚本中的注解。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="synopsis" id="synopsis">语法</a></h2>
+
+<p>在扮演传递角色时，<code>apachectl</code>可以接受对<code class="program"><a href="../programs/httpd.html">httpd</a></code>程序有效的所有参数。</p>
+
+<p><code><strong>apachectl</strong> [ <var>httpd-argument</var> ]</code></p>
+
+<p>在SysV初始化模式中，<code>apachectl</code>只接受简单的一个单词的命令，如下：</p>
+
+<p><code><strong>apachectl</strong> <var>command</var></code></p>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="options" id="options">选项</a></h2>
+
+<p>下列仅说明了SysV初始化类型的选项，其他参数的说明见<code class="program"><a href="../programs/httpd.html">httpd</a></code>手册页。</p>
+
+<dl>
+
+<dt><code>start</code></dt>
+
+<dd>启动Apache <code class="program"><a href="../programs/httpd.html">httpd</a></code>后台守护进程。如果已经启动，则产生一个错误。它等价于 <code>apachectl -k start</code> 。</dd>
+
+<dt><code>stop</code></dt>
+
+<dd>停止Apache <code class="program"><a href="../programs/httpd.html">httpd</a></code>后台守护进程。它等价于 <code>apachectl -k stop</code> 。</dd>
+
+<dt><code>restart</code></dt>
+
+<dd>重新启动Apache <code class="program"><a href="../programs/httpd.html">httpd</a></code>后台守护进程。如果守护进程尚未运行，则启动它。在重新启动守护进程之前，此命令会使用<code>configtest</code>自动检查配置文件，以确保Apache不会死掉。它等价于 <code>apachectl -k restart</code> 。</dd>
+
+<dt><code>fullstatus</code></dt>
+
+<dd>显示由<code class="module"><a href="../mod/mod_status.html">mod_status</a></code>提供的完整的状态报告。要使用这个功能，需要启用服务器上的<code class="module"><a href="../mod/mod_status.html">mod_status</a></code>模块，并且系统中有一个基于文本的浏览器，如<code>lynx</code> 。修改脚本中的<code>STATUSURL</code>变量，可以修改访问状态报告的URL 。</dd>
+
+<dt><code>status</code></dt>
+
+<dd>显示一个简要的状态报告。它类似于<code>fullstatus</code>选项，但是省略了正在处理的请求的列表。</dd>
+
+<dt><code>graceful</code></dt>
+
+<dd>优雅地重新启动Apache <code class="program"><a href="../programs/httpd.html">httpd</a></code>后台守护进程。如果守护进程尚未启动，则启动它。它和标准重新启动的不同之处在于：不会中断当前已经打开的连接，也不会立即关闭日志。这意味着，如果在日志滚动脚本使用它，则在处理日志之前必须加入一个实实在在的延迟，以确保老的日志文件在被处理前已经关闭。在重新启动守护进程之前，此命令会使用<code>configtest</code>自动检查配置文件，以确保Apache不会死掉。它等价于 <code>apachectl -k graceful</code> 。</dd>
+
+<dt><code>graceful-stop</code></dt>
+
+<dd>优雅地停止Apache <code class="program"><a href="../programs/httpd.html">httpd</a></code>后台守护进程。它和标准停止的不同之处在于：不会中断当前已经打开的连接，也不会立即关闭日志。它等价于  <code>apachectl -k graceful-stop</code> 。</dd>
+
+<dt><code>configtest</code></dt>
+
+<dd>执行一次配置文件语法检查。它解析配置文件，并报告 <code>Syntax Ok</code> 或者是特定的语法错误详细信息。它等价于 <code>apachectl -t</code> 。</dd>
+</dl>
+
+<p>下列选项仅在早期版本中使用，现在已经被废弃了。</p>
+
+<dl>
+
+<dt><code>startssl</code></dt>
+
+<dd>以支持SSL的方式启动<code class="program"><a href="../programs/httpd.html">httpd</a></code> ，你应当编辑配置文件，并在其中包含与SSL支持相关的指令，然后使用 <code>apachectl start</code> 启动服务器。</dd>
+
+</dl>
+
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

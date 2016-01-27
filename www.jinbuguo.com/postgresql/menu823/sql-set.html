@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SET</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-selectinto.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-selectinto.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-set-constraints.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-set-constraints.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-SET"></a>SET</h1>
+<div class="REFNAMEDIV"><a name="AEN54311"></a><h2>名称</h2>SET&nbsp;--&nbsp;修改运行时参数</div>
+<a name="AEN54314"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN54316"></a><h2>语法</h2>
+<pre class="SYNOPSIS">SET [ SESSION | LOCAL ] <tt class="REPLACEABLE"><i>configuration_parameter</i></tt> { TO | = } { <tt class="REPLACEABLE"><i>value</i></tt> | '<tt class="REPLACEABLE"><i>value</i></tt>' | DEFAULT }
+SET [ SESSION | LOCAL ] TIME ZONE { <tt class="REPLACEABLE"><i>timezone</i></tt> | LOCAL | DEFAULT }</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54322"></a><h2>描述</h2>
+<p><tt class="COMMAND">SET</tt> 命令修改运行时配置参数。许多在<a href="runtime-config.html">章17</a>里面列出的运行时参数可以用 <tt class="COMMAND">SET</tt> 在运行时设置。但是有些要求使用超级用户权限来修改，而其它有些则在服务器或者会话开始之后不能修改。请注意 <tt class="COMMAND">SET</tt> 只影响当前会话使用的数值。</p>
+<p>如果 <tt class="COMMAND">SET</tt> 或 <tt class="COMMAND">SET SESSION</tt> 是在一个稍后退出的事务里发出的，那么 <tt class="COMMAND">SET</tt> 命令的效果将在事务回滚之后消失。一旦包围它的事务提交，那么其效果将持续到事务的结束，除非被另外一个 <tt class="COMMAND">SET</tt> 覆盖。</p>
+<p>不管是否提交，<tt class="COMMAND">SET LOCAL</tt> 的效果只持续到当前事务结束。一个特例是在一个事务里面的 <tt class="COMMAND">SET</tt> 后面跟着一个 <tt class="COMMAND">SET LOCAL</tt> ：在事务结束之前只能看到 <tt class="COMMAND">SET LOCAL</tt> 的数值，但是之后(如果事务提交)，则是 <tt class="COMMAND">SET</tt> 的值生效。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54342"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">SESSION</tt></dt>
+<dd><p>声明这个命令只对当前会话起作用。如果 <tt class="LITERAL">SESSION</tt> 或 <tt class="LITERAL">LOCAL</tt> 都没出现，那么这个是缺省。</p></dd>
+<dt><tt class="LITERAL">LOCAL</tt></dt>
+<dd><p>声明该命令只在当前事务中有效。在 <tt class="COMMAND">COMMIT</tt> 或 <tt class="COMMAND">ROLLBACK</tt> 之后，会话级别的设置将再次生效。请注意如果在 <tt class="COMMAND">BEGIN</tt> 块之外运行，那么 <tt class="COMMAND">SET LOCAL</tt> 将表现出没有作用，因为事务将立即结束。</p></dd>
+<dt><tt class="REPLACEABLE"><i>configuration_parameter</i></tt></dt>
+<dd><p>可设置的运行时参数的名字。可用的参数在<a href="runtime-config.html">章17</a>和下面有文档。</p></dd>
+<dt><tt class="REPLACEABLE"><i>value</i></tt></dt>
+<dd><p>参数的新值。值可以声明为字符串常量、标识符、数字，或者逗号分隔的上面这些东西的列表。<tt class="LITERAL">DEFAULT</tt> 可以用于把这些参数设置为它们的缺省值。</p></dd>
+</dl>
+</div>
+<p>除了在<a href="runtime-config.html">章17</a>里面有文档记载的配置参数之外，还有几个只能用 <tt class="COMMAND">SET</tt> 命令设置，或者是有特殊的语法的参数。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">NAMES</tt></dt>
+<dd><p><tt class="LITERAL">SET NAMES <tt class="REPLACEABLE"><i>value</i></tt></tt> 是 <tt class="LITERAL">SET client_encoding TO <tt class="REPLACEABLE"><i>value</i></tt></tt> 的别名。</p></dd>
+<dt><tt class="LITERAL">SEED</tt></dt>
+<dd><p>为随机数生成器(函数 <code class="FUNCTION">random</code>)设置内部的种子。允许的值是介于 0 和 1 之间的浮点数，然后它会被乘以 2<SUP>31</SUP>-1</p>
+<p>也可以通过调用 <code class="FUNCTION">setseed</code> 函数来设置种子：</p>
+<pre class="PROGRAMLISTING">SELECT setseed(<tt class="REPLACEABLE"><i>value</i></tt>);</pre></dd>
+<dt><tt class="LITERAL">TIME ZONE</tt></dt>
+<dd><p><tt class="LITERAL">SET TIME ZONE <tt class="REPLACEABLE"><i>value</i></tt></tt> 是 <tt class="LITERAL">SET timezone TO <tt class="REPLACEABLE"><i>value</i></tt></tt> 的一个别名。语法 <tt class="LITERAL">SET TIME ZONE</tt> 允许为时区设置特殊的语法。下面是有效值的例子：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">'PST8PDT'</tt></dt>
+<dd><p>加州伯克利的时区</p></dd>
+<dt><tt class="LITERAL">'Europe/Rome'</tt></dt>
+<dd><p>意大利时区</p></dd>
+<dt><tt class="LITERAL">-7</tt></dt>
+<dd><p>UTC 以西 7 小时的时区(等效于 PDT)</p></dd>
+<dt><tt class="LITERAL">INTERVAL '-08:00' HOUR TO MINUTE</tt></dt>
+<dd><p>UTC 以西 8 小时的时区(等效于 PST)</p></dd>
+<dt><tt class="LITERAL">LOCAL</tt><br><tt class="LITERAL">DEFAULT</tt></dt>
+<dd><p>将时区设置为你的本地时区(服务器操作系统缺省的那个)</p></dd>
+</dl>
+</div>
+<p>参阅 <a href="datatype-datetime.html#DATATYPE-TIMEZONES">节8.5.3</a> 获取有关时区的更多细节。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN54436"></a><h2>注意</h2>
+<p>函数 <code class="FUNCTION">set_config</code> 提供了等效的功能。参阅<a href="functions-admin.html">节9.20</a>。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54441"></a><h2>例子</h2>
+<p>设置模式搜索路径：</p>
+<pre class="PROGRAMLISTING">SET search_path TO my_schema, public;</pre>
+<p>把日期时间风格设置为传统的 POSTGRES 风格(日在月前)：</p>
+<pre class="SCREEN">SET datestyle TO postgres, dmy;</pre>
+<p>把时区设置为加州伯克利：</p>
+<pre class="SCREEN">SET TIME ZONE 'PST8PDT';</pre>
+<p>为意大利设置时区：</p>
+<pre class="SCREEN">SET TIME ZONE 'Europe/Rome';</pre>
+</div>
+<div class="REFSECT1"><a name="AEN54453"></a><h2>兼容性</h2>
+<p><tt class="LITERAL">SET TIME ZONE</tt> 扩展了在 SQL 标准里定义的语法。标准只允许有一个数字时区偏移，而 PostgreSQL 还允许完整更灵活的时区声明。所有其它的 <tt class="LITERAL">SET</tt> 特性都是 PostgreSQL 扩展。</p>
+</div>
+<div class="REFSECT1"><a name="AEN54460"></a><h2>又见</h2><a href="sql-reset.html"><i>RESET</i></a>, <a href="sql-show.html"><i>SHOW</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-selectinto.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-set-constraints.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SELECT INTO</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SET CONSTRAINTS</td></tr>
+</table>
+</div>
+</body></html>

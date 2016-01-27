@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ANALYZE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-alteruser.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-alteruser.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-begin.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-begin.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ANALYZE"></a>ANALYZE</h1>
+<div class="REFNAMEDIV"><a name="AEN45486"></a><h2>名称</h2>ANALYZE&nbsp;--&nbsp;收集与数据库有关的统计信息</div>
+<a name="AEN45489"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN45491"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ANALYZE [ VERBOSE ] [ <tt class="REPLACEABLE"><i>table</i></tt> [ (<tt class="REPLACEABLE"><i>column</i></tt> [, ...] ) ] ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN45495"></a><h2>描述</h2>
+<p><tt class="COMMAND">ANALYZE</tt> 收集表内容的统计信息，然后把结果保存在系统表 <tt class="LITERAL">pg_statistic</tt> 里。随后，查询规划器就可以使用这些统计帮助判断查询的最佳规划。</p>
+<p>如果没有参数，<tt class="COMMAND">ANALYZE</tt> 检查当前数据库里的所有表。如果有参数，<tt class="COMMAND">ANALYZE</tt> 只检查那个表。你还可以给出一列字段名字，这个时候只收集那些字段的统计信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45503"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">VERBOSE</tt></dt>
+<dd><p>显示处理过程的信息</p></dd>
+<dt><tt class="REPLACEABLE"><i>table</i></tt></dt>
+<dd><p>要分析的特定表(可能用模式名修饰)的名字。缺省是当前数据库里所有表。</p></dd>
+<dt><tt class="REPLACEABLE"><i>column</i></tt></dt>
+<dd><p>要分析的特定字段的名字。缺省是所有字段。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN45521"></a><h2>输出</h2>
+<p>如果声明了 <tt class="LITERAL">VERBOSE</tt> ，那么 <tt class="COMMAND">ANALYZE</tt> 将发出进度信息，表明当前正在处理的是哪行。同时打印有关改表的很多其它信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45526"></a><h2>注意</h2>
+<p>周期性地运行 <tt class="COMMAND">ANALYZE</tt> ，或者在对表的大部分内容做了更改之后马上运行它是个好习惯，准确的统计信息将帮助规划器选择最合适的查询规划，并因此改善查询处理的速度。一种比较经常采用的策略是每天在低负荷的时候运行一次 <a href="sql-vacuum.html"><i>VACUUM</i></a> 和 <tt class="COMMAND">ANALYZE</tt> 。</p>
+<p>和 <tt class="COMMAND">VACUUM FULL</tt> 不同的是，<tt class="COMMAND">ANALYZE</tt> 只需要在目标表上有一个读取锁，因此它可以和表上的其它活动并发地运行。</p>
+<p><tt class="COMMAND">ANALYZE</tt> 收集的统计信息通常包括每个字段最常用数值的列表以及显示每个字段里数据近似分布的包线图。如果 <tt class="COMMAND">ANALYZE</tt> 认为它们都没有什么用(比如在一个拥有唯一约束的字段上没有公共的数值)或者是该字段数据类型不支持相关的操作符，那么它们都可以忽略。在<a href="maintenance.html">章22</a>中有关于统计的更多信息。</p>
+<p>对于大表，<tt class="COMMAND">ANALYZE</tt> 采集表内容的一个随机抽样做统计，而不是检查每一行。这样就保证了即使是在很大的表上也只需要很少时间就可以完成分析。不过，要注意的是统计只是近似的结果，而且每次运行 <tt class="COMMAND">ANALYZE</tt> 都会导致 <tt class="COMMAND">EXPLAIN</tt> 显示的规划器的预期开销有一些小变化，即使表内容实际上没有改变也这样。在很小的概率的情况下，这个不确定的行为会导致查询优化器在不同 <tt class="COMMAND">ANALYZE</tt> 之间选择不同的查询规划。为了避免这个问题，可以提高 <tt class="COMMAND">ANALYZE</tt> 收集的统计数量，像下面描述的那样。</p>
+<p>分析的广度可以通过用调整 <a href="runtime-config-query.html#GUC-DEFAULT-STATISTICS-TARGET">default_statistics_target</a> 配置变量，或者是以每字段为基础通过用 <tt class="COMMAND">ALTER TABLE ... ALTER COLUMN ... SET STATISTICS</tt> (参阅 <a href="sql-altertable.html"><i>ALTER TABLE</i></a>)设置每字段的统计目标来控制。目标数值设置最常用数值列表中的记录的最大数目以及包线图中的最大块数。缺省的目标数值是 10 ，不过可以调节这个数值获取规划器计算精度和 <tt class="COMMAND">ANALYZE</tt> 运行所需要的时间以及 <tt class="LITERAL">pg_statistic</tt> 里面占据的空间数目之间的平衡。特别是，把统计目标设置为零就关闭了该字段的统计收集。这么做对那些从来不参与到查询的 <tt class="LITERAL">WHERE</tt>, <tt class="LITERAL">GROUP BY</tt>, <tt class="LITERAL">ORDER BY</tt> 子句里的字段是很有用的，因为规划器不会使用到这样的字段上的统计。</p>
+<p>在被分析的字段中最大的统计目标决定统计采样的行数。增大目标会导致 <tt class="COMMAND">ANALYZE</tt> 的时候成比例地增大对时间和空间的需求。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45556"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">ANALYZE</tt> 语句。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-alteruser.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-begin.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ALTER USER</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">BEGIN</td></tr>
+</table>
+</div>
+</body></html>

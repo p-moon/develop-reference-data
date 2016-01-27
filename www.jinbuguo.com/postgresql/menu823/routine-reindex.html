@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>经常重建索引</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="routine-vacuuming.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="maintenance.html">快退</a></td><td width="60%" align="center" valign="bottom">章22. 日常数据库维护工作</td><td width="10%" align="right" valign="top"><a href="maintenance.html">快进</a></td><td width="10%" align="right" valign="top"><a href="logfile-maintenance.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="ROUTINE-REINDEX">22.2. 经常重建索引</a></h1><a name="AEN24747"></a>
+<p>有时候我们值得用 <a href="sql-reindex.html"><i>REINDEX</i></a> 命令周期性重建索引。</p>
+<p>在 PostgreSQL 版本 7.4 之前，我们经常有必要避免"索引膨胀"，因为缺乏在 B-tree 索引内部的空间恢复机制。一个情况就是索引健字的范围随着时间而变化。比如，一个在时间戳上的索引随着时间的推移，旧的记录会最终被删除，因为那些用于不再使用的键字范围的索引页面不能得到重复使用，就会导致膨胀。随着时间的推移，索引的尺寸可能会变得比里面有用的数据大得多。</p>
+<p>从 PostgreSQL 7.4开始，那些已经完全清空的索引页会得到重复使用。不过这样仍然会有不充分使用空间的可能：如果一个页面中大多数索引键字被删除，只留下很少的部分，那么该页仍然将被分配。所以，如果使用模式是这样的：每个范围里除了少数键字之外，其它大部分键字最终都被删除；那么这样也会导致空间的低效使用。膨胀的可能性不是无穷的，最差的情况是每个页面至少还有一个键字，但是对这样的使用模式，我们可能仍然值得安排周期性的重建索引。</p>
+<p>对于非 B-tree 索引的膨胀可能还没有很好地定量分析。在使用非 B-tree 索引的时候保持对索引的物理尺寸的监控是个很好的主意。</p>
+<p>还有，对于 B-tree 索引，一个新建立的索引从某种意义上比更新了多次的访问起来要快，因为在新建立的索引上，逻辑上连接的页面通常物理上也连接在一起(这样的考虑目前并不适用于非 B-tree 索引)。仅仅从提高访问速度角度出发，可能我们也值得周期性的重建索引。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="routine-vacuuming.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="logfile-maintenance.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">日常清理</td><td width="34%" align="center" valign="top"><a href="maintenance.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">日志文件维护</td></tr>
+</table>
+</div>
+</body></html>

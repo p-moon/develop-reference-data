@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_dumpall</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="app-pgdump.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="app-pgdump.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-pgrestore.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-pgrestore.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-PG-DUMPALL"></a><span class="APPLICATION">pg_dumpall</span></h1>
+<div class="REFNAMEDIV"><a name="AEN57465"></a><h2>名称</h2>pg_dumpall&nbsp;--&nbsp;将一个数据库集群转储到一个脚本文件中</div>
+<a name="AEN57469"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN57471"></a><h2>语法</h2>
+<p><tt class="COMMAND">pg_dumpall</tt> [<tt class="REPLACEABLE"><i>option</i></tt>...]</p>
+</div>
+<div class="REFSECT1"><a name="APP-PG-DUMPALL-DESCRIPTION"></a><h2>描述</h2>
+<p><span class="APPLICATION">pg_dumpall</span> 可以转储一个数据库集群里的所有数据库到一个脚本文件。该脚本文件包含可以用于作为 <a href="app-psql.html"><span class="APPLICATION">psql</span></a> 输入的 SQL 命令，从而恢复数据库。它通过对数据库集群里的每个数据库调用 <a href="app-pgdump.html">pg_dump</a> 实现这个功能。<span class="APPLICATION">pg_dumpall</span> 还转储出所有数据库公用的全局对象。而 <span class="APPLICATION">pg_dump</span> 并不保存这些对象。这些信息包括数据库用户和组以及适用于整个数据库的访问权限。</p>
+<p>因为 <span class="APPLICATION">pg_dumpall</span> 从所有数据库中读取表，所以你很可能需要以数据库超级用户的身份连接，这样才能生成完整的转储。同样，你也需要超级用户的权限执行保存下来的脚本，这些才能增加用户和组，以及创建数据库。</p>
+<p>SQL 脚本将写出到标准输出。你应该使用合适的 shell 操作符把它重定向到文件。</p>
+<p><span class="APPLICATION">pg_dumpall</span> 需要和 PostgreSQL 服务器连接多次(每个数据库一次)。如果你使用口令认证，可能每次都会询问口令。这种情况下写一个 <tt class="FILENAME">~/.pgpass</tt> 可能会比较方便。参阅<a href="libpq-pgpass.html">节29.13</a>获取更多信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN57495"></a><h2>选项</h2>
+<p>下列命令行参数用于控制输出格式：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-a</tt><br><tt class="OPTION">--data-only</tt></dt>
+<dd><p>只转储数据，不转储模式(数据定义)。</p></dd>
+<dt><tt class="OPTION">-c</tt><br><tt class="OPTION">--clean</tt></dt>
+<dd><p>在转储结果中包含那些重建之前清理(drop)数据库对象的 SQL 命令。对规则和表空间的 <tt class="COMMAND">DROP</tt> 也会添加进来。</p></dd>
+<dt><tt class="OPTION">-d</tt><br><tt class="OPTION">--inserts</tt></dt>
+<dd><p>把数据转储为 <tt class="COMMAND">INSERT</tt> 命令(而不是 <tt class="COMMAND">COPY</tt>)。这样将令恢复过程非常缓慢，这个选项主要用于制作那种可以用于其它非 PostgreSQL 数据库的转储。请注意，如果你重新排列了字段顺序，那么恢复可能会完全失败。<tt class="OPTION">-D</tt> 更安全，但是也更慢。</p></dd>
+<dt><tt class="OPTION">-D</tt><br><tt class="OPTION">--column-inserts</tt><br><tt class="OPTION">--attribute-inserts</tt></dt>
+<dd><p>把数据转储为带有明确字段名的 <tt class="COMMAND">INSERT</tt> 命令(<tt class="LITERAL">INSERT INTO <tt class="REPLACEABLE"><i>table</i></tt> (<tt class="REPLACEABLE"><i>column</i></tt>, ...) VALUES ...</tt>)。这样会导致恢复非常缓慢，它主要用于制作那种可以用于其它非 PostgreSQL 数据库的转储。</p></dd>
+<dt><tt class="OPTION">-g</tt><br><tt class="OPTION">--globals-only</tt></dt>
+<dd><p>只转储全局对象(角色和表空间)，而不转储数据库。</p></dd>
+<dt><tt class="OPTION">-i</tt><br><tt class="OPTION">--ignore-version</tt></dt>
+<dd><p>忽略 <span class="APPLICATION">pg_dumpall</span> 和数据库服务器之间的版本差别。</p>
+<p><span class="APPLICATION">pg_dumpall</span> 可以处理老版本的 PostgreSQL 的数据库，但是太老的数据库就不再支持了(目前到 7.0)。如果你需要跳过版本检查，那么可以使用这个选项(如果 <span class="APPLICATION">pg_dumpall</span> 失败了，可别说我们没警告过你。)</p></dd>
+<dt><tt class="OPTION">-o</tt><br><tt class="OPTION">--oids</tt></dt>
+<dd><p>作为数据的一部分，为每个表都输出对象标识(OID)。如果你的应用需要 OID 字段的话(比如在外键约束中用到)，那么使用这个选项。否则，不应该使用这个选项。</p></dd>
+<dt><tt class="OPTION">-O</tt><br><tt class="OPTION">--no-owner</tt></dt>
+<dd><p>不把对象的所有权设置为对应源数据库。<span class="APPLICATION">pg_dumpall</span> 默认发出 <tt class="COMMAND">ALTER OWNER</tt> 或 <tt class="COMMAND">SET SESSION AUTHORIZATION</tt> 语句以设置创建的数据库对象的所有权。如果这些脚本将来没有被超级用户(或者拥有脚本中全部对象的用户)运行的话将会失败。<tt class="OPTION">-O</tt> 选项就是为了让该脚本可以被任何用户恢复并且将脚本中对象的所有权赋予该选项指定的用户。</p></dd>
+<dt><tt class="OPTION">-s</tt><br><tt class="OPTION">--schema-only</tt></dt>
+<dd><p>只输出对象定义(模式)，不输出数据。</p></dd>
+<dt><tt class="OPTION">-S <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--superuser=<tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>指定关闭触发器时需要用到的超级用户名。它只有使用了 <tt class="OPTION">--disable-triggers</tt> 的时候才有影响。一般情况下最好不要输入这个参数，而是用超级用户启动生成的脚本。</p></dd>
+<dt><tt class="OPTION">-v</tt><br><tt class="OPTION">--verbose</tt></dt>
+<dd><p>指定冗余模式。这样将令 <span class="APPLICATION">pg_dumpall</span> 输出详细的对象评注以及转储文件的启停时间和进度信息到标准错误上。它将同时启用 <span class="APPLICATION">pg_dump</span> 的冗余输出。</p></dd>
+<dt><tt class="OPTION">-x</tt><br><tt class="OPTION">--no-privileges</tt><br><tt class="OPTION">--no-acl</tt></dt>
+<dd><p>禁止转储访问权限(grant/revoke 命令)</p></dd>
+<dt><tt class="OPTION">--disable-dollar-quoting</tt></dt>
+<dd><p>这个选项关闭使用美元符界定函数体。强制它们用 SQL 标准的字符串语法的引号包围。</p></dd>
+<dt><tt class="OPTION">--disable-triggers</tt></dt>
+<dd><p>这个选项只是和创建仅有数据的转储相关。它告诉 <span class="APPLICATION">pg_dumpall</span> 包含在恢复数据时临时关闭目标表上触发器的命令。如果在表上有参照完整性检查或者其它触发器，而恢复数据的时候不想重载他们，那么就应该使用这个选项。</p>
+<p>目前，为 <tt class="OPTION">--disable-triggers</tt> 发出的命令必须以超级用户来执行。因此，你应该同时用 <tt class="OPTION">-S</tt> 声明一个超级用户名，或者最好是用一个超级用户的身份来启动这个生成的脚本。</p></dd>
+<dt><tt class="OPTION">--use-set-session-authorization</tt></dt>
+<dd><p>输出符合 SQL 标准的 <tt class="COMMAND">SET SESSION AUTHORIZATION</tt> 命令而不是 <tt class="COMMAND">ALTER OWNER</tt> 命令。这样令转储更加符合标准，但是如果转储文件中的对象的历史有些问题，那么可能不能正确恢复。</p></dd>
+</dl>
+</div>
+<p>下面的命令行参数控制数据库的连接参数。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt>-h <tt class="REPLACEABLE"><i>host</i></tt></dt>
+<dd><p>指定运行服务器的主机名。如果数值以斜杠开头，则被用作到 Unix 域套接字的路径。缺省从 <tt class="ENVAR">PGHOST</tt> 环境变量中获取(如果设置了的话)，否则，尝试一个 Unix 域套接字连接。</p></dd>
+<dt>-p <tt class="REPLACEABLE"><i>port</i></tt></dt>
+<dd><p>指定服务器正在侦听的 TCP 端口或本地 Unix 域套接字文件的扩展(描述符)。缺省使用 <tt class="ENVAR">PGPORT</tt> 环境变量(如果设置了的话)，否则，编译时的缺省值。</p></dd>
+<dt>-U <tt class="REPLACEABLE"><i>username</i></tt></dt>
+<dd><p>连接的用户名</p></dd>
+<dt>-W</dt>
+<dd><p>强制口令提示。如果服务器需要口令认证，那么这个动作应该自动发生。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN57657"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGHOST</tt><br><tt class="ENVAR">PGPORT</tt><br><tt class="ENVAR">PGUSER</tt></dt>
+<dd><p>缺省连接参数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN57669"></a><h2>注意</h2>
+<p>因为 <span class="APPLICATION">pg_dumpall</span> 在内部调用 <span class="APPLICATION">pg_dump</span> ，所以，一些诊断信息可以参考 <span class="APPLICATION">pg_dump</span></p>
+<p>恢复完之后，建议在每个已恢复的对象上运行 <tt class="COMMAND">ANALYZE</tt> 。这样优化器就可以得到有用的统计。你也可以用 <tt class="COMMAND">vacuumdb -a -z</tt> 清理所有数据库。</p>
+<p><span class="APPLICATION">pg_dumpall</span> 要求所有需要的表空间目录在进行恢复之前就必须存在，否则在非标准位置创建数据库将会失败。</p>
+</div>
+<div class="REFSECT1"><a name="APP-PG-DUMPALL-EX"></a><h2>例子</h2>
+<p>转储所有数据库：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">pg_dumpall &gt; db.out</kbd></pre>
+<p>恢复刚才的转储结果：</p>
+<pre class="SCREEN"><samp class="PROMPT">$</samp> <kbd class="USERINPUT">psql -f db.out postgres</kbd></pre>
+<p>执行这个命令的时候连接到哪个数据库无关紧要，因为 <span class="APPLICATION">pg_dumpall</span> 创建的脚本将会包含恰当的创建和连接数据库的命令。</p>
+</div>
+<div class="REFSECT1"><a name="AEN57691"></a><h2>又见</h2>
+<p>看看 <a href="app-pgdump.html">pg_dump</a> 获取可能的错误条件的详细信息。又见所支持的环境变量(<a href="libpq-envars.html">节29.12</a>)。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="app-pgdump.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-pgrestore.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">pg_dump</td><td width="34%" align="center" valign="top"><a href="reference-client.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">pg_restore</td></tr>
+</table>
+</div>
+</body></html>

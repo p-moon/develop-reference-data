@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_shdepend</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-rewrite.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-shdescription.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-SHDEPEND">43.29. <tt class="STRUCTNAME">pg_shdepend</tt></a></h1><a name="AEN64581"></a>
+<p><tt class="STRUCTNAME">pg_shdepend</tt> 记录数据库对象和共享对象(比如角色)之间的依赖性关系。这些信息允许 PostgreSQL 保证在企图删除这些对象之前，这些对象是没有被引用的。</p>
+<p><a href="catalog-pg-depend.html"><tt class="STRUCTNAME">pg_depend</tt></a> 表的作用类似，只是它是用于在一个数据库内部的对象的依赖性关系的。</p>
+<p>和其它大多数系统表不同，<tt class="STRUCTNAME">pg_shdepend</tt> 是在集群里面所有的数据库之间共享的：每个数据库集群只有一个 <tt class="STRUCTNAME">pg_shdepend</tt> ，而不是每个数据库一个。</p>
+<div class="TABLE"><a name="AEN64592"></a>
+<p><b>表43-29. <tt class="STRUCTNAME">pg_shdepend</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">dbid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-database.html"><tt class="STRUCTNAME">pg_database</tt></a>.oid</tt></td><td>依赖对象所在的数据库的 OID ，如果是共享对象，则为零</td></tr>
+<tr><td><tt class="STRUCTFIELD">classid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-class.html"><tt class="STRUCTNAME">pg_class</tt></a>.oid</tt></td><td>依赖对象所在的系统表的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">objid</tt></td><td><tt class="TYPE">oid</tt></td><td>任意 oid 属性</td><td>指定的依赖对象的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">refclassid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-class.html"><tt class="STRUCTNAME">pg_class</tt></a>.oid</tt></td><td>被引用对象所在的系统表的 OID(必须是一个共享表)</td></tr>
+<tr><td><tt class="STRUCTFIELD">refobjid</tt></td><td><tt class="TYPE">oid</tt></td><td>任意 oid 属性</td><td>指定的被引用对象的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">deptype</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td>一段代码，定义了这个依赖性关系的特定语义；参阅下文。</td></tr>
+</tbody>
+</table>
+</div>
+<p>在任何情况下，一条 <tt class="STRUCTNAME">pg_shdepend</tt> 记录就表面这个被引用的对象不能在未删除依赖对象的前提下删除。不过，<tt class="STRUCTFIELD">deptype</tt> 同时还标出了几种不同的子风格：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="SYMBOL">SHARED_DEPENDENCY_OWNER</tt> (<tt class="LITERAL">o</tt>)</dt>
+<dd><p>被引用的对象(必须是一个角色)是依赖对象的所有者。</p></dd>
+<dt><tt class="SYMBOL">SHARED_DEPENDENCY_ACL</tt> (<tt class="LITERAL">a</tt>)</dt>
+<dd><p>被引用的对象(必须是一个角色)在依赖对象的 ACL(访问控制列表，也就是权限列表)里提到。<tt class="SYMBOL">SHARED_DEPENDENCY_ACL</tt> 不会在对象的所有者头上添加的，因为所有者会有一个 <tt class="SYMBOL">SHARED_DEPENDENCY_OWNER</tt> 记录。</p></dd>
+<dt><tt class="SYMBOL">SHARED_DEPENDENCY_PIN</tt> (<tt class="LITERAL">p</tt>)</dt>
+<dd><p>没有依赖对象；这类记录标识系统自身依赖于该被依赖对象，因此这样的对象绝对不能被删除。这种类型的记录只是由 <tt class="COMMAND">initdb</tt> 创建。这样的依赖对象的字段都是零。</p></dd>
+</dl>
+</div>
+<p>其它依赖性的风格可能在将来会出现。请注意，目前的定义只是支持把角色当作被引用对象。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-rewrite.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-shdescription.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_rewrite</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_shdescription</tt></td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>组合多个索引</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="indexes-multicolumn.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="indexes.html">快退</a></td><td width="60%" align="center" valign="bottom">章11. 索引</td><td width="10%" align="right" valign="top"><a href="indexes.html">快进</a></td><td width="10%" align="right" valign="top"><a href="indexes-unique.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INDEXES-BITMAP-SCANS">11.4. 组合多个索引</a></h1><a name="AEN16120"></a><a name="AEN16123"></a>
+<p>一个单独的索引扫描只能用于这样的条件子句：使用被索引字段和索引操作符类中操作符，并这些条件以 <tt class="LITERAL">AND</tt> 连接。假设在 <tt class="LITERAL">(a, b)</tt> 上有一个索引，那么类似 <tt class="LITERAL">WHERE a = 5 AND b = 6</tt> 的条件可以使用索引，但是像 <tt class="LITERAL">WHERE a = 5 OR b = 6</tt> 的条件就不能直接使用索引。</p>
+<p>从版本 8.1 开始，PostgreSQL 能够组合多个索引(包括同一索引的多次使用)来处理单个索引扫描不能实现的情况。系统可以在多个索引扫描之间组成 <tt class="LITERAL">AND</tt> 和 <tt class="LITERAL">OR</tt> 条件。比如，一个类似 <tt class="LITERAL">WHERE x = 42 OR x = 47 OR x = 53 OR x = 99</tt> 这样的查询可以分解成四个在 <tt class="LITERAL">x</tt> 上的独立扫描，每个扫描使用一个条件，最后将这些扫描的结果 OR 在一起，生成最终结果。另外一个例子是，如果我们在 <tt class="LITERAL">x</tt> 和 <tt class="LITERAL">y</tt> 上有独立的索引，一个类似 <tt class="LITERAL">WHERE x = 5 AND y = 6</tt> 这样的查询可以分解为几个使用独立索引的子句，然后把这几个结果 AND 在一起，生成最终结果。</p>
+<p>为了组合多个索引，系统扫描每个需要的索引，然后在内存里组织一个<i class="FIRSTTERM">位图</i>，它给出索引扫描报告中符合索引条件的表数据行位置。然后，根据查询的需要，把这个位图使用 AND 和 OR 合并在一起。最后，访问实际的表检索并返回数据行。表的数据行是按照物理顺序进行访问的，因为那就是位图的布局；这就意味着任何原来的索引排序都将消失，而如果查询有一个 <tt class="LITERAL">ORDER BY</tt> 子句，那么还会有一个额外的排序步骤。因为这个原因，以及每个额外的索引扫描都增加了额外的时间，规划器有时候会选择使用简单的索引扫描，即使有多个索引可用也如此。</p>
+<p>在大多数最简单的应用里，可能有多种索引组合都是有用的，数据库开发人员必须在使用哪个索引之间作出平衡。有时候多字段索引是最好的，有时候创建一个独立索引并依靠索引组合是最好的。比如，假如你的查询有时候只涉及字段 <tt class="LITERAL">x</tt> ，有时候只涉及字段 <tt class="LITERAL">y</tt> ，有时候两个字段都涉及，那么你可能会选择在 <tt class="LITERAL">x</tt> 和 <tt class="LITERAL">y</tt> 上创建两个独立的索引，然后依靠索引组合来处理同时使用两个字段的查询。你也可以在 <tt class="LITERAL">(x, y)</tt> 上创建一个多字段索引，它在同时使用两个字段的查询通常比索引组合更高效，但是，正如我们在<a href="indexes-multicolumn.html">节11.3</a>里面讨论的，它对那些只包含 <tt class="LITERAL">y</tt> 的查询几乎没有用，因此它不能是唯一一个索引。一个多字段索引和 <tt class="LITERAL">y</tt> 上的独立索引可能会更好。因为对那些只涉及 <tt class="LITERAL">x</tt> 的查询，可以使用多字段索引，但是它会更大，因此也比只在 <tt class="LITERAL">x</tt> 上的索引更慢。最后一个选择是创建三个索引，但是这种方法只有在表的更新远比查询少得多，并且所有三种查询都很普遍的情况下才是合理的。如果其中一种查询比其它的少很多，那么你可能更愿意仅仅创建两种匹配更常见查询的索引。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="indexes-multicolumn.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="indexes-unique.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">多字段索引</td><td width="34%" align="center" valign="top"><a href="indexes.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">唯一索引</td></tr>
+</table>
+</div>
+</body></html>

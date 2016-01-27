@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_type</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-trigger.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="views-overview.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-TYPE">43.34. <tt class="STRUCTNAME">pg_type</tt></a></h1><a name="AEN65029"></a>
+<p><tt class="STRUCTNAME">pg_type</tt> 存储有关数据类型的信息。基本类型(标量类型)是用 <a href="sql-createtype.html"><i>CREATE TYPE</i></a> 创建的，域是使用 <a href="sql-createdomain.html"><i>CREATE DOMAIN</i></a> 创建的。同时还为数据库中每个表自动创建一个复合类型，以表示该表的行结构。还可以用 <tt class="COMMAND">CREATE TYPE AS</tt> 创建复合类型。</p>
+<div class="TABLE"><a name="AEN65036"></a>
+<p><b>表43-34. <tt class="STRUCTNAME">pg_type</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">typname</tt></td><td><tt class="TYPE">name</tt></td><td>&nbsp;</td><td>数据类型名字</td></tr>
+<tr><td><tt class="STRUCTFIELD">typnamespace</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-namespace.html"><tt class="STRUCTNAME">pg_namespace</tt></a>.oid</tt></td><td>包含这个类型的名字空间的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">typowner</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-authid.html"><tt class="STRUCTNAME">pg_authid</tt></a>.oid</tt></td><td>该类型的所有者</td></tr>
+<tr><td><tt class="STRUCTFIELD">typlen</tt></td><td><tt class="TYPE">int2</tt></td><td>&nbsp;</td><td>对于定长类型是该类型内部表现形式的字节数目。对于变长类型是负数。-1 表示一种"变长"类型(有长度字属性的数据)，-2 表示这是一个 NULL 结尾的 C 字符串。</td></tr>
+<tr><td><tt class="STRUCTFIELD">typbyval</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>判断内部过程传递这个类型的数值时是通过传值还是传引用。如果该类型不是 1, 2, 4, 8 字节长将只能按应用传递，因此 <tt class="STRUCTFIELD">typbyval</tt> 最好是假。即使可以传值，<tt class="STRUCTFIELD">typbyval</tt> 也可以为假。比如 <tt class="TYPE">float4</tt> 就是如此。</td></tr>
+<tr><td><tt class="STRUCTFIELD">typtype</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td>对于基础类型是 <tt class="LITERAL">b</tt> ，对于复合类型是 <tt class="LITERAL">c</tt> (比如，一个表的行类型)。对于域类型是 <tt class="LITERAL">d</tt> ，对于伪类型是 <tt class="LITERAL">p</tt> 。又见 <tt class="STRUCTFIELD">typrelid</tt> 和 <tt class="STRUCTFIELD">typbasetype</tt></td></tr>
+<tr><td><tt class="STRUCTFIELD">typisdefined</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>如果定义了类型则为真，如果是一种尚未定义的类型的占位符则为假。如果为假，那么除了该类型名称，名字空间，和 OID 之外没有可靠的信息。</td></tr>
+<tr><td><tt class="STRUCTFIELD">typdelim</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td>当分析数组输入时，分隔两个此类型数值的字符请注意该分隔符是与数组元素数据类型相关联的，而不是和数组数据类型关联。</td></tr>
+<tr><td><tt class="STRUCTFIELD">typrelid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-class.html"><tt class="STRUCTNAME">pg_class</tt></a>.oid</tt></td><td>如果是复合类型(见 <tt class="STRUCTFIELD">typtype</tt>)那么这个字段指向 <tt class="STRUCTNAME">pg_class</tt> 中定义该表的行。对于自由存在的复合类型，<tt class="STRUCTNAME">pg_class</tt> 记录并不表示一个表，但是总需要它来查找该类型连接的 <tt class="STRUCTNAME">pg_attribute</tt> 记录。对于非复合类型为零。</td></tr>
+<tr><td><tt class="STRUCTFIELD">typelem</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-type.html"><tt class="STRUCTNAME">pg_type</tt></a>.oid</tt></td><td>如果不为 0 ，那么它标识 <tt class="STRUCTNAME">pg_type</tt> 里面的另外一行。当前类型可以当做一个产生类型为 <tt class="STRUCTFIELD">typelem</tt> 的数组来描述。一个"真正的"数组类型是变长的(<tt class="STRUCTFIELD">typlen</tt> = -1)，但是一些定长的(<tt class="STRUCTFIELD">typlen</tt> &gt; 0)类型也拥有非零的 <tt class="STRUCTFIELD">typelem</tt>(比如 <tt class="TYPE">name</tt> 和 <tt class="TYPE">point</tt>)。如果一个定长类型拥有一个 <tt class="STRUCTFIELD">typelem</tt> ，那么他的内部形式必须是 <tt class="STRUCTFIELD">typelem</tt> 数据类型的某个数目的个数值，不能有其它数据。变长数组类型有一个该数组子过程定义的头(文件)。</td></tr>
+<tr><td><tt class="STRUCTFIELD">typinput</tt></td><td><tt class="TYPE">regproc</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>输入转换函数(文本格式)</td></tr>
+<tr><td><tt class="STRUCTFIELD">typoutput</tt></td><td><tt class="TYPE">regproc</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>输出转换函数(文本格式)</td></tr>
+<tr><td><tt class="STRUCTFIELD">typreceive</tt></td><td><tt class="TYPE">regproc</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>输入转换函数(二进制格式)，如果没有则为 0</td></tr>
+<tr><td><tt class="STRUCTFIELD">typsend</tt></td><td><tt class="TYPE">regproc</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>输出转换函数(二进制格式)，如果没有则为 0</td></tr>
+<tr><td><tt class="STRUCTFIELD">typanalyze</tt></td><td><tt class="TYPE">regproc</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>自定义的 ANALYZE 函数，如果使用标准函数，则为 0</td></tr>
+<tr><td><tt class="STRUCTFIELD">typalign</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td><p>当存储此类型的数值时要求的对齐性质。它应用于磁盘存储以及该值在 PostgreSQL 内部的大多数形式。如果数值是连续存放的，比如在磁盘上以完全的裸数据的形式存放时，那么先在此类型的数据前填充空白，这样它就可以按照要求的界限存储。对齐引用是该序列中第一个数据的开头。</p>
+<p>可能的值有：</p>
+<ul>
+<li><p><tt class="LITERAL">c</tt> = <tt class="TYPE">char</tt> 对齐，也就是不需要对齐。</p></li>
+<li><p><tt class="LITERAL">s</tt> = <tt class="TYPE">short</tt> 对齐(在大多数机器上是 2 字节)</p></li>
+<li><p><tt class="LITERAL">i</tt> = <tt class="TYPE">int</tt> 对齐(在大多数机器上是 4 字节)</p></li>
+<li><p><tt class="LITERAL">d</tt> = <tt class="TYPE">double</tt> 对齐(在大多数机器上是 8 字节，但不一定是全部)</p></li>
+</ul>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>对于在系统表里使用的类型，在 <tt class="STRUCTNAME">pg_type</tt> 里定义的尺寸和对齐必须和编译器在一个表示表的一行的结构里的布局一样。</p>
+</blockquote>
+</div></td></tr>
+<tr><td><tt class="STRUCTFIELD">typstorage</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td><p>诉一个变长类型(那些有 <tt class="STRUCTFIELD">typlen</tt> = -1)的)说该类型是否准备好应付非常规值，以及对这种属性的类型的缺省策略是什么。可能的值有</p>
+<ul>
+<li><p><tt class="LITERAL">p</tt>: 数值总是以简单方式存储</p></li>
+<li><p><tt class="LITERAL">e</tt>: 数值可以存储在一个"次要"关系中(如果该关系有这么一个，参阅 <tt class="LITERAL">pg_class.reltoastrelid</tt>)</p></li>
+<li><p><tt class="LITERAL">m</tt>: 数值可以以内联的压缩方式存储</p></li>
+<li><p><tt class="LITERAL">x</tt>: 数值可以以内联的压缩方式或者在"次要"表里存储。</p></li>
+</ul>
+<p>请注意 <tt class="LITERAL">m</tt> 域也可以移到从属表里存储，但只是最后的解决方法(<tt class="LITERAL">e</tt> 和 <tt class="LITERAL">x</tt> 域先移走)。</p></td></tr>
+<tr><td><tt class="STRUCTFIELD">typnotnull</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td><p>代表在某类型上的一个 NOTNULL 约束。目前只用于域。</p></td></tr>
+<tr><td><tt class="STRUCTFIELD">typbasetype</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-type.html"><tt class="STRUCTNAME">pg_type</tt></a>.oid</tt></td><td><p>如果这是一个衍生类型(参阅 <tt class="STRUCTFIELD">typtype</tt>)，那么该标识作为这个类型的基础的类型。如果不是衍生类型则为零。</p></td></tr>
+<tr><td><tt class="STRUCTFIELD">typtypmod</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td><p>域使用 <tt class="STRUCTFIELD">typtypmod</tt> 记录要作用到它们的基础类型上的 <tt class="LITERAL">typmod</tt> (如果基础类型不使用 <tt class="LITERAL">typmod</tt> 则为 -1)。如果这种类型不是域，那么为 -1 。</p></td></tr>
+<tr><td><tt class="STRUCTFIELD">typndims</tt></td><td><tt class="TYPE">int4</tt></td><td>&nbsp;</td><td><p>如果一个域是数组，那么 <tt class="STRUCTFIELD">typndims</tt> 是数组维数的数值(也就是说，<tt class="STRUCTFIELD">typbasetype</tt> 是一个数组类型；域的 <tt class="STRUCTFIELD">typelem</tt> 将匹配基本类型的 <tt class="STRUCTFIELD">typelem</tt>)。非域非数组域为零。</p></td></tr>
+<tr><td><tt class="STRUCTFIELD">typdefaultbin</tt></td><td><tt class="TYPE">text</tt></td><td>&nbsp;</td><td><p>如果为非 NULL ，那么它是该类型缺省表达式的 <code class="FUNCTION">nodeToString()</code> 表现形式。目前这个字段只用于域。</p></td></tr>
+<tr><td><tt class="STRUCTFIELD">typdefault</tt></td><td><tt class="TYPE">text</tt></td><td>&nbsp;</td><td><p>如果某类型没有相关缺省值，那么 <tt class="STRUCTFIELD">typdefault</tt> 是 NULL 。如果 <tt class="STRUCTFIELD">typdefaultbin</tt> 不是 NULL ，那么 <tt class="STRUCTFIELD">typdefault</tt> 必须包含一个 <tt class="STRUCTFIELD">typdefaultbin</tt> 代表的缺省表达式的人类可读的版本。如果 <tt class="STRUCTFIELD">typdefaultbin</tt> 为 NULL 但 <tt class="STRUCTFIELD">typdefault</tt> 不是，那么 <tt class="STRUCTFIELD">typdefault</tt> 是该类型缺省值的外部表现形式，可以把它交给该类型的输入转换器生成一个常量。</p></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-trigger.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="views-overview.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_trigger</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">系统视图</td></tr>
+</table>
+</div>
+</body></html>

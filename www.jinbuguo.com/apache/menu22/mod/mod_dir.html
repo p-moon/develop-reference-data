@@ -1,0 +1,110 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_dir － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_dir</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>指定目录索引文件以及为目录提供"尾斜杠"重定向</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>dir_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_dir.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>目录的索引可以有两个来源：</p>
+
+    <ul>
+      <li>一个由用户编写的文件，通常叫：<code>index.html</code> 。<code class="module"><a href="../mod/mod_dir.html">mod_dir</a></code>提供的<code class="directive"><a href="#directoryindex">DirectoryIndex</a></code>指令用于设置这个文件名。</li>
+
+      <li>由服务器产生的一个列表。该功能由<code class="module"><a href="../mod/mod_autoindex.html">mod_autoindex</a></code>提供。</li>
+    </ul>
+    <p>这两个功能是相互独立的，所以你可以完全去除或替换索引的自动生成。</p> 
+
+    <p>因为对目录的请求需要以一个"/"结尾，所以当服务器接收到对 <code>http://servername/foo/dirname</code> 的请求时，若<code>dirname</code>是一个目录，则<code class="module"><a href="../mod/mod_dir.html">mod_dir</a></code>将会将其重定向到 <code>http://servername/foo/dirname/</code> 。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DirectoryIndex" id="DirectoryIndex">DirectoryIndex</a> <a name="directoryindex" id="directoryindex">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>当客户端请求一个目录时寻找的资源列表</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DirectoryIndex <var>local-url</var> [<var>local-url</var>] ...</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>DirectoryIndex index.html</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>Indexes</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dir</td></tr>
+</table>
+    <p><code class="directive">DirectoryIndex</code>指令设置了当客户端在请求的目录名的末尾刻意添加一个"/"以表示请求该目录的索引时，服务器需要寻找的资源列表。<var>Local-url</var>(%已解码的)是一个相对于被请求目录的文档的URL(通常是那个目录中的一个文件)。可以指定多个URL，服务器将返回最先找到的那一个。若一个也没有找到，并且那个目录设置了<code>Indexes</code>选项，服务器将会自动产生一个那个目录中的资源列表。</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      DirectoryIndex index.html
+    </code></p></div>
+
+    <p>上例配置指示对 <code>http://myserver/docs/</code> 的请求返回 <code>http://myserver/docs/index.html</code>(若存在)，或返回该目录下所有资源的列表。</p>
+
+    <p>注意，指定的文档不一定必须位于被请求的目录下，也可以指定一个绝对URL来指向其他位置：</p>
+
+    <div class="example"><p><code>
+      DirectoryIndex index.html index.txt  /cgi-bin/index.pl
+    </code></p></div>
+
+    <p>这样的设置将导致在<code>index.html</code>或<code>index.txt</code>都不存在的情况下执行CGI脚本<code>/cgi-bin/index.pl</code> 。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DirectorySlash" id="DirectorySlash">DirectorySlash</a> <a name="directoryslash" id="directoryslash">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>打开或关闭目录结尾斜线(/)自动补全功能</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DirectorySlash On|Off</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>DirectorySlash On</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>Indexes</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dir</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.0.51 及以后的版本中可用</td></tr>
+</table>
+    <p><code class="directive">DirectorySlash</code>指令决定<code class="module"><a href="../mod/mod_dir.html">mod_dir</a></code>是否通过在请求的URL结尾补上"/"使其重定向到其所指向的目录。</p>
+
+    <p>典型的，如果用户请求一个结尾没有"/"的资源，并且该资源指向一个目录，<code class="module"><a href="../mod/mod_dir.html">mod_dir</a></code>将通过在请求的URL结尾补上"/"使其重定向到其所指向的目录。默认开启自动补全功能有以下原因：</p>
+
+    <ul>
+    <li>用户最后使用了规范的URL来请求资源。</li>
+    <li><code class="module"><a href="../mod/mod_autoindex.html">mod_autoindex</a></code>将会正确工作。因为它不会自动补全路径，所以将会指向错误的路径。</li>
+    <li><code class="directive"><a href="#directoryindex">DirectoryIndex</a></code>将<em>只</em>评估有"/"结尾的目录。</li>
+    <li>html页面中的相对URL引用将会正确工作。</li>
+    </ul>
+
+    <p>如果你不希望这个自动补全功能生效，<em>并且</em>不在乎上述原因，你可以关闭它：</p>
+
+    <div class="example"><p><code>
+        # 请参见下面的安全警告<br />
+        &lt;Location /some/path&gt;<br />
+        <span class="indent">
+            DirectorySlash Off<br />
+            SetHandler some-handler<br />
+        </span>
+        &lt;/Location&gt;
+    </code></p></div>
+
+    <div class="warning"><h3>安全警告</h3>
+    <p>关闭目录自动重定向可能会导致信息泄漏。考虑<code class="module"><a href="../mod/mod_autoindex.html">mod_autoindex</a></code>被激活(<code>Options +Indexes</code>)并且<code class="directive"><a href="#directoryindex">DirectoryIndex</a></code>也正确设置到一个资源(比如：<code>index.html</code>)同时没有其他处理器用于URL的情况。此时，以"/"结尾的URL将得到<code>index.html</code>文件，而<strong>不以"/"结尾的请求将得到目录列表</strong>。</p>
+    </div>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

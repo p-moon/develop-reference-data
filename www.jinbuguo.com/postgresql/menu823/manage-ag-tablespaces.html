@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>表空间</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="manage-ag-dropdb.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="managing-databases.html">快退</a></td><td width="60%" align="center" valign="bottom">章19. 管理数据库</td><td width="10%" align="right" valign="top"><a href="managing-databases.html">快进</a></td><td width="10%" align="right" valign="top"><a href="client-authentication.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="MANAGE-AG-TABLESPACES">19.6. 表空间</a></h1><a name="AEN22945"></a>
+<p>PostgreSQL 里的表空间允许数据库管理员在文件系统里定义那些代表数据库对象的文件存放位置。一旦创建了表空间，那么就可以在创建数据库对象的时候引用它。</p>
+<p>通过使用表空间，管理员可以控制一个 PostgreSQL 安装的磁盘布局。这么做至少有两个用处。首先，如果初始化集群所在的分区或者卷用光了空间，而又不能逻辑上扩展或者别的什么操作，那么表空间可以在一个不同的分区上创建和使用，直到系统可以重新配置。</p>
+<p>第二，表空间允许管理员根据数据库对象的使用模式安排数据位置，从而优化性能。比如，一个很频繁使用的索引可以放在非常快并且非常可靠的磁盘上，比如一种非常贵的固态设备。而同时，一个存储归档的数据，很少使用的或者对性能要求不高的表可以存储在一个便宜但比较慢的磁盘系统上。</p>
+<p>要定义一个表空间，使用 <a href="sql-createtablespace.html"><i>CREATE TABLESPACE</i></a> 命令，比如：</p>
+<pre class="PROGRAMLISTING">CREATE TABLESPACE fastspace LOCATION '/mnt/sda1/postgresql/data';</pre>
+<p>这个位置必须是一个现有的空目录，并且属于 PostgreSQL 系统用户。所有随后在该表空间创建的对象都将被存放在这个目录下的文件里。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>通常在一个逻辑文件系统上建立多个表空间没有什么意义，因为无法控制一个逻辑文件系统里不同文件的位置。不过，PostgreSQL 并不做这方面的任何强制，并且它实际上并不知道文件系统边界。它只知道在指定的目录里存储文件。</p>
+</blockquote>
+</div>
+<p>创建表空间本身必须用数据库超级用户身份进行，但之后你就可以允许普通数据库用户利用它了。要做这件事情，在表空间上给这些用户授予 <tt class="LITERAL">CREATE</tt> 权限。</p>
+<p>表、索引和整个数据库都可以放在特定的表空间里。想要这么做的话，在给定表空间上有 <tt class="LITERAL">CREATE</tt> 权限的用户必须把表空间的名字以一个参数的形式传递给相关的命令。比如，下面的命令在表空间 <tt class="LITERAL">space1</tt> 上创建一个表：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE foo(i int) TABLESPACE space1;</pre>
+<p>另外，还可以使用 <a href="runtime-config-client.html#GUC-DEFAULT-TABLESPACE">default_tablespace</a> 参数：</p>
+<pre class="PROGRAMLISTING">SET default_tablespace = space1;
+CREATE TABLE foo(i int);</pre>
+<p>只要 <tt class="VARNAME">default_tablespace</tt> 被设置为非空字符串，那么它就为没有明确使用 <tt class="LITERAL">TABLESPACE</tt> 子句的 <tt class="COMMAND">CREATE TABLE</tt> 和 <tt class="COMMAND">CREATE INDEX</tt> 命令提供一个隐含的子句。</p>
+<p>与一个数据库相关联的表空间用于存储该数据库的系统表，以及任何使用该数据库的服务器进程创建的临时文件。另外，如果在创建数据库对象时没有给出 <tt class="LITERAL">TABLESPACE</tt> 子句(不管是明确的还是通过 <tt class="VARNAME">default_tablespace</tt>)，那么这是在该数据库里创建这些对象使用的缺省表空间。如果创建数据库时没有给它声明一个表空间，那么它使用与它拷贝的模版数据库相同的表空间。</p>
+<p><tt class="LITERAL">initdb</tt> 自动创建两个表空间。<tt class="LITERAL">pg_global</tt> 表空间用于共享的系统表。<tt class="LITERAL">pg_default</tt> 是 <tt class="LITERAL">template1</tt> 和 <tt class="LITERAL">template0</tt> 数据库的缺省表空间(因此，这个表空间也将是任何其它数据库的缺省表空间)。</p>
+<p>创建了表空间之后，它就可以用于任何数据库，只要请求的用户有足够权限。这意味着除非我们把使用这个表空间的所有数据库里的所有对象都删除掉，否则我们不能删除该表空间。</p>
+<p>要删除一个空的表空间，使用 <a href="sql-droptablespace.html"><i>DROP TABLESPACE</i></a> 命令。</p>
+<p>检查 <tt class="STRUCTNAME">pg_tablespace</tt> 系统表就可以获取现有的表空间，比如</p>
+<pre class="SYNOPSIS">SELECT spcname FROM pg_tablespace;</pre>
+<p><a href="app-psql.html"><span class="APPLICATION">psql</span></a> 程序的 <tt class="LITERAL">\db</tt> 元命令也可以用于列出现有表空间。</p>
+<p>为了简化表空间的实现，PostgreSQL 使用了大量符号连接。这就意味着表空间<span class="emphasis"><i class="EMPHASIS">只能</i></span>在支持符号连接的系统上使用。</p>
+<p>目录 <tt class="FILENAME">$PGDATA/pg_tblspc</tt> 包含指向集群里定义的每个非内置表空间的符号连接。尽管我们不建议，但是我们还是可能通过手工重定义这些连接来调整表空间的布局。两个警告：在服务器运行的时候不要这么干；并且在你重启服务器之后，更新 <tt class="STRUCTNAME">pg_tablespace</tt> 表以显示新的位置。如果你不这么做，<tt class="LITERAL">pg_dump</tt> 将继续显示旧的表空间位置。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="manage-ag-dropdb.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="client-authentication.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">删除数据库</td><td width="34%" align="center" valign="top"><a href="managing-databases.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">用户认证</td></tr>
+</table>
+</div>
+</body></html>

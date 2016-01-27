@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>1.5. 帮助</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第一章 简介</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="resources.html" title="资源">后退</a>
+          <p>资源</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../part2.html" title="构建前的准备工作">前进</a>
+          <p>构建前的准备工作</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter01.html" title="第一章 简介">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">1.5. 帮助</h1>
+      </div>
+      <p>如果您在本书中遇到困难或者问题，请查看 FAQ 页：<a href="http://www.linuxfromscratch.org/faq/#generalfaq"><i>http://www.linuxfromscratch.org/faq/#generalfaq</i></a> ，您所遇到的问题往往这里已经有解答了。如果 FAQ 没有解决您的问题，请尝试找到问题的根源，<a href="http://www.linuxfromscratch.org/hints/downloads/files/errors.txt"><i>http://www.linuxfromscratch.org/hints/downloads/files/errors.txt</i></a> 上的提示将给您提供一些故障诊断的指导。您还可以到咱们中国人的 LFS 大本营：<a href="http://www.linuxsir.org/bbs/forumdisplay.php?f=58" target="_blank">LinuxSir.Org 的 LFS 论坛</a>寻求帮助。</p>
+      <p>如果 FAQ 没有解决你的问题，你可以在 <a href="http://www.linuxfromscratch.org/search.html"><i>http://www.linuxfromscratch.org/search.html</i></a> 搜索邮件列表。</p>
+      <p>我们也有一个出色的 LFS 社区通过 IRC 和邮件列表为您提供帮助(请参见 <a href="resources.html" title="1.4. 资源">节 1.4, "资源"</a> )。然而，我们每天都会收到一些只要简单地察看 FAQ 或者搜索邮件列表就可以解决的问题。为了让我们能够为真正不寻常的问题提供帮助，请您自己先搜索一下！仅在你的搜索得不到问题的解决办法的时候，再向我们寻求帮助。为了帮助诊断和解决问题，您需要在帮助请求中包含所有相关信息。</p>
+      <div class="sect2">
+        <div class="titlepage">
+          <h2 class="sect2">1.5.1. 需要提及的内容</h2>
+        </div>
+        <p>除了一份您所遇到的问题的简短描述外，在任何帮助请求中您还需要附加一些必需的信息：</p>
+        <div class="itemizedlist">
+          <ul>
+            <li>
+              <p>您所使用的 LFS Book 的版本(本书的版本是 6.2)</p>
+            </li>
+            <li>
+              <p>创建 LFS 所用的宿主 Linux 发行版的名称及其版本</p>
+            </li>
+            <li>
+              <p>遇到问题的软件包以及所在的章节</p>
+            </li>
+            <li>
+              <p>确切的错误信息或故障现象描述</p>
+            </li>
+            <li>
+              <p>您是否完全是按本书所说的在做［强烈建议新手完全按照本书操作］</p>
+            </li>
+          </ul>
+        </div>
+        <div class="note">
+          <div class="admonhead">
+            <img alt="[Note]" src="../images/note.png" />
+            <h3 class="admontitle">注意</h3>
+          </div>
+          <div class="admonbody">
+            <p>不按本书说的做<span class="emphasis"><em>并不</em></span>意味着我们就不会给您提供帮助，毕竟 LFS 是个性化的选择。提供您在建立过程中所做的任何更改，将有助于我们估计和确定导致您所遇到的问题的可能原因。</p>
+          </div>
+        </div>
+      </div>
+      <div class="sect2">
+        <div class="titlepage">
+          <h2 class="sect2">1.5.2. Configure 脚本的问题</h2>
+        </div>
+        <p>如果执行 <span><strong class="command">configure</strong></span> 脚本的时候，某个地方出错了，请检查 <tt class="filename">config.log</tt> 文件，这个文件可能包含 <span><strong class="command">configure</strong></span> 过程中没有输出到屏幕的错误，如果您需要请求帮助，请把这里面<span class="emphasis"><em>相关</em></span>信息也包含进去。</p>
+      </div>
+      <div class="sect2">
+        <div class="titlepage">
+          <h2 class="sect2">1.5.3. 编译问题</h2>
+        </div>
+        <p>屏幕输出和各种生成的文件内容，对确定产生编译问题的原因都是有用的。<span><strong class="command">configure</strong></span> 脚本和运行 <span><strong class="command">make</strong></span> 时所产生的屏幕输出也是有帮助的。不需要把所有的输出都包含进来，只需要包含足够的相关信息就行了。下面是一个从 <span><strong class="command">make</strong></span> 的屏幕输出中包含所需信息的例子：</p>
+        <pre class="screen"><tt class="computeroutput">gcc -DALIASPATH=\"/mnt/lfs/usr/share/locale:.\"
+-DLOCALEDIR=\"/mnt/lfs/usr/share/locale\"
+-DLIBDIR=\"/mnt/lfs/usr/lib\"
+-DINCLUDEDIR=\"/mnt/lfs/usr/include\" -DHAVE_CONFIG_H -I. -I.
+-g -O2 -c getopt1.c
+gcc -g -O2 -static -o make ar.o arscan.o commands.o dir.o
+expand.o file.o function.o getopt.o implicit.o job.o main.o
+misc.o read.o remake.o rule.o signame.o variable.o vpath.o
+default.o remote-stub.o version.o opt1.o
+-lutil job.o: In function `load_too_high':
+/lfs/tmp/make-3.79.1/job.c:1565: undefined reference
+to `getloadavg'
+collect2: ld returned 1 exit status
+make[2]: *** [make] Error 1
+make[2]: Leaving directory `/lfs/tmp/make-3.79.1'
+make[1]: *** [all-recursive] Error 1
+make[1]: Leaving directory `/lfs/tmp/make-3.79.1'
+make: *** [all-recursive-am] Error 2</tt></pre>
+        <p>这种情形下，许多人会仅仅只包含最后一段：</p>
+        <pre class="screen"><tt class="computeroutput">make [2]: *** [make] Error 1</tt></pre>
+        <p>这对于正确的分析问题是不够的，因为它只是提示出错了，而没有说是<span class="emphasis"><em>什么</em></span>出错了。在上面例子中，全部内容都应该保存下来，因为它包括了所运行的命令和相关的错误信息。</p>
+        <p><a href="http://catb.org/~esr/faqs/smart-questions.html"><i>http://catb.org/~esr/faqs/smart-questions.html</i></a> 上有一篇很好的文章［<a href="http://community.csdn.net/IndexPage/SmartQuestion.aspx" target="_blank">《提问的智慧》</a>(中文版)］，讲述如何在 Internet 上寻求帮助，请阅读并遵照文章中的提示，将有助于您得到您所需要的答案。</p>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="resources.html" title="资源">后退</a>
+          <p>资源</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../part2.html" title="构建前的准备工作">前进</a>
+          <p>构建前的准备工作</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter01.html" title="第一章 简介">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

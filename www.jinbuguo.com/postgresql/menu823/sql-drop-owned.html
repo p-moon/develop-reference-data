@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>DROP OWNED</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-dropopclass.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-dropopclass.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-droprole.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-droprole.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-DROP-OWNED"></a>DROP OWNED</h1>
+<div class="REFNAMEDIV"><a name="AEN51010"></a><h2>名称</h2>DROP OWNED&nbsp;--&nbsp;删除一个数据库角色所拥有的数据库对象</div>
+<a name="AEN51013"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN51015"></a><h2>语法</h2>
+<pre class="SYNOPSIS">DROP OWNED BY <tt class="REPLACEABLE"><i>name</i></tt> [, ...] [ CASCADE | RESTRICT ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN51018"></a><h2>描述</h2>
+<p><tt class="COMMAND">DROP OWNED</tt> 删除一个数据库角色所拥有的所有数据库对象。所有该角色在当前数据库里的所有对象上的权限都将被撤销。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51022"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>将要删除所拥对象并且撤销其权限的角色名</p></dd>
+<dt><tt class="LITERAL">CASCADE</tt></dt>
+<dd><p>级联删除所有依赖于被删除对象的对象</p></dd>
+<dt><tt class="LITERAL">RESTRICT</tt></dt>
+<dd><p>拒绝删除那些有任何依赖对象存在的对象。这个是缺省。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN51040"></a><h2>注意</h2>
+<p><tt class="COMMAND">DROP OWNED</tt> 常用来做删除角色前的准备工作。因为 <tt class="COMMAND">DROP OWNED</tt> 仅会对当前数据库产生影响，所以通常需要在每个该角色拥有对象的数据库上执行一次。</p>
+<p>使用 <tt class="LITERAL">CASCADE</tt> 选项可能损害到其他用户所拥有的对象。</p>
+<p><a href="sql-reassign-owned.html"><i>REASSIGN OWNED</i></a> 命令可以用来重新分配某个或某些角色所拥有对象的属主。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51049"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">DROP OWNED</tt> 语句是一个 PostgreSQL 扩展。</p>
+</div>
+<div class="REFSECT1"><a name="AEN51054"></a><h2>又见</h2><a href="sql-reassign-owned.html"><i>REASSIGN OWNED</i></a>, <a href="sql-droprole.html"><i>DROP ROLE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-dropopclass.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-droprole.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">DROP OPERATOR CLASS</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">DROP ROLE</td></tr>
+</table>
+</div>
+</body></html>

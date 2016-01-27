@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>系统管理函数</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-info.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="typeconv.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-ADMIN">9.20. 系统管理函数</a></h1>
+<p><a href="functions-admin.html#FUNCTIONS-ADMIN-SET-TABLE">表9-45</a>显示了那些可以用于查询以及修改运行时配置参数的函数。</p>
+<div class="TABLE"><a name="FUNCTIONS-ADMIN-SET-TABLE"></a>
+<p><b>表9-45. 配置设置函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">current_setting</code>(<tt class="PARAMETER">setting_name</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>当前的设置值</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">set_config(<tt class="PARAMETER">setting_name</tt>, <tt class="PARAMETER">new_value</tt>, <tt class="PARAMETER">is_local</tt>)</code></tt></td><td><tt class="TYPE">text</tt></td><td>设置参数并返回新值</td></tr>
+</tbody>
+</table>
+</div>
+<a name="AEN15046"></a><a name="AEN15048"></a><a name="AEN15050"></a>
+<p><code class="FUNCTION">current_setting</code> 用于以查询形式获取 <tt class="PARAMETER">setting_name</tt> 设置的当前值。它和 SQL 命令 <tt class="COMMAND">SHOW</tt> 是等效的。比如：</p>
+<pre class="PROGRAMLISTING">SELECT current_setting('datestyle');
+
+ current_setting
+-----------------
+ ISO, MDY
+(1 row)</pre>
+<p><code class="FUNCTION">set_config</code> 将参数 <tt class="PARAMETER">setting_name</tt> 设置为 <tt class="PARAMETER">new_value</tt> 。如果 <tt class="PARAMETER">is_local</tt> 为 <tt class="LITERAL">true</tt> ，那么新值将只应用于当前事务。如果你希望新值应用于当前会话，那么应该使用 <tt class="LITERAL">false</tt> 。它等效于 SQL 命令 <tt class="COMMAND">SET</tt> 。比如：</p>
+<pre class="PROGRAMLISTING">SELECT set_config('log_statement_stats', 'off', false);
+
+ set_config
+------------
+ off
+(1 row)</pre>
+<a name="AEN15069"></a><a name="AEN15071"></a><a name="AEN15073"></a><a name="AEN15075"></a>
+<p><a href="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE">表9-46</a>里的函数向其它服务器进程发送控制信号。只有超级用户才能使用这些函数。</p>
+<div class="TABLE"><a name="FUNCTIONS-ADMIN-SIGNAL-TABLE"></a>
+<p><b>表9-46. 服务器信号函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_cancel_backend</code>(<tt class="PARAMETER">pid</tt> <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>取消一个后端的当前查询</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_reload_conf</code>()</tt></td><td><tt class="TYPE">boolean</tt></td><td>导致所有服务器进程重新装载它们的配置文件</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_rotate_logfile</code>()</tt></td><td><tt class="TYPE">boolean</tt></td><td>滚动服务器的日志文件</td></tr>
+</tbody>
+</table>
+</div>
+<p>如果成功，这些函数返回 <tt class="LITERAL">true</tt> ，否则返回 <tt class="LITERAL">false</tt> 。</p>
+<p><code class="FUNCTION">pg_cancel_backend</code> 向由 <tt class="PARAMETER">pid</tt> 标识的后端进程发送一个查询取消(<span class="SYSTEMITEM">SIGINT</span>)信号。一个活动的后端进程的 PID 可以从 <tt class="STRUCTNAME">pg_stat_activity</tt> 视图的 <tt class="STRUCTFIELD">procpid</tt> 字段找到，或者在服务器上用 <span class="APPLICATION">ps</span> 列出 <tt class="COMMAND">postgres</tt> 进程。</p>
+<p><code class="FUNCTION">pg_reload_conf</code> 给服务器发送一个 <span class="SYSTEMITEM">SIGHUP</span> 信号，导致所有服务器进程重新装载配置文件。</p>
+<p><code class="FUNCTION">pg_rotate_logfile</code> 给日志文件管理器发送信号，告诉它立即切换到一个新的输出文件。这个函数只有在 <tt class="VARNAME">redirect_stderr</tt> 用于日志输出的时候才有用，否则根本不存在日志文件管理器子进程。</p>
+<a name="AEN15128"></a><a name="AEN15130"></a><a name="AEN15132"></a><a name="AEN15134"></a><a name="AEN15136"></a><a name="AEN15138"></a><a name="AEN15140"></a><a name="AEN15142"></a>
+<p><a href="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE">表9-47</a>里的函数帮助我们进行在线备份。只有超级用户才能使用这些函数。</p>
+<div class="TABLE"><a name="FUNCTIONS-ADMIN-BACKUP-TABLE"></a>
+<p><b>表9-47. 备份控制函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_start_backup</code>(<tt class="PARAMETER">label</tt> <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>开始执行在线备份</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stop_backup</code>()</tt></td><td><tt class="TYPE">text</tt></td><td>完成执行在线备份</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_switch_xlog</code>()</tt></td><td><tt class="TYPE">text</tt></td><td>切换到一个新的事务日志文件</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_current_xlog_location</code>()</tt></td><td><tt class="TYPE">text</tt></td><td>获取当前事务日志的写入位置</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_current_xlog_insert_location</code>()</tt></td><td><tt class="TYPE">text</tt></td><td>获取当前事务日志的插入位置</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_xlogfile_name_offset</code>(<tt class="PARAMETER">location</tt> <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt>, <tt class="TYPE">integer</tt></td><td>将事务日志的位置字符串转换为文件名并返回在文件中的字节偏移量</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_xlogfile_name</code>(<tt class="PARAMETER">location</tt> <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>将事务日志的位置字符串转换为文件名</td></tr>
+</tbody>
+</table>
+</div>
+<p><code class="FUNCTION">pg_start_backup</code> 接受一个用户定义的备份标签(通常这是备份转储文件存放地点的名字)。这个函数向数据库集群的数据目录写入一个备份标签文件，然后以文本方式返回备份的事务日志起始位置。用户不需要关心这个返回值，提供它只是为了万一需要的场合。</p>
+<pre class="PROGRAMLISTING">postgres=# select pg_start_backup('label_goes_here');
+ pg_start_backup
+-----------------
+ 0/D4445B8
+(1 row)</pre>
+<p><code class="FUNCTION">pg_stop_backup</code> 删除 <code class="FUNCTION">pg_start_backup</code> 创建的标签文件，并且在事务日志归档区里创建一个备份历史文件。这个历史文件包含给予 <code class="FUNCTION">pg_start_backup</code> 的标签、备份的事务日志起始与终止位置、备份的起始和终止时间。返回值是备份的事务日志终止位置(同样也可能没有什么用)。计算出中止位置后，当前事务日志的插入点将自动前进到下一个事务日志文件，这样，结束的事务日志文件可以被立即归档从而完成备份。</p>
+<p><code class="FUNCTION">pg_switch_xlog</code> 移动到下一个事务日志文件，以允许将当前日志文件归档(假定你使用连续归档)。返回值是刚刚完成的事务日志文件的事务日志结束位置。如果自从最后一次事务日志切换以来没有活动的事务日志，那么 <code class="FUNCTION">pg_switch_xlog</code> 什么事也不做，直接返回前一个事务日志文件的结束位置。</p>
+<p><code class="FUNCTION">pg_current_xlog_location</code> 使用与前面那些函数相同的格式显示当前事务日志的写入位置。类似的，<code class="FUNCTION">pg_current_xlog_insert_location</code> 显示当前事务日志的插入位置。插入点是事务日志在某个瞬间的"逻辑终点"，而实际的写入位置则是从服务器内部缓冲区写出时的终点。写入位置是可以从服务器外部检测到的终点，如果想归档部分完成的事务日志文件，那么这个通常就是你想要的结果。插入点主要用于服务器调试目的。上述两个函数既是只读操作也不需要超级用户权限。</p>
+<p>可以使用 <code class="FUNCTION">pg_xlogfile_name_offset</code> 从前述函数的返回结果中抽取相应的事务日志文件名称和字节偏移量。例如：</p>
+<pre class="PROGRAMLISTING">postgres=# select * from pg_xlogfile_name_offset(pg_stop_backup());
+        file_name         | file_offset 
+--------------------------+-------------
+ 00000001000000000000000D |     4039624
+(1 row)</pre>
+<p>类似的，<code class="FUNCTION">pg_xlogfile_name</code> 仅仅抽取事务日志文件名称。如果给定的事务日志位置恰好位于事务日志文件的交界上，这两个函数都返回前一个事务日志文件的名字。这对于管理事务日志归档来说通常是期望的行为，因为前一个文件是当前最后一个需要归档的文件。</p>
+<p>有关正确使用这些函数的细节，参阅<a href="continuous-archiving.html">节23.3</a>。</p>
+<p><a href="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE">表9-48</a>中显示的函数计算数据库对象使用的实际磁盘空间。</p>
+<a name="AEN15233"></a><a name="AEN15235"></a><a name="AEN15237"></a><a name="AEN15239"></a><a name="AEN15241"></a><a name="AEN15243"></a>
+<div class="TABLE"><a name="FUNCTIONS-ADMIN-DBSIZE"></a>
+<p><b>表9-48. 数据库对象尺寸函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><code class="FUNCTION">pg_column_size</code>(<tt class="TYPE">any</tt>)</td><td><tt class="TYPE">int</tt></td><td>存储一个指定的数值需要的字节数(可能压缩过)</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_database_size</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>指定 OID 代表的数据库使用的磁盘空间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_database_size</code>(<tt class="TYPE">name</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>指定名称的数据库使用的磁盘空间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_relation_size</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>指定 OID 代表的表或者索引所使用的磁盘空间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_relation_size</code>(<tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>指定名称的表或者索引使用的磁盘空间。表名字可以用模式名修饰。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_size_pretty</code>(<tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>把字节计算的尺寸转换成一个人类易读的尺寸。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_tablespace_size</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>指定 OID 代表的表空间使用的磁盘空间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_tablespace_size</code>(<tt class="TYPE">name</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>指定名字的表空间使用的磁盘空间</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_total_relation_size</code>(<tt class="TYPE">oid</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>指定 OID 代表的表使用的磁盘空间，包括索引和压缩数据。</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_total_relation_size</code>(<tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">bigint</tt></td><td>指定名字的表所使用的全部磁盘空间，包括索引和压缩数据。表名字可以用模式名修饰。</td></tr>
+</tbody>
+</table>
+</div>
+<p><code class="FUNCTION">pg_column_size</code> 显示用于存储某个独立数据值的空间。</p>
+<p><code class="FUNCTION">pg_database_size</code> 和 <code class="FUNCTION">pg_tablespace_size</code> 接受一个数据库的 OID 或者名字，然后返回该对象使用的全部磁盘空间。</p>
+<p><code class="FUNCTION">pg_relation_size</code> 接受一个表、索引、压缩表的 OID 或者名字，然后返回它们以字节计的尺寸。</p>
+<p><code class="FUNCTION">pg_size_pretty</code> 用于把其它函数的结果格式化成一种人类易读的格式，可以根据情况使用KB 、MB 、GB 、TB 。</p>
+<p><code class="FUNCTION">pg_total_relation_size</code> 接受一个表或者一个压缩表的 OID 或者名称，然后返回以字节计的数据和所有相关的索引和压缩表的尺寸。</p>
+<p><a href="functions-admin.html#FUNCTIONS-ADMIN-GENFILE">表9-49</a>里的函数提供了对数据库服务器所在机器上的文件的本地访问接口。只有那些在数据库集群目录和 <tt class="VARNAME">log_directory</tt> 目录里面的文件可以访问。使用相对路径访问集群目录里面的文件，以及匹配 <tt class="VARNAME">log_directory</tt> 配置设置的路径访问日志文件。只有超级用户才能使用这些函数。</p>
+<div class="TABLE"><a name="FUNCTIONS-ADMIN-GENFILE"></a>
+<p><b>表9-49. 通用文件访问函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_ls_dir</code>(<tt class="PARAMETER">dirname</tt> <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">setof text</tt></td><td>列出目录中的文件</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_read_file</code>(<tt class="PARAMETER">filename</tt> <tt class="TYPE">text</tt>, <tt class="PARAMETER">offset</tt> <tt class="TYPE">bigint</tt>, <tt class="PARAMETER">length</tt> <tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>返回一个文本文件的内容</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_stat_file</code>(<tt class="PARAMETER">filename</tt> <tt class="TYPE">text</tt>)</tt></td><td><tt class="TYPE">record</tt></td><td>返回一个文件的信息</td></tr>
+</tbody>
+</table>
+</div>
+<a name="AEN15388"></a>
+<p><code class="FUNCTION">pg_ls_dir</code> 返回指定目录里面的除了特殊项 <span class="QUOTE">"<tt class="LITERAL">.</tt>"</span> 和 <span class="QUOTE">"<tt class="LITERAL">..</tt>"</span> 之外所有名字。</p>
+<a name="AEN15396"></a>
+<p><code class="FUNCTION">pg_read_file</code> 返回一个文本文件的一部分，从 <tt class="PARAMETER">offset</tt> 开始，返回最多 <tt class="PARAMETER">length</tt> 字节(如果先达到文件结尾，则小于这个数值)。如果 <tt class="PARAMETER">offset</tt> 是负数，那么它就是相对于文件结尾回退的长度。</p>
+<a name="AEN15403"></a>
+<p><code class="FUNCTION">pg_stat_file</code> 返回一条记录，其中包含：文件大小、最后访问时间戳、最后更改时间戳、最后文件状态修改时间戳(只在 Unix 平台上可用)、文件创建时间戳(只在 Windows 平台上可用)、是否为目录的 <tt class="TYPE">boolean</tt> 值。典型的用法：</p>
+<pre class="PROGRAMLISTING">SELECT * FROM pg_stat_file('filename');
+SELECT (pg_stat_file('filename')).modification;</pre>
+<p><a href="functions-admin.html#FUNCTIONS-ADVISORY-LOCKS">表9-50</a>中的函数用于管理咨询锁(Advisory Lock)。有关正确使用这些函数的细节，参阅<a href="explicit-locking.html#ADVISORY-LOCKS">节12.3.4</a>。</p>
+<div class="TABLE"><a name="FUNCTIONS-ADVISORY-LOCKS"></a>
+<p><b>表9-50. 咨询锁函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>名字</th><th>返回类型</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_advisory_lock</code>(<tt class="PARAMETER">key</tt> <tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">void</tt></td><td>获取排它咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_advisory_lock</code>(<tt class="PARAMETER">key1</tt> <tt class="TYPE">int</tt>, <tt class="PARAMETER">key2</tt> <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">void</tt></td><td>获取排它咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_advisory_lock_shared</code>(<tt class="PARAMETER">key</tt> <tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">void</tt></td><td>获取共享咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_advisory_lock_shared</code>(<tt class="PARAMETER">key1</tt> <tt class="TYPE">int</tt>, <tt class="PARAMETER">key2</tt> <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">void</tt></td><td>获取共享咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_try_advisory_lock</code>(<tt class="PARAMETER">key</tt> <tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>尝试获取排它咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_try_advisory_lock</code>(<tt class="PARAMETER">key1</tt> <tt class="TYPE">int</tt>, <tt class="PARAMETER">key2</tt> <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>尝试获取排它咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_try_advisory_lock_shared</code>(<tt class="PARAMETER">key</tt> <tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>尝试获取共享咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_try_advisory_lock_shared</code>(<tt class="PARAMETER">key1</tt> <tt class="TYPE">int</tt>, <tt class="PARAMETER">key2</tt> <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>尝试获取共享咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_advisory_unlock</code>(<tt class="PARAMETER">key</tt> <tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>释放排它咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_advisory_unlock</code>(<tt class="PARAMETER">key1</tt> <tt class="TYPE">int</tt>, <tt class="PARAMETER">key2</tt> <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>释放排它咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_advisory_unlock_shared</code>(<tt class="PARAMETER">key</tt> <tt class="TYPE">bigint</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>释放共享咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_advisory_unlock_shared</code>(<tt class="PARAMETER">key1</tt> <tt class="TYPE">int</tt>, <tt class="PARAMETER">key2</tt> <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">boolean</tt></td><td>释放共享咨询锁</td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">pg_advisory_unlock_all</code>()</tt></td><td><tt class="TYPE">void</tt></td><td>释放当前会话持有的所有咨询锁</td></tr>
+</tbody>
+</table>
+</div>
+<a name="AEN15548"></a>
+<p><code class="FUNCTION">pg_advisory_lock</code> 锁定一个应用程序定义的资源，该资源可以用一个 64 位或两个不重叠的 32 位键值标识。如果已经有另外的会话锁定了该资源，那么该函数将会阻塞到该资源可用为止。这个锁是排它的。多个锁定请求将会被压入栈中，因此，如果同一个资源被锁定了三次，那么它必须被解锁三次以将资源释放给其它会话使用。</p>
+<a name="AEN15552"></a>
+<p><code class="FUNCTION">pg_advisory_lock_shared</code> 类似于 <code class="FUNCTION">pg_advisory_lock</code> ，不同之处仅在于共享锁可以和其它请求共享锁的会话共享，但排它锁除外。</p>
+<a name="AEN15557"></a>
+<p><code class="FUNCTION">pg_try_advisory_lock</code> 类似于 <code class="FUNCTION">pg_advisory_lock</code> ，不同之处在于该函数不会阻塞以等待资源的释放。它要么立即获得锁并返回 <tt class="LITERAL">true</tt> ，要么返回 <tt class="LITERAL">false</tt> 表示目前不能锁定。</p>
+<a name="AEN15564"></a>
+<p><code class="FUNCTION">pg_try_advisory_lock_shared</code> 类似于 <code class="FUNCTION">pg_try_advisory_lock</code> ，不同之处在于该函数尝试获得共享锁而不是排它锁。</p>
+<a name="AEN15569"></a>
+<p><code class="FUNCTION">pg_advisory_unlock</code> 释放先前取得的排它咨询锁。如果释放成功则返回 <tt class="LITERAL">true</tt> 。如果指定的锁实际上并未持有，那么它将返回 <tt class="LITERAL">false</tt> 并在服务器中产生一条 SQL 警告信息。</p>
+<a name="AEN15575"></a>
+<p><code class="FUNCTION">pg_advisory_unlock_shared</code> 类似于 <code class="FUNCTION">pg_advisory_unlock</code> 不同之处在于该函数释放的是共享咨询锁。</p>
+<a name="AEN15580"></a>
+<p><code class="FUNCTION">pg_advisory_unlock_all</code> 将会释放当前会话持有的所有咨询锁，该函数在会话结束的时候被隐含调用，即使客户端异常地断开连接也是一样。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-info.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="typeconv.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">系统信息函数</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">类型转换</td></tr>
+</table>
+</div>
+</body></html>

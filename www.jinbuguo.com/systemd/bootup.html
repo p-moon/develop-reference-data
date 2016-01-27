@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>bootup 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>bootup 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+bootup(7)                          systemd-228                         bootup(7)
+
+<h3>名称</h3>
+    bootup - 系统启动流程
+
+<h3>描述</h3>
+    在系统启动过程中要涉及多个不同的组件。按下开机按钮后，首先BIOS/UEFI做最基本的硬件自检与初始化，
+    然后加载预设/手动选择的磁盘/网络上的引导加载器(例如GRUB2)，引导加载器进一步从磁盘/网络上加载操作系统内核(例如Linux)。
+    对于Linux来说，内核将会(可选的)解压一个initrd(initial RAM disk)镜像(可以用<a href="http://linux.die.net/man/8/dracut">dracut(8)</a>之类的工具生成)，
+    并执行由"rdinit="内核引导参数指定的init程序(例如<a href="systemd.html">systemd(1)</a>)以寻找并挂载根文件系统。
+    完成根文件系统的挂载之后，内核启动由"init="内核引导参数指定的init程序(例如<a href="systemd.html">systemd(1)</a>)以接管系统的控制权。
+    该init程序将会负责检测所有其他的硬件设备、挂载必要的文件系统、启动所有必要的服务，等等。
+
+    关机时，init程序将会停止所有服务、卸载所有文件系统、(可选的)返回initrd环境卸载根文件系统，最后关闭电源。
+
+    其他有关系统启动流程的信息可以参考 <a href="http://man7.org/linux/man-pages/man7/boot.7.html">boot(7)</a> 手册。
+
+<h3>常规启动流程</h3>
+    当成功挂载了"root="内核引导参数指定的根文件系统之后，内核将启动由"init="内核引导参数指定的init程序，
+    从这个时间点开始，即进入了"常规启动流程"：检测硬件设备并加载驱动、挂载必要的文件系统、启动所有必要的服务，等等。
+    对于 <a href="systemd.html">systemd(1)</a> 系统来说，上述"init程序"就是 <a href="systemd.html">systemd(1)</a> 进程，
+    而整个"常规启动流程"也以几个特殊的 target 单元(详见 )作为节点，被划分为几个阶段性步骤。
+    详见 <a href="systemd.target.html">systemd.target(5)</a>, <a href="systemd.special.html">systemd.special(7)</a> 手册。
+    在每个阶段性步骤内部，任务是高度并行的，所以无法准确预测其中的单元的顺序，但是不同阶段之间的先后顺序总是固定的。
+
+    当启动系统时，systemd 将会以 default.target 为启动目标，借助单元之间环环相扣的依赖关系，即可完成"常规启动流程"。
+    通常，default.target 只是一个指向 graphical.target(图形界面) 或 multi-user.target(文本控制台) 的软连接。
+    为了强制启动流程的规范性以及提高单元的并行性，预先定义了一些具有特定含义的 target 单元，详见 <a href="systemd.special.html">systemd.special(7)</a> 手册。
+
+    下面的图表解释了这些具有特定含义的 target 单元之间的依赖关系以及各自在启动流程中的位置。
+    图中的箭头表示了单元之间的依赖关系与先后顺序，整个图表按照自上而下的时间顺序执行。
+
+    local-fs-pre.target
+             |
+             v
+     (各个 mounts 与       (各个 swap       (各个加密块设备
+      fsck services)        devices)            devices)        (各个底层服务        (各个底层API虚拟
+             |                  |                  |             services: udevd,     文件系统 mounts:
+             v                  v                  v             tmpfiles, random     mqueue, configfs,
+      local-fs.target      swap.target     cryptsetup.target     seed, sysctl ...)      debugfs ...)
+             |                  |                  |                    |                    |
+             \__________________|_________________ | ___________________|____________________/
+                                                  \|/
+                                                   v
+                                            sysinit.target
+                                                   |
+              ____________________________________/|\________________________________________
+             /                  |                  |                    |                    \
+             |                  |                  |                    |                    |
+             v                  v                  |                    v                    v
+       (各个 timers)      (各个 paths)             |             (各个 sockets)        rescue.service
+             |                  |                  |                    |                    |
+             v                  v                  |                    v                    v
+       timers.target      paths.target             |             sockets.target        <b><u>rescue.target</u></b>
+             |                  |                  |                    |
+             v                  \_________________ | ___________________/
+             .                                    \|/
+             . . . . . . . . . . . . . . . . . . . v
+                                             basic.target
+                                                   |
+              ____________________________________/|                                 emergency.service
+             /                  |                  |                                         |
+             |                  |                  |                                         v
+             v                  v                  v                                 <b><u>emergency.target</u></b>
+         display-        (图形界面所必须    (各个系统服务)
+     manager.service      的各个系统服务)          |
+             |                  |                  v
+             |                  |         <b><u>multi-user.target</u></b>
+             |                  |                  |
+             \_________________ | _________________/
+                               \|/
+                                v
+                       <b><u>graphical.target</u></b>
+
+    用粗体下划线标识的目标单元经常被用作启动目标。有两种方法可以指定启动目标：
+    (1)使用 systemd.unit= 内核命令行参数(参见 <a href="systemd.html">systemd(1)</a> 手册)；(2)使用 default.target 软连接。
+
+    因为 timers.target 以异步方式包含在 basic.target 中，所以 timer 单元可以依赖于在 basic.target 之后才启动的服务。
+
+<h3>initrd 启动流程</h3>
+    在initrd内部，也可以将 systemd 用作init程序(由"rdinit="内核引导参数指定)，此时 initrd.target 将是默认目标。
+    initrd内部启动流程的上半部分与前一小节 basic.target 之前的部分完全相同，随后的启动流程将如下图所示。
+    如果成功的将根文件系统挂载到 /sysroot 目录，那么 sysroot.mount 单元将被激活，然后进一步激活 initrd-root-fs.target 目标。
+    initrd-parse-etc.service 将会分析 /sysroot/etc/fstab 文件以挂载 /usr (若需要)与带有 x-initrd.mount 标记的挂载点。
+    这些挂载点都将被挂载到 /sysroot 之下，然后流程到达 initrd-fs.target 目标。
+    再接下来 initrd-cleanup.service 将会使用
+        /usr/bin/systemctl --no-block isolate initrd-switch-root.target
+    命令启动 initrd-switch-root.target 目标。因为 isolate 表示立即停止所有在新的目标单元中不需要的进程，
+    所以此动作实际上是为接下来切换根目录做预先的准备(也就是清理环境)。
+    最后，激活 initrd-switch-root.service 服务，将系统的根目录切换至 /sysroot 目录。
+
+                                    (之前的流程与上一小节完全相同)
+                                                   :
+                                                   v
+                                             basic.target
+                                                   |                                 emergency.service
+                            ______________________/|                                         |
+                           /                       |                                         v
+                           |                  sysroot.mount                          emergency.target
+                           |                       |
+                           |                       v
+                           |             initrd-root-fs.target
+                           |                       |
+                           |                       v
+                           v            initrd-parse-etc.service
+                    (各个自定义的                  |
+                   initrd services)                v
+                           |            (sysroot-usr.mount 以及
+                           |            fstab 中带有 x-initrd.mount
+                           |               标记的各个挂载点)
+                           |                       |
+                           |                       v
+                           |                initrd-fs.target
+                           \______________________ |
+                                                  \|
+                                                   v
+                                              initrd.target
+                                                   |
+                                                   v
+                                         initrd-cleanup.service
+                                (使用 isolates 启动 initrd-switch-root.target)
+                                                   |
+                                                   v
+                            ______________________/|
+                           /                       v
+                           |        initrd-udevadm-cleanup-db.service
+                           v                       |
+                   (各个自定义的                   |
+                  initrd services)                 |
+                           \______________________ |
+                                                  \|
+                                                   v
+                                       initrd-switch-root.target
+                                                   |
+                                                   v
+                                       initrd-switch-root.service
+                                                   |
+                                                   v
+                                         切换到主机上的操作系统
+
+<h3>关机流程</h3>
+    systemd 系统在关机时同样遵循固定的流程，具体如下图所示：
+
+                   (与所有系统服务互斥)   (与所有文件系统 mounts, swaps, cryptsetup devices 互斥)
+                              |                                      |
+                              v                                      v
+                       shutdown.target                         umount.target
+                              |                                      |
+                              \______________________   _____________/
+                                                     \ /
+                                                      v
+                                             (各个底层 services)
+                                                      |
+                                                      v
+                                                final.target
+                                                      |
+                _____________________________________/ \_________________________________
+               /                         |                        |                      \
+               |                         |                        |                      |
+               v                         v                        v                      v
+    systemd-reboot.service   systemd-poweroff.service   systemd-halt.service   systemd-kexec.service
+               |                         |                        |                      |
+               v                         v                        v                      v
+        <b><u>reboot.target</u></b>           <b><u>poweroff.target</u></b>          <b><u>halt.target</u></b>          <b><u>kexec.target</u></b>
+
+    用粗体下划线标识的目标单元经常被用作关机目标。
+
+<h3>参见</h3>
+    <a href="systemd.html">systemd(1)</a>, <a href="http://man7.org/linux/man-pages/man7/boot.7.html">boot(7)</a>, <a href="systemd.special.html">systemd.special(7)</a>, <a href="systemd.target.html">systemd.target(5)</a>, <a href="http://linux.die.net/man/8/dracut">dracut(8)</a>
+
+bootup(7)                          systemd-228                         bootup(7)
+</pre>
+
+
+<hr />
+
+
+</body></html>

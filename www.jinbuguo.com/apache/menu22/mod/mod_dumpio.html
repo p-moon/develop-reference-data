@@ -1,0 +1,78 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_dumpio － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_dumpio</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>将所有I/O操作转储到错误日志中</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>dumpio_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_dumpio.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p><code>mod_dumpio</code>允许你记录所有Apache接收到的输入和发送的输出到错误日志(通常是error.log)中。</p>
+
+    <p>记录数据的时刻被设计为恰好发生在SSL解码(输入)之后和SSL编码之前(输出)。正如你所预料到的，这么做会导致在日志中写入及其海量的数据，只建议你在发现问题并进行调试的时候使用。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="enable" id="enable">启用dumpio支持</a></h2>
+    
+
+    <p>要启用这个模块，必须先编译完成它，然后在配置文件中加载，然后用下面列出的指令启用或者禁用记录功能。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DumpIOInput" id="DumpIOInput">DumpIOInput</a> <a name="dumpioinput" id="dumpioinput">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>将所有输入的内容记录到错误日志中</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DumpIOInput On|Off</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>DumpIOInput Off</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dumpio</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.1.3 及以后的版本中可用</td></tr>
+</table>
+    <p>将所有输入的内容记录到错误日志中</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      DumpIOInput On
+    </code></p></div>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="DumpIOOutput" id="DumpIOOutput">DumpIOOutput</a> <a name="dumpiooutput" id="dumpiooutput">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>将所有输出的内容记录到错误日志中</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>DumpIOOutput On|Off</code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>DumpIOOutput Off</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>扩展(E)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_dumpio</td></tr>
+<tr><th><a href="directive-dict.html#Compatibility">兼容性</a></th><td>仅在 Apache 2.1.3 及以后的版本中可用</td></tr>
+</table>
+    <p>将所有输出的内容记录到错误日志中</p>
+
+    <div class="example"><h3>示例</h3><p><code>
+      DumpIOOutput On
+    </code></p></div>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

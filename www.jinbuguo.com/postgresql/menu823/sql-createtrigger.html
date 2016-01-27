@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE TRIGGER</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createtablespace.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createtablespace.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createtype.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createtype.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATETRIGGER"></a>CREATE TRIGGER</h1>
+<div class="REFNAMEDIV"><a name="AEN49477"></a><h2>名称</h2>CREATE TRIGGER&nbsp;--&nbsp;定义一个新触发器</div>
+<a name="AEN49480"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN49482"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE TRIGGER <tt class="REPLACEABLE"><i>name</i></tt> { BEFORE | AFTER } { <tt class="REPLACEABLE"><i>event</i></tt> [ OR ... ] }
+    ON <tt class="REPLACEABLE"><i>table</i></tt> [ FOR [ EACH ] { ROW | STATEMENT } ]
+    EXECUTE PROCEDURE <tt class="REPLACEABLE"><i>funcname</i></tt> ( <tt class="REPLACEABLE"><i>arguments</i></tt> )</pre>
+</div>
+<div class="REFSECT1"><a name="AEN49489"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE TRIGGER</tt> 创建一个新的触发器。触发器将与指定表关联并且将在特定事件发生时执行声明的 <tt class="REPLACEABLE"><i>funcname</i></tt> 函数。</p>
+<p>触发器可以声明为在对记录进行操作之前(在检查约束之前和 <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt> 执行前)或操作完成之后(在检查约束之后和完成 <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt> 操作)触发。如果触发器在事件之前，触发器可能略过当前记录的操作或改变被插入的记录(只对 <tt class="COMMAND">INSERT</tt> 和 <tt class="COMMAND">UPDATE</tt> 操作有效)。如果触发器在事件之后，所有更改，包括最后的插入、更新、删除对触发器都是"可见"的。</p>
+<p>一个被标记为 <tt class="LITERAL">FOR EACH ROW</tt> 的触发器为操作修改的每一行都调用一次。比如，一个影响 10 行的 <tt class="COMMAND">DELETE</tt> 将导致任何在目标关系上的 <tt class="LITERAL">ON DELETE</tt> 触发器独立调用 10 次，每个被删除的行调用一次。相比之下，一个被标记为 <tt class="LITERAL">FOR EACH STATEMENT</tt> 的触发器只执行一次，而不管有多少行被修改。特别是，一个修改零行的操作仍然会导致合适的 <tt class="LITERAL">FOR EACH STATEMENT</tt> 触发器被执行。</p>
+<p>如果多个同类型的触发器为同一事件做了定义，那么它们将按照字母顺序被触发。</p>
+<p><tt class="COMMAND">SELECT</tt> 并不更改任何行，因此你不能创建 <tt class="COMMAND">SELECT</tt> 触发器。这种场合下规则和视图更合适些。</p>
+<p>请参考<a href="triggers.html">章34</a>获取更多触发器信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN49516"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>赋予新触发器的名称。它必需和任何作用于同一表的触发器不同。</p></dd>
+<dt><tt class="LITERAL">BEFORE</tt><br><tt class="LITERAL">AFTER</tt></dt>
+<dd><p>决定该函数是在事件之前还是之后调用。</p></dd>
+<dt><tt class="REPLACEABLE"><i>event</i></tt></dt>
+<dd><p><tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt> 之一。它声明击发触发器的事件。多个事件可以用 <tt class="LITERAL">OR</tt> 声明。</p></dd>
+<dt><tt class="REPLACEABLE"><i>table</i></tt></dt>
+<dd><p>触发器作用的表名称(可以用模式修饰)</p></dd>
+<dt><tt class="LITERAL">FOR EACH ROW</tt><br><tt class="LITERAL">FOR EACH STATEMENT</tt></dt>
+<dd><p>这些选项声明触发器过程是否为触发器事件影响的每个行触发一次，还是只为每条 SQL 语句触发一次。如果都没有声明，那么 <tt class="LITERAL">FOR EACH STATEMENT</tt> 将是缺省。</p></dd>
+<dt><tt class="REPLACEABLE"><i>funcname</i></tt></dt>
+<dd><p>一个用户提供的函数，它声明为不接受参数并且返回 <tt class="LITERAL">trigger</tt> 类型，该函数将在触发器被触发时调用。</p></dd>
+<dt><tt class="REPLACEABLE"><i>arguments</i></tt></dt>
+<dd><p>一个可选的用逗号分隔的参数列表，它将在触发器执行的时候提供给函数。这些参数是文本字符串常量。也可以在这里写简单的名字和数值常量，但是它们会被转换成字符串。请检查实现语言中关于如何在触发器函数中访问触发器参数的描述；这些参数可能和普通的函数参数不同。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATETRIGGER-NOTES"></a><h2>注意</h2>
+<p>要在表上创建一个触发器，用户必需在该表上有 <tt class="LITERAL">TRIGGER</tt> 权限。</p>
+<p>在 PostgreSQL 7.3 以前，必须把触发器函数声明为返回 <tt class="TYPE">opaque</tt> 占位类型，而不是 <tt class="TYPE">trigger</tt> 类型。为了支持加载老的转储文件，<tt class="COMMAND">CREATE TRIGGER</tt> 将接受一个声明为返回 <tt class="TYPE">opaque</tt> 的函数，但是它将发出一条 NOTICE 并且把函数声明的返回类型改成 <tt class="TYPE">trigger</tt> 。</p>
+<p>用 <a href="sql-droptrigger.html"><i>DROP TRIGGER</i></a> 删除一个触发器。</p>
+</div>
+<div class="REFSECT1"><a name="R1-SQL-CREATETRIGGER-2"></a><h2>例子</h2>
+<p><a href="trigger-example.html">节34.4</a>包含一个完整的例子。</p>
+</div>
+<div class="REFSECT1"><a name="SQL-CREATETRIGGER-COMPATIBILITY"></a><h2>兼容性</h2>
+<p>PostgreSQL 里的 <tt class="COMMAND">CREATE TRIGGER</tt> 语句实现了一个 SQL 标准的子集。目前仍然缺少下面的功能：</p>
+<ul>
+<li><p>SQL 允许触发器为指定字段的更新进行触发(也就是 <tt class="LITERAL">AFTER UPDATE OF col1, col2</tt>)</p></li>
+<li><p>SQL 允许你为"old"和"new"行或者表定义别名，用于定义触发器的动作(也就是 <tt class="LITERAL">CREATE TRIGGER ... ON tablename REFERENCING OLD ROW AS somename NEW ROW AS othername ...</tt>)。因为 PostgreSQL 允许触发器过程以任意数量的用户定义语言进行书写，所以访问数据的工作是用和语言相关的方法实现的。</p></li>
+<li><p>PostgreSQL 只允许为触发的动作执行用户预先定义好的函数。SQL 标准允许执行一些其它的命令，比如拿 <tt class="COMMAND">CREATE TABLE</tt> 作为触发器动作。这个限止并不难绕开，只要创建一个执行这些命令的用户预定的函数即可。</p></li>
+</ul>
+<p>SQL 要求多个触发器应该以创建的时间顺序执行。PostgreSQL 采用的是按照名字顺序，并认为这样更加方便。</p>
+<p>SQL 要求必须在级联 <tt class="LITERAL">DELETE</tt> 完成<span class="emphasis"><i class="EMPHASIS">之后</i></span>再触发级联删除上的 <tt class="LITERAL">BEFORE DELETE</tt> 触发器。PostgreSQL 的行为是 <tt class="LITERAL">BEFORE DELETE</tt> 将永远在删除动作之前触发，即使对于级联删除也是如此，我们认为这样更一致。当 <tt class="LITERAL">BEFORE</tt> 触发器修改随后将要被有关动作修改的行的时候，仍然存在不可预知的行为。这将导致违反约束或者存储不符合参照完整性的数据。</p>
+<p>用 <tt class="LITERAL">OR</tt> 给一个触发器声明多个动作是 PostgreSQL 对标准的扩展。</p>
+</div>
+<div class="REFSECT1"><a name="AEN49613"></a><h2>又见</h2><a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a>, <a href="sql-altertrigger.html"><i>ALTER TRIGGER</i></a>, <a href="sql-droptrigger.html"><i>DROP TRIGGER</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createtablespace.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createtype.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE TABLESPACE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE TYPE</td></tr>
+</table>
+</div>
+</body></html>

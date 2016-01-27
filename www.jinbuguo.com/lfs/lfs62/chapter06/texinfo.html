@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.54. Texinfo-4.8</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="tar.html" title="Tar-1.15.1">后退</a>
+          <p>Tar-1.15.1</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="udev.html" title="Udev-096">前进</a>
+          <p>Udev-096</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.54. Texinfo-4.8</h1>
+      </div>
+      <div class="package">
+        <p>Texinfo 软件包包含读取、写入、转换 Info 文档的程序。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.2 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">16.6 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.54.1. 安装 Texinfo</h2>
+        </div>
+        <p> <span><strong class="command">info</strong></span> 程序假定一个字符串在屏幕上占据的字符单元树和在内存中的字节数是一样的。
+        在 UTF-8 的 locale 环境下，字符串就被拆散了。下面的patch可以在多字节的locale环境下将它们转回到英文信息：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../texinfo-4.8-multibyte-1.patch</kbd></pre>
+        <p>Texinfo 允许本地用户通过位于临时文件中的符号连接改写任意文件，下面的补丁可以修正这个问题：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../texinfo-4.8-tempfile_fix-2.patch</kbd></pre>
+        <p>为编译 Texinfo 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make check</tt></strong> 。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <p>安装 texinfo 组件中本应由 TeX 来安装的部份(可选操作)：</p>
+        <pre class="userinput"><kbd class="command">make TEXMF=/usr/share/texmf install-tex</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>make 参数的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>TEXMF=/usr/share/texmf</tt></em></span>
+            </dt>
+            <dd>
+              <p>如果你以后打算安装 TeX 的话，makefile 中的 <tt class="envar">TEXMF</tt> 变量保存着你的 TeX 树的位置。</p>
+            </dd>
+          </dl>
+        </div>
+       <p>Info 文档系统使用一个纯文本文件来存放菜单条目的列表。这个文件位于 <tt class="filename">/usr/share/info/dir</tt> 。不幸的是，由于不同软件包中 Makefile 的偶然问题，有时候这个文件会与实际安装在系统里的 Info 文档不一致。如果你要再次创建 <tt class="filename">/usr/share/info/dir</tt> 文件，可以使用下面的命令：</p>
+        <pre class="userinput"><kbd class="command">cd /usr/share/info
+rm dir
+for f in *
+do install-info $f dir 2&gt;/dev/null
+done</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-texinfo" name="contents-texinfo"></a>
+          <h2 class="sect2">6.54.2. Texinfo 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">info, infokey,
+              install-info, makeinfo, texi2dvi, texi2pdf, texindex</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3695608" name="id3695608"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="info" name="info"></a><span class="term"><span><strong class="command">info</strong></span></span></td>
+                <td><p>用于读取 Info 文档，它类似于 man 手册页，但是他们会给出更深入的解释而不是停留在解释程序参数上。例如你可以看看 <span><strong class="command">man bison</strong></span> 和 <span><strong class="command">info bison</strong></span> 的区别。</p></td>
+              </tr>
+              <tr>
+                <td><a id="infokey" name="infokey"></a><span class="term"><span><strong class="command">infokey</strong></span></span></td>
+                <td><p>把包括 Info 设置的源文件编译成二进制格式</p></td>
+              </tr>
+              <tr>
+                <td><a id="install-info" name="install-info"></a><span class="term"><span><strong class="command">install-info</strong></span></span></td>
+                <td><p>安装 info 文档，它会更新 <span><strong class="command">info</strong></span> 的索引文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="makeinfo" name="makeinfo"></a><span class="term"><span><strong class="command">makeinfo</strong></span></span></td>
+                <td><p>将 Texinfo 源文档翻译成不同的格式，包括html、info文档、文本文档。</p></td>
+              </tr>
+              <tr>
+                <td><a id="texi2dvi" name="texi2dvi"></a><span class="term"><span><strong class="command">texi2dvi</strong></span></span></td>
+                <td><p>把给定的 Texinfo 文档格式化成可打印的设备无关的文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="texi2pdf" name="texi2pdf"></a><span class="term"><span><strong class="command">texi2pdf</strong></span></span></td>
+                <td><p>将 Texinfo 文档转化成 PDF 文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="texindex" name="texindex"></a><span class="term"><span><strong class="command">texindex</strong></span></span></td>
+                <td><p>对 Texinfo 索引文件进行排序</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="tar.html" title="Tar-1.15.1">后退</a>
+          <p>Tar-1.15.1</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="udev.html" title="Udev-096">前进</a>
+          <p>Udev-096</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

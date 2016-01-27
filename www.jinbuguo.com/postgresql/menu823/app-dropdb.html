@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>dropdb</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="app-createuser.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="app-createuser.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-droplang.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-droplang.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-DROPDB"></a><span class="APPLICATION">dropdb</span></h1>
+<div class="REFNAMEDIV"><a name="AEN56178"></a><h2>名称</h2>dropdb&nbsp;--&nbsp;删除一个数据库</div>
+<a name="AEN56182"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN56184"></a><h2>语法</h2>
+<p><tt class="COMMAND">dropdb</tt> [<tt class="REPLACEABLE"><i>option</i></tt>...]  <tt class="REPLACEABLE"><i>dbname</i></tt></p>
+</div>
+<div class="REFSECT1"><a name="AEN56191"></a><h2>描述</h2>
+<p><span class="APPLICATION">dropdb</span> 删除一个现有的数据库。执行这条命令的人必须是数据库超级用户或者是数据库的所有者。</p>
+<p><span class="APPLICATION">dropdb</span> 是对 SQL 命令 <a href="sql-dropdatabase.html"><i>DROP DATABASE</i></a> 的封装。因此，这两种方法删除数据库没什么区别。</p>
+</div>
+<div class="REFSECT1"><a name="AEN56200"></a><h2>选项</h2>
+<p><span class="APPLICATION">dropdb</span> 接受下列命令行参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>dbname</i></tt></dt>
+<dd><p>要删除的数据库名</p></dd>
+<dt><tt class="OPTION">-e</tt><br><tt class="OPTION">--echo</tt></dt>
+<dd><p>回显 <span class="APPLICATION">dropdb</span> 生成并发送到服务器的命令</p></dd>
+<dt><tt class="OPTION">-i</tt><br><tt class="OPTION">--interactive</tt></dt>
+<dd><p>在做任何破坏性动作前提示</p></dd>
+<dt><tt class="OPTION">-q</tt><br><tt class="OPTION">--quiet</tt></dt>
+<dd><p>不显示响应(安静模式)</p></dd>
+</dl>
+</div>
+<p><span class="APPLICATION">dropdb</span> 还接受下列命令行参数作为连接参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-h <tt class="REPLACEABLE"><i>host</i></tt></tt><br><tt class="OPTION">--host <tt class="REPLACEABLE"><i>host</i></tt></tt></dt>
+<dd><p>指定运行服务器的主机名。如果数值以斜杠开头，则被用作到 Unix 域套接字的路径。</p></dd>
+<dt><tt class="OPTION">-p <tt class="REPLACEABLE"><i>port</i></tt></tt><br><tt class="OPTION">--port <tt class="REPLACEABLE"><i>port</i></tt></tt></dt>
+<dd><p>指定服务器正在侦听的 TCP 端口或本地 Unix 域套接字文件的扩展(描述符)</p></dd>
+<dt><tt class="OPTION">-U <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--username <tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>连接的用户名</p></dd>
+<dt><tt class="OPTION">-W</tt><br><tt class="OPTION">--password</tt></dt>
+<dd><p>强制口令提示</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN56269"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGHOST</tt><br><tt class="ENVAR">PGPORT</tt><br><tt class="ENVAR">PGUSER</tt></dt>
+<dd><p>缺省连接参数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN56281"></a><h2>诊断</h2>
+<p>如果出现错误，参阅 <a href="sql-dropdatabase.html"><i>DROP DATABASE</i></a> 和 <a href="app-psql.html"><span class="APPLICATION">psql</span></a> 获取可能的问题和错误信息描述。数据库服务器必须在目标机器上运行。同样，任何前端库 <span class="APPLICATION">libpq</span> 使用的缺省连接设置和环境变量都将适用。</p>
+</div>
+<div class="REFSECT1"><a name="AEN56287"></a><h2>例子</h2>
+<p>删除缺省数据库服务器上的 <tt class="LITERAL">demo</tt> 数据库：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">dropdb demo</kbd>
+<samp class="COMPUTEROUTPUT">DROP DATABASE</samp></pre>
+<p>在主机 <tt class="LITERAL">eden</tt> 上删除 <tt class="LITERAL">demo</tt> 数据库，端口是 5000 ，需要确认和回显执行的命令：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">dropdb -p 5000 -h eden -i -e demo</kbd>
+<samp class="COMPUTEROUTPUT">Database "demo" will be permanently deleted.
+Are you sure? (y/n) </samp><kbd class="USERINPUT">y</kbd>
+<samp class="COMPUTEROUTPUT">DROP DATABASE "demo"
+DROP DATABASE</samp></pre>
+</div>
+<div class="REFSECT1"><a name="AEN56304"></a><h2>又见</h2><a href="app-createdb.html"><span class="APPLICATION">createdb</span></a>, <a href="sql-dropdatabase.html"><i>DROP DATABASE</i></a>, 环境变量(<a href="libpq-envars.html">节29.12</a>)</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="app-createuser.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-droplang.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><span class="APPLICATION">createuser</span></td><td width="34%" align="center" valign="top"><a href="reference-client.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><span class="APPLICATION">droplang</span></td></tr>
+</table>
+</div>
+</body></html>

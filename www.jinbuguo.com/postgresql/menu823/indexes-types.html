@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>索引类型</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="indexes-intro.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="indexes.html">快退</a></td><td width="60%" align="center" valign="bottom">章11. 索引</td><td width="10%" align="right" valign="top"><a href="indexes.html">快进</a></td><td width="10%" align="right" valign="top"><a href="indexes-multicolumn.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INDEXES-TYPES">11.2. 索引类型</a></h1>
+<p>PostgreSQL 提供了好几种索引类型：B-tree, Hash, GiST, GIN 。每种索引类型都比较适合某些特定的查询类型，因为它们用了不同的算法。缺省时，<tt class="COMMAND">CREATE INDEX</tt> 命令将创建一个 B-tree 索引，它适合大多数情况。</p>
+<p><a name="AEN15980"></a><a name="AEN15983"></a>B-tree 适合处理那些能够按顺序存储的数据之上的等于和范围查询。特别是在一个建立了索引的字段涉及到使用
+<table border="0">
+<tbody>
+<tr><td><tt class="LITERAL">&lt;</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;=</tt></td></tr>
+<tr><td><tt class="LITERAL">=</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;=</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;</tt></td></tr>
+</tbody>
+</table>
+操作符之一进行比较的时候，PostgreSQL 的查询规划器都会考虑使用 B-tree 索引。等效于这些操作符组合的构造，比如 <tt class="LITERAL">BETWEEN</tt> 和 <tt class="LITERAL">IN</tt> ，也可以用搜索 B-tree 索引实现。但是要注意，<tt class="LITERAL">IS NULL</tt> 不同于 <tt class="LITERAL">=</tt> 并且是不能建立索引的。</P>
+<p><span class="emphasis"><i class="EMPHASIS">仅当</i></span>模式是一个常量，并且锚定在字符串开头的时候，优化器才会把 B-tree 索引用于模式匹配操作符 <tt class="LITERAL">LIKE</tt> 和 <tt class="LITERAL">~</tt> ，比如：<tt class="LITERAL">col LIKE 'foo%'</tt> 或 <tt class="LITERAL">col ~ '^foo'</tt> ，但是 <tt class="LITERAL">col LIKE '%bar'</tt> 就不行。同时，如果你的服务器未使用 C 区域设置，那么你需要用一个特殊的操作符类创建索引来支持模式匹配查询上的索引。参阅<a href="indexes-opclass.html">节11.8</a>。还有可能将 B-tree 索引用于 <tt class="LITERAL">ILIKE</tt> 和 <tt class="LITERAL">~*</tt> ，但是仅当模式以非字母字符(不受大小写影响的字符)开头才可以。</p>
+<p><a name="AEN16013"></a><a name="AEN16016"></a>Hash 索引只能处理简单的等于比较。当一个索引了的列涉及到使用 <tt class="LITERAL">=</tt> 操作符进行比较的时候，查询规划器会考虑使用 Hash 索引。下面的命令用于创建 Hash 索引：</p>
+<pre class="SYNOPSIS">CREATE INDEX <tt class="REPLACEABLE"><i>name</i></tt> ON <tt class="REPLACEABLE"><i>table</i></tt> USING hash (<tt class="REPLACEABLE"><i>column</i></tt>);</pre>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>测试表明，PostgreSQL 的 Hash 索引的性能不比 B-tree 索引强，而 Hash 索引的尺寸和制作时间更差。另外，Hash 索引操作目前没有记录 WAL 日志，因此如果发生了数据库崩溃，我们可能需要用 <tt class="COMMAND">REINDEX</tt> 重建 Hash 索引。因为这些原因，我们并不鼓励使用 Hash 索引。</p>
+</blockquote>
+</div>
+<p><a name="AEN16029"></a><a name="AEN16032"></a>GiST 索引不是单独一种索引类型，而是一种架构，可以在这种架构上实现很多不同的索引策略。因此，可以使用 GiST 索引的特定操作符类型高度依赖于索引策略(<i class="FIRSTTERM">操作符类</i>)。作为示例，PostgreSQL 的标准发布中包含用于二维几何数据类型的 GiST 操作符类，它支持
+<table border="0">
+<tbody>
+<tr><td><tt class="LITERAL">&lt;&lt;</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;&lt;</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;&gt;</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;&gt;</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;&lt;|</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;&lt;|</tt></td></tr>
+<tr><td><tt class="LITERAL">|&amp;&gt;</tt></td></tr>
+<tr><td><tt class="LITERAL">|&gt;&gt;</tt></td></tr>
+<tr><td><tt class="LITERAL">@&gt;</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;@</tt></td></tr>
+<tr><td><tt class="LITERAL">~=</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;&amp;</tt></td></tr>
+</tbody>
+</table>
+操作符的索引查询。这些操作符的含义参见<a href="functions-geometry.html">节9.10</a>。许多其它 GiST 操作符类位于 <tt class="LITERAL">contrib</tt> 中，或者是单独的项目，更多信息参见<a href="gist.html">章50</a>。</p>
+<p><a name="AEN16066"></a><a name="AEN16069"></a>GIN 索引是反转索引，它可以处理包含多个键的值(比如数组)。与 GiST 类似，GIN 支持用户定义的索引策略，可以使用 GIN 索引的特定操作符类型根据索引策略的不同而不同。作为示例，PostgreSQL 的标准发布中包含用于一维数组的 GIN 操作符类，它支持
+<table border="0">
+<tbody>
+<tr><td><tt class="LITERAL">&lt;@</tt></td></tr>
+<tr><td><tt class="LITERAL">@&gt;</tt></td></tr>
+<tr><td><tt class="LITERAL">=</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;&amp;</tt></td></tr>
+</tbody>
+</table>
+操作符的索引查询。这些操作符的含义参见<a href="functions-array.html">节9.14</a>。许多其它 GIN 操作符类位于 <tt class="LITERAL">contrib</tt>, <tt class="LITERAL">tsearch2</tt>, <tt class="LITERAL">intarray</tt> 模块。更多信息参见<a href="gin.html">章51</a>。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="indexes-intro.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="indexes-multicolumn.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">介绍</td><td width="34%" align="center" valign="top"><a href="indexes.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">多字段索引</td></tr>
+</table>
+</div>
+</body></html>

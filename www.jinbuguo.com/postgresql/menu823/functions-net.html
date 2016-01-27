@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>网络地址函数和操作符</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-geometry.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="functions-sequence.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-NET">9.11. 网络地址函数和操作符</a></h1>
+<p><a href="functions-net.html#CIDR-INET-OPERATORS-TABLE">表9-31</a>显示了可以用于 <tt class="TYPE">cidr</tt> 和 <tt class="TYPE">inet</tt> 的操作符。操作符 <tt class="LITERAL">&lt;&lt;</tt>, <tt class="LITERAL">&lt;&lt;=</tt>, <tt class="LITERAL">&gt;&gt;</tt>, <tt class="LITERAL">&gt;&gt;=</tt> 用于测试子网包含：它们只考虑两个地址的网络部分，忽略任何主机部分，然后判断其中一个网络部分是等于另外一个还是另外一个的子网。</p>
+<div class="TABLE"><a name="CIDR-INET-OPERATORS-TABLE"></a>
+<p><b>表9-31. <tt class="TYPE">cidr</tt> 和 <tt class="TYPE">inet</tt> 操作符</b></p>
+<table border="1" class="CALSTABLE"><col><col><col>
+<thead>
+<tr><th>操作符</th><th>描述</th><th>例子</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">&lt;</tt></td><td>小于</td><td><tt class="LITERAL">inet '192.168.1.5' &lt; inet '192.168.1.6'</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;=</tt></td><td>小于或等于</td><td><tt class="LITERAL">inet '192.168.1.5' &lt;= inet '192.168.1.5'</tt></td></tr>
+<tr><td><tt class="LITERAL">=</tt></td><td>等于</td><td><tt class="LITERAL">inet '192.168.1.5' = inet '192.168.1.5'</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;=</tt></td><td>大于或等于</td><td><tt class="LITERAL">inet '192.168.1.5' &gt;= inet '192.168.1.5'</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;</tt></td><td>大于</td><td><tt class="LITERAL">inet '192.168.1.5' &gt; inet '192.168.1.4'</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;&gt;</tt></td><td>不等于</td><td><tt class="LITERAL">inet '192.168.1.5' &lt;&gt; inet '192.168.1.4'</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;&lt;</tt></td><td>包含于</td><td><tt class="LITERAL">inet '192.168.1.5' &lt;&lt; inet '192.168.1/24'</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;&lt;=</tt></td><td>包含于或等于</td><td><tt class="LITERAL">inet '192.168.1/24' &lt;&lt;= inet '192.168.1/24'</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;&gt;</tt></td><td>包含</td><td><tt class="LITERAL">inet '192.168.1/24' &gt;&gt; inet '192.168.1.5'</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;&gt;=</tt></td><td>包含或等于</td><td><tt class="LITERAL">inet '192.168.1/24' &gt;&gt;= inet '192.168.1/24'</tt></td></tr>
+<tr><td><tt class="LITERAL">~</tt></td><td>位非</td><td><tt class="LITERAL">~ inet '192.168.1.6'</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;</tt></td><td>位与</td><td><tt class="LITERAL">inet '192.168.1.6' &amp; inet '0.0.0.255'</tt></td></tr>
+<tr><td><tt class="LITERAL">|</tt></td><td>位或</td><td><tt class="LITERAL">inet '192.168.1.6' | inet '0.0.0.255'</tt></td></tr>
+<tr><td><tt class="LITERAL">+</tt></td><td>加</td><td><tt class="LITERAL">inet '192.168.1.6' + 25</tt></td></tr>
+<tr><td><tt class="LITERAL">-</tt></td><td>减</td><td><tt class="LITERAL">inet '192.168.1.43' - 36</tt></td></tr>
+<tr><td><tt class="LITERAL">-</tt></td><td>减</td><td><tt class="LITERAL">inet '192.168.1.43' - inet '192.168.1.19'</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p><a href="functions-net.html#CIDR-INET-FUNCTIONS-TABLE">表9-32</a>显示了所有可以用于 <tt class="TYPE">cidr</tt> 和 <tt class="TYPE">inet</tt> 的函数。函数 <code class="FUNCTION">host</code>, <code class="FUNCTION">text</code>, <code class="FUNCTION">abbrev</code> 主要是为了提供可选的显示格式用的。</p>
+<div class="TABLE"><a name="CIDR-INET-FUNCTIONS-TABLE"></a>
+<p><b>表9-32. <tt class="TYPE">cidr</tt> 和 <tt class="TYPE">inet</tt> 函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col><col>
+<thead>
+<tr><th>函数</th><th>返回类型</th><th>描述</th><th>例子</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">abbrev</code>(<tt class="TYPE">inet</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>缩写显示格式文本</td><td><tt class="LITERAL">abbrev(inet '10.1.0.0/16')</tt></td><td><tt class="LITERAL">10.1.0.0/16</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">abbrev</code>(<tt class="TYPE">cidr</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>缩写显示格式文本</td><td><tt class="LITERAL">abbrev(cidr '10.1.0.0/16')</tt></td><td><tt class="LITERAL">10.1/16</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">broadcast</code>(<tt class="TYPE">inet</tt>)</tt></td><td><tt class="TYPE">inet</tt></td><td>网络广播地址</td><td><tt class="LITERAL">broadcast('192.168.1.5/24')</tt></td><td><tt class="LITERAL">192.168.1.255/24</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">family</code>(<tt class="TYPE">inet</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>抽取地址族(<tt class="LITERAL">4</tt> 为IPv4，<tt class="LITERAL">6</tt> 为IPv6)</td><td><tt class="LITERAL">family('::1')</tt></td><td><tt class="LITERAL">6</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">host</code>(<tt class="TYPE">inet</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>将主机地址类型抽出为文本</td><td><tt class="LITERAL">host('192.168.1.5/24')</tt></td><td><tt class="LITERAL">192.168.1.5</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">hostmask</code>(<tt class="TYPE">inet</tt>)</tt></td><td><tt class="TYPE">inet</tt></td><td>为网络构造主机掩码</td><td><tt class="LITERAL">hostmask('192.168.23.20/30')</tt></td><td><tt class="LITERAL">0.0.0.3</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">masklen</code>(<tt class="TYPE">inet</tt>)</tt></td><td><tt class="TYPE">int</tt></td><td>抽取子网掩码长度</td><td><tt class="LITERAL">masklen('192.168.1.5/24')</tt></td><td><tt class="LITERAL">24</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">netmask</code>(<tt class="TYPE">inet</tt>)</tt></td><td><tt class="TYPE">inet</tt></td><td>为网络构造子网掩码</td><td><tt class="LITERAL">netmask('192.168.1.5/24')</tt></td><td><tt class="LITERAL">255.255.255.0</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">network</code>(<tt class="TYPE">inet</tt>)</tt></td><td><tt class="TYPE">cidr</tt></td><td>抽取地址的网络部分</td><td><tt class="LITERAL">network('192.168.1.5/24')</tt></td><td><tt class="LITERAL">192.168.1.0/24</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">set_masklen</code>(<tt class="TYPE">inet</tt>, <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">inet</tt></td><td>为 <tt class="TYPE">inet</tt> 数值设置子网掩码长度</td><td><tt class="LITERAL">set_masklen('192.168.1.5/24', 16)</tt></td><td><tt class="LITERAL">192.168.1.5/16</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">set_masklen</code>(<tt class="TYPE">cidr</tt>, <tt class="TYPE">int</tt>)</tt></td><td><tt class="TYPE">cidr</tt></td><td>为 <tt class="TYPE">cidr</tt> 数值设置子网掩码长度</td><td><tt class="LITERAL">set_masklen('192.168.1.0/24'::cidr, 16)</tt></td><td><tt class="LITERAL">192.168.0.0/16</tt></td></tr>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">text</code>(<tt class="TYPE">inet</tt>)</tt></td><td><tt class="TYPE">text</tt></td><td>	把 IP 地址和掩码长度抽取为文本</td><td><tt class="LITERAL">text(inet '192.168.1.5')</tt></td><td><tt class="LITERAL">192.168.1.5/32</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p>任何 <tt class="TYPE">cidr</tt> 值都能够被隐含或明确的转换为 <tt class="TYPE">inet</tt> 值，因此上述能够操作 <tt class="TYPE">inet</tt> 值的函数也同样能够操作 <tt class="TYPE">cidr</tt> 值。而将某些操作 <tt class="TYPE">inet</tt> 和 <tt class="TYPE">cidr</tt> 的函数单独分隔开是因为它们的行为不同。<tt class="TYPE">inet</tt> 值也可以转换为 <tt class="TYPE">cidr</tt> 值，此时子网掩码右侧的所有位都将无声的转换为零以获得一个有效的 <tt class="TYPE">cidr</tt> 值。另外，你还可以使用常规的类型转换语法将一个文本字符串转换为 <tt class="TYPE">inet</tt> 或 <tt class="TYPE">cidr</tt> 值。例如：<tt class="LITERAL">inet(<tt class="REPLACEABLE"><i>expression</i></tt>)</tt> 或 <tt class="LITERAL"><tt class="REPLACEABLE"><i>colname</i></tt>::cidr</tt> 。</p>
+<p><a href="functions-net.html#MACADDR-FUNCTIONS-TABLE">表9-33</a>显示了可以用于 <tt class="TYPE">macaddr</tt> 类型的函数。函数 <tt class="LITERAL"><code class="FUNCTION">trunc</code>(<tt class="TYPE">macaddr</tt>)</tt> 返回一个 MAC 地址，该地址的最后三个字节设置为零。这样可以把剩下的前缀与一个制造商相关联。</p>
+<div class="TABLE"><a name="MACADDR-FUNCTIONS-TABLE"></a>
+<p><b>表9-33. <tt class="TYPE">macaddr</tt> 函数</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col><col>
+<thead>
+<tr><th>函数</th><th>返回类型</th><th>描述</th><th>例子</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL"><code class="FUNCTION">trunc</code>(<tt class="TYPE">macaddr</tt>)</tt></td><td><tt class="TYPE">macaddr</tt></td><td>把后三个字节置为零</td><td><tt class="LITERAL">trunc(macaddr '12:34:56:78:90:ab')</tt></td><td><tt class="LITERAL">12:34:56:00:00:00</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p><tt class="TYPE">macaddr</tt> 类型还支持标准关系操作符(<tt class="LITERAL">&gt;</tt>, <tt class="LITERAL">&lt;=</tt> 等)用于词法排序。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-geometry.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="functions-sequence.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">几何函数和操作符</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">序列操作函数</td></tr>
+</table>
+</div>
+</body></html>

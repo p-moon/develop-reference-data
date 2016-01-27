@@ -1,0 +1,497 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>虚拟主机示例 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">虚拟主机</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>虚拟主机示例</h1>
+
+
+
+    <p>本文档试图解释一些在设置虚拟主机时经常问及的问题。这些示例向你展示了如何在一个服务器上通过<a href="name-based.html">基于域名</a>的或是<a href="ip-based.html">基于IP</a>的虚拟主机来部署多个web站点。另一份关于如何在一个代理服务器后构建基于多个服务器的站点的说明文档也很快就会出来。</p>
+
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="purename" id="purename">在一个IP地址上运行多个基于域名的web站点</a></h2>
+
+    <p>您的服务器有只一个IP地址，而在DNS中有很多域名(CNAMES)映射到这个机器。您而您想要在这个机器上运行<code>www.example.com</code>和<code>www.example.org</code>两个站点。</p>
+
+    <div class="note"><h3>注意</h3>
+		<p>在您的Apache服务器配置中创建一个虚拟主机并不会自动在您的DNS中对主机名做相应更新。您<em>必须</em>自己在DNS中添加域名来指向您的IP地址。否则别人是无法看到您的web站点的。您可以在您的<code>hosts</code>文件中添加这一条目来进行测试，但这种方法仅适用于那些有这些<code>hosts</code>文件的机器来使用。</p>
+    </div>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    # 确保Apache在监听80端口<br />
+    Listen 80<br />
+    <br />
+    # 为虚拟主机在所有IP地址上监听<br />
+    NameVirtualHost *:80<br />
+    <br />
+    &lt;VirtualHost *:80&gt;<br />
+    <span class="indent">
+      DocumentRoot /www/example1<br />
+      ServerName www.example.com<br />
+      <br />
+      # 你可以在这里添加其他指令<br />
+      <br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+    <br />
+    &lt;VirtualHost *:80&gt;<br />
+    <span class="indent">
+      DocumentRoot /www/example2<br />
+      ServerName www.example.org<br />
+      <br />
+      # 你可以在这里添加其他指令<br />
+      <br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+    <p>因为星号匹配所有IP地址，所以主服务器不接收任何请求。因为<code>www.example.com</code>首先出现在配置文件中，所以它拥有最高优先级，可以认为是<cite>默认</cite>或<cite>主</cite>服务器。这意味着如果一个请求不能与某个<code>ServerName</code>指令相匹配，它将会由第一个<code>&lt;VirtualHost&gt;</code>段所伺服。</p>
+
+    <div class="note">
+            <h3>注意</h3>
+
+            <p>如果您愿意，您可以用确定的IP地址来取代"<code>*</code>"。在这种情况下，<code>VirtualHost</code>的参数<em>必须</em>与<code>NameVirtualHost</code>的参数相符：</p>
+
+            <div class="example"><p><code>
+            NameVirtualHost 172.20.30.40<br />
+						<br />
+            &lt;VirtualHost 172.20.30.40&gt;<br />
+ 		        # 其他 ...
+            </code></p></div>
+
+           <p>然而，当您的IP地址无法确定的时候，使用"<code>*</code>"是很方便的，比如说，您的ISP给您配置的是动态IP地址，而您又使用了某种动态域名解析系统时。因为"<code>*</code>"匹配任何IP地址，所以在这种情况下，不论IP地址如何变化，您都不需要另外进行配置。</p>
+    </div>
+
+    <p>上述配置就是您在绝大多数情况下使用基于域名的虚拟主机时将要用到的。事实上，仅在一种情况下这样的配置不会让您满意：您想为不同的IP地址或是端口提供不同的内容。</p>
+
+	</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="twoips" id="twoips">在多于一个IP的情况下使用基于域名的虚拟主机。</a></h2>
+
+  	<div class="note">
+		  <h3>注意</h3><p>在这里讨论的任何技术都可以推广到使用任意数量的IP地址。</p>
+    </div>
+
+    <p>服务器有两个IP地址。一个(<code>172.20.30.40</code>)用于主服务器<code>server.domain.com</code> ，另外一个(<code>172.20.30.50</code>)用于构建两个或多个虚拟主机。</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    Listen 80<br />
+		<br />
+    # "主"服务器运行于：172.20.30.40<br />
+    ServerName server.domain.com<br />
+    DocumentRoot /www/mainserver<br />
+		<br />
+    # 这是另外一个IP地址<br />
+    NameVirtualHost 172.20.30.50<br />
+		<br />
+    &lt;VirtualHost 172.20.30.50&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example1<br />
+        ServerName www.example.com<br />
+   			<br />
+        # 你可以在这里添加其他指令 ...<br />
+				<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.50&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example2<br />
+        ServerName www.example.org<br />
+				<br />
+        # 你可以在这里添加其他指令 ...<br />
+				<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p>
+    </div>
+
+    <p>任何不是针对<code>172.20.30.50</code>的请求都将由主服务器来伺服。而提交给<code>172.20.30.50</code>却没有主机名或没有"<code>Host:</code>"头的请求，都将由<code>www.example.com</code>伺服。</p>
+
+	</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="intraextra" id="intraextra">在不同的IP的地址(比如一个内部和一个外部地址)上提供相同的内容</a></h2>
+
+    <p>服务器有两个IP地址(<code>192.168.1.1</code>和<code>172.20.30.40</code>)。这个机器位于内部(局域网)网络和外部(广域网)之间。在外部，域名<code>server.example.com</code>指向外部地址(<code>172.20.30.40</code>)，而在内部则指向内部地址(<code>192.168.1.1</code>)。</p>
+
+    <p>服务器可以为来自内部和外部的请求提供同样的内容，您只需要一个<code>&lt;VirtualHost&gt;</code>配置段就可以了。</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    NameVirtualHost 192.168.1.1<br />
+    NameVirtualHost 172.20.30.40<br />
+		<br />
+    &lt;VirtualHost 192.168.1.1 172.20.30.40&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/server1<br />
+        ServerName server.example.com<br />
+        ServerAlias server<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+    <p>现在，从不同的网络提交的请求都会由同一个<code>&lt;VirtualHost&gt;</code>段来伺服。</p>
+
+    <div class="note">
+          <h3>注意</h3><p>在内网中，您可以使用<code>server</code>这个名字来代替<code>server.example.com</code>这个全名。</p>
+
+          <p>跟上面一样，在上述的例子里，您可以用"<code>*</code>"来代替具体的IP地址，这样就可以对所有的地址都返回相同的内容了。</p>
+    </div>
+
+	</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="port" id="port">在不同的端口上运行不同的站点</a></h2>
+
+    <p>如果您想让同一个IP的不同端口伺服多个域名。您可以借助在<code>NameVirtualHost</code>指令中定义端口的方法来达到这个目的。如果您想使用不带"<code>name:port</code>"的<code>&lt;VirtualHost name:port&gt;</code>或是直接用<code>Listen</code>指令，您的配置将无法生效。</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    Listen 80<br />
+    Listen 8080<br />
+		<br />
+    NameVirtualHost 172.20.30.40:80<br />
+    NameVirtualHost 172.20.30.40:8080<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40:80&gt;<br />
+    <span class="indent">
+        ServerName www.example.com<br />
+        DocumentRoot /www/domain-80<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40:8080&gt;<br />
+    <span class="indent">
+        ServerName www.example.com<br />
+        DocumentRoot /www/domain-8080<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40:80&gt;<br />
+    <span class="indent">
+        ServerName www.example.org<br />
+        DocumentRoot /www/otherdomain-80<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40:8080&gt;<br />
+    <span class="indent">
+        ServerName www.example.org<br />
+        DocumentRoot /www/otherdomain-8080<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+	</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="ip" id="ip">建立基于IP的虚拟主机</a></h2>
+
+    <p>一个有两个IP地址(<code>172.20.30.40</code>和<code>172.20.30.50</code>)分别对应域名<code>www.example.com</code>和<code>www.example.org</code>的配置如下：</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    Listen 80<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example1<br />
+        ServerName www.example.com<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.50&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example2<br />
+        ServerName www.example.org<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+    <p>如果存在主服务器，那么对没有出现在任一个<code>&lt;VirtualHost&gt;</code>段中的请求(比如，对<code>localhost</code>的请求)都会由主服务器来伺服。</p>
+
+	</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="ipport" id="ipport">混用基于端口和基于IP的虚拟主机</a></h2>
+
+    <p>如果您的服务器有两个IP地址(<code>172.20.30.40</code>和<code>172.20.30.50</code>)分别对应域名<code>www.example.com</code>和<code>www.example.org</code> 。对每个域名，您都希望在80端口和8080端口发布您的网站。您可以这样配置：</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    Listen 172.20.30.40:80<br />
+    Listen 172.20.30.40:8080<br />
+    Listen 172.20.30.50:80<br />
+    Listen 172.20.30.50:8080<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40:80&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example1-80<br />
+        ServerName www.example.com<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40:8080&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example1-8080<br />
+        ServerName www.example.com<br />
+		</span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.50:80&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example2-80<br />
+        ServerName www.example.org<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.50:8080&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example2-8080<br />
+        ServerName www.example.org<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+	</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="mixed" id="mixed">混用基于域名和基于IP的虚拟主机</a></h2>
+
+    <p>您想在一些地址上配置基于域名的虚拟主机而在另外一些地址上配置基于IP的虚拟主机。</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    Listen 80<br />
+		<br />
+    NameVirtualHost 172.20.30.40<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example1<br />
+        ServerName www.example.com<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example2<br />
+        ServerName www.example.org<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example3<br />
+        ServerName www.example3.net<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    # IP-based<br />
+    &lt;VirtualHost 172.20.30.50&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example4<br />
+        ServerName www.example4.edu<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.60&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example5<br />
+        ServerName www.example5.gov<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+	</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="proxy" id="proxy">将<code>&lt;Virtual_host&gt;</code>和<code>mod_proxy</code>模块一起使用</a></h2>
+
+    <p>下面的例子允许一个前端机器代理一个运行在其他机器上的虚拟主机。在如下示例中，在<code>192.168.111.2</code>机器上配置了一个同名的虚拟主机。这样，万一在同一台机器上代理了多个主机名，<code class="directive"><a href="../mod/mod_proxy.html#proxypreservehost">ProxyPreserveHost</a> On</code> 指令能确保指定的主机名顺利通过代理。</p>
+
+    <div class="example"><p><code>
+    &lt;VirtualHost *:*&gt;<br />
+        ProxyPreserveHost On<br />
+        ProxyPass / http://192.168.111.2<br />
+        ProxyPassReverse / http://192.168.111.2/<br />
+        ServerName hostname.example.com<br />
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+    </div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="default" id="default">使用"<code>_default_</code>"虚拟主机</a></h2>
+
+  	<h3><a name="defaultallports" id="defaultallports">为所有端口配置"<code>_default_</code>"虚拟主机</a></h3>
+
+    <p>这样配置可以捕获<em>所有</em>指向没指定的IP地址和端口的请求。比如：一个没被任何虚拟主机使用的地址/端口对。</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    &lt;VirtualHost _default_:*&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/default<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+    <p>这样一个使用通配符端口的默认虚拟主机可以有效的防止请求被主服务器接收。</p>
+
+    <p>如果一个地址/端口对已经被一个基于域名的虚拟主机使用，那么"<code>_default_</code>"虚拟主机决不会处理发向这个地址/端口对的请求。如果一个"<code>Host:</code>"请求头中包含未知信息，或者干脆就没有，那么它会被第一个基于域名的虚拟主机(也就是在配置文件中最先出现的使用了那个地址/端口对的虚拟主机)处理。</p>
+
+    <p>您可以用<code class="directive"><a href="../mod/mod_alias.html#aliasmatch">AliasMatch</a></code>或<code class="directive"><a href="../mod/mod_rewrite.html#rewriterule">RewriteRule</a></code>来重写任何请求，使它指向一个简单信息页面(或脚本)。</p>
+    
+
+    <h3><a name="defaultdifferentports" id="defaultdifferentports">为不同的端口配置"<code>_default_</code>"虚拟主机</a></h3>
+
+    <p>与第一种一样，但我们想让服务器侦听很多端口而第二个"<code>_default_</code>"虚拟主机单独侦听80端口。</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    &lt;VirtualHost _default_:80&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/default80<br />
+        # ...<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost _default_:*&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/default<br />
+        # ...<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+    <p>侦听80端口的"<code>_default_</code>"虚拟主机(<em>必须</em>出现在所有使用通配符端口的虚拟主机之前)会捕获所有发向一个未指定的IP地址的请求。主服务器将不会用于伺服任何请求。</p>
+    
+
+    <h3><a name="defaultoneport" id="defaultoneport">为单独一个端口配置"<code>_default_</code>"虚拟主机</a></h3>
+
+    <p>如果我们只想在80端口上建立唯一的一个"<code>_default_</code>"虚拟主机，我们应该这样配置：</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    &lt;VirtualHost _default_:80&gt;<br />
+    DocumentRoot /www/default<br />
+    ...<br />
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+    <p>发向一个未指定地址的80端口的请求将会由这个虚拟主机伺服；而发向未设定地址的其他端口的请求则由主服务器伺服。</p>
+    
+
+	</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="migrate" id="migrate">将一个基于域名的虚拟主机移植为一个基于IP的虚拟主机</a></h2>
+
+    <p>如果一个具有<code>www.example.org</code>域名的虚拟主机(就是<a href="#name">基于域名</a>配置示例中的第二个)得到了自己的IP地址。为了避免一些域名服务器或代理服务器在移植期间仍对这个域名做老的解析，我们可以采用一种过渡方法：同时提供新旧两个IP地址的解析。</p>
+
+    <p>达到这个目的很简单。因为我们只要简单的把新地址(<code>172.20.30.50</code>)加入<code>VirtualHost</code>指令就行了。</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    Listen 80<br />
+    ServerName www.example.com<br />
+    DocumentRoot /www/example1<br />
+		<br />
+    NameVirtualHost 172.20.30.40<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40 172.20.30.50&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example2<br />
+        ServerName www.example.org<br />
+        # ...<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/example3<br />
+        ServerName www.example.net<br />
+        ServerAlias *.example.net<br />
+        # ...<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+    <p>现在这个虚拟主机就可以用新地址(表现为一个基于IP的虚拟主机)和旧地址(表现为一个基于域名的虚拟主机)同时进行访问了。</p>
+
+	</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="serverpath" id="serverpath">使用<code>ServerPath</code>指令</a></h2>
+
+    <p>如果我们在同一个服务器上运行了两个基于域名的虚拟主机。为了匹配正确的虚拟主机，客户端必须发送正确的"<code>Host:</code>"头。而旧的使用HTTP/1.0的客户端无法发送这样的头，这样Apache就无法辨别客户端想要连接哪个虚拟主机(会用主虚拟主机来伺服这个请求)。为了尽量提供向下兼容性，我们可以提供一个主虚拟主机来返回一个页面，在页面中加入指向基于域名的虚拟主机的URL前缀的链接。</p>
+
+    <div class="example"><h3>服务器配置</h3><p><code>
+    
+
+    NameVirtualHost 172.20.30.40<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40&gt;<br />
+    <span class="indent">
+        # 主虚拟主机<br />
+        DocumentRoot /www/subdomain<br />
+        RewriteEngine On<br />
+        RewriteRule ^/.* /www/subdomain/index.html<br />
+        # ...<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40&gt;<br />
+    DocumentRoot /www/subdomain/sub1<br />
+    <span class="indent">
+        ServerName www.sub1.domain.tld<br />
+        ServerPath /sub1/<br />
+        RewriteEngine On<br />
+        RewriteRule ^(/sub1/.*) /www/subdomain$1<br />
+        # ...<br />
+    </span>
+    &lt;/VirtualHost&gt;<br />
+		<br />
+    &lt;VirtualHost 172.20.30.40&gt;<br />
+    <span class="indent">
+        DocumentRoot /www/subdomain/sub2<br />
+        ServerName www.sub2.domain.tld<br />
+        ServerPath /sub2/<br />
+        RewriteEngine On<br />
+        RewriteRule ^(/sub2/.*) /www/subdomain$1<br />
+        # ...<br />
+    </span>
+    &lt;/VirtualHost&gt;
+    </code></p></div>
+
+    <p>由于<code class="directive"><a href="../mod/core.html#serverpath">ServerPath</a></code>指令的作用，发送到<code>http://www.sub1.domain.tld/sub1/</code>的请求<em>总会</em>被sub1-vhost所伺服。<br />如果客户端发送了正确的"<code>Host:</code>"头，发送到<code>http://www.sub1.domain.tld/</code>的请求只会被sub1-vhost所伺服。如果没有发送"<code>Host:</code>"头，客户端将会得到从主虚拟主机发送的信息页面。</p>
+
+    <p>请注意，这里还有一点小问题：如果客户端没有发送"<code>Host:</code>"头，发送到<code>http://www.sub2.domain.tld/sub1/</code>的请求还是会被sub1-vhost所伺服。</p>
+
+	<p><code class="directive"><a href="../mod/mod_rewrite.html#rewriterule">RewriteRule</a></code>指令用以确保正确发送了"<code>Host:</code>"头的客户端可以任意使用这两种URL变量，比如说：使用或不使用URL前缀。</p>
+
+	</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

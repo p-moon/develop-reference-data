@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_hba.conf 文件</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="client-authentication.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="client-authentication.html">快退</a></td><td width="60%" align="center" valign="bottom">章20. 用户认证</td><td width="10%" align="right" valign="top"><a href="client-authentication.html">快进</a></td><td width="10%" align="right" valign="top"><a href="auth-methods.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="AUTH-PG-HBA-CONF">20.1. <tt class="FILENAME">pg_hba.conf</tt> 文件</a></h1><a name="AEN23024"></a>
+<p>客户端认证是由一个配置文件(通常名为 <tt class="FILENAME">pg_hba.conf</tt>)控制的，它存放在数据库集群的数据目录里。HBA 的意思是"host-based authentication"，也就是基于主机的认证。在 <tt class="COMMAND">initdb</tt> 初始化数据目录的时候，它会安装一个缺省的 <tt class="FILENAME">pg_hba.conf</tt> 文件。不过我们也可以把认证配置文件放在其它地方；参阅 <a href="runtime-config-file-locations.html#GUC-HBA-FILE">hba_file</a> 配置参数。</p>
+<p><tt class="FILENAME">pg_hba.conf</tt> 文件的常用格式是一组记录，每行一条。空白行将被忽略，井号 <tt class="LITERAL">#</tt> 开头的注释也被忽略。一条记录是由若干用空格和/或制表符分隔的字段组成。如果字段用引号包围，那么它可以包含空白。记录不能跨行存在。</p>
+<p>每条记录声明一种连接类型、一个客户端 IP 地址范围(如果和连接类型相关的话)、一个数据库名、一个用户名字、对匹配这些参数的连接使用的认证方法。第一条匹配连接类型、客户端地址、连接请求的数据库名和用户名的记录将用于执行认证。这个处理过程没有"跨越"或者"回头"的说法：如果选择了一条记录而且认证失败，那么将不再考虑后面的记录。如果没有匹配的记录，那么访问将被拒绝。</p>
+<p>每条记录可以是下面七种格式之一：</p>
+<pre class="SYNOPSIS">local      <tt class="REPLACEABLE"><i>database</i></tt>  <tt class="REPLACEABLE"><i>user</i></tt>  <tt class="REPLACEABLE"><i>auth-method</i></tt>  [<span class="OPTIONAL"><tt class="REPLACEABLE"><i>auth-option</i></tt></span>]
+host       <tt class="REPLACEABLE"><i>database</i></tt>  <tt class="REPLACEABLE"><i>user</i></tt>  <tt class="REPLACEABLE"><i>CIDR-address</i></tt>  <tt class="REPLACEABLE"><i>auth-method</i></tt>  [<span class="OPTIONAL"><tt class="REPLACEABLE"><i>auth-option</i></tt></span>]
+hostssl    <tt class="REPLACEABLE"><i>database</i></tt>  <tt class="REPLACEABLE"><i>user</i></tt>  <tt class="REPLACEABLE"><i>CIDR-address</i></tt>  <tt class="REPLACEABLE"><i>auth-method</i></tt>  [<span class="OPTIONAL"><tt class="REPLACEABLE"><i>auth-option</i></tt></span>]
+hostnossl  <tt class="REPLACEABLE"><i>database</i></tt>  <tt class="REPLACEABLE"><i>user</i></tt>  <tt class="REPLACEABLE"><i>CIDR-address</i></tt>  <tt class="REPLACEABLE"><i>auth-method</i></tt>  [<span class="OPTIONAL"><tt class="REPLACEABLE"><i>auth-option</i></tt></span>]
+host       <tt class="REPLACEABLE"><i>database</i></tt>  <tt class="REPLACEABLE"><i>user</i></tt>  <tt class="REPLACEABLE"><i>IP-address</i></tt>  <tt class="REPLACEABLE"><i>IP-mask</i></tt>  <tt class="REPLACEABLE"><i>auth-method</i></tt>  [<span class="OPTIONAL"><tt class="REPLACEABLE"><i>auth-option</i></tt></span>]
+hostssl    <tt class="REPLACEABLE"><i>database</i></tt>  <tt class="REPLACEABLE"><i>user</i></tt>  <tt class="REPLACEABLE"><i>IP-address</i></tt>  <tt class="REPLACEABLE"><i>IP-mask</i></tt>  <tt class="REPLACEABLE"><i>auth-method</i></tt>  [<span class="OPTIONAL"><tt class="REPLACEABLE"><i>auth-option</i></tt></span>]
+hostnossl  <tt class="REPLACEABLE"><i>database</i></tt>  <tt class="REPLACEABLE"><i>user</i></tt>  <tt class="REPLACEABLE"><i>IP-address</i></tt>  <tt class="REPLACEABLE"><i>IP-mask</i></tt>  <tt class="REPLACEABLE"><i>auth-method</i></tt>  [<span class="OPTIONAL"><tt class="REPLACEABLE"><i>auth-option</i></tt></span>]</pre>
+<p>各个字段的含义如下：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">local</tt></dt>
+<dd><p>这条记录匹配企图通过 Unix 域套接字进行的连接。没有这种类型的记录，就不允许 Unix 域套接字的连接。</p></dd>
+<dt><tt class="LITERAL">host</tt></dt>
+<dd><p>这条记录匹配企图通过 TCP/IP 进行的连接。<tt class="LITERAL">host</tt> 记录匹配 SSL 和非 SSL 的连接请求。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>除非服务器带着合适的 <a href="runtime-config-connection.html#GUC-LISTEN-ADDRESSES">listen_addresses</a> 配置参数值启动，否则将不可能进行远程的 TCP/IP 连接，因为缺省的行为是只监听本地自环地址 <tt class="LITERAL">localhost</tt> 的连接。</p>
+</blockquote>
+</div></dd>
+<dt><tt class="LITERAL">hostssl</tt></dt>
+<dd><p>这条记录匹配企图使用 TCP/IP 的 SSL 连接。但必须是使用 SSL 加密的连接。</p>
+<p>要使用这个选项，编译服务器的时候必须打开 SSL 支持。而且在服务器启动的时候必须打开 <a href="runtime-config-connection.html#GUC-SSL">ssl</a> 配置选项(参阅<a href="ssl-tcp.html">节16.7</a>)。</p></dd>
+<dt><tt class="LITERAL">hostnossl</tt></dt>
+<dd><p>这条记录与 <tt class="LITERAL">hostssl</tt> 相反：它只匹配那些在 TCP/IP 上不使用 SSL 的连接请求。</p></dd>
+<dt><tt class="REPLACEABLE"><i>database</i></tt></dt>
+<dd><p>声明记录所匹配的数据库名称。值 <tt class="LITERAL">all</tt> 表明该记录匹配所有数据库，值 <tt class="LITERAL">sameuser</tt> 表示如果被请求的数据库和请求的用户同名，则匹配。值 <tt class="LITERAL">samerole</tt> 表示请求的用户必须是一个与数据库同名的角色中的成员(<tt class="LITERAL">samegroup</tt> 是一个已经废弃了，但目前仍然被接受的 <tt class="LITERAL">samerole</tt>同义词)。在其它情况里，这就是一个特定的 PostgreSQL 数据库名字。可以通过用逗号分隔的方法声明多个数据库，也可以通过前缀 <tt class="LITERAL">@</tt> 来声明一个包含数据库名的文件。</p></dd>
+<dt><tt class="REPLACEABLE"><i>user</i></tt></dt>
+<dd><p>为这条记录声明所匹配的数据库用户。值 <tt class="LITERAL">all</tt> 表明它匹配于所有用户。否则，它就是特定数据库用户的名字或者是一个前缀 <tt class="LITERAL">+</tt> 的组名称。请注意，在 PostgreSQL 里，用户和组没有真正的区别，<tt class="LITERAL">+</tt> 实际上只是意味着"匹配任何直接或者间接属于这个角色的成员"，而没有 <tt class="LITERAL">+</tt> 记号的名字只匹配指定的角色。多个用户名可以通过用逗号分隔的方法声明。一个包含用户名的文件可以通过在文件名前面前缀 <tt class="LITERAL">@</tt> 来声明。</p></dd>
+<dt><tt class="REPLACEABLE"><i>CIDR-address</i></tt></dt>
+<dd><p>声明这条记录匹配的客户端机器的 IP 地址范围。它包含一个标准的点分十进制的 IP 地址(只能用数值而不能用域或主机名)和一个 CIDR 掩码长度。掩码长度表示客户端 IP 地址必须匹配的高位二进制位数。在给出的 IP 地址里，这个长度的右边的二进制位必须为零。在 IP 地址、<tt class="LITERAL">/</tt> 、CIDR 掩码长度之间不能有空白。</p>
+<p>典型的 <tt class="REPLACEABLE"><i>CIDR-address</i></tt> 举例：<tt class="LITERAL">172.20.143.89/32</tt> 表示一个主机，<tt class="LITERAL">172.20.143.0/24</tt> 表示一个小子网，<tt class="LITERAL">10.6.0.0/16</tt> 表示一个大子网。要声明单个主机，给 IPv4 地址声明 CIDR 掩码 32 ，给 IPv6 地址声明 128 。不要在地址中省略结尾的 0 。</p>
+<p>以 IPv4 格式给出的 IP 地址会匹配那些拥有对应地址的 IPv6 连接，比如 <tt class="LITERAL">127.0.0.1</tt> 将匹配 IPv6 地址 <tt class="LITERAL">::ffff:127.0.0.1</tt> 。一个以 IPv6 格式给出的记录将只匹配 IPv6 连接，即使对应的地址在 IPv4-in-IPv6 范围内。请注意如果系统的 C 库不支持 IPv6 地址，那么 IPv6 的格式将被拒绝。</p>
+<p>这个字段只适用于 <tt class="LITERAL">host</tt>, <tt class="LITERAL">hostssl</tt>, <tt class="LITERAL">hostnossl</tt> 记录。</p></dd>
+<dt><tt class="REPLACEABLE"><i>IP-address</i></tt><br><tt class="REPLACEABLE"><i>IP-mask</i></tt></dt>
+<dd><p>这些方法可以用于作为 <tt class="REPLACEABLE"><i>CIDR-address</i></tt> 表示法的替补。它不是声明掩码的长度，而是在另外一个字段里声明实际的掩码。比如，<tt class="LITERAL">255.0.0.0</tt> 表示 IPv4 CIDR 掩码长度 8 ，而 <tt class="LITERAL">255.255.255.255</tt> 表示 CIDR 掩码长度 32 。</p>
+<p>这些字段只适用于 <tt class="LITERAL">host</tt>, <tt class="LITERAL">hostssl</tt>, <tt class="LITERAL">hostnossl</tt> 记录。</p></dd>
+<dt><tt class="REPLACEABLE"><i>auth-method</i></tt></dt>
+<dd><p>声明通过这条记录连接的时候使用的认证方法。可能的选择在下面简介，详细情况在<a href="auth-methods.html">节20.2</a>中介绍。</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">trust</tt></dt>
+<dd><p>无条件地允许连接。这个方法允许任何可以与 PostgreSQL 数据库服务器连接的用户以他们期望的任意 PostgreSQL 数据库用户身份进行连接，而不需要口令。参阅<a href="auth-methods.html#AUTH-TRUST">节20.2.1</a>获取细节。</p></dd>
+<dt><tt class="LITERAL">reject</tt></dt>
+<dd><p>无条件地拒绝连接。常用于从一个组中"过滤"某些主机。</p></dd>
+<dt><tt class="LITERAL">md5</tt></dt>
+<dd><p>要求客户端提供一个 MD5 加密的口令进行认证。参阅<a href="auth-methods.html#AUTH-PASSWORD">节20.2.2</a>获取细节。</p></dd>
+<dt><tt class="LITERAL">crypt</tt></dt>
+<dd><div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>这个选项只有在与 7.2 以前的客户端进行通讯的时候才建议使用。</p>
+</blockquote>
+</div>
+<p><tt class="LITERAL">crypt</tt> 要求客户端提供一个 <code class="FUNCTION">crypt()</code> 加密的口令用于认证。现在我们建议使用 <tt class="LITERAL">md5</tt> 。参阅<a href="auth-methods.html#AUTH-PASSWORD">节20.2.2</a>。</p></dd>
+<dt><tt class="LITERAL">password</tt></dt>
+<dd><p>要求客户端提供一个未加密的口令进行认证。因为口令是以明文形式在网络上传递的，所以我们不应该在不安全的网络上使用这个方式。并且它通常还不能和线程化的客户端应用一起使用。参阅<a href="auth-methods.html#AUTH-PASSWORD">节20.2.2</a>获取细节。</p></dd>
+<dt><tt class="LITERAL">krb5</tt></dt>
+<dd><p>用 Kerberos V5 认证用户。只有在进行 TCP/IP 连接的时候才能用。参阅<a href="auth-methods.html#KERBEROS-AUTH">节20.2.3</a>获取细节。</p></dd>
+<dt><tt class="LITERAL">ident</tt></dt>
+<dd><p>获取客户的操作系统名然后检查该用户是否允许以要求的数据库用户进行连接，方法是参照在 <tt class="LITERAL">ident</tt> 关键字后面声明的映射。对于 TCP/IP 连接，用户的身份是通过与运行在客户端上的 <tt class="LITERAL">ident</tt> 服务器连接进行判断的，对于本地连接，它是从操作系统获取的。参阅<a href="auth-methods.html#AUTH-IDENT">节20.2.4</a>获取细节。</p></dd>
+<dt><tt class="LITERAL">ldap</tt></dt>
+<dd><p>使用 LDAP 进行认证。参阅<a href="auth-methods.html#AUTH-LDAP">节20.2.5</a>获取细节。</p></dd>
+<dt><tt class="LITERAL">pam</tt></dt>
+<dd><p>使用操作系统提供的可插入认证模块服务(PAM)来认证。参阅<a href="auth-methods.html#AUTH-PAM">节20.2.6</a>获取细节。</p></dd>
+</dl>
+</div></dd>
+<dt><tt class="REPLACEABLE"><i>auth-option</i></tt></dt>
+<dd><p>这个可选字段的含义取决于选择的认证方法。细节在下面。</p></dd>
+</dl>
+</div>
+<p>用 <tt class="LITERAL">@</tt> 构造包含的文件是当作一列名字读取的，这些名字可以用空白或者逗号分隔。注释用 <tt class="LITERAL">#</tt> 引入，就像在 <tt class="FILENAME">pg_hba.conf</tt> 里那样，允许嵌套 <tt class="LITERAL">@</tt> 构造。除非跟在 <tt class="LITERAL">@</tt> 后面的文件名是一个绝对路径，否则被当作与该文件所在目录相对的路径。</p>
+<p>因为认证时系统是为每个连接请求顺序检查 <tt class="FILENAME">pg_hba.conf</tt> 里的记录的，所以这些记录的顺序是非常关键的。通常，靠前的记录有比较严的连接匹配参数和比较弱的认证方法，而靠后的记录有比较松的匹配参数和比较严的认证方法。比如，我们一般都希望对本地 TCP/IP 连接使用 <tt class="LITERAL">trust</tt> 认证，而对远端的 TCP/IP 连接要求口令。在这种情况下我们将 <tt class="LITERAL">trust</tt> 认证方法用于来自 127.0.0.1 的连接，这条记录将出现在允许更广泛的客户端 IP 地址的使用口令认证的记录前面。</p>
+<p>在启动和主服务器进程收到 <span class="SYSTEMITEM">SIGHUP</span> 信号的时候，系统都会重新装载 <tt class="FILENAME">pg_hba.conf</tt> 文件。如果你在活跃的系统上编辑了该文件，就必须通知服务器(使用 <tt class="LITERAL">pg_ctl reload</tt> 或 <tt class="LITERAL">kill -HUP</tt>)重新加载该文件。</p>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b>一个用户要想成功连接到特定的数据库，不仅需要通过 <tt class="FILENAME">pg_hba.conf</tt> 的检查，还必须要有该数据库上的 <tt class="LITERAL">CONNECT</tt> 权限。如果希望限制哪些用户能够连接到哪些数据库，赋予/撤销 <tt class="LITERAL">CONNECT</tt> 权限通常比在 <tt class="FILENAME">pg_hba.conf</tt> 中设置规则简单。</p>
+</blockquote>
+</div>
+<p><a href="auth-pg-hba-conf.html#EXAMPLE-PG-HBA.CONF">例20-1</a>里是 <tt class="FILENAME">pg_hba.conf</tt> 记录的一些例子。阅读下文理解不同认证方法的细节。</p>
+<div class="EXAMPLE"><a name="EXAMPLE-PG-HBA.CONF"></a>
+<p><b>例20-1. <tt class="FILENAME">pg_hba.conf</tt> 记录的例子</b></p>
+<pre class="PROGRAMLISTING"># Allow any user on the local system to connect to any database under
+# 允许在本机上的任何用户使用 Unix 域套接字(本地连接的缺省)以任何数据库用户身份连接任何数据库
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+local   all         all                               trust
+
+# 和上面相同，但是使用的是回环的(loopback)TCP/IP 连接
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+host    all         all         127.0.0.1/32          trust     
+
+# 和上面一行相同，但是用的是独立的掩码字段
+# TYPE  DATABASE    USER        IP-ADDRESS    IP-MASK             METHOD
+host    all         all         127.0.0.1     255.255.255.255     trust     
+
+# 允许 IP 地址为 192.168.93.x 的任何主机与 "postgres" 数据库相连，
+# 用与他们在自己的主机上相同 ident 的用户名标识他自己(通常是他的 Unix 用户名)
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+host    postgres    all         192.168.93.0/24       ident sameuser
+
+# 允许来自主机 192.168.12.10 的用户提供了正确的口令之后与 "postgres" 数据库连接。
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+host    postgres    all         192.168.12.10/32      md5
+
+# 如果前面没有其它 "host" 行，那么下面两行将拒绝所有来自 192.168.54.1 的连接请求(因为前面的记录先匹配)。
+# 但是允许来自互联网上其它任何地方的有效的 Kerberos 5 认证的连接。
+# 零掩码表示不考虑主机 IP 的任何位。因此它匹配任何主机。
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+host    all         all         192.168.54.1/32       reject
+host    all         all         0.0.0.0/0             krb5
+
+# 允许来自 192.168.x.x 的任何用户与任意数据库连接，只要他们通过 ident 检查。
+# 但如果 ident 说该用户是 "bryanh" 且他要求以 PostgreSQL 用户 "guest1" 连接，
+# 那么只有在 pg_ident.conf 里有 "omicron" 的映射说 "bryanh" 允许以 "guest1" 进行连接时才真正可以进行连接。
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+host    all         all         192.168.0.0/16        ident omicron
+
+# 如果下面是用于本地连接的仅有的三行，那么它们将允许本地用户只和同名数据库连接。
+# 只有管理员和 "support" 角色里的成员例外，他们可以连接到任何数据库。
+# $PGDATA/admins 文件列出了那些允许与所有数据库连接的用户名。
+# 在所有情况下都需要口令。
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+local   sameuser    all                               md5
+local   all         @admins                           md5
+local   all         +support                          md5
+
+# 上面最后两行可以合起来写成一行
+local   all         @admins,+support                  md5
+
+# 数据库字段也可以使用列表和文件名：
+local   db1,db2,@demodbs  all                         md5</pre>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="client-authentication.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="auth-methods.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">用户认证</td><td width="34%" align="center" valign="top"><a href="client-authentication.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">认证方法</td></tr>
+</table>
+</div>
+</body></html>

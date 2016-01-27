@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.21. Libtool-1.5.22</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="sed.html" title="Sed-4.1.5">后退</a>
+          <p>Sed-4.1.5</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="perl.html" title="Perl-5.8.8">前进</a>
+          <p>Perl-5.8.8</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.21. Libtool-1.5.22</h1>
+      </div>
+      <div class="package">
+        <p>GNU libtool 是一个通用库支持脚本，将使用动态库的复杂性隐藏在统一的、可移植的接口中。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">16.6 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.21.1. 安装 Libtool</h2>
+        </div>
+        <p>为编译 Libtool 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>要测试结果，请运行：<strong class="userinput"><tt>make check</tt></strong> 。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-libtool" name="contents-libtool"></a>
+          <h2 class="sect2">6.21.2. Libtool 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">libtool, libtoolize</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">安装的库：</span></strong> <span class="seg">libltdl.{a,so}</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3681805" name="id3681805"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="libtool" name="libtool"></a><span class="term"><span><strong class="command">libtool</strong></span></span></td>
+                <td><p>提供通用的库编译支持。</p></td>
+              </tr>
+              <tr>
+                <td><a id="libtoolize" name="libtoolize"></a><span class="term"><span><strong class="command">libtoolize</strong></span></span></td>
+                <td><p>提供了一种标准方式来将 <span><strong class="command">libtool</strong></span> 支持加入到一个软件包中</p></td>
+              </tr>
+              <tr>
+                <td><a id="libltdl" name="libltdl"></a><span class="term"><tt class="filename">libltdl</tt></span></td>
+                <td><p>隐藏 dlopening 库的复杂细节</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="sed.html" title="Sed-4.1.5">后退</a>
+          <p>Sed-4.1.5</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="perl.html" title="Perl-5.8.8">前进</a>
+          <p>Perl-5.8.8</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ALTER SEQUENCE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-alterschema.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-alterschema.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-altertable.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-altertable.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ALTERSEQUENCE"></a>ALTER SEQUENCE</h1>
+<div class="REFNAMEDIV"><a name="AEN44698"></a><h2>名称</h2>   ALTER SEQUENCE
+  &nbsp;--&nbsp;修改一个序列生成器的定义</div>
+<a name="AEN44701"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN44703"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ALTER SEQUENCE <tt class="REPLACEABLE"><i>name</i></tt> [ INCREMENT [ BY ] <tt class="REPLACEABLE"><i>increment</i></tt> ]
+    [ MINVALUE <tt class="REPLACEABLE"><i>minvalue</i></tt> | NO MINVALUE ] [ MAXVALUE <tt class="REPLACEABLE"><i>maxvalue</i></tt> | NO MAXVALUE ]
+    [ RESTART [ WITH ] <tt class="REPLACEABLE"><i>start</i></tt> ] [ CACHE <tt class="REPLACEABLE"><i>cache</i></tt> ] [ [ NO ] CYCLE ]
+    [ OWNED BY { <tt class="REPLACEABLE"><i>table</i></tt>.<tt class="REPLACEABLE"><i>column</i></tt> | NONE } ]
+ALTER SEQUENCE <tt class="REPLACEABLE"><i>name</i></tt> SET SCHEMA <tt class="REPLACEABLE"><i>new_schema</i></tt>
+  </pre>
+</div>
+<div class="REFSECT1"><a name="AEN44715"></a><h2>描述</h2>
+<p><tt class="COMMAND">ALTER SEQUENCE</tt> 命令修改一个现有的序列发生器的参数。任何没有明确在 <tt class="COMMAND">ALTER SEQUENCE</tt> 命令里声明的参数都将保留原先的设置。</p>
+<p>要使用 <tt class="COMMAND">ALTER SEQUENCE</tt> ，你必须拥有该序列。要改变一个序列的模式，你必须在新模式上有 <tt class="LITERAL">CREATE</tt> 权限。</p>
+</div>
+<div class="REFSECT1"><a name="AEN44723"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>一个要修改的序列的名字(可以有模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>increment</i></tt></dt>
+<dd><p><tt class="LITERAL">INCREMENT BY <tt class="REPLACEABLE"><i>increment</i></tt></tt> 子句是可选的。一个正数会让序列成为递增序列，负数则成为递减序列。如果没有声明，将沿用原来的递增值。</p></dd>
+<dt><tt class="REPLACEABLE"><i>minvalue</i></tt><br><tt class="LITERAL">NO MINVALUE</tt></dt>
+<dd><p>可选的 <tt class="LITERAL">MINVALUE <tt class="REPLACEABLE"><i>minvalue</i></tt></tt> 子句决定一个序列可以生成的最小的值。如果声明了 <tt class="LITERAL">NO MINVALUE</tt> ，那么将使用缺省值，对于递增和递减的序列分别是 1 和 -2<SUP>63</SUP>-1 。如果没有声明则沿用当前的最小值。</p></dd>
+<dt><tt class="REPLACEABLE"><i>maxvalue</i></tt><br><tt class="LITERAL">NO MAXVALUE</tt></dt>
+<dd><p>可选的 <tt class="LITERAL">MAXVALUE <tt class="REPLACEABLE"><i>maxvalue</i></tt></tt> 子句决定一个序列可以生成的最大的值。如果声明了 <tt class="LITERAL">NO MAXVALUE</tt> 那么将使用缺省值，对于递增和递减的序列分别是 2<SUP>63</SUP>-1 和 -1 。如果没有声明则沿用当前的最大值。</p></dd>
+<dt><tt class="REPLACEABLE"><i>start</i></tt></dt>
+<dd><p>可选的 <tt class="LITERAL">RESTART WITH <tt class="REPLACEABLE"><i>start</i></tt></tt> 子句修改序列的当前值。</p></dd>
+<dt><tt class="REPLACEABLE"><i>cache</i></tt></dt>
+<dd><p><tt class="LITERAL">CACHE <tt class="REPLACEABLE"><i>cache</i></tt></tt> 选项打开序列号预分配功能以及在内存中缓冲存储的功能。最小值 1 表示每次只能生成一个数值，没有缓冲。如果没有声明，将沿用旧的缓冲值。</p></dd>
+<dt><tt class="LITERAL">CYCLE</tt></dt>
+<dd><p>可选的键字 <tt class="LITERAL">CYCLE</tt> 可以用于允许序列在达到 <tt class="REPLACEABLE"><i>maxvalue</i></tt> 或 <tt class="REPLACEABLE"><i>minvalue</i></tt> 的时候循环使用。如果达到了极限，那么生成的下一个数字将分别是 <tt class="REPLACEABLE"><i>minvalue</i></tt> 或 <tt class="REPLACEABLE"><i>maxvalue</i></tt></p></dd>
+<dt><tt class="LITERAL">NO CYCLE</tt></dt>
+<dd><p>如果声明了可选键字 <tt class="LITERAL">NO CYCLE</tt> ，任何在序列达到其极限后对 <code class="FUNCTION">nextval</code> 的调用都将返回错误。如果未声明 <tt class="LITERAL">CYCLE</tt> 或 <tt class="LITERAL">NO CYCLE</tt> ，那么将沿用原有的循环行为。</p></dd>
+<dt><tt class="LITERAL">OWNED BY</tt> <tt class="REPLACEABLE"><i>table</i></tt>.<tt class="REPLACEABLE"><i>column</i></tt><br><tt class="LITERAL">OWNED BY NONE</tt></dt>
+<dd><p><tt class="LITERAL">OWNED BY</tt> 选项将序列和一个表的特定字段关联，这样，如果那个字段(或整个表)被删除了，那么序列也将被自动删除。指定的新关联将覆盖旧有的关联。指定的表必须与序列的属主相同并且在同一个模式中。指定 <tt class="LITERAL">OWNED BY NONE</tt> 将删除任何已经存在的关联，也就是让该序列变成"独立"序列。</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_schema</i></tt></dt>
+<dd><p>序列的新模式</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN44811"></a><h2>例子</h2>
+<p>从 105 重新开始一个叫 <tt class="LITERAL">serial</tt> 的序列：</p>
+<pre class="PROGRAMLISTING">ALTER SEQUENCE serial RESTART WITH 105;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN44816"></a><h2>注意</h2>
+<p>为了避免并发的事务从同一个序列获取数值的时候被阻塞住，<tt class="COMMAND">ALTER SEQUENCE</tt> 操作从来不会回滚；修改马上生效并且不能恢复。然而，<tt class="LITERAL">OWNED BY</tt> 和 <tt class="LITERAL">SET SCHEMA</tt> 子句是普通的表更新并且可以被回滚。</p>
+<p><tt class="COMMAND">ALTER SEQUENCE</tt> 将不会立即影响后端的 <code class="FUNCTION">nextval</code> 结果，除了当前的之外，因为它有已缓冲了的序列号。它们只有在用光所有已缓冲的数值之后才能意识到改变了的序列参数。当前后端将立即被影响。</p>
+<p>有些 <tt class="COMMAND">ALTER TABLE</tt> 的变种可以和序列一起用；比如，使用 <tt class="COMMAND">ALTER TABLE RENAME</tt> 给一个序列重命名。</p>
+</div>
+<div class="REFSECT1"><a name="AEN44828"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">ALTER SEQUENCE</tt> 遵循 SQL 标准，但是 <tt class="LITERAL">OWNED BY</tt> 和 <tt class="LITERAL">SET SCHEMA</tt> 是 PostgreSQL 扩展。</p>
+</div>
+<div class="REFSECT1"><a name="AEN44836"></a><h2>又见</h2><a href="sql-createsequence.html"><i>CREATE SEQUENCE</i></a>, <a href="sql-dropsequence.html"><i>DROP SEQUENCE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-alterschema.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-altertable.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ALTER SCHEMA</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">ALTER TABLE</td></tr>
+</table>
+</div>
+</body></html>

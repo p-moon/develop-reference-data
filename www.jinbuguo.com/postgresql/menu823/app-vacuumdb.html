@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>vacuumdb</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="app-reindexdb.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="app-reindexdb.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="reference-server.html">快进</a></td><td width="10%" align="right" valign="top"><a href="reference-server.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-VACUUMDB"></a><span class="APPLICATION">vacuumdb</span></h1>
+<div class="REFNAMEDIV"><a name="AEN59975"></a><h2>名称</h2>vacuumdb&nbsp;--&nbsp;收集垃圾并分析一个数据库</div>
+<a name="AEN59979"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN59981"></a><h2>语法</h2>
+<p><tt class="COMMAND">vacuumdb</tt> [<tt class="REPLACEABLE"><i>connection-option</i></tt>...] [--full | -f] [--verbose | -v] [--analyze | -z] [--table | -t <tt class="REPLACEABLE"><i>table</i></tt> [( <tt class="REPLACEABLE"><i>column</i></tt> [,...] )] ] [<tt class="REPLACEABLE"><i>dbname</i></tt>]<br><tt class="COMMAND">vacuumdb</tt> [<tt class="REPLACEABLE"><i>connection-options</i></tt>...] [--all | -a] [--full | -f] [--verbose | -v] [--analyze | -z]</p>
+</div>
+<div class="REFSECT1"><a name="AEN60017"></a><h2>描述</h2>
+<p><span class="APPLICATION">vacuumdb</span> 是一个用于整理 PostgreSQL 数据库的工具。<span class="APPLICATION">vacuumdb</span> 还将会生成用于 PostgreSQL 查询优化器的内部统计数据。</p>
+<p><span class="APPLICATION">vacuumdb</span> 是 SQL 命令 <a href="sql-vacuum.html"><i>VACUUM</i></a> 的封装。因此，用哪种方法清理数据库都一样。</p>
+</div>
+<div class="REFSECT1"><a name="AEN60027"></a><h2>选项</h2>
+<p><span class="APPLICATION">vacuumdb</span> 接受下列命令行参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-a</tt><br><tt class="OPTION">--all</tt></dt>
+<dd><p>清理所有数据库。</p></dd>
+<dt><tt class="OPTION">[<span class="OPTIONAL">-d</span>] <tt class="REPLACEABLE"><i>dbname</i></tt></tt><br><tt class="OPTION">[<span class="OPTIONAL">--dbname</span>] <tt class="REPLACEABLE"><i>dbname</i></tt></tt></dt>
+<dd><p>声明要被清理或分析的数据库名称。如果没有声明这个参数并且没有使用 <tt class="OPTION">-a</tt> 或 <tt class="OPTION">--all</tt> ，那么从将环境变量 <tt class="ENVAR">PGDATABASE</tt> 里读取数据库名。如果那个也没有设置，则使用连接的用户名。</p></dd>
+<dt><tt class="OPTION">-e</tt><br><tt class="OPTION">--echo</tt></dt>
+<dd><p>回显 <span class="APPLICATION">vacuumdb</span> 生成并发送给服务器的命令。</p></dd>
+<dt><tt class="OPTION">-f</tt><br><tt class="OPTION">--full</tt></dt>
+<dd><p>执行"完全"清理。</p></dd>
+<dt><tt class="OPTION">-q</tt><br><tt class="OPTION">--quiet</tt></dt>
+<dd><p>不显示响应(安静模式)</p></dd>
+<dt><tt class="OPTION">-t <tt class="REPLACEABLE"><i>table</i></tt> [ (<tt class="REPLACEABLE"><i>column</i></tt> [,...]) ]</tt><br><tt class="OPTION">--table <tt class="REPLACEABLE"><i>table</i></tt> [ (<tt class="REPLACEABLE"><i>column</i></tt> [,...]) ]</tt></dt>
+<dd><p>只是清理或分析 <tt class="REPLACEABLE"><i>table</i></tt> 。字段名称只是在与 <tt class="OPTION">--analyze</tt> 选项联合使用时才需要声明。</p>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b>如果你声明了要清理的字段，你可能不得不在 shell 上逃逸圆括弧(见下面的例子)。</p>
+</blockquote>
+</div></dd>
+<dt><tt class="OPTION">-v</tt><br><tt class="OPTION">--verbose</tt></dt>
+<dd><p>在处理过程中打印详细信息</p></dd>
+<dt><tt class="OPTION">-z</tt><br><tt class="OPTION">--analyze</tt></dt>
+<dd><p>计算用于优化器的该数据库的统计值</p></dd>
+</dl>
+</div>
+<p><span class="APPLICATION">vacuumdb</span> 还接受下列命令行参数作为连接参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-h <tt class="REPLACEABLE"><i>host</i></tt></tt><br><tt class="OPTION">--host <tt class="REPLACEABLE"><i>host</i></tt></tt></dt>
+<dd><p>指定运行服务器的主机名。如果数值以斜杠开头，则被用作到 Unix 域套接字的路径。</p></dd>
+<dt><tt class="OPTION">-p <tt class="REPLACEABLE"><i>port</i></tt></tt><br><tt class="OPTION">--port <tt class="REPLACEABLE"><i>port</i></tt></tt></dt>
+<dd><p>指定服务器正在侦听的 TCP 端口或本地 Unix 域套接字文件的扩展(描述符)</p></dd>
+<dt><tt class="OPTION">-U <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--username <tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>连接的用户名</p></dd>
+<dt><tt class="OPTION">-W</tt><br><tt class="OPTION">--password</tt></dt>
+<dd><p>强制口令提示</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN60142"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGDATABASE</tt><br><tt class="ENVAR">PGHOST</tt><br><tt class="ENVAR">PGPORT</tt><br><tt class="ENVAR">PGUSER</tt></dt>
+<dd><p>缺省连接参数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN60156"></a><h2>诊断</h2>
+<p>如果出差错了。参阅 <a href="sql-vacuum.html"><i>VACUUM</i></a> 和 <a href="app-psql.html"><span class="APPLICATION">psql</span></a> 获取关于错误信息和可能问题的详细描述。数据库服务器必须在目标主机上运行。同样，任何 <span class="APPLICATION">libpq</span> 前端库可获得的缺省设置和环境变量都将生效。</p>
+</div>
+<div class="REFSECT1"><a name="AEN60162"></a><h2>注意</h2>
+<p><span class="APPLICATION">vacuumdb</span> 可能需要与 PostgreSQL 服务器连接若干次，每次都询问口令。在这种情况下，设立一个 <tt class="FILENAME">~/.pgpass</tt> 是比较方便的。参阅<a href="libpq-pgpass.html">节29.13</a>获取更多信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN60169"></a><h2>例子</h2>
+<p>整理数据库 <tt class="LITERAL">test</tt> ：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">vacuumdb test</kbd></pre>
+<p>为优化器清理和分析一个名为 <tt class="LITERAL">bigdb</tt> 的数据库：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">vacuumdb --analyze bigdb</kbd></pre>
+<p>清理数据库 <tt class="LITERAL">xyzzy</tt> 中名为 <tt class="LITERAL">foo</tt> 的表，并且为优化器分析列 <tt class="LITERAL">bar</tt> ：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">vacuumdb --analyze --verbose --table 'foo(bar)' xyzzy</kbd></pre>
+</div>
+<div class="REFSECT1"><a name="AEN60188"></a><h2>又见</h2><a href="sql-vacuum.html"><i>VACUUM</i></a>, 环境变量(<a href="libpq-envars.html">节29.12</a>)</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="app-reindexdb.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="reference-server.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><span class="APPLICATION">reindexdb</span></td><td width="34%" align="center" valign="top"><a href="reference-client.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PostgreSQL 服务器应用程序</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,135 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="./style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="./style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="./style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>Apache2.0新特性概述 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page">
+<div id="page-header"><p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="./images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="./images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="./index.html">版本2.2</a></div>
+
+<div id="translation-info">　　 <a href="./translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble">
+	<h1>Apache 2.0 新特性概述</h1>
+
+
+  	<p>此文档描述了Apache 1.3和2.0版本之间的主要变化。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="core" id="core">核心的增强</a></h2>
+    
+
+    <dl>
+      <dt>Unix线程</dt>
+
+      <dd>在支持POSIX线程的Unix系统上，现在Apache能在混合的多进程、多线程模式下运行，使很多(但非全部)配置的可伸缩性得到了改善。</dd>
+
+      <dt>新的编译系统</dt>
+
+      <dd>重写了编译系统，现在是基于<code>autoconf</code>和<code>libtool</code>的，使得Apache的配置系统与其他软件包更加相似。</dd>
+
+      <dt>多协议支持</dt>
+
+      <dd>Apache现在已经拥有了能够支持多协议的底层构造。<code class="module"><a href="./mod/mod_echo.html">mod_echo</a></code>就是一个例子。</dd>
+
+      <dt>对非Unix平台更好的支持</dt>
+
+      <dd>Apache2.0在诸如BeOS、OS/2、Windows等非Unix平台上有了更好的速度和稳定性。随着平台特定的<a href="mpm.html">多路处理模块(MPM)</a>和Apache可移植运行时(APR)的引入，Apache在这些平台上的指令由它们本地的API指令实现。避免了以往使用POSIX模拟层造成的bug和性能低下。</dd>
+
+      <dt>新的 Apache API</dt>
+
+      <dd>2.0中模块的API有了重大改变。很多1.3中模块排序和模块优先级的问题已经不复存在了。2.0自动处理了很多这样的问题，模块排序现在用per-hook的方法进行，从而拥有了更多的灵活性。另外，增加了新的调用以提高模块的性能，而无需修改Apache服务器核心。</dd>
+
+      <dt>IPv6 支持</dt>
+
+      <dd>在所有能够由Apache可移植运行时库(APR library)提供IPv6支持的系统上，Apache默认使用IPv6侦听套接字。另外，<code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code>、<code class="directive"><a href="./mod/core.html#namevirtualhost">NameVirtualHost</a></code>、<code class="directive"><a href="./mod/core.html#virtualhost">VirtualHost</a></code>指令也支持IPv6的数字地址串(比如："<code>Listen [2001:db8::1]:8080</code>")。</dd>
+
+      <dt>过滤器</dt>
+
+      <dd>Apache的模块现在可以写成过滤器的形式，当内容流经它进入服务器或从服务器流出的时候进行处理。比如，可以用<code class="module"><a href="./mod/mod_include.html">mod_include</a></code>中的<code>INCLUDES</code>过滤器将CGI脚本的输出解析为服务器端包含指令。而<code class="module"><a href="./mod/mod_ext_filter.html">mod_ext_filter</a></code>允许外部程序充当过滤器的角色，就象用CGI程序做处理器一样。</dd>
+
+      <dt>多语种错误应答</dt>
+
+      <dd>返回给浏览器的错误信息现在已经用SSI文档实现了多语种化。管理员可以利用此功能进行定制以达到感观的一致。</dd>
+
+      <dt>简化了配置</dt>
+
+      <dd>很多易混淆的配置项已经进行了简化。经常产生混淆的<code>Port</code>和<code>BindAddress</code>配置项已经取消了；用于绑定IP地址的只有<code class="directive"><a href="./mod/mpm_common.html#listen">Listen</a></code>指令；<code class="directive"><a href="./mod/core.html#servername">ServerName</a></code>指令中指定的服务器名和端口仅用于重定向和虚拟主机的识别。</dd>
+
+      <dt>本地 Windows NT Unicode 支持</dt>
+
+      <dd>Apache2.0在WindowsNT上的文件名全部使用utf-8编码。这个操作直接转换成底层的Unicode文件系统，由此为所有以WindowsNT(包括Windows2000/XP/2003)为基础的安装提供了多语言支持。<em>这一支持目前尚未涵盖Windows95/98/ME系统，因为它们仍使用机器本地的代码页进行文件系统的操作。</em></dd>
+
+      <dt>正则表达式库更新</dt>
+
+      <dd>Apache2.0包含了<a href="http://www.pcre.org/">Perl兼容的正则表达式库(PCRE)</a>。所有正则表达式现在都使用了更强大的Perl 5 语法。</dd>
+    </dl>
+  </div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="module" id="module">模块的增强</a></h2>
+    
+
+    <dl>
+      <dt><code class="module"><a href="./mod/mod_ssl.html">mod_ssl</a></code></dt>
+
+      <dd>Apache2.0中的新模块。此模块是OpenSSL提供的一个SSL/TLS加密协议接口。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_dav.html">mod_dav</a></code></dt>
+
+      <dd>Apache2.0中的新模块。此模块继承了HTTP分布式发布和版本控制规范，用于发布和维护web内容。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_deflate.html">mod_deflate</a></code></dt>
+
+      <dd>Apache2.0中的新模块。此模块允许支持此功能的浏览器请求的页面内容在发送前进行压缩，以节省网络带宽。</dd>
+
+      <dt><code class="module">mod_auth_ldap</code></dt>
+
+      <dd>Apache2.0.41中的新模块。此模块允许使用LDAP数据库存储HTTP基本认证所需的信息。随之而来的另一个模块<code class="module"><a href="./mod/mod_ldap.html">mod_ldap</a></code>则提供了连接池和结果的缓冲。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_auth_digest.html">mod_auth_digest</a></code></dt>
+
+      <dd>利用共享内存实现了对跨进程会话缓冲的额外支持。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_charset_lite.html">mod_charset_lite</a></code></dt>
+
+      <dd>Apache2.0中的新模块。这个试验模块允许在不同的字符集之间进行转换和重新编码。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_file_cache.html">mod_file_cache</a></code></dt>
+
+      <dd>Apache2.0中的新模块。这个模块包含了Apache1.3中<code>mod_mmap_static</code>模块的功能，另外进一步增加了缓冲能力。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_headers.html">mod_headers</a></code></dt>
+
+      <dd>此模块在Apache2.0中更具灵活性。现在，它可以更改<code class="module"><a href="./mod/mod_proxy.html">mod_proxy</a></code>使用的请求头信息，并可以有条件地设置应答头信息。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_proxy.html">mod_proxy</a></code></dt>
+
+      <dd>代理模块已经被完全重写以充分利用新的过滤器结构的优势，从而实现一个更为可靠的HTTP/1.1代理模块。另外，新的<code class="directive"><a href="./mod/mod_proxy.html#proxy">&lt;Proxy&gt;</a></code>配置段提供了更具可读性(而且更快)的代理站点控制；同时，重载<code>&lt;Directory "proxy:..."&gt;</code>指令的方法已经不再被支持了。这个模块现在依照协议支持分为<code>proxy_connect</code>、<code>proxy_ftp</code>、<code>proxy_http</code>三个部分。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_negotiation.html">mod_negotiation</a></code></dt>
+
+      <dd>新的<code class="directive"><a href="./mod/mod_negotiation.html#forcelanguagepriority">ForceLanguagePriority</a></code>指令可以确保在所有情况下客户端都收到一个单一文档，以取代<em>不可接受</em>或<em>多选择</em>的响应。另外，内容协商和MultiViews算法已经进行了优化以提供更完美的结果，并提供了包括文档内容的新类型表。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_autoindex.html">mod_autoindex</a></code></dt>
+
+      <dd>经过自动索引后的目录列表现在可被配置为使用HTML表格从而使格式更加清晰，而且允许更为细化的排序控制，包括版本排序和通配符过滤目录列表。</dd>
+
+      <dt><code class="module"><a href="./mod/mod_include.html">mod_include</a></code></dt>
+
+      <dd>新的指令集允许修改默认的SSI元素的开始和结束标签，而且允许以主配置文件里的错误提示和时间格式的配置取代SSI文档中的相应部分。正则表达式(现在已基于Perl的正则表达式语法)的解析和分组结果可以用<code class="module"><a href="./mod/mod_include.html">mod_include</a></code>的变量 <code>$0</code> .. <code>$9</code> 取得。</dd>
+
+      <dt><code class="module"><a href="">mod_auth_dbm</a></code></dt>
+
+      <dd>现在可以使用<code class="directive"><a href="./mod/mod_authn_dbm.html#authdbmtype">AuthDBMType</a></code>指令支持多种类似DBM的数据库。</dd>
+    </dl>
+  </div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="./translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p></div>
+</body></html>

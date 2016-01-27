@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>规则和权限</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="rules-update.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="rules.html">快退</a></td><td width="60%" align="center" valign="bottom">章35. 规则系统</td><td width="10%" align="right" valign="top"><a href="rules.html">快进</a></td><td width="10%" align="right" valign="top"><a href="rules-status.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="RULES-PRIVILEGES">35.4. 规则和权限</a></h1><a name="AEN39052"></a><a name="AEN39055"></a>
+<p>由于 PostgreSQL 规则系统对查询的重写，非初始查询指定的其它表/视图被访问。使用更新规则的时候，这可能包括对表的写权限。</p>
+<p>重写规则并不拥有一个独立的所有者。关系(表或视图)的所有者自动成为重写规则的缺省所有者。PostgreSQL 规则系统改变缺省的访问控制系统的特性。因规则而使用的关系在(规则)重写时要对定义规则所有者进行权限检查，而不是激活规则的用户这意味着一个用户只需要对他的查询里明确指定的表/视图拥有所需的权限就可进行操作。</p>
+<p>例如：某用户有一个电话号码列表，其中一些是私人的，另外的一些是办公室秘书需要的。他可以用下面方法构建查询：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE phone_data (person text, phone text, private boolean);
+CREATE VIEW phone_number AS
+    SELECT person, phone FROM phone_data WHERE NOT private;
+GRANT SELECT ON phone_number TO secretary;</pre>
+<p>除了他以外(还有数据库超级用户)没有人可以访问 <tt class="LITERAL">phone_data</tt> 表。但因为 <tt class="COMMAND">GRANT</tt> 的原因，秘书可以从 <tt class="LITERAL">phone_number</tt> 视图上运行 <tt class="COMMAND">SELECT</tt> 。规则系统将把从 <tt class="LITERAL">phone_number</tt> 里的 <tt class="COMMAND">SELECT</tt> 重写为从 <tt class="LITERAL">phone_data</tt> 里的 <tt class="COMMAND">SELECT</tt> 并将增加条件。只有 <tt class="LITERAL">private</tt> 条件为假的记录才可以选出。因为用户是 <tt class="LITERAL">phone_number</tt> 的所有者，因此也是规则的所有者，所以现在要检查他对 <tt class="LITERAL">phone_data</tt> 的读访问的权限，而这个查询是被允许的。同时也要检查访问 <tt class="LITERAL">phone_number</tt> 的权限，但这是对一个被撤消权限的用户进行检查的，所以除了用户自己和秘书外没有人可以使用它。</p>
+<p>权限检查是按规则逐条进行的。所以此时的秘书是唯一的一个可以看到公共电话号码的人。但秘书可以设立另一个视图并且赋予该视图公共权限。这样，任何人都可以通过秘书的视图看到 <tt class="LITERAL">phone_number</tt> 数据。秘书不能做的事情是创建一个直接访问 <tt class="LITERAL">phone_data</tt> 的视图(实际上他是可以的，但没有任何作用，因为每个访问都会因通不过权限检查而被踢出事务)。而且用户很快会认识到，秘书开放了他的 <tt class="LITERAL">phone_number</tt> 视图后，他还可以撤消他的访问权限。这样，所有对秘书视图的访问马上就失效了。</p>
+<p>有些人会认为这种逐条规则的检查是一个安全漏洞，但事实上不是。如果这样做不能奏效，秘书将必须建立一个与 <tt class="LITERAL">phone_number</tt> 有相同字段的表并且每天拷贝一次数据进去。那么这是他自己的数据因而可以赋予其它人访问的权力。一个 <tt class="COMMAND">GRANT</tt> 意味着"我信任你"。如果某个你信任的人做了上面的事情，那你就该想想是否该 <tt class="COMMAND">REVOKE</tt> 了。</p>
+<p>这个机制同样可以用于更新规则。在上一章的例子里，例子数据库里的表的所有者可以把 <tt class="LITERAL">shoelace</tt> 视图的 <tt class="LITERAL">SELECT</tt>, <tt class="LITERAL">INSERT</tt>, <tt class="LITERAL">UPDATE</tt>, <tt class="LITERAL">DELETE</tt> 权限赋予其他人。但对 <tt class="LITERAL">shoelace_log</tt> 只有 <tt class="LITERAL">SELECT</tt> 权限。写日志记录的规则动作仍然可以成功的执行。并且其它用户可以看到日志记录。但他不能创建伪记录，而且他也不能对现有记录进行修改或删除。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="rules-update.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="rules-status.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Rules on <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt></td><td width="34%" align="center" valign="top"><a href="rules.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">规则和命令状态</td></tr>
+</table>
+</div>
+</body></html>

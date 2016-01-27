@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>寄语程序员</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="nls-translator.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="nls.html">快退</a></td><td width="60%" align="center" valign="bottom">章46. 本地语言支持</td><td width="10%" align="right" valign="top"><a href="nls.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plhandler.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="NLS-PROGRAMMER">46.2. 寄语程序员</a></h1>
+<div class="SECT2"><h2 class="SECT2"><a name="NLS-MECHANICS">46.2.1. 机理</a></h2>
+<p>本节描述如何在属于 PostgreSQL 版本的程序或者库里面支持本地语言。目前它只适用于 C 语言。</p>
+<div class="PROCEDURE">
+<p><b>向程序中增加 NLS 支持</b></p>
+<ol type="1">
+<li class="STEP"><p>把下面的代码插入到程序的开头：</p>
+<pre class="PROGRAMLISTING">#ifdef ENABLE_NLS
+#include &lt;locale.h&gt;
+#endif
+
+...
+
+#ifdef ENABLE_NLS
+setlocale(LC_ALL, "");
+bindtextdomain("<tt class="REPLACEABLE"><i>progname</i></tt>", LOCALEDIR);
+textdomain("<tt class="REPLACEABLE"><i>progname</i></tt>");
+#endif</pre>
+<p>这里的 <tt class="REPLACEABLE"><i>progname</i></tt> 实际上可以自由选择。</p></li>
+<li class="STEP"><p>如果发现一条需要翻译的信息，那么就需要插入一个对 <code class="FUNCTION">gettext()</code> 的调用。比如</p>
+<pre class="PROGRAMLISTING">fprintf(stderr, "panic level %d\n", lvl);</pre>
+<p>会改成</p>
+<pre class="PROGRAMLISTING">fprintf(stderr, gettext("panic level %d\n"), lvl);</pre>
+<p>如果没有配置 NLS ，那么 <tt class="SYMBOL">gettext</tt> 会定义成无操作。</p>
+<p>这么干会出现一堆东西。一种常用的缩写是</p>
+<pre class="PROGRAMLISTING">#define _(x) gettext(x)</pre>
+<p>如果程序通过一个或者少数几个函数做了大量的通讯，比如后端里的 <code class="FUNCTION">ereport()</code> ，那么也可以用另外一个方法。然后你另这些函数在所有输入值上内部调用 <code class="FUNCTION">gettext</code> 。</p></li>
+<li class="STEP"><p>在带程序源代码的目录里加一个文件 <tt class="FILENAME">nls.mk</tt> 。这个文件将被当做 makefile 读取。在这里需要做下面一些变量的赋值：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="VARNAME">CATALOG_NAME</tt></dt>
+<dd><p>那些在 <code class="FUNCTION">textdomain()</code> 调用里提供的程序的名字。</p></dd>
+<dt><tt class="VARNAME">AVAIL_LANGUAGES</tt></dt>
+<dd><p>提供的翻译的语言列表，开始的时候是空的。</p></dd>
+<dt><tt class="VARNAME">GETTEXT_FILES</tt></dt>
+<dd><p>一列包含可翻译字符串的文件，也就是那些用 <code class="FUNCTION">gettext</code> 或者其它相应手段标记了的文件。最终，这里会包括几乎所有的程序源文件。如果列表太长，你可以把第一个"文件"写成一个 <tt class="LITERAL">+</tt> 和第二个词组成，第二个词是一个文件，在这个文件里每行包含一个文件名。</p></dd>
+<dt><tt class="VARNAME">GETTEXT_TRIGGERS</tt></dt>
+<dd><p>生成给翻译者使用的信息表的工具，以便知道哪些函数调用包含可翻译字符串。缺省时只知道 <code class="FUNCTION">gettext()</code> 调用。如果你使用了 <code class="FUNCTION">_</code> 或其它标识符，那么你需要把它们列在这里。如果可翻译字符串不是第一个参数，那么该项需要是下面的形式：<tt class="LITERAL">func:2</tt> (用于第二给参数)。</p></dd>
+</dl>
+</div></li>
+</ol>
+</div>
+<p>制作系统将自动处理制作和安装信息表。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="NLS-GUIDELINES">46.2.2. 消息书写指导</a></h2>
+<p>这里是一些如何书写消息就可以简化消息翻译方面的指导：</p>
+<ul>
+<li><p>不要偷懒在运行时构造语句，比如像</p>
+<pre class="PROGRAMLISTING">printf("Files were %s.\n", flag ? "copied" : "removed");</pre>
+<p>语句里这样的单词顺序会让其它语言很难翻译。而且，即使你记得在每个片断上调用 gettext()，这些片断也不一定能很好地独立翻译。最好重复一些代码，好让每条消息可以当作有机的整体进行翻译。只有数字，文件名和类似的运行时变量才应该在运行时插入消息文本。</p></li>
+<li><p>出于类似的原因，下面的东西不能用：</p>
+<pre class="PROGRAMLISTING">printf("copied %d file%s", n, n!=1 ? "s" : "");</pre>
+<p>因为它假设了如何找复数。如果你看到这样的东西，你可以用下面方法解决</p>
+<pre class="PROGRAMLISTING">if (n==1)
+    printf("copied 1 file");
+else
+    printf("copied %d files", n):</pre>
+<p>不过还是有让人失望的时候，有些语言在某些特殊规则上有超过两种形式，可能在将来解决这个问题，但是就目前而言，最好还是完全避免这些东西。你可以这样写：</p>
+<pre class="PROGRAMLISTING">printf("number of copied files: %d", n);</pre></li>
+<li><p>如果你想和翻译者进行交流，比如说一条信息是如何与其它输出对齐的，那么在该字符串出现之前，放上一条以 <tt class="LITERAL">translator</tt> 开头的注释，比如</p>
+<pre class="PROGRAMLISTING">/* translator: This message is not what it seems to be. */</pre>
+<p>这些注释都拷贝到信息表文件里，这样翻译者就可以看见它们了。</p></li>
+</ul>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="nls-translator.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plhandler.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">寄语翻译家</td><td width="34%" align="center" valign="top"><a href="nls.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">书写一个过程语言处理器</td></tr>
+</table>
+</div>
+</body></html>

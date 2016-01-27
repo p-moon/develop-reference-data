@@ -1,0 +1,239 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mod_alias － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache模块 mod_alias</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>提供从文件系统的不同部分到文档树的映射和URL重定向</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>alias_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mod_alias.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>此模块提供的指令可以操控作为请求到达服务器的URL。<code class="directive"><a href="#alias">Alias</a></code>和<code class="directive"><a href="#scriptalias">ScriptAlias</a></code>指令用于在URL和文件系统路径之间实现映射，使不在<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>目录下的内容也能成为文档树的一部分，其中，<code class="directive"><a href="#scriptalias">ScriptAlias</a></code>指令有更多一层的含义，它标明此目标目录下只有CGI脚本。</p>
+
+    <p><code class="directive"><a href="#redirect">Redirect</a></code>指令引导客户端以一个不同的URL产生一个新的请求，常用于一个资源被移动到一个新位置的时候。</p>
+
+    <p><code class="module"><a href="../mod/mod_alias.html">mod_alias</a></code>被设计成处理普通的URL操作。复杂的URL操作，比如处理请求字符串，请使用<code class="module"><a href="../mod/mod_rewrite.html">mod_rewrite</a></code>提供的强大功能。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="order" id="order">处理顺序</a></h2>
+
+<p>出现在不同作用域(context)中的别名指令以及重定向指令和其他指令一样，按照标准的<a href="../sections.html#mergin">合并规则</a>进行处理。但是当多个别名指令或重定向指令出现在同一个作用域(context)中的时候(比如在同一个<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>段)，处理顺序就比较特别了：</p>
+
+<p>首先，所有重定向指令都优先于别名指令被处理，因此一个匹配<code class="directive"><a href="#redirect">Redirect</a></code>或<code class="directive"><a href="#redirectmatch">RedirectMatch</a></code>的请求将永远不会被别名指令处理。其次，别名指令和重定向指令将按照他们在配置文件中出现的先后顺序进行匹配，并由最先匹配到的指令进行处理。</p>
+
+<p>因为这个原因，当两个或两个以上的这些指令作用于同一个子路径时，你必须将最特殊的路径放在最前面，以便所有指令都能正确地生效。例如下面的例子将按照你原本的意愿正常工作：</p>
+
+<div class="example"><p><code>
+Alias /foo/bar /baz<br />
+Alias /foo /gaq
+</code></p></div>
+
+<p>但是，如果将上面两条指令的顺序颠倒，则后一条指令永远也得不到匹配的机会。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="Alias" id="Alias">Alias</a> <a name="alias" id="alias">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>映射URL到文件系统的特定区域</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>Alias <var>URL-path</var>
+<var>file-path</var>|<var>directory-path</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_alias</td></tr>
+</table>
+
+    <p><code class="directive">Alias</code>指令使文档可以被存储在<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>以外的本地文件系统中。以(%已解码的)<var>url-path</var>路径开头的URL可以被映射到以<var>directory-path</var>开头的本地文件。</p>
+
+    <div class="example"><h3>示例：</h3><p><code>
+      Alias /image /ftp/pub/image
+    </code></p></div>
+
+    <p>对"http://myserver/image/foo.gif"的请求，服务器将返回"/ftp/pub/image/foo.gif"文件。因为仅匹配完整路径，所以上述例子不会匹配对"http://myserver/imagefoo.gif"的请求。对于使用正则表达式的匹配，请参见<code class="directive"><a href="#aliasmatch">AliasMatch</a></code>指令。</p>
+
+    <p>注意：如果<var>url-path</var>中有后缀"/"，则服务器要求有后缀"/"以扩展此别名。也就是说"<code>Alias  /icons/  /usr/local/apache/icons/</code>"并不能对"<code>/icons</code>"实现别名。</p>
+
+    <p>注意，可能需要额外指定一个<code class="directive"><a href="../mod/core.html#directory">&lt;Directory&gt;</a></code>段来覆盖别名的<em>最终对象</em>。由于只有出现在<code class="directive"><a href="../mod/core.html#directory">&lt;Directory&gt;</a></code>段之前的别名才会被检测，所以它只对最终对象生效。(由于执行别名操作之前<code class="directive"><a href="../mod/core.html#location">&lt;Location&gt;</a></code>段会被首先扫描一次，所以它们也是有效的)</p>
+
+    <p>特别地，如果对在<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>之外的某个目录建立了一个<code>Alias</code> ，则可能需要明确的对目标目录设定访问权限。</p>
+
+    <div class="example"><h3>示例：</h3><p><code>
+        Alias /image /ftp/pub/image<br />
+        &lt;Directory /ftp/pub/image&gt;<br />
+        <span class="indent">
+            Order allow,deny<br />
+            Allow from all<br />
+        </span>
+        &lt;/Directory&gt;
+    </code></p></div>
+
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="AliasMatch" id="AliasMatch">AliasMatch</a> <a name="aliasmatch" id="aliasmatch">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>使用正则表达式映射URL到文件系统</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>AliasMatch <var>regex</var> <var>file-path</var>|<var>directory-path</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_alias</td></tr>
+</table>
+    <p>这个指令与<code class="directive"><a href="#alias">Alias</a></code>等效，但是它使用了标准的<a class="glossarylink" href="../glossary.html#regex" title="see glossary">正则表达式</a>，而不是简单的前缀匹配。如果此正则表达式与URL-path相匹配，则服务器会把所匹配的括弧中的字符串替换到该指令所指定的目标字符串中，并视之为一个文件名。例如，要使用"<code>/icons</code>"目录，可以：</p>
+
+    <div class="example"><p><code>
+      AliasMatch ^/icons(.*) /usr/local/apache/icons$1
+    </code></p></div>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="Redirect" id="Redirect">Redirect</a> <a name="redirect" id="redirect">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>发送一个外部重定向使客户端重定向到一个不同的URL</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>Redirect [<var>status</var>] <var>URL-path</var>
+<var>URL</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_alias</td></tr>
+</table>
+    <p>该指令将一个老URL映射为一个新URL，此新URL被返回到客户端使之重定向到一个新地址。</p>
+	<p>老<em>URL-path</em>是一个(%已解码的)以"/"开头的(网络空间)绝对路径。新<em>URL</em>是一个(%已编码的)以"/"开头的(网络空间)绝对路径或者包含协议名和主机名的完整URL。当新<em>URL</em>不包含协议名和主机名时将使用与老<em>URL-path</em>相同的当前值。</p>
+	<p>这样，对任何以老<em>URL-path</em>开头的请求，将返回一个指向以新<em>URL</em>开头的重定向应答。</p>
+
+    <div class="example"><h3>示例：</h3><p><code>
+      Redirect /service http://foo2.example.com/service
+    </code></p></div>
+
+    <p>如果客户端请求"http://example.com/service/foo.txt"，则会被重定向到"http://foo2.example.com/service/foo.txt"。因为仅匹配完整路径，所以上述例子不会匹配"http://example.com/servicefoo.txt"请求。对于使用正则表达式的匹配，请参见<code class="directive"><a href="#redirectmatch">RedirectMatch</a></code>指令。</p>
+
+
+	<div class="note"><h3>注意</h3> <p>重定向指令总是优先于Alias和ScriptAlias指令，而无论他们在配置文件中的顺序如何。</p></div>
+
+    <p>如果没有指定<var>status</var>参数，则重定向是"临时的"(HTTP status 302)。也就是对客户端来说，此资源的位置变动是临时性的。此<var>status</var>参数可以返回以下HTTP状态码：</p>
+
+    <dl>
+      <dt>permanent</dt>
+
+      <dd>返回一个永久性重定向状态码(301)，表示此资源的位置变动是永久性的。</dd>
+
+      <dt>temp</dt>
+
+      <dd>返回一个临时性重定向状态码(302)，这是默认值。</dd>
+
+      <dt>seeother</dt>
+
+      <dd>返回一个"参见"状态码(303)，表示此资源已经被替代。</dd>
+
+      <dt>gone</dt>
+
+      <dd>返回一个"已废弃"状态码(410)，表示此资源已经被永久性地删除了。如果指定了这个状态码，则<var>URL</var>参数将被忽略。</dd>
+    </dl>
+
+    <p><var>status</var>可以被指定为数字状态以返回其他状态码。如果此状态在300-399之间，则必须提供<var>URL</var>参数，否则将被忽略。注意，此状态码必须是Apache已知的(参见http_protocol.c中的<code>send_error_response</code>函数)。</p>
+
+    <div class="example"><h3>示例：</h3><p><code>
+      Redirect permanent /one http://example.com/two<br />
+      Redirect 303 /three http://example.com/other
+    </code></p></div>
+
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RedirectMatch" id="RedirectMatch">RedirectMatch</a> <a name="redirectmatch" id="redirectmatch">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>基于正则表达式匹配对当前的URL发送一个外部重定向</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RedirectMatch [<var>status</var>] <var>regex</var> <var>URL</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_alias</td></tr>
+</table>
+    <p>该指令与<code class="directive"><a href="#redirect">Redirect</a></code>等效，但是它使用了标准的<a class="glossarylink" href="../glossary.html#regex" title="see glossary">正则表达式</a>，而不是简单的前缀匹配。如果<var>regex</var>与URL-path相匹配，则服务器会把所匹配的括弧中的字符串替换到该指令所指定的目标字符串中，并视之为一个文件名。例如，重定向所有GIF文件到另一个服务器上同名的JPEG文件，可以：</p>
+
+    <div class="example"><p><code>
+      RedirectMatch (.*)\.gif$ http://www.anotherserver.com$1.jpg
+    </code></p></div>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RedirectPermanent" id="RedirectPermanent">RedirectPermanent</a> <a name="redirectpermanent" id="redirectpermanent">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>发送一个外部永久重定向使客户端重定向到一个不同的URL</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RedirectPermanent <var>URL-path</var> <var>URL</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_alias</td></tr>
+</table>
+    <p>此指令告知客户端此重定向是永久性的(status 301)。与"<code>Redirect permanent</code>"等效。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="RedirectTemp" id="RedirectTemp">RedirectTemp</a> <a name="redirecttemp" id="redirecttemp">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>发送一个外部临时重定向使客户端重定向到一个不同的URL</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>RedirectTemp <var>URL-path</var> <var>URL</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host, directory, .htaccess</td></tr>
+<tr><th><a href="directive-dict.html#Override">覆盖项</a></th><td>FileInfo</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_alias</td></tr>
+</table>
+    <p>此指令告知客户端此重定向只是临时性的(status 302)。与"<code>Redirect temp</code>"等效。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="ScriptAlias" id="ScriptAlias">ScriptAlias</a> <a name="scriptalias" id="scriptalias">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>映射一个URL到文件系统并视之为CGI脚本</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>ScriptAlias <var>URL-path</var> <var>file-path</var>|<var>directory-path</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_alias</td></tr>
+</table>
+    <p><code class="directive">ScriptAlias</code>指令的行为与<code class="directive"><a href="#alias">Alias</a></code>指令相同，但同时它又标明此目录中含有应该由cgi-script处理器处理的CGI脚本。以<var>URL-path</var>开头的(%已解码的)的URL会被映射到由第二个参数指定的具有完整路径名的本地文件系统中的脚本。</p>
+
+    <div class="example"><h3>示例：</h3><p><code>
+      ScriptAlias /cgi-bin/ /web/cgi-bin/
+    </code></p></div>
+
+    <p>对<code>http://myserver/cgi-bin/foo</code>的请求会引导服务器执行<code>/web/cgi-bin/foo</code>脚本。</p>
+
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="ScriptAliasMatch" id="ScriptAliasMatch">ScriptAliasMatch</a> <a name="scriptaliasmatch" id="scriptaliasmatch">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>使用正则表达式映射一个URL到文件系统并视之为CGI脚本</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>ScriptAliasMatch <var>regex</var> <var>file-path</var>|<var>directory-path</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config, virtual host</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>基本(B)</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mod_alias</td></tr>
+</table>
+    <p>该指令与<code class="directive"><a href="#scriptalias">ScriptAlias</a></code>等效，但是它使用了标准的<a class="glossarylink" href="../glossary.html#regex" title="see glossary">正则表达式</a>，而不是简单的前缀匹配。如果<var>regex</var>与URL-path相匹配，则服务器会把所匹配的括弧中的字符串替换到该指令所指定的目标字符串中，并视之为一个文件名。例如，要使用标准的<code>/cgi-bin</code> ，可以：</p>
+
+    <div class="example"><p><code>
+      ScriptAliasMatch ^/cgi-bin(.*) /usr/local/apache/cgi-bin$1
+    </code></p></div>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

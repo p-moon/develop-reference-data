@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>唯一索引</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="indexes-bitmap-scans.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="indexes.html">快退</a></td><td width="60%" align="center" valign="bottom">章11. 索引</td><td width="10%" align="right" valign="top"><a href="indexes.html">快进</a></td><td width="10%" align="right" valign="top"><a href="indexes-expressional.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INDEXES-UNIQUE">11.5. 唯一索引</a></h1><a name="AEN16155"></a>
+<p>索引还可以用于强迫字段数值的唯一性，或者是多个字段组合值的唯一性。</p>
+<pre class="SYNOPSIS">CREATE UNIQUE INDEX <tt class="REPLACEABLE"><i>name</i></tt> ON <tt class="REPLACEABLE"><i>table</i></tt> (<tt class="REPLACEABLE"><i>column</i></tt> [<span class="OPTIONAL">, ...</span>]);</pre>
+<p>目前，只有 B-tree 索引可以声明为唯一。</p>
+<p>如果索引声明为唯一的，那么就不允许出现多个索引值相同的行。NULL 值被认为互不相等。一个多字段唯一索引认为只有两行数据里所有被索引字段都相同才是相同的，这种数据才被拒绝。</p>
+<p>如果一个表声明了唯一约束或者主键，那么 PostgreSQL 自动在组成主键或唯一约束的字段上创建唯一索引(可能是多字段索引)，以强迫这些约束。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>给表增加唯一约束比较好的办法是 <tt class="LITERAL">ALTER TABLE ... ADD CONSTRAINT</tt> 。用索引强制唯一约束应该认为是一个实现细节，而不应该直接访问。不过，我们应该知道没有必要在唯一字段上建立索引，那样做只会重复建立自动创建的索引。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="indexes-bitmap-scans.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="indexes-expressional.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">组合多个索引</td><td width="34%" align="center" valign="top"><a href="indexes.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">表达式上的索引</td></tr>
+</table>
+</div>
+</body></html>

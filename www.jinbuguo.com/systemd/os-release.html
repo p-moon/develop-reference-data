@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>os-release 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>os-release 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+os-release(5)                          systemd-228                         os-release(5)
+
+<h3>名称</h3>
+    os-release - 操作系统标识
+
+<h3>概览</h3>
+    /etc/os-release
+    /usr/lib/os-release
+
+<h3>描述</h3>
+    /etc/os-release 与 /usr/lib/os-release 文件包含了操作系统识别数据。
+    文件格式是换行符分隔的一系列"键=值"对(与shell风格的环境变量兼容)，可以通过 source 命令直接包含到shell脚本中。
+    注意，此文件仅可包含简单的"键=值"对，并不支持任何其他的shell特性(例如变量替换与字符串拼接)，
+    这样其他应用程序就可以简单直接的解析此文件，而不需要兼容复杂的shell特性。
+    如果值中包含任何非字母数字字符(也就是 A–Z, a–z, 0–9 之外的字符)，那么必须使用引号(单双皆可)进行界定，
+    并且任何在Shell中具有特殊含义的字符(美元符, 单双引号, 反斜线, 反引号 ...)都必须使用shell风格的反斜线进行转义。
+    所有字符串都必须使用UTF-8编码，并且禁止使用一切非打印字符。
+    以"#"开头的行将被作为注释忽略。
+
+    应用程序应该只读取 /etc/os-release 文件，仅在 /etc/os-release 不存在的情况下才可读取 /usr/lib/os-release 文件。
+    绝对禁止应用程序同时读取两个文件。操作系统发行商应该将操作系统识别数据存放在 /usr/lib/os-release 文件中，
+    同时将 /etc/os-release 作为一个使用相对路径的软连接指向 /usr/lib/os-release 文件，以提供应用程序读取 /etc 的兼容性。
+    使用相对路径的软连接是为了避免软连接在 chroot 或 initrd 环境中失效。
+
+    os-release 的内容应当仅由发行版的供应商设置，系统管理员一般不应该修改此文件。
+    因为此文件仅用于操作系统识别，所以必须禁止包含任何需要本地化的内容(也就是禁止包含非ASCII字符)。
+
+    /etc/os-release 与 /usr/lib/os-release 可以是软连接，但是必须全部位于根文件系统上，以确保在系统刚启动时即可读取其内容。
+
+    更多有关 os-release 的理解，请参阅 <a href="http://0pointer.de/blog/projects/os-release">Announcement of /etc/os-release</a>
+
+<h3>选项</h3>
+    可以在 os-release 中使用下列操作系统识别字段：
+
+    NAME=
+        不带版本号且适合用户阅读的操作系统名称。这是必填字段。例如："Fedora"或"Debian GNU/Linux"。默认值是"Linux"
+
+    VERSION=
+        操作系统的版本号，禁止包含操作系统名称，但是可以包含适合用户阅读的发行代号。
+        这是可选字段。例如："17"或"17 (Beefy Miracle)"
+
+    ID=
+        小写字母表示的操作系统名称，禁止包含 0–9, a–z, ".", "_", "-" 以外的字符，禁止包含任何版本信息。
+        该字段适合被程序或脚本解析，也可用于生成文件名。这是必填字段。例如："fedora"或"debian"。默认值是"linux"
+
+    ID_LIKE=
+        一系列空格分隔的字符串，其中的每一项都符合"ID="字段的规范(仅包含 0–9, a–z, ".", "_", "-" 字符)。
+        此字段用于表明当前的操作系统是从那些"父发行版"派生而来(切勿列出从此发行版派生的"子发行版")，
+        排列顺序由近到远，关系最近的发行版名称排在最前，紧密度依次递减。
+        应用程序如果不能识别"ID="字段的内容，那么可以参考此字段。
+        这是可选字段。比如对于"ID=centos"来说，"ID_LIKE="rhel fedora""就是一个合理的设置。
+        而对于"ID=ubuntu"来说，"ID_LIKE=debian"也很合理。
+
+    VERSION_ID=
+        小写字母表示的操作系统版本号，禁止包含 0–9, a–z, ".", "_", "-" 以外的字符，禁止包含操作系统名称与发行代号。
+        该字段适合被程序或脚本解析，也可用于生成文件名。这是可选字段。例如："17"或"11.04"
+
+    PRETTY_NAME=
+        适合用户阅读的比较恰当的发行版名称，可选的包含发行代号与系统版本之类的信息，内容比较随意。
+        这是必填字段。例如："Fedora 17 (Beefy Miracle)"。默认值是"Linux"
+
+    ANSI_COLOR=
+        在控制台上显示操作系统名称的文字颜色。必须设为符合 ESC [ m ANSI/ECMA-48 转义代码规范的字符串。
+        这是可选字段。例如："0;31"(红色)或"1;34"(淡蓝)
+
+    CPE_NAME=
+        操作系统的"CPE名称"(URI绑定语法)，详见 <a href="http://scap.nist.gov/specifications/cpe/">Common Platform Enumeration Specification</a> 文档。
+        这是可选字段。例如："cpe:/o:fedoraproject:fedora:17"
+
+    HOME_URL=, SUPPORT_URL=, BUG_REPORT_URL=, PRIVACY_POLICY_URL=
+        HOME_URL= 操作系统的主页地址，或者特定于此版本操作系统的页面地址。
+        SUPPORT_URL= 操作系统的支持页面(若存在)，主要用于发行商提供技术支持的页面。
+        BUG_REPORT_URL= 故障汇报页面(若存在)，主要用于基于社区互动的发行版。
+        PRIVACY_POLICY_URL= 隐私条款页面(若存在)。
+        上述URL应该分别出现在"About this system"界面下的
+        "About this Operating System", "Obtain Support", "Report a Bug", "Privacy Policy" 子界面中。
+        这些字段的值必须符合<a href="https://tools.ietf.org/html/rfc3986">RFC3986</a>规范，通常以"http:"或"https:"开头，也可能是"mailto:"或"tel:"。
+        例如：HOME_URL="https://fedoraproject.org/" 以及 BUG_REPORT_URL="https://bugzilla.redhat.com/"
+
+    BUILD_ID=
+        用于区分同一版本操作系统的不同编译次序的唯一标示符(不会被系统更新所修改)。
+        该字段在不同的 VERSION_ID 之间有可能是相同的，因为 BUILD_ID 仅在同一版本号内部保持唯一。
+        每当发布新版本的操作系统时，只需要更新 VERSION_ID 字段即可，并不一定必须更新 BUILD_ID 字段。
+        这是可选字段。例如："2013-03-20.3"或"201303203"
+
+    VARIANT=
+        适合用户阅读的发行版分支标识符。用于向用户表明此系统的默认配置是专门面向特定应用场景的。
+        这是可选字段，仅用于显示目的，并且不适用于所有发行版。
+        例如："Server Edition", "Smart Refrigerator Edition"
+
+    VARIANT_ID=
+        小写字母表示的发行版分支标识符，禁止包含 0–9, a–z, ".", "_", "-" 以外的字符。
+        该字段适合被程序或脚本解析，也可用于生成文件名。这是可选字段，并且不适用于所有发行版。
+        例如： "server", "embedded" 
+
+    如果要从程序中检测发行版名称及其变种，那么可以使用 ID 与 VERSION_ID 字段，并将 ID_LIKE 用作 ID 的替补。
+    如果想要向用户显示发行版的名称，那么可以使用 PRETTY_NAME 字段。
+
+    注意，滚动发布的发行版可能不会提供版本信息，也就程序不能假定 VERSION 与 VERSION_ID 字段必然存在。
+
+    操作系统的发行商可能为此文件引入新的字段，强烈建议为新引入的字段使用特别的前缀以避免冲突。
+    读取此文件的程序应该能够安全的忽略不理解的字段。例如：DEBIAN_BTS="debbugs://bugs.debian.org/"
+
+<h3>例子</h3>
+    NAME=Fedora
+    VERSION="23 (Twenty Three)"
+    ID=fedora
+    VERSION_ID=23
+    PRETTY_NAME="Fedora 23 (Twenty Three)"
+    ANSI_COLOR="0;34"
+    CPE_NAME="cpe:/o:fedoraproject:fedora:23"
+    HOME_URL="https://fedoraproject.org/"
+    BUG_REPORT_URL="https://bugzilla.redhat.com/"
+    PRIVACY_POLICY_URL=https://fedoraproject.org/wiki/Legal:PrivacyPolicy
+    REDHAT_BUGZILLA_PRODUCT="Fedora"
+    REDHAT_BUGZILLA_PRODUCT_VERSION=23
+    REDHAT_SUPPORT_PRODUCT="Fedora"
+    REDHAT_SUPPORT_PRODUCT_VERSION=23
+
+<h3>参见</h3>
+    <a href="systemd.html">systemd(1)</a>, <a href="http://linux.die.net/man/1/lsb_release">lsb_release(1)</a>, <a href="hostname.html">hostname(5)</a>, <a href="machine-id.html">machine-id(5)</a>, <a href="machine-info.html">machine-info(5)</a>
+
+os-release(5)                          systemd-228                         os-release(5)
+</pre>
+
+
+<hr />
+
+
+</body></html>

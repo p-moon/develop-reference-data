@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>用 SSL 进行安全的 TCP/IP 连接</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="encryption-options.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="runtime.html">快退</a></td><td width="60%" align="center" valign="bottom">章16. 操作系统环境</td><td width="10%" align="right" valign="top"><a href="runtime.html">快进</a></td><td width="10%" align="right" valign="top"><a href="ssh-tunnels.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="SSL-TCP">16.7. 用 SSL 进行安全的 TCP/IP 连接</a></h1><a name="AEN19487"></a>
+<p>PostgreSQL 有一个内建的通过SSL进行加密的客户端/服务器端的通讯，这样可以增加安全性。这个特性要求在客户端和服务器端都安装 OpenSSL 并且在编译 PostgreSQL 的时候打开(参阅<a href="installation.html">章14</a>)。</p>
+<p>当编译了 SSL 进去以后，可以通过将 <tt class="FILENAME">postgresql.conf</tt>中的 <a href="runtime-config-connection.html#GUC-SSL">ssl</a> 设置为 <tt class="LITERAL">on</tt> 打开 PostgreSQL 服务器的 SSL 支持。当开始 SSL 模式后，服务器将在数据目录里查找 <tt class="FILENAME">server.key</tt> 和 <tt class="FILENAME">server.crt</tt> 文件，必须分别包含服务器私钥和证书。在打开 SSL 的服务器运行之前必须先正确的设置这些文件。如果私钥用一个口令保护，那么服务器将提示输入口令，并且在口令成功校验之前不会启动。</p>
+<p>服务器将在同一个 TCP 端口上同时监听标准的和 SSL 的连接，并且将与任何正在连接的客户端进行协商，协商是否使用 SSL 。缺省时，这是根据客户端的选项而定的。参阅<a href="auth-pg-hba-conf.html">节20.1</a>获取如何强制服务器端只使用 SSL 进行某些或者全部连接的信息。</p>
+<p>有关创建服务器私钥和证书的细节信息，可以参考 OpenSSL 的文档。你可以用一个自认证的证书进行测试，但是在生产环境中应该使用一个由认证中心(CA，全球的 CA 或者区域的 CA 都可以)签发的证书，这样客户端才能够识别服务器的身份。要创建一份自认证的证书，可以使用下面的 OpenSSL 命令</p>
+<pre class="PROGRAMLISTING">openssl req -new -text -out server.req</pre>
+<p>填充那些 <tt class="COMMAND">openssl</tt> 向你询问的信息。确保把本地主机名当做"Common Name"输入。该程序将生成一把用口令保护的密钥。小于四字符的口令保护是不被接受的。要移去密钥(如果你想自动启动服务器就得这样)，运行下面的命令</p>
+<pre class="PROGRAMLISTING">openssl rsa -in privkey.pem -out server.key
+rm privkey.pem</pre>
+<p>输入旧口令把现有密钥解锁。然后</p>
+<pre class="PROGRAMLISTING">openssl req -x509 -in server.req -text -key server.key -out server.crt
+chmod og-rwx server.key</pre>
+<p>把证书变成自签名的证书，然后把秘钥和证书拷贝到服务器寻找它们的地方。</p>
+<p>如果需要验证客户端的证书，那么在数据目录的 <tt class="FILENAME">root.crt</tt> 里放置你想校验的 CA 的证书。如果出现这个证书，那么在 SSL 连接启动的时候就会要求客户端提供客户端的证书，并且这个证书必须是已经由 <tt class="FILENAME">root.crt</tt> 里面出现的认证之一签发的。如果 <tt class="FILENAME">root.crl</tt> 存在的话，证书撤销列表(CRL)项也将被检查。</p>
+<p>如果没有 <tt class="FILENAME">root.crt</tt> 文件，那么就不需要检查客户端认证。这个模式下，SSL 提供通讯安全但不保证认证。</p>
+<p>文件 <tt class="FILENAME">server.key</tt>, <tt class="FILENAME">server.crt</tt>, <tt class="FILENAME">root.crt</tt>, <tt class="FILENAME">root.crl</tt> 只是在服务器启动的时候检查；如果你修改了它们，那么必须重启服务器才能生效。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="encryption-options.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="ssh-tunnels.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">加密选项</td><td width="34%" align="center" valign="top"><a href="runtime.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">用 <span class="APPLICATION">SSH</span> 隧道进行安全 TCP/IP 连接</td></tr>
+</table>
+</div>
+</body></html>

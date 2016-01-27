@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>用户认证</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="manage-ag-tablespaces.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="managing-databases.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="charset.html">快进</a></td><td width="10%" align="right" valign="top"><a href="auth-pg-hba-conf.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="CLIENT-AUTHENTICATION"></a>章20. 用户认证</h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>20.1. <a href="auth-pg-hba-conf.html"><tt class="FILENAME">pg_hba.conf</tt> 文件</a></dt>
+<dt>20.2. <a href="auth-methods.html">认证方法</a></dt>
+<dd><dl>
+<dt>20.2.1. <a href="auth-methods.html#AUTH-TRUST">信任认证</a></dt>
+<dt>20.2.2. <a href="auth-methods.html#AUTH-PASSWORD">口令认证</a></dt>
+<dt>20.2.3. <a href="auth-methods.html#KERBEROS-AUTH">Kerberos 认证</a></dt>
+<dt>20.2.4. <a href="auth-methods.html#AUTH-IDENT">基于 Ident 的认证</a></dt>
+<dt>20.2.5. <a href="auth-methods.html#AUTH-LDAP">LDAP 认证</a></dt>
+<dt>20.2.6. <a href="auth-methods.html#AUTH-PAM">PAM 认证</a></dt>
+</dl></dd>
+<dt>20.3. <a href="client-authentication-problems.html">用户认证</a></dt>
+</dl>
+</div>
+<a name="AEN23002"></a>
+<p>当客户端与数据库服务器连接时，它将声明以哪个 PostgreSQL 数据库用户身份进行连接，就像我们登录一台 Unix 计算机一样。在 SQL 环境里，活动的数据库用户名决定数据库对象的各种访问权限(参阅<a href="user-manag.html">章18</a>)。因此，实际上我们要限制的是用户可以连接的数据库。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>如<a href="user-manag.html">章18</a>里解释的那样，PostgreSQL 实际上用"角色"的概念管理权限。在本章里，我们用<i class="FIRSTTERM">数据库用户</i>表示<span class="QUOTE">"带有 <tt class="LITERAL">LOGIN</tt> 权限的角色"</span>。</p>
+</blockquote>
+</div>
+<p><i class="FIRSTTERM">认证</i>是数据库服务器识别客户端的过程。它通过一些手段判断是否允许此客户端(或者运行这个客户端的用户)与它所声明的数据库用户名进行邦定。</p>
+<p>PostgreSQL 提供多种不同的客户端认证方式。可以基于(客户端)的主机地址、数据库、用户选择认证方法。</p>
+<p>PostgreSQL 数据库用户名在逻辑上是和服务器运行的操作系统用户名相互独立的。如果某个服务器的所有用户在那台服务器机器上也有帐号，那么给数据库用户赋与操作系统用户名是有意义的。不过，一个接收远程访问的服务器很有可能有许多没有本地操作系统帐号的用户，因而在这种情况下数据库用户和操作系统用户名之间不必有任何联系。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="manage-ag-tablespaces.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="auth-pg-hba-conf.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">表空间</td><td width="34%" align="center" valign="top"><a href="admin.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="FILENAME">pg_hba.conf</tt> 文件</td></tr>
+</table>
+</div>
+</body></html>

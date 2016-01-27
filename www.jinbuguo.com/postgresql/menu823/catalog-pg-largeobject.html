@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_largeobject</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-language.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-listener.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-LARGEOBJECT">43.21. <tt class="STRUCTNAME">pg_largeobject</tt></a></h1><a name="AEN63823"></a>
+<p><tt class="STRUCTNAME">pg_largeobject</tt> 表保存那些标记着"大对象"的数据。一个大对象是使用其创建时分配的 OID 标识的。每个大对象都分解成足够小的小段或者"页面"以便以行的形式存储在 <tt class="STRUCTNAME">pg_largeobject</tt> 里。每页的数据定义为 <tt class="SYMBOL">LOBLKSIZE</tt>(目前是 <tt class="LITERAL">BLCKSZ/4</tt> 或者通常是 2K 字节)。</p>
+<div class="TABLE"><a name="AEN63832"></a>
+<p><b>表43-21. <tt class="STRUCTNAME">pg_largeobject</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>描述</th><td>&nbsp;</td></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">loid</tt></td><td><tt class="TYPE">oid</tt></td><td>包含本页的大对象的标识符</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">pageno</tt></td><td><tt class="TYPE">int4</tt></td><td>本页在其大对象数据中的页码从零开始计算</td><td>&nbsp;</td></tr>
+<tr><td><tt class="STRUCTFIELD">data</tt></td><td><tt class="TYPE">bytea</tt></td><td>存储在大对象中的实际数据。这些数据绝不会超过 <tt class="SYMBOL">LOBLKSIZE</tt> 字节，而且可能更少。</td><td>&nbsp;</td></tr>
+</tbody>
+</table>
+</div>
+<p><tt class="STRUCTNAME">pg_largeobject</tt> 的每一行保存一个大对象的一个页面，从该对象内部的字节偏移(<tt class="LITERAL">pageno * LOBLKSIZE</tt>)开始。这种实现允许松散的存储：页面可以丢失，而且可以比 <tt class="LITERAL">LOBLKSIZE</tt> 字节少(即使它们不是对象的最后一页)。大对象内丢失的部分读做零。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-language.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-listener.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_language</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_listener</tt></td></tr>
+</table>
+</div>
+</body></html>

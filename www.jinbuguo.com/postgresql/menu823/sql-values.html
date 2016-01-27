@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>VALUES</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-vacuum.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-vacuum.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="reference-client.html">快进</a></td><td width="10%" align="right" valign="top"><a href="reference-client.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-VALUES"></a>VALUES</h1>
+<div class="REFNAMEDIV"><a name="AEN55264"></a><h2>名称</h2>VALUES&nbsp;--&nbsp;计算一个或一组行</div>
+<a name="AEN55267"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN55269"></a><h2>语法</h2>
+<pre class="SYNOPSIS">VALUES ( <tt class="REPLACEABLE"><i>expression</i></tt> [, ...] ) [, ...]
+    [ ORDER BY <tt class="REPLACEABLE"><i>sort_expression</i></tt> [ ASC | DESC | USING <tt class="REPLACEABLE"><i>operator</i></tt> ] [, ...] ]
+    [ LIMIT { <tt class="REPLACEABLE"><i>count</i></tt> | ALL } ]
+    [ OFFSET <tt class="REPLACEABLE"><i>start</i></tt> ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN55276"></a><h2>描述</h2>
+<p><tt class="COMMAND">VALUES</tt> 根据给定的值表达式计算一个或一组行的值。它通常用于在一个较大的命令内生成一个"常数表"，当同时它也可以用于自身。</p>
+<p>如果指定了多行，那么每一行都必须拥有相同的元素个数。结果表字段的数据类型将根据表达式的明确或隐含的数据类型确定，使用的规则与 <tt class="LITERAL">UNION</tt>(<a href="typeconv-union-case.html">节10.5</a>)相同。</p>
+<p>在大命令里面，<tt class="COMMAND">VALUES</tt> 允许出现在任何 <tt class="COMMAND">SELECT</tt> 可以出现的地方。因为它在语法上非常类似于 <tt class="COMMAND">SELECT</tt> ，可以在 <tt class="COMMAND">VALUES</tt> 命令中使用 <tt class="LITERAL">ORDER BY</tt>, <tt class="LITERAL">LIMIT</tt>, <tt class="LITERAL">OFFSET</tt> 子句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55292"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>expression</i></tt></dt>
+<dd><p>用于插入结果表指定地点的常量或者表达式。在一个出现在 <tt class="COMMAND">INSERT</tt> 顶层的 <tt class="COMMAND">VALUES</tt> 列表中，<tt class="REPLACEABLE"><i>expression</i></tt> 可以被 <tt class="LITERAL">DEFAULT</tt> 替换以表示插入目的字段的缺省值。除此以外，当 <tt class="COMMAND">VALUES</tt> 出现在其他场合的时候是不能使用 <tt class="LITERAL">DEFAULT</tt> 的。</p></dd>
+<dt><tt class="REPLACEABLE"><i>sort_expression</i></tt></dt>
+<dd><p>一个表示如何排序结果行的表达式或者整数常量。这个表达式可以按照 <tt class="LITERAL">column1</tt>, <tt class="LITERAL">column2</tt> 等等引用 <tt class="COMMAND">VALUES</tt> 的结果列。更多细节参见 <a href="sql-select.html#SQL-ORDERBY"><i><i>ORDER BY</i> 子句</i></a>。</p></dd>
+<dt><tt class="REPLACEABLE"><i>operator</i></tt></dt>
+<dd><p>一个排序操作符。更多细节参见 <a href="sql-select.html#SQL-ORDERBY"><i><i>ORDER BY</i> 子句</i></a>。</p></dd>
+<dt><tt class="REPLACEABLE"><i>count</i></tt></dt>
+<dd><p>返回的最大行数。更多细节参见 <a href="sql-select.html#SQL-LIMIT"><i><i>LIMIT</i> 子句</i></a>。</p></dd>
+<dt><tt class="REPLACEABLE"><i>start</i></tt></dt>
+<dd><p>在开始返回行之前跳过的行数。更多细节参见 <a href="sql-select.html#SQL-LIMIT"><i><i>LIMIT</i> 子句</i></a>。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN55333"></a><h2>注意</h2>
+<p>应当避免使用 <tt class="COMMAND">VALUES</tt> 返回数量非常大的结果行，否则可能会遭遇内存耗尽或者性能低下。出现在 <tt class="COMMAND">INSERT</tt> 中的 <tt class="COMMAND">VALUES</tt> 是一个特殊情况，因为目标字段类型可以从 <tt class="COMMAND">INSERT</tt> 的目标表获知，并不需要通过扫描 <tt class="COMMAND">VALUES</tt> 列表来推测，所以在此情况下可以处理非常大的结果行。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55341"></a><h2>例子</h2>
+<p>一个光秃秃的 <tt class="COMMAND">VALUES</tt> 命令：</p>
+<pre class="PROGRAMLISTING">VALUES (1, 'one'), (2, 'two'), (3, 'three');</pre>
+<p>这将返回一个三行两列的表，它在效果上相当于</p>
+<pre class="PROGRAMLISTING">SELECT 1 AS column1, 'one' AS column2
+UNION ALL
+SELECT 2, 'two'
+UNION ALL
+SELECT 3, 'three';</pre>
+<p>通常，<tt class="COMMAND">VALUES</tt> 会用于一个大 SQL 命令中，最常见的是用于 <tt class="COMMAND">INSERT</tt> 命令：</p>
+<pre class="PROGRAMLISTING">INSERT INTO films (code, title, did, date_prod, kind)
+    VALUES ('T_601', 'Yojimbo', 106, '1961-06-16', 'Drama');</pre>
+<p>在用于 <tt class="COMMAND">INSERT</tt> 时，<tt class="COMMAND">VALUES</tt> 列表中的项可以使用 <tt class="LITERAL">DEFAULT</tt> 来表示使用字段的缺省值：</p>
+<pre class="PROGRAMLISTING">INSERT INTO films VALUES
+    ('UA502', 'Bananas', 105, DEFAULT, 'Comedy', '82 minutes'),
+    ('T_601', 'Yojimbo', 106, DEFAULT, 'Drama', DEFAULT);</pre>
+<p><tt class="COMMAND">VALUES</tt> 还可以用于子 <tt class="COMMAND">SELECT</tt> 可以应用的场合。比如在一个 <tt class="LITERAL">FROM</tt> 子句中：</p>
+<pre class="PROGRAMLISTING">SELECT f.*
+  FROM films f, (VALUES('MGM', 'Horror'), ('UA', 'Sci-Fi')) AS t (studio, kind)
+  WHERE f.studio = t.studio AND f.kind = t.kind;
+
+UPDATE employees SET salary = salary * v.increase
+  FROM (VALUES(1, 200000, 1.2), (2, 400000, 1.4)) AS v (depno, target, increase)
+  WHERE employees.depno = v.depno AND employees.sales &gt;= v.target;</pre>
+<p>当 <tt class="COMMAND">VALUES</tt> 用于 <tt class="LITERAL">FROM</tt> 子句中的时候，必须使用 <tt class="LITERAL">AS</tt> 子句，这与用于 <tt class="COMMAND">SELECT</tt> 时一样。并不要求 <tt class="LITERAL">AS</tt> 子句为每个字段都指定一个别名，但是这样做是一个好习惯。PostgreSQL 中 <tt class="COMMAND">VALUES</tt> 缺省的字段名是 <tt class="LITERAL">column1</tt>, <tt class="LITERAL">column2</tt> 等等，但这些缺省的名字并不一定与其他数据库系统相同。</p>
+<p>当 <tt class="COMMAND">VALUES</tt> 用于 <tt class="COMMAND">INSERT</tt> 的时候，所有的值都将按照目标字段自动做类型转换。但是在其他场合就可能必须明确指定恰当的数据类型。如果所有的项都是引号包围的字面常量，强制指定第一个类型就可以确定所有的类型：</p>
+<pre class="PROGRAMLISTING">SELECT * FROM machines
+WHERE ip_address IN (VALUES('192.168.0.1'::inet), ('192.168.0.10'), ('192.168.1.43'));</pre>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b> 对于简单的 <tt class="LITERAL">IN</tt> 测试，更好的方法是依赖于 <tt class="LITERAL">IN</tt> 的标量列表形式，而不是使用上述 <tt class="COMMAND">VALUES</tt> 查询。标量列表的方法写的更少，而且通常也更有效。</p>
+</blockquote>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN55379"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">VALUES</tt> 符合 SQL 标准，此外，<tt class="LITERAL">LIMIT</tt> 和 <tt class="LITERAL">OFFSET</tt> 是 PostgreSQL 扩展。</p>
+</div>
+<div class="REFSECT1"><a name="AEN55386"></a><h2>又见</h2><a href="sql-insert.html"><i>INSERT</i></a>, <a href="sql-select.html"><i>SELECT</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-vacuum.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="reference-client.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">VACUUM</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PostgreSQL 客户端应用程序</td></tr>
+</table>
+</div>
+</body></html>

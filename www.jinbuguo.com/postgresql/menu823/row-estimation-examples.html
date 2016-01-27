@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>行预期的例子</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="planner-stats-details.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="planner-stats-details.html">快退</a></td><td width="60%" align="center" valign="bottom">章54. 规划器如何使用统计信息</td><td width="10%" align="right" valign="top"><a href="planner-stats-details.html">快进</a></td><td width="10%" align="right" valign="top"><a href="appendixes.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="ROW-ESTIMATION-EXAMPLES">54.1. 行预期的例子</a></h1><a name="AEN69940"></a>
+<p>使用一个从回归测试数据库拉出来的例子，让我们从一个非常简单的查询开始：</p>
+<pre class="PROGRAMLISTING">EXPLAIN SELECT * FROM tenk1;
+
+                         QUERY PLAN
+-------------------------------------------------------------
+ Seq Scan on tenk1  (cost=0.00..445.00 rows=10000 width=244)</pre>
+<p>规划器如何判断 <code class="CLASSNAME">tenk1</code> 里面行的数目在<a href="using-explain.html">节13.1</a>里面介绍，为了完整，在这里重复一下。行数是从 <code class="CLASSNAME">pg_class</code> 里面查出来的。</p>
+<pre class="PROGRAMLISTING">SELECT reltuples, relpages FROM pg_class WHERE relname = 'tenk1';
+
+ relpages | reltuples
+----------+-----------
+      345 |     10000</pre>
+<p>规划器将检查 <tt class="STRUCTFIELD">relpages</tt> 的预期(很低开销的操作)，并且如果这个不正确，就可能按比例缩放 <tt class="STRUCTFIELD">reltuples</tt> 以获取一个行的预期。在本例中，它不用缩放，因此：</p>
+<pre class="PROGRAMLISTING">rows = 10000</pre>
+<p>换一个在 <tt class="LITERAL">WHERE</tt> 子句里面带有范围条件的例子：</p>
+<pre class="PROGRAMLISTING">EXPLAIN SELECT * FROM tenk1 WHERE unique1 &lt; 1000;
+
+                         QUERY PLAN
+------------------------------------------------------------
+ Seq Scan on tenk1  (cost=0.00..470.00 rows=1031 width=244)
+   Filter: (unique1 &lt; 1000)</pre>
+<p>规划器检查 <tt class="LITERAL">WHERE</tt> 子句条件：</p>
+<pre class="PROGRAMLISTING">unique1 &lt; 1000</pre>
+<p>然后在 <code class="CLASSNAME">pg_operator</code> 里把 <tt class="LITERAL">&lt;</tt> 的限制函数找出来。这个函数保存在字段 <tt class="STRUCTFIELD">oprrest</tt> 里，这个例子里，结果是 <code class="FUNCTION">scalarltsel</code> 。<code class="FUNCTION">scalarltsel</code> 从 <code class="CLASSNAME">pg_statistics</code> 里面检索出 <tt class="STRUCTFIELD">unique1</tt> 的统计图，可以使用简单些的 <code class="CLASSNAME">pg_stats</code> 视图来干：</p>
+<pre class="PROGRAMLISTING">SELECT histogram_bounds FROM pg_stats 
+WHERE tablename='tenk1' AND attname='unique1';
+
+                   histogram_bounds
+------------------------------------------------------
+ {1,970,1943,2958,3971,5069,6028,7007,7919,8982,9995}</pre>
+<p>然后，把统计图里面包含"&lt; 1000"的部分找出来。这就是选择性。统计图把范围分隔成相同频率的段，所以要做的只是把的数值所在的段找出来，然后计算它里面占的<span class="emphasis"><i class="EMPHASIS">部分</i></span>以及<span class="emphasis"><i class="EMPHASIS">所有</i></span>该值之前的部分。值 1000 很明显在第二个段(970-1943)里，因此，假设每个段里面的分布是线性的，那么就可以计算出选择性：</p>
+<pre class="PROGRAMLISTING">selectivity = (1 + (1000 - bckt[2].min)/(bckt[2].max - bckt[2].min))/num_bckts
+            = (1 + (1000 - 970)/(1943 - 970))/10
+            = 0.1031</pre>
+<p>也就是一个段加上第二个段的线性部分，除以总段数。那么估计的行数现在可以用选择性和 <code class="CLASSNAME">tenk1</code> 的总行数之积得出：</p>
+<pre class="PROGRAMLISTING">rows = rel_cardinality * selectivity
+     = 10000 * 0.1031
+     = 1031</pre>
+<p>然后考虑一个 <tt class="LITERAL">WHERE</tt> 子句里等于条件的例子：</p>
+<pre class="PROGRAMLISTING">EXPLAIN SELECT * FROM tenk1 WHERE stringu1 = 'ATAAAA';
+
+                        QUERY PLAN
+----------------------------------------------------------
+ Seq Scan on tenk1  (cost=0.00..470.00 rows=31 width=244)
+   Filter: (stringu1 = 'ATAAAA'::name)</pre>
+<p>同样，规划器会检查 <tt class="LITERAL">WHERE</tt> 条件：</p>
+<pre class="PROGRAMLISTING">stringu1 = 'ATAAAA'</pre>
+<p>然后为 <tt class="LITERAL">=</tt> 找出限制函数 <code class="FUNCTION">eqsel</code> 。这种情况下略微有些区别，因为 MCV 会用最常见的数值判断选择性。让来看看这些东西，其中有些额外的字段是稍后会用的：</p>
+<pre class="PROGRAMLISTING">SELECT null_frac, n_distinct, most_common_vals, most_common_freqs FROM pg_stats 
+WHERE tablename='tenk1' AND attname='stringu1';
+
+null_frac         | 0
+n_distinct        | 672
+most_common_vals  | {FDAAAA,NHAAAA,ATAAAA,BGAAAA,EBAAAA,MOAAAA,NDAAAA,OWAAAA,BHAAAA,BJAAAA}
+most_common_freqs | {0.00333333,0.00333333,0.003,0.003,0.003,0.003,0.003,0.003,0.00266667,0.00266667}</pre>
+<p>选择性只是最常见(MCF)的串，对应第三个 MCV('ATAAAA')：</p>
+<pre class="PROGRAMLISTING">selectivity = mcf[3]
+            = 0.003</pre>
+<p>行的估计数只是和前面一样用 <code class="CLASSNAME">tenk1</code> 的行数乘以选择性：</p>
+<pre class="PROGRAMLISTING">rows = 10000 * 0.003
+     = 30</pre>
+<p><tt class="COMMAND">EXPLAIN</tt> 现实的数值比这个大一，因为一些事后的估计检查。</p>
+<p>现在看看同样的查询，但是字符串常量是不在 MCV 列表里的：</p>
+<pre class="PROGRAMLISTING">EXPLAIN SELECT * FROM tenk1 WHERE stringu1 = 'xxx';
+
+                        QUERY PLAN
+----------------------------------------------------------
+ Seq Scan on tenk1  (cost=0.00..470.00 rows=15 width=244)
+   Filter: (stringu1 = 'xxx'::name)</pre>
+<p>这个时候的问题是完全不同的一个：在数据值<span class="emphasis"><i class="EMPHASIS">不在</i></span> MCV 列表里面时，如何估计选择性就是完全另外一个问题了。解决方法是利用该值不在列表里头的事实，结合已知的所有 MCV 出现的频率，用减法得出：</p>
+<pre class="PROGRAMLISTING">selectivity = (1 - sum(mvf))/(num_distinct - num_mcv)
+            = (1 - (0.00333333 + 0.00333333 + 0.003 + 0.003 + 0.003 
+            + 0.003 + 0.003 + 0.003 + 0.00266667 + 0.00266667))/(672 - 10)
+            = 0.001465</pre>
+<p>也就是说，把所有 MCV 出现的频率累加起来，然后从一里面减去这些，因为的条件数值<span class="emphasis"><i class="EMPHASIS">不是</i></span>这些值之一，然后用<span class="emphasis"><i class="EMPHASIS">剩下</i></span>的独立数值来除。请注意这里没有 NULL ，因此不用担心这些。估计的行数也用一样的方法计算：</p>
+<pre class="PROGRAMLISTING">rows = 10000 * 0.001465
+     = 15</pre>
+<p>让再把例子弄得更复杂些，使用多于一个的 <tt class="LITERAL">WHERE</tt> 子句：</p>
+<pre class="PROGRAMLISTING">EXPLAIN SELECT * FROM tenk1 WHERE unique1 &lt; 1000 AND stringu1 = 'xxx';
+
+                       QUERY PLAN
+-----------------------------------------------------------
+ Seq Scan on tenk1  (cost=0.00..495.00 rows=2 width=244)
+   Filter: ((unique1 &lt; 1000) AND (stringu1 = 'xxx'::name))</pre>
+<p>系统会做一个假设：两个条件独立，然后各自的选择性计算出来后再相乘：</p>
+<pre class="PROGRAMLISTING">selectivity = selectivity(unique1 &lt; 1000) * selectivity(stringu1 = 'xxx')
+            = 0.1031 * 0.001465
+            = 0.00015104</pre>
+<p>行估计也是用和以前一样的方法计算：</p>
+<pre class="PROGRAMLISTING">rows = 10000 * 0.00015104
+     = 2</pre>
+<p>最后将讨论一个同时包含 <tt class="LITERAL">JOIN</tt> 子句和 <tt class="LITERAL">WHERE</tt> 子句的查询：</p>
+<pre class="PROGRAMLISTING">EXPLAIN SELECT *  FROM tenk1 t1, tenk2 t2 
+WHERE t1.unique1 &lt; 50 AND t1.unique2 = t2.unique2;
+
+                                      QUERY PLAN
+-----------------------------------------------------------------------------------------
+ Nested Loop  (cost=0.00..346.90 rows=51 width=488)
+   -&#62;  Index Scan using tenk1_unique1 on tenk1 t1  (cost=0.00..192.57 rows=51 width=244)
+         Index Cond: (unique1 &lt; 50)
+   -&#62;  Index Scan using tenk2_unique2 on tenk2 t2  (cost=0.00..3.01 rows=1 width=244)
+         Index Cond: ("outer".unique2 = t2.unique2)</pre>
+<p>在 <code class="CLASSNAME">tenk1</code> 上的"unique1 &lt; 50"限制在嵌套循环连接之前计算。这个条件是用类似上面的那个范围例子的方法处理的。和前面一样， <tt class="LITERAL">&lt;</tt> 的限制操作符是 <code class="FUNCTION">scalarlteqsel</code> ，但是这次数值 50 落在 <tt class="STRUCTFIELD">unique1</tt> 的统计图表的第一个段内：</p>
+<pre class="PROGRAMLISTING">selectivity = (0 + (50 - bckt[1].min)/(bckt[1].max - bckt[1].min))/num_bckts
+            = (0 + (50 - 1)/(970 - 1))/10
+            = 0.005057
+
+rows        = 10000 * 0.005057
+            = 51</pre>
+<p>此连接的限制是：</p>
+<pre class="PROGRAMLISTING">t2.unique2 = t1.unique2</pre>
+<p>这是因为连接方法是嵌套循环，而 <code class="CLASSNAME">tenk1</code> 在外层循环里。操作符是熟悉的 <tt class="LITERAL">=</tt> ，不过限制函数是从 <code class="CLASSNAME">pg_operator</code> 的 <tt class="STRUCTFIELD">oprjoin</tt> 字段获得的(<code class="FUNCTION">eqjoinsel</code>)。。另外为 <code class="CLASSNAME">tenk2</code> 和 <code class="CLASSNAME">tenk1</code> 使用统计信息：</p>
+<pre class="PROGRAMLISTING">SELECT tablename, null_frac,n_distinct, most_common_vals FROM pg_stats 
+WHERE tablename IN ('tenk1', 'tenk2') AND attname='unique2';  
+
+tablename  | null_frac | n_distinct | most_common_vals
+-----------+-----------+------------+------------------
+ tenk1     |         0 |         -1 |
+ tenk2     |         0 |         -1 |</pre>
+<p>在这个例子里，没有 <tt class="STRUCTFIELD">unique2</tt> 的 MCV 信息，因为所有数值看上去都是唯一的，因此可以使用一个只依赖唯一数值数目和 NULL 数目百分比的算法来给两个表计算(选择性)：</p>
+<pre class="PROGRAMLISTING">selectivity = (1 - null_frac1) * (1 - null_frac2) * min(1/num_distinct1, 1/num_distinct2)
+            = (1 - 0) * (1 - 0) * min(1/10000, 1/1000)
+            = 0.0001</pre>
+<p>也就是说，把每个表都减去一里面 NULL 的比例，然后除以两个唯一数值的最大值。连接可能选出来的行数是以嵌套循环里的两个结点的笛卡儿积的总行数，乘以选择性计算出来的：</p>
+<pre class="PROGRAMLISTING">rows = (outer_cardinality * inner_cardinality) * selectivity
+     = (51 * 10000) * 0.0001
+     = 51</pre>
+<p>如果对更多细节感兴趣，检查一个表里面的行数目的代码在 <tt class="FILENAME">src/backend/optimizer/util/plancat.c</tt> 里。给子句选择性计算的逻辑在 <tt class="FILENAME">src/backend/optimizer/path/clausesel.c</tt> 里。操作符和连接选择性函数实际的实现在 <tt class="FILENAME">src/backend/utils/adt/selfuncs.c</tt> 里。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="planner-stats-details.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="appendixes.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">规划器如何使用统计信息</td><td width="34%" align="center" valign="top"><a href="planner-stats-details.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">附录</td></tr>
+</table>
+</div>
+</body></html>

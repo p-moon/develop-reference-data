@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>VALUES 列表</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="queries-limit.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="queries.html">快退</a></td><td width="60%" align="center" valign="bottom">章7. 查询</td><td width="10%" align="right" valign="top"><a href="queries.html">快进</a></td><td width="10%" align="right" valign="top"><a href="datatype.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="QUERIES-VALUES">7.7. <tt class="LITERAL">VALUES</tt> 列表</a></h1><a name="AEN3638"></a>
+<p>可以在查询中使用由 <tt class="LITERAL">VALUES</tt> 生成的"常数表"，而无需在磁盘上实际创建这个表。语法如下：</p>
+<pre class="SYNOPSIS">VALUES ( <tt class="REPLACEABLE"><i>expression</i></tt> [, ...] ) [, ...]</pre>
+<p>每个括号中的表达式列表生成表中的一行。每个列表中的项数(也就是字段数)必须相等，并且对应的数据类型必须兼容。最终表中每个字段的数据类型将使用与 <tt class="LITERAL">UNION</tt>(参见<a href="typeconv-union-case.html">节10.5</a>)相同的规则确定。</p>
+<p>例如</p>
+<pre class="PROGRAMLISTING">VALUES (1, 'one'), (2, 'two'), (3, 'three');</pre>
+<p>将得到 2 列 3 行的表。并且与下面的语句等价：</p>
+<pre class="PROGRAMLISTING">SELECT 1 AS column1, 'one' AS column2
+UNION ALL
+SELECT 2, 'two'
+UNION ALL
+SELECT 3, 'three';</pre>
+<p>PostgreSQL 默认将 <tt class="LITERAL">VALUES</tt> 所得到的表中各字段分别命名为 <tt class="LITERAL">column1</tt>, <tt class="LITERAL">column2</tt> 等等。SQL 标准并未规定此种情况下的字段名命名规范，不同的数据库系统对此的处理也各不相同，所以最好明确指定字段的名字。</p>
+<p>语法上，带有表达式列表的 <tt class="LITERAL">VALUES</tt> 和下面的语句等价：</p>
+<pre class="SYNOPSIS">SELECT <tt class="REPLACEABLE"><i>select_list</i></tt> FROM <tt class="REPLACEABLE"><i>table_expression</i></tt></pre>
+<p>并且可以出现在任何 <tt class="LITERAL">SELECT</tt> 可以出现的地方。例如，你可以把它用于 <tt class="LITERAL">UNION</tt> 的一侧，或者在其上附加一个 <tt class="REPLACEABLE"><i>sort_specification</i></tt>(<tt class="LITERAL">ORDER BY</tt>, <tt class="LITERAL">LIMIT</tt>, <tt class="LITERAL">OFFSET</tt>)。<tt class="LITERAL">VALUES</tt> 通常用作 <tt class="COMMAND">INSERT</tt> 命令的数据源或者子查询。</p>
+<p>更多信息参见 <a href="sql-values.html"><i>VALUES</i></a> 。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="queries-limit.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="datatype.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="LITERAL">LIMIT</tt> 和 <tt class="LITERAL">OFFSET</tt></td><td width="34%" align="center" valign="top"><a href="queries.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">数据类型</td></tr>
+</table>
+</div>
+</body></html>

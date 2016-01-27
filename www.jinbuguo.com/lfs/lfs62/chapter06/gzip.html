@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.39. Gzip-1.3.5</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="groff.html" title="Groff-1.18.1.1">后退</a>
+          <p>Groff-1.18.1.1</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="inetutils.html" title="Inetutils-1.4.2">前进</a>
+          <p>Inetutils-1.4.2</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.39. Gzip-1.3.5</h1>
+      </div>
+      <div class="package">
+        <p>gzip 包含用 Lempel-Ziv 编码(LZ77)来压缩和解压文件的程序。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">少于 0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">2.2 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.39.1. 安装 Gzip</h2>
+        </div>
+        <p>Gzip 有两个安全漏洞，下面的补丁可以修正它：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../gzip-1.3.5-security_fixes-1.patch</kbd></pre>
+        <p>为编译 Gzip 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --prefix=/usr</kbd></pre>
+        <p><span><strong class="command">gzexe</strong></span> 脚本里包含对 <span><strong class="command">gzip</strong></span> 程序的硬路径引用。由于我们后面要改变 <span><strong class="command">gzip</strong></span> 程序的位置，就需要用下面的命令改变脚本中的硬路径：</p>
+        <pre class="userinput"><kbd class="command">sed -i 's@"BINDIR"@/bin@g' gzexe.in</kbd></pre>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>这个软件包没有附带测试程序。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <p>把 <span><strong class="command">gzip</strong></span> 程序移动到 <tt class="filename">/bin</tt> 目录并创建一些常用的符号连接：</p>
+        <pre class="userinput"><kbd class="command">mv -v /usr/bin/gzip /bin
+rm -v /usr/bin/{gunzip,zcat}
+ln -sv gzip /bin/gunzip
+ln -sv gzip /bin/zcat
+ln -sv gzip /bin/compress
+ln -sv gunzip /bin/uncompress</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-gzip" name="contents-gzip"></a>
+          <h2 class="sect2">6.39.2. Gzip 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">compress(→gzip), gunzip(→gzip), gzexe, gzip, uncompress(→gunzip), zcat(→gzip), zcmp, zdiff, zegrep, zfgrep,
+              zforce, zgrep, zless, zmore, znew</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3689308" name="id3689308"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="compress" name="compress"></a><span class="term"><span><strong class="command">compress</strong></span></span></td>
+                <td><p>压缩和解压缩文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="gunzip" name="gunzip"></a><span class="term"><span><strong class="command">gunzip</strong></span></span></td>
+                <td><p>解压由 gzip 压缩过的文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="gzexe" name="gzexe"></a><span class="term"><span><strong class="command">gzexe</strong></span></span></td>
+                <td><p>将文件压缩成可以自解压的可执行文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="gzip" name="gzip"></a><span class="term"><span><strong class="command">gzip</strong></span></span></td>
+                <td><p>通过 Lempel-Ziv 编码(LZ77)压缩指定的文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="uncompress" name="uncompress"></a><span class="term"><span><strong class="command">uncompress</strong></span></span></td>
+                <td><p>解压由 gzip 压缩过的文件</p></td>
+              </tr>
+              <tr>
+                <td><a id="zcat" name="zcat"></a><span class="term"><span><strong class="command">zcat</strong></span></span></td>
+                <td><p>将解压缩的数据写到标准输出上</p></td>
+              </tr>
+              <tr>
+                <td><a id="zcmp" name="zcmp"></a><span class="term"><span><strong class="command">zcmp</strong></span></span></td>
+                <td><p>在压缩文件上调用 <span><strong class="command">cmp</strong></span> 命令</p></td>
+              </tr>
+              <tr>
+                <td><a id="zdiff" name="zdiff"></a><span class="term"><span><strong class="command">zdiff</strong></span></span></td>
+                <td><p>在压缩文件上调用 <span><strong class="command">diff</strong></span> 命令</p></td>
+              </tr>
+              <tr>
+                <td><a id="zegrep" name="zegrep"></a><span class="term"><span><strong class="command">zegrep</strong></span></span></td>
+                <td><p>在压缩文件上调用 <span><strong class="command">egrep</strong></span> 命令</p></td>
+              </tr>
+              <tr>
+                <td><a id="zfgrep" name="zfgrep"></a><span class="term"><span><strong class="command">zfgrep</strong></span></span></td>
+                <td><p>在压缩文件上调用 <span><strong class="command">fgrep</strong></span> 命令</p></td>
+              </tr>
+              <tr>
+                <td><a id="zforce" name="zforce"></a><span class="term"><span><strong class="command">zforce</strong></span></span></td>
+                <td><p>强制性地为每一个 gzip 文件加上 <tt class="filename">.gz</tt> 扩展名，这样<span><strong class="command">gzip</strong></span> 就不会对它们再次进行压缩。这个程序可能在一个文件经过传输后名字被截短的情况下能够派上用场。</p></td>
+              </tr>
+              <tr>
+                <td><a id="zgrep" name="zgrep"></a><span class="term"><span><strong class="command">zgrep</strong></span></span></td>
+                <td><p>在压缩文件上调用 <span><strong class="command">grep</strong></span> 命令</p></td>
+              </tr>
+              <tr>
+                <td><a id="zless" name="zless"></a><span class="term"><span><strong class="command">zless</strong></span></span></td>
+                <td><p>在压缩文件上调用 <span><strong class="command">less</strong></span> 命令</p></td>
+              </tr>
+              <tr>
+                <td><a id="zmore" name="zmore"></a><span class="term"><span><strong class="command">zmore</strong></span></span></td>
+                <td><p>在压缩文件上调用 <span><strong class="command">more</strong></span> 命令</p></td>
+              </tr>
+              <tr>
+                <td><a id="znew" name="znew"></a><span class="term"><span><strong class="command">znew</strong></span></span></td>
+                <td><p>将<tt class="filename">.Z</tt>格式的文件(使用 compress 压缩)转压缩成<tt class="filename">.gz</tt>格式(使用 gzip 压缩)</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="groff.html" title="Groff-1.18.1.1">后退</a>
+          <p>Groff-1.18.1.1</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="inetutils.html" title="Inetutils-1.4.2">前进</a>
+          <p>Inetutils-1.4.2</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

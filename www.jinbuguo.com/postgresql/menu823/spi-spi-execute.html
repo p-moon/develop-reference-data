@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SPI_execute</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="spi-spi-pop.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="spi-spi-pop.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="spi-spi-exec.html">快进</a></td><td width="10%" align="right" valign="top"><a href="spi-spi-exec.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SPI-SPI-EXECUTE"></a>SPI_execute</h1>
+<div class="REFNAMEDIV"><a name="AEN41976"></a><h2>函数名</h2>SPI_execute&nbsp;--&nbsp;执行一条命令</div>
+<a name="AEN41979"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN41981"></a><h2>原型</h2>
+<pre class="SYNOPSIS">int SPI_execute(const char * <tt class="PARAMETER">command</tt>, bool <tt class="PARAMETER">read_only</tt>, long <tt class="PARAMETER">count</tt>)</pre>
+</div>
+<div class="REFSECT1"><a name="AEN41986"></a><h2>描述</h2>
+<p><code class="FUNCTION">SPI_execute</code> 执行声明的 SQL 命令获取 <tt class="PARAMETER">count</tt> 行。如果 <tt class="PARAMETER">read_only</tt> 为 <tt class="LITERAL">true</tt> ，命令必须是只读的，因此可以略微降低一些执行的开销。</p>
+<p>这个函数只能在已连接的过程中调用。</p>
+<p>如果 <tt class="PARAMETER">count</tt> 是零，则在命令适合的所有行上执行。如果 <tt class="PARAMETER">count</tt> 大于 0 ，那么命令执行的行数将被限制(很像一个 <tt class="LITERAL">LIMIT</tt> 子句)。比如，</p>
+<pre class="PROGRAMLISTING">SPI_execute("INSERT INTO foo SELECT * FROM bar", false, 5);</pre>
+<p>将只允许最多 5 行插入表中。</p>
+<p>你可以在一个字符串里传递多个命令。<code class="FUNCTION">SPI_execute</code> 返回最后执行的命令的结果。<tt class="PARAMETER">count</tt> 的限制独立地应用于每一个命令，但是不会应用于规则生成的隐藏命令。</p>
+<p>如果 <tt class="PARAMETER">read_only</tt> 是 <tt class="LITERAL">false</tt> ，<code class="FUNCTION">SPI_execute</code> 递增命令计数器并且在执行字符串里的每个命令之前计算一个新的<i class="FIRSTTERM">快照</i>。如果当前事务的隔离级别是 <tt class="LITERAL">SERIALIZABLE</tt> ，这个快照实际上并不改变，但是在 <tt class="LITERAL">READ COMMITTED</tt> 模式里，这个快照更新允许每个命令看到其它会话的事务提交的结果。这样实际上是为了修改数据库的命令有一致的行为。</p>
+<p>如果 <tt class="PARAMETER">read_only</tt> 是 <tt class="LITERAL">true</tt> ，<code class="FUNCTION">SPI_execute</code> 并不更新快照或者命令计数器，并且它指允许简单的 <tt class="COMMAND">SELECT</tt> 命令出现在命令字符串里。这个命令使用为周围的查询建立起来的快照执行。这个执行模式比读/写模式执行得略微块些，因为它消除了每个命令的一些开销。并且它还允许制作真正的<i class="FIRSTTERM">稳定</i>函数：因为随后的执行都将使用同一个快照，结果里不会有改变。</p>
+<p>通常，在同一个使用 SPI 的函数里混杂只读和读写命令是不明智的；那样可能导致非常混乱的行为，因为只读的查询不能看到任何读写的查询做的数据库更新。</p>
+<p>(最后)一条命令执行返回的结果的实际行数会放在全局的变量 <tt class="VARNAME">SPI_processed</tt> 里。如果函数的返回值是 <tt class="SYMBOL">SPI_OK_SELECT</tt>, <tt class="SYMBOL">SPI_OK_INSERT_RETURNING</tt>, <tt class="SYMBOL">SPI_OK_DELETE_RETURNING</tt>, <tt class="SYMBOL">SPI_OK_UPDATE_RETURNING</tt> ，那么你可以使用全局指针 <tt class="LITERAL">SPITupleTable *SPI_tuptable</tt> 访问结果行。一些实用命令(比如 <tt class="COMMAND">EXPLAIN</tt>)还返回行集合，并且 <tt class="LITERAL">SPI_tuptable</tt> 也将在这种情况下包含结果。</p>
+<p>结构 <tt class="STRUCTNAME">SPITupleTable</tt> 是这样定义的：</p>
+<pre class="PROGRAMLISTING">typedef struct
+{
+    MemoryContext tuptabcxt;    /* 结果表的内存环境 */
+    uint32      alloced;        /* 分配的 vals 数目 */
+    uint32      free;           /* 空闲的 vals 数目 */
+    TupleDesc   tupdesc;        /* 行描述符 */
+    HeapTuple  *vals;           /* 行 */
+} SPITupleTable;</pre>
+<p><tt class="STRUCTFIELD">vals</tt> 是一个指向数据行的的指针数组(有效记录的数目由 <tt class="VARNAME">SPI_processed</tt> 给出)。<tt class="STRUCTFIELD">tupdesc</tt> 是一个行描述符，你可以传递给 SPI 函数处理这些数据行。<tt class="STRUCTFIELD">tuptabcxt</tt>, <tt class="STRUCTFIELD">alloced</tt>, <tt class="STRUCTFIELD">free</tt> 是 SPI 的内部字段，并非给 SPI 调用者使用的。</p>
+<p><code class="FUNCTION">SPI_finish</code> 释放所有在当前过程中分配的 <tt class="STRUCTNAME">SPITupleTable</tt> 。如果你已经处理完特定的结果表，那么可以更早地释放它，方法是调用 <code class="FUNCTION">SPI_freetuptable</code></p>
+</div>
+<div class="REFSECT1"><a name="AEN42038"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">const char * <tt class="PARAMETER">command</tt></tt></dt>
+<dd><p>包含要执行的命令的字符串</p></dd>
+<dt><tt class="LITERAL">bool <tt class="PARAMETER">read_only</tt></tt></dt>
+<dd><p><tt class="LITERAL">true</tt> 用于只读的执行</p></dd>
+<dt><tt class="LITERAL">long <tt class="PARAMETER">count</tt></tt></dt>
+<dd><p>处理或返回的最大行数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN42060"></a><h2>返回值</h2>
+<p>如果命令执行成功，那么返回下列值之一(非负数)：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="SYMBOL">SPI_OK_SELECT</tt></dt>
+<dd><p>如果执行了一个 <tt class="COMMAND">SELECT</tt> 但不是 <tt class="COMMAND">SELECT INTO</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_OK_SELINTO</tt></dt>
+<dd><p>如果执行了一条 <tt class="COMMAND">SELECT INTO</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_OK_INSERT</tt></dt>
+<dd><p>如果执行了一条 <tt class="COMMAND">INSERT</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_OK_DELETE</tt></dt>
+<dd><p>如果执行了一条 <tt class="COMMAND">DELETE</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_OK_UPDATE</tt></dt>
+<dd><p>如果执行了一条 <tt class="COMMAND">UPDATE</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_OK_INSERT_RETURNING</tt></dt>
+<dd><p>如果执行了一条 <tt class="COMMAND">INSERT RETURNING</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_OK_DELETE_RETURNING</tt></dt>
+<dd><p>如果执行了一条 <tt class="COMMAND">DELETE RETURNING</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_OK_UPDATE_RETURNING</tt></dt>
+<dd><p>如果执行了一条 <tt class="COMMAND">UPDATE RETURNING</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_OK_UTILITY</tt></dt>
+<dd><p>如果执行了一条实用命令(比如 <tt class="COMMAND">CREATE TABLE</tt>)</p></dd>
+</dl>
+</div>
+<p>发生错误时，返回下列负数值之一：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="SYMBOL">SPI_ERROR_ARGUMENT</tt></dt>
+<dd><p>如果 <tt class="PARAMETER">command</tt> 是 <tt class="SYMBOL">NULL</tt> 或 <tt class="PARAMETER">count</tt> 小于 0</p></dd>
+<dt><tt class="SYMBOL">SPI_ERROR_COPY</tt></dt>
+<dd><p>如果企图进行 <tt class="COMMAND">COPY TO stdout</tt> 或 <tt class="COMMAND">COPY FROM stdin</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_ERROR_CURSOR</tt></dt>
+<dd><p>如果企图进行 <tt class="COMMAND">DECLARE</tt>, <tt class="COMMAND">CLOSE</tt>, <tt class="COMMAND">FETCH</tt></p></dd>
+<dt><tt class="SYMBOL">SPI_ERROR_TRANSACTION</tt></dt>
+<dd><p>如果企图调用任何事务操纵命令(<tt class="COMMAND">BEGIN</tt>, <tt class="COMMAND">COMMIT</tt>, <tt class="COMMAND">ROLLBACK</tt>, <tt class="COMMAND">SAVEPOINT</tt>, <tt class="COMMAND">PREPARE TRANSACTION</tt>, <tt class="COMMAND">COMMIT PREPARED</tt>, <tt class="COMMAND">ROLLBACK PREPARED</tt> 或它们的变种)</p></dd>
+<dt><tt class="SYMBOL">SPI_ERROR_OPUNKNOWN</tt></dt>
+<dd><p>命令类型未知(不应该发生)</p></dd>
+<dt><tt class="SYMBOL">SPI_ERROR_UNCONNECTED</tt></dt>
+<dd><p>如果从一个未连接的过程中调用</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN42166"></a><h2>注意</h2>
+<p><code class="FUNCTION">SPI_execute</code>, <code class="FUNCTION">SPI_exec</code>, <code class="FUNCTION">SPI_execute_plan</code>, <code class="FUNCTION">SPI_execp</code> 函数修改 <tt class="VARNAME">SPI_processed</tt> 和 <tt class="VARNAME">SPI_tuptable</tt> (只是一个指针，不是结构的内容)。如果你需要跨越后面的调用访问 <code class="FUNCTION">SPI_execute</code> 或者相关函数的结果表，那么需要把这两个全局俩保存到一个局部过程变量中。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="spi-spi-pop.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="spi-spi-exec.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SPI_pop</td><td width="34%" align="center" valign="top"><a href="spi-interface.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SPI_exec</td></tr>
+</table>
+</div>
+</body></html>

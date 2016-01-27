@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SPI_execute_plan</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="spi-spi-is-cursor-plan.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="spi-spi-is-cursor-plan.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="spi-spi-execp.html">快进</a></td><td width="10%" align="right" valign="top"><a href="spi-spi-execp.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SPI-SPI-EXECUTE-PLAN"></a>SPI_execute_plan</h1>
+<div class="REFNAMEDIV"><a name="AEN42409"></a><h2>函数名</h2>SPI_execute_plan&nbsp;--&nbsp;执行一个 <code class="FUNCTION">SPI_prepare</code> 准备的查询规划</div>
+<a name="AEN42413"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN42415"></a><h2>原型</h2>
+<pre class="SYNOPSIS">int SPI_execute_plan(void * <tt class="PARAMETER">plan</tt>, Datum * <tt class="PARAMETER">values</tt>, const char * <tt class="PARAMETER">nulls</tt>,
+                     bool <tt class="PARAMETER">read_only</tt>, long <tt class="PARAMETER">count</tt>)</pre>
+</div>
+<div class="REFSECT1"><a name="AEN42422"></a><h2>描述</h2>
+<p><code class="FUNCTION">SPI_execute_plan</code> 执行一个 <code class="FUNCTION">SPI_prepare</code> 准备的规划。<tt class="PARAMETER">read_only</tt> 和 <tt class="PARAMETER">count</tt> 的含义和 <code class="FUNCTION">SPI_execute</code> 里面的相同。</p>
+</div>
+<div class="REFSECT1"><a name="AEN42430"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="LITERAL">void * <tt class="PARAMETER">plan</tt></tt></dt>
+<dd><p>执行规划(<code class="FUNCTION">SPI_prepare</code> 返回)</p></dd>
+<dt><tt class="LITERAL">Datum * <tt class="PARAMETER">values</tt></tt></dt>
+<dd><p>一个实际的参数值的数组。比如和规划的参数个数长度相同。</p></dd>
+<dt><tt class="LITERAL">const char * <tt class="PARAMETER">nulls</tt></tt></dt>
+<dd><p>一个描述哪个参数是空的数组。必须和规划的参数个数相同。<tt class="LITERAL">n</tt> 表示一个 NULL(在 <tt class="PARAMETER">values</tt> 里面对应的条目将被忽略)；一个空格表示一个非 NULL(在 <tt class="PARAMETER">values</tt> 里对应条目是有效的)。</p>
+<p>如果 <tt class="PARAMETER">nulls</tt> 是 <tt class="SYMBOL">NULL</tt> ，那么 <code class="FUNCTION">SPI_execute_plan</code> 就认为没有参数是空。</p></dd>
+<dt><tt class="LITERAL">bool <tt class="PARAMETER">read_only</tt></tt></dt>
+<dd><p>只读执行时为 <tt class="LITERAL">true</tt></p></dd>
+<dt><tt class="LITERAL">long <tt class="PARAMETER">count</tt></tt></dt>
+<dd><p>执行或返回的最大行数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN42472"></a><h2>返回值</h2>
+<p>返回值和 <code class="FUNCTION">SPI_execute</code> 的一样，另外还有下面几个可能的(负值)结果：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="SYMBOL">SPI_ERROR_ARGUMENT</tt></dt>
+<dd><p>如果 <tt class="PARAMETER">plan</tt> 是 <tt class="SYMBOL">NULL</tt> 或 <tt class="PARAMETER">count</tt> 小于 0</p></dd>
+<dt><tt class="SYMBOL">SPI_ERROR_PARAM</tt></dt>
+<dd><p>如果 <tt class="PARAMETER">values</tt> 是 <tt class="SYMBOL">NULL</tt> 并且 <tt class="PARAMETER">plan</tt> 准备了一些参数</p></dd>
+</dl>
+</div>
+<p>成功时，<tt class="VARNAME">SPI_processed</tt> 和 <tt class="VARNAME">SPI_tuptable</tt> 的设置和 <code class="FUNCTION">SPI_execute</code> 里一样。</p>
+</div>
+<div class="REFSECT1"><a name="AEN42497"></a><h2>注意</h2>
+<p>如果准备好了的规划引用的一个对象(表、函数等等)在会话过程中被删除，那么 <code class="FUNCTION">SPI_execute_plan</code> 对此规划的执行结果将不可预料。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="spi-spi-is-cursor-plan.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="spi-spi-execp.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SPI_is_cursor_plan</td><td width="34%" align="center" valign="top"><a href="spi-interface.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SPI_execp</td></tr>
+</table>
+</div>
+</body></html>

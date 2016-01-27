@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>值表达式</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-syntax-lexical.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-syntax.html">快退</a></td><td width="60%" align="center" valign="bottom">章4. SQL 语法</td><td width="10%" align="right" valign="top"><a href="sql-syntax.html">快进</a></td><td width="10%" align="right" valign="top"><a href="ddl.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="SQL-EXPRESSIONS">4.2. 值表达式</a></h1><a name="AEN1583"></a><a name="AEN1586"></a><a name="AEN1588"></a>
+<p>值表达式用在各种语法环境中，比如在 <tt class="COMMAND">SELECT</tt> 命令的目标列表中，在 <tt class="COMMAND">INSERT</tt> 或 <tt class="COMMAND">UPDATE</tt> 中用作新的列值，或者在许多命令的搜索条件中使用。我们有时候把值表达式的结果叫做<i class="FIRSTTERM">标量</i> ，以便与一个表表达式的结果相区别(是一个表)。因此值表达式也叫做<i class="FIRSTTERM">标量表达式</i>(或简称<i class="FIRSTTERM">表达式</i>)。表达式语法允许对来自基本部分的数值进行算术、逻辑、集合、和其它运算。</p>
+<p>值表达式是下列内容之一：</p>
+<ul>
+<li><p>一个常量或者字面值</p></li>
+<li><p>一个字段引用</p></li>
+<li><p>一个位置参数引用(在函数声明体中或预编写的语句中)</p></li>
+<li><p>一个下标表达式</p></li>
+<li><p>一个字段选择表达式</p></li>
+<li><p>一个操作符调用</p></li>
+<li><p>一个函数调用</p></li>
+<li><p>一个聚集表达式</p></li>
+<li><p>一个类型转换</p></li>
+<li><p>一个标量子查询</p></li>
+<li><p>一个数组构造器</p></li>
+<li><p>一个行构造器</p></li>
+<li><p>一个在圆括弧里面的值表达式(可用于子表达式分组和覆盖优先级)<a name="AEN1626"></a></p></li>
+</ul>
+<p>除了这个列表以外，还有许多构造可以归类为表达式，但是不遵循任何通用的语法规则。它们通常有函数或操作符的语义，并且在<a href="functions.html">章9</a>里合适的位置描述。一个例子是 <tt class="LITERAL">IS NULL</tt> 子句。</p>
+<p>我们已经在<a href="sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS">节4.1.2</a>里有讨论过的内容了。下面的节讨论剩下的选项。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN1633">4.2.1. 字段引用</a></h2><a name="AEN1635"></a>
+<p>一个字段可以用下面的形式引用：</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>correlation</i></tt>.<tt class="REPLACEABLE"><i>columnname</i></tt></pre>
+<p><tt class="REPLACEABLE"><i>correlation</i></tt> 是一个表的名字(可能有模式修饰)，或者是用 <tt class="LITERAL">FROM</tt> 子句这样的方法定义的表的别名，或者是关键字 <tt class="LITERAL">NEW</tt> 或 <tt class="LITERAL">OLD</tt> (<tt class="LITERAL">NEW</tt> 和 <tt class="LITERAL">OLD</tt> 只能出现在一条改写规则中，而其它相关的名字可以用于任意 SQL 语句中)。如果在当前查询所使用的所有表中，该字段名字是唯一的，那么这个相关名字(<tt class="REPLACEABLE"><i>correlation</i></tt>)和分隔用的点就可以省略(参见<a href="queries.html">章7</a>)。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN1649">4.2.2. 位置参数</a></h2><a name="AEN1651"></a><a name="AEN1654"></a>
+<p>位置参数引用用于标识从外部给 SQL 语句的参数。参数用于 SQL 函数定义语句和预编写的查询。有些客户端库还支持在 SQL 命令字符串外边声明数据值，这种情况下参数用于引用 SQL 字符串行外的数据。一个参数的形式如下：</p>
+<pre class="SYNOPSIS">$<tt class="REPLACEABLE"><i>number</i></tt></pre>
+<p>比如下面这个 <code class="FUNCTION">dept</code> 函数的定义</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION dept(text) RETURNS dept
+    AS $$ SELECT * FROM dept WHERE name = $1 $$
+    LANGUAGE SQL;</pre>
+<p>在函数被调用的时候这里的 <tt class="LITERAL">$1</tt> 将引用第一个参数。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN1663">4.2.3. 下标</a></h2><a name="AEN1665"></a>
+<p>如果一个表达式生成一个数组类型的数值，那么我们可以通过下面这样的表达式来提取数组中的元素</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>expression</i></tt>[<tt class="REPLACEABLE"><i>subscript</i></tt>]</pre>
+<p>如果是多个相邻的元素("数组片断")可以用下面的方法抽取(<tt class="LITERAL">[ ]</tt> 按照字面文本的方式出现)</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>expression</i></tt>[<tt class="REPLACEABLE"><i>lower_subscript</i></tt>:<tt class="REPLACEABLE"><i>upper_subscript</i></tt>]</pre>
+<p>每个 <tt class="REPLACEABLE"><i>subscript</i></tt> 自己都是一个表达式，它必须生成一个整数值。</p>
+<p>通常，数组 <tt class="REPLACEABLE"><i>expression</i></tt>必须用圆括弧包围，但如果只是一个字段引用或者一个位置参数，那么圆括弧可以省略。同样，如果源数组是多维的，那么多个下标可以连接在一起。比如：</p>
+<pre class="PROGRAMLISTING">mytable.arraycolumn[4]
+mytable.two_d_column[17][34]
+$1[10:42]
+(arrayfunction(a,b))[42]</pre>
+<p>最后一个例子里的圆括弧是必须的。参阅<a href="arrays.html">节8.10</a>获取有关数组的更多信息。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN1682">4.2.4. 字段选择</a></h2><a name="AEN1684"></a>
+<p>如果一个表达式生成一个复合类型(行类型)，那么用下面的方法可以抽取一个指定的字段</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>expression</i></tt>.<tt class="REPLACEABLE"><i>fieldname</i></tt></pre>
+<p>通常，行 <tt class="REPLACEABLE"><i>expression</i></tt> 必须用圆括弧包围，但是如果要选取的表达式只是一个表引用或者位置参数，可以省略圆括弧。比如</p>
+<pre class="PROGRAMLISTING">mytable.mycolumn
+$1.somecolumn
+(rowfunction(a,b)).col3</pre>
+<p>因此，一个全称的字段引用实际上只是一个字段选择语法的特例。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN1693">4.2.5. 操作符调用</a></h2><a name="AEN1695"></a>
+<p>操作符调用有三种语法：
+<table border="0">
+<tbody>
+<tr><td><tt class="REPLACEABLE"><i>expression</i></tt> <tt class="REPLACEABLE"><i>operator</i></tt> <tt class="REPLACEABLE"><i>expression</i></tt> (双目中缀操作符)</td></tr>
+<tr><td><tt class="REPLACEABLE"><i>operator</i></tt> <tt class="REPLACEABLE"><i>expression</i></tt> (单目前缀操作符)</td></tr>
+<tr><td><tt class="REPLACEABLE"><i>expression</i></tt> <tt class="REPLACEABLE"><i>operator</i></tt> (单目后缀操作符)</td></tr>
+</tbody>
+</table>
+这里的 <tt class="REPLACEABLE"><i>operator</i></tt> 记号遵循<a href="sql-syntax-lexical.html#SQL-SYNTAX-OPERATORS">节4.1.3</a>的语法规则，或者是记号 <tt class="TOKEN">AND</tt>, <tt class="TOKEN">OR</tt>, <tt class="TOKEN">NOT</tt> 之一。或者是一个被修饰的操作符名</P>
+<pre class="SYNOPSIS"><tt class="LITERAL">OPERATOR(</tt><tt class="REPLACEABLE"><i>schema</i></tt><tt class="LITERAL">.</tt><tt class="REPLACEABLE"><i>operatorname</i></tt><tt class="LITERAL">)</tt></pre>
+<p>具体存在哪个操作符以及它们是单目还是双目取决于系统或用户定义了什么操作符。<a href="functions.html">章9</a>描述了内置的操作符。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN1722">4.2.6. 函数调用</a></h2><a name="AEN1724"></a>
+<p>函数调用的语法是合法函数名(可能有模式名修饰)后面跟着包含参数列表的圆括弧：</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>function</i></tt> ([<span class="OPTIONAL"><tt class="REPLACEABLE"><i>expression</i></tt> [<span class="OPTIONAL">, <tt class="REPLACEABLE"><i>expression</i></tt> ...</span>]</span>] )</pre>
+<p>比如，下面的代码计算 2 的平方根：</p>
+<pre class="PROGRAMLISTING">sqrt(2)</pre>
+<p>内置函数的列表在<a href="functions.html">章9</a>里。其它函数可由用户添加。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="SYNTAX-AGGREGATES">4.2.7. 聚集表达式</a></h2><a name="AEN1740"></a>
+<p>一个<i class="FIRSTTERM">聚集表达式</i>代表一个聚集函数对查询选出的行的处理。一个聚集函数把多个输入缩减为一个输出值，比如给输入求和或求平均。一个聚集表达式的语法是下列之一：</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>aggregate_name</i></tt> (<tt class="REPLACEABLE"><i>expression</i></tt> [ , ... ] )
+<tt class="REPLACEABLE"><i>aggregate_name</i></tt> (ALL <tt class="REPLACEABLE"><i>expression</i></tt> [ , ... ] )
+<tt class="REPLACEABLE"><i>aggregate_name</i></tt> (DISTINCT <tt class="REPLACEABLE"><i>expression</i></tt> [ , ... ] )
+<tt class="REPLACEABLE"><i>aggregate_name</i></tt> ( * )</pre>
+<p>这里的 <tt class="REPLACEABLE"><i>aggregate_name</i></tt> 是前面定义的聚集(可能是带有模式的全称)，而 <tt class="REPLACEABLE"><i>expression</i></tt> 是一个本身不包含聚集表达式的任意值表达式。</p>
+<p>第一种形式的聚集表达式为所有非 NULL 的输入行调用聚集(实际上，是否忽略 NULL 由聚集函数决定，但是所有标准的聚集函数都忽略它们)。第二种形式与第一种等价(因为 <tt class="LITERAL">ALL</tt> 是缺省值)。第三种形式为所有输入行中所有唯一的非 NULL 值调用聚集。最后一种形式为每个输入行(不管是否为 NULL)调用一次聚集；因为没有声明特定的输入值。通常它只用于 <code class="FUNCTION">count(*)</code> 聚集函数。</p>
+<p>比如，<tt class="LITERAL">count(*)</tt> 生成输入行的总数；<tt class="LITERAL">count(f1)</tt> 生成 <tt class="LITERAL">f1</tt> 不为 NULL 的输入行数；<tt class="LITERAL">count(distinct f1)</tt> 生成 <tt class="LITERAL">f1</tt> 唯一且非 NULL 的行数。</p>
+<p>预定义的聚集函数在<a href="functions-aggregate.html">节9.15</a>里描述。其它聚集函数可以由用户增加。</p>
+<p> 一个聚集表达式只能在<tt class="COMMAND">SELECT</tt> 命令的结果列表或者 <tt class="LITERAL">HAVING</tt> 子句里出现。禁止在其它子句里出现(比如 <tt class="LITERAL">WHERE</tt> 子句)，因为这些子句逻辑上在生成聚集结果之前计算。</p>
+<p>如果一个聚集表达式出现在一个子查询里(参阅<a href="sql-expressions.html#SQL-SYNTAX-SCALAR-SUBQUERIES">节4.2.9</a>和<a href="functions-subquery.html">节9.16</a>)，聚集通常是在子查询中进行计算。但是如果聚集的参数只包含外层查询的变量则例外：这个聚集会属于离他最近的外层查询，并且在该查询上进行计算。该聚集表达式整体上属于它出现的子查询对外层查询的引用，其作用相当于子查询每一次计算中的一个常量。前述限制(聚集表达式只能出现在结果列或者 <tt class="LITERAL">HAVING</tt> 子句中)只适用于聚集所属的查询层。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>PostgreSQL 目前并不支持带有多个输入表达式的 <tt class="LITERAL">DISTINCT</tt> 。</p>
+</blockquote>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="SQL-SYNTAX-TYPE-CASTS">4.2.8. 类型转换</a></h2><a name="AEN1780"></a><a name="AEN1783"></a>
+<p>一个类型转换声明一个从一种数据类型到另外一种数据类型的转换。PostgreSQL 接受两种等效的类型转换语法：</p>
+<pre class="SYNOPSIS">CAST ( <tt class="REPLACEABLE"><i>expression</i></tt> AS <tt class="REPLACEABLE"><i>type</i></tt> )
+<tt class="REPLACEABLE"><i>expression</i></tt>::<tt class="REPLACEABLE"><i>type</i></tt></pre>
+<p><tt class="LITERAL">CAST</tt> 语法遵循 SQL 标准；<tt class="LITERAL">::</tt> 语法是 PostgreSQL 历史用法。</p>
+<p>如果对一个已知类型的值表达式应用转换，它代表一个运行时类型转换。只有在已经定义了合适的类型转换操作的情况下，该转换才能成功。请注意这一点和用于常量的转换略有区别(如<a href="sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS-GENERIC">节4.1.2.5</a>所示)。一个应用于字符串文本的转换表示给该字符串文本的值赋予一个初始类型，因此它对于任何类型都会成功(如果字符串文本的内容符合该数据类型的输入语法)。</p>
+<p>如果一个值表达式的值对某类型而言不存在混淆的情况，那么我们可以省略明确的类型转换(比如，在给一个表字段赋值的时候)，而由系统自动执行类型转换。不过，自动转换只适用于那些系统表中标记着"OK to apply implicitly"的转换函数。其它转换函数必须用明确的转换语法调用。这些限制是为了避免一些怪异的转换被自动的应用。</p>
+<p>我们也可以用函数风格的语法声明一个类型转换：</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>typename</i></tt> ( <tt class="REPLACEABLE"><i>expression</i></tt> )</pre>
+<p>不过，这个方法只能用于那些类型名同时也是有效函数名的类型。比如，<tt class="LITERAL">double precision</tt> 就不能这么用，但是等效的 <tt class="LITERAL">float8</tt> 可以。同样，<tt class="LITERAL">interval</tt>, <tt class="LITERAL">time</tt>, <tt class="LITERAL">timestamp</tt> 如果加了双引号也只能这么用，因为存在语法冲突。因此，函数风格的类型转换会导致不一致，所以应该避免这么使用。函数样语法实际上就是一个函数调用。如果使用两种标准转换语法做运行时转换，那么它将在内部调用一个已注册的函数执行转换。通常，这种转换函数和它们的输出类型同名，但是可以移植的程序不能依赖这一点。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="SQL-SYNTAX-SCALAR-SUBQUERIES">4.2.9. 标量子查询</a></h2><a name="AEN1811"></a>
+<p>一个标量子查询是一个放在圆括弧里只返回一行一列的普通 <tt class="COMMAND">SELECT</tt> 查询(参阅<a href="queries.html">章7</a>获取有关书写查询的信息)。该 <tt class="COMMAND">SELECT</tt> 将被执行，而其返回值将在周围的值表达式中使用。把一个返回超过一行或者超过一列的查询用做标量查询是错误的。不过，子查询不返回行则不算错误(标量结果被认为是 NULL)。子查询可以引用外围查询的变量，这些变量在每次子查询中当做常量使用。参见<a href="functions-subquery.html">节9.16</a>以获取其它包含子查询的表达式。</p>
+<p>比如，下面的查询找出每个州中的最大人口数量的城市：</p>
+<pre class="PROGRAMLISTING">SELECT name, (SELECT max(pop) FROM cities WHERE cities.state = states.name)
+    FROM states;</pre>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="SQL-SYNTAX-ARRAY-CONSTRUCTORS">4.2.10. 数组构造器</a></h2><a name="AEN1822"></a><a name="AEN1825"></a>
+<p>一个数组构造器是一个表达式，它从自身成员元素上构造一个数组值。一个简单的数组构造器由关键字 <tt class="LITERAL">ARRAY</tt>  、一个左方括弧 <tt class="LITERAL">[</tt> 、一个或多个表示数组元素值的表达式(用逗号分隔)、一个右方括弧 <tt class="LITERAL">]</tt> 组成。比如</p>
+<pre class="PROGRAMLISTING">SELECT ARRAY[1,2,3+4];
+  array
+---------
+ {1,2,7}
+(1 row)</pre>
+<p>数组元素类型是成员表达式的公共类型，使用和 <tt class="LITERAL">UNION</tt> 或 <tt class="LITERAL">CASE</tt>构造一样的规则决定(参阅<a href="typeconv-union-case.html">节10.5</a>)。</p>
+<p>多维数组值可以通过嵌套数组构造器的方法来制作。内层构造器中的 <tt class="LITERAL">ARRAY</tt> 关键字可以省略。比如，下面的两句生成同样的结果：</p>
+<pre class="PROGRAMLISTING">SELECT ARRAY[ARRAY[1,2], ARRAY[3,4]];
+     array
+---------------
+ {{1,2},{3,4}}
+(1 row)
+
+SELECT ARRAY[[1,2],[3,4]];
+     array
+---------------
+ {{1,2},{3,4}}
+(1 row)</pre>
+<p>因为多维数组必须是方形，所以同层的内层构造器必须生成同维的子数组。</p>
+<p>多维数组构造器元素可以是任何生成合适数组的东西，而不仅仅是一个子 <tt class="LITERAL">ARRAY</tt> 构造。比如：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE arr(f1 int[], f2 int[]);
+
+INSERT INTO arr VALUES (ARRAY[[1,2],[3,4]], ARRAY[[5,6],[7,8]]);
+
+SELECT ARRAY[f1, f2, '{{9,10},{11,12}}'::int[]] FROM arr;
+                     array
+------------------------------------------------
+ {{{1,2},{3,4}},{{5,6},{7,8}},{{9,10},{11,12}}}
+(1 row)</pre>
+<p>我们也可以从一个子查询的结果中构造一个数组。此时，数组构造器是关键字 <tt class="LITERAL">ARRAY</tt> 后跟着一个用圆括弧(不是方括弧)包围的子查询。比如：</p>
+<pre class="PROGRAMLISTING">SELECT ARRAY(SELECT oid FROM pg_proc WHERE proname LIKE 'bytea%');
+                          ?column?
+-------------------------------------------------------------
+ {2011,1954,1948,1952,1951,1244,1950,2005,1949,1953,2006,31}
+(1 row)</pre>
+<p>子查询必须只返回一个单独的字段。生成的一维数组将为子查询里每行结果生成一个元素，元素类型匹配子查询的输出字段。</p>
+<p>用 <tt class="LITERAL">ARRAY</tt> 建立的数组下标总是从壹开始。有关数组的更多信息，参阅<a href="arrays.html">节8.10</a>。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="SQL-SYNTAX-ROW-CONSTRUCTORS">4.2.11. 行构造器</a></h2><a name="AEN1849"></a><a name="AEN1852"></a><a name="AEN1855"></a>
+<p>行构造器是一个从提供给它的成员字段数值中构造行值(也叫复合类型值)的表达式。一个行构造器由关键字 <tt class="LITERAL">ROW</tt> 、一个左圆括弧、零个或多个作为行字段值的表达式(用逗号分隔)、一个右圆括弧组成。比如：</p>
+<pre class="PROGRAMLISTING">SELECT ROW(1,2.5,'this is a test');</pre>
+<p>如果在列表里有多个表达式，那么关键字 <tt class="LITERAL">ROW</tt> 是可选的。</p>
+<p>行构造器可以包含 <tt class="REPLACEABLE"><i>rowvalue</i></tt><tt class="LITERAL">.*</tt> 语法，它将被扩展为行值元素的列表，就像将 <tt class="LITERAL">.*</tt> 语法用于一个 <tt class="COMMAND">SELECT</tt> 列表顶层一样。例如，如果表 <tt class="LITERAL">t</tt> 有 <tt class="LITERAL">f1</tt> 和 <tt class="LITERAL">f2</tt> 两个字段，那么下面两句是等价的：</p>
+<pre class="PROGRAMLISTING">SELECT ROW(t.*, 42) FROM t;
+SELECT ROW(t.f1, t.f2, 42) FROM t;</pre>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 PostgreSQL 8.2之前，<tt class="LITERAL">.*</tt> 语法是不会被扩展的，所以 <tt class="LITERAL">ROW(t.*, 42)</tt> 将创建一个两字段的行，其第一个字段是另一行的值。新的行为通常更有用。如果你需要旧式的嵌套行值的做法，请将内部的行值写成不包含 <tt class="LITERAL">.*</tt> ，比如 <tt class="LITERAL">ROW(t, 42)</tt> 。</p>
+</blockquote>
+</div>
+<p>缺省时，<tt class="LITERAL">ROW</tt> 表达式创建的值是一个匿名的记录类型。如果必要，你可以把它转换成一个命名的复合类型(既可以是一个表的行类型，也可以是一个用 <tt class="COMMAND">CREATE TYPE AS</tt> 创建的复合类型)。可能会需要一个明确的转换以避免歧义。比如：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE mytable(f1 int, f2 float, f3 text);
+
+CREATE FUNCTION getf1(mytable) RETURNS int AS 'SELECT $1.f1' LANGUAGE SQL;
+
+-- 因为只有一个getf1()存在，所以不需要类型转换
+SELECT getf1(ROW(1,2.5,'this is a test'));
+ getf1
+-------
+     1
+(1 row)
+
+CREATE TYPE myrowtype AS (f1 int, f2 text, f3 numeric);
+
+CREATE FUNCTION getf1(myrowtype) RETURNS int AS 'SELECT $1.f1' LANGUAGE SQL;
+
+-- 现在我们需要类型转换以表明调用哪个函数：
+SELECT getf1(ROW(1,2.5,'this is a test'));
+ERROR:  function getf1(record) is not unique
+
+SELECT getf1(ROW(1,2.5,'this is a test')::mytable);
+ getf1
+-------
+     1
+(1 row)
+
+SELECT getf1(CAST(ROW(11,'this is a test',2.5) AS myrowtype));
+ getf1
+-------
+    11
+(1 row)</pre>
+<p>行构造器可以用于制作存储在复合类型字段中的复合类型值，或者是传递给一个接受复合类型参数的函数。另外，我们也可以用它比较两个行值或者用 <tt class="LITERAL">IS NULL</tt> 或 <tt class="LITERAL">IS NOT NULL</tt> 测试一个行值，比如：</p>
+<pre class="PROGRAMLISTING">SELECT ROW(1,2.5,'this is a test') = ROW(1, 3, 'not the same');
+
+SELECT ROW(table.*) IS NULL FROM table;  -- detect all-null rows</pre>
+<p>更多的细节，请参阅<a href="functions-comparisons.html">节9.17</a>。行构造器还可以用于连接子查询，这些在<a href="functions-subquery.html">节9.16</a>里面有详细讨论。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="SYNTAX-EXPRESS-EVAL">4.2.12. 表达式计算规则</a></h2><a name="AEN1889"></a>
+<p>子表达式的计算顺序是没有定义的。特别要指出的是，一个操作符或者函数的输入并不一定是按照从左向右的顺序或者以某种特定的顺序进行计算的。</p>
+<p>另外，如果一个表达式的结果可以通过只判断它的一部分就可以得到，那么其它子表达式就可以完全不计算了。比如，如果我们这么写</p>
+<pre class="PROGRAMLISTING">SELECT true OR somefunc();</pre>
+<p>那么 <tt class="LITERAL">somefunc()</tt> 就(可能)根本不会被调用。即使像下面这样写也是一样</p>
+<pre class="PROGRAMLISTING">SELECT somefunc() OR true;</pre>
+<p>请注意这和某些编程语言里从左向右"短路"是不一样的。</p>
+<p>因此，拿有副作用的函数作为复杂表达式的一部分是不明智的。在 <tt class="LITERAL">WHERE</tt> 和 <tt class="LITERAL">HAVING</tt> 子句里依赖副作用或者是计算顺序是特别危险的，因为这些子句都是作为生成一个执行规划的一部分进行了大量的再处理。在这些子句里的布尔表达式(<tt class="LITERAL">AND</tt>/<tt class="LITERAL">OR</tt>/<tt class="LITERAL">NOT</tt> 的组合)可以用布尔代数运算律允许的任何方式进行识别。</p>
+<p>如果需要强制计算顺序，那么可以使用 <tt class="LITERAL">CASE</tt> 构造(参阅<a href="functions-conditional.html">节9.13</a>)。比如，下面是一种企图避免在 <tt class="LITERAL">WHERE</tt> 子句里被零除的不可靠方法：</p>
+<pre class="PROGRAMLISTING">SELECT ... WHERE x &lt;&gt; 0 AND y/x &gt; 1.5;</pre>
+<p>但是下面这个是安全的：</p>
+<pre class="PROGRAMLISTING">SELECT ... WHERE CASE WHEN x &lt;&gt; 0 THEN y/x &gt; 1.5 ELSE false END;</pre>
+<p>这种风格的 <tt class="LITERAL">CASE</tt> 构造会阻止优化，因此应该只在必要的时候才使用。在这个特殊的例子里，毫无疑问写成 <tt class="LITERAL">y &gt; 1.5*x</tt> 更好。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-syntax-lexical.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="ddl.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">词法结构</td><td width="34%" align="center" valign="top"><a href="sql-syntax.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">数据定义</td></tr>
+</table>
+</div>
+</body></html>

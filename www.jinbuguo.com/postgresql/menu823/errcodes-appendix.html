@@ -1,0 +1,259 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PostgreSQL 错误代码</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="APPENDIX">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="appendixes.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="appendixes.html#APPENDIXES">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="datetime-appendix.html">快进</a></td><td width="10%" align="right" valign="top"><a href="datetime-appendix.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="APPENDIX"><h1><a name="ERRCODES-APPENDIX"></a>附录A. PostgreSQL 错误代码</h1><a name="AEN70035"></a>
+<p>PostgreSQL 服务器发出的所有消息都赋予了五个字符的错误代码，这些代码遵循 SQL 的"SQLSTATE"代码的习惯。需要知道发生了什么错误条件的应用通常应该测试错误代码，而不是查看文本错误信息。这些错误代码轻易不会随着 PostgreSQL 的版本更新而修改，并且一般也不会随着错误信息的本地化而发生修改。请注意有些(但不是全部) PostgreSQL 生成的错误代码是由 SQL 标准定义的；有些标准没有定义的错误条件是发明的或者是从其它数据库借来的。</p>
+<p>根据标准，错误代码的头两个字符表示错误类别，而后三个字符表示在该类别内特定的条件。因此，那些不能识别特定错误代码的应用仍然可以从错误类别中推断要做什么。</p>
+<p><a href="errcodes-appendix.html#ERRCODES-TABLE">表A-1</a>里面列出了 PostgreSQL 8.2.3 定义的所有错误代码(有些实际上目前并没有使用，但是 SQL 标准定义了)。错误类别也列出在此。对于每个错误类别都有个"标准"的错误代码，它的最后三个字符是 <tt class="LITERAL">000</tt> 。这个代码只用于那些落在该类别内，但是没有赋予任何更准确的代码的错误条件。</p>
+<p>PL/pgSQL 用于每个错误代码的条件名和表中显示的措辞相同，只是用下划线代替了空白。比如，代码 <tt class="LITERAL">22012</tt>, DIVISION BY ZERO 的条件名是 <tt class="LITERAL">DIVISION_BY_ZERO</tt> 。条件名大小写无关。请注意 PL/pgSQL 并不识别警告，这一点和错误、条件名正相反；那些是 00, 01, 02 类别。</p>
+<div class="TABLE"><a name="ERRCODES-TABLE"></a>
+<p><b>表A-1. PostgreSQL 错误代码</b></p>
+<table border="1" class="CALSTABLE"><col width="1*" title="errorcode"><col><col width="1*" title="constant">
+<thead>
+<tr><th width="10%">错误代码</th><th>含义</th><th>常量</th></tr>
+</thead>
+<tbody>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 00 &mdash; 成功完成</b></span></td></tr>
+<tr><td><tt class="LITERAL">00000</tt></td><td>成功完成<br>(SUCCESSFUL COMPLETION)</td><td>successful_completion</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 01 &mdash; 警告</b></span></td></tr>
+<tr><td><tt class="LITERAL">01000</tt></td><td>警告<br>(WARNING)</td><td>warning</td></tr>
+<tr><td><tt class="LITERAL">0100C</tt></td><td>返回了动态结果<br>(DYNAMIC RESULT SETS RETURNED)</td><td>dynamic_result_sets_returned</td></tr>
+<tr><td><tt class="LITERAL">01008</tt></td><td>警告，隐含补齐了零比特位<br>(IMPLICIT ZERO BIT PADDING)</td><td>implicit_zero_bit_padding</td></tr>
+<tr><td><tt class="LITERAL">01003</tt></td><td>在集合函数里消除了 NULL<br>(NULL VALUE ELIMINATED IN SET FUNCTION)</td><td>null_value_eliminated_in_set_function</td></tr>
+<tr><td><tt class="LITERAL">01007</tt></td><td>没有赋予权限<br>(PRIVILEGE NOT GRANTED)</td><td>privilege_not_granted</td></tr>
+<tr><td><tt class="LITERAL">01006</tt></td><td>没有撤销权限<br>(PRIVILEGE NOT REVOKED)</td><td>privilege_not_revoked</td></tr>
+<tr><td><tt class="LITERAL">01004</tt></td><td>字符串数据在右端截断<br>(STRING DATA RIGHT TRUNCATION)</td><td>string_data_right_truncation</td></tr>
+<tr><td><tt class="LITERAL">01P01</tt></td><td>废弃的特性<br>(DEPRECATED FEATURE)</td><td>deprecated_feature</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 02 &mdash; 没有数据(按照 SQL 标准的要求，这也是警告类)</b></span></td></tr>
+<tr><td><tt class="LITERAL">02000</tt></td><td>没有数据<br>(NO DATA)</td><td>no_data</td></tr>
+<tr><td><tt class="LITERAL">02001</tt></td><td>返回了没有附加动态结果集<br>(NO ADDITIONAL DYNAMIC RESULT SETS RETURNED)</td><td>no_additional_dynamic_result_sets_returned</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 03 &mdash; SQL 语句尚未结束</b></span></td></tr>
+<tr><td><tt class="LITERAL">03000</tt></td><td>SQL 语句尚未结束<br>(SQL STATEMENT NOT YET COMPLETE)</td><td>sql_statement_not_yet_complete</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 08 &mdash; 连接异常</b></span></td></tr>
+<tr><td><tt class="LITERAL">08000</tt></td><td>连接异常<br>(CONNECTION EXCEPTION)</td><td>connection_exception</td></tr>
+<tr><td><tt class="LITERAL">08003</tt></td><td>连接不存在<br>(CONNECTION DOES NOT EXIST)</td><td>connection_does_not_exist</td></tr>
+<tr><td><tt class="LITERAL">08006</tt></td><td>连接失败<br>(CONNECTION FAILURE)</td><td>connection_failure</td></tr>
+<tr><td><tt class="LITERAL">08001</tt></td><td>SQL 客户端不能建立 SQL 连接<br>(SQLCLIENT UNABLE TO ESTABLISH SQLCONNECTION)</td><td>sqlclient_unable_to_establish_sqlconnection</td></tr>
+<tr><td><tt class="LITERAL">08004</tt></td><td>SQL 服务器拒绝建立 SQL 连接<br>(SQLSERVER REJECTED ESTABLISHMENT OF SQLCONNECTION)</td><td>sqlserver_rejected_establishment_of_sqlconnection</td></tr>
+<tr><td><tt class="LITERAL">08007</tt></td><td>未知的事务解析<br>(TRANSACTION RESOLUTION UNKNOWN)</td><td>transaction_resolution_unknown</td></tr>
+<tr><td><tt class="LITERAL">08P01</tt></td><td>违反协议<br>(PROTOCOL VIOLATION)</td><td>protocol_violation</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 09 &mdash; 触发器动作异常</b></span></td></tr>
+<tr><td><tt class="LITERAL">09000</tt></td><td>触发器动作异常<br>(TRIGGERED ACTION EXCEPTION)</td><td>triggered_action_exception</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 0A &mdash; 不支持特性</b></span></td></tr>
+<tr><td><tt class="LITERAL">0A000</tt></td><td>不支持此特性<br>(FEATURE NOT SUPPORTED)</td><td>feature_not_supported</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 0B &mdash; 非法事务初始化</b></span></td></tr>
+<tr><td><tt class="LITERAL">0B000</tt></td><td>非法事务初始化<br>(INVALID TRANSACTION INITIATION)</td><td>invalid_transaction_initiation</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 0F &mdash; 定位器异常</b></span></td></tr>
+<tr><td><tt class="LITERAL">0F000</tt></td><td>定位器异常<br>(LOCATOR EXCEPTION)</td><td>locator_exception</td></tr>
+<tr><td><tt class="LITERAL">0F001</tt></td><td>非法的定位器声明<br>(INVALID LOCATOR SPECIFICATION)</td><td>invalid_locator_specification</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 0L &mdash; 非法赋权人</b></span></td></tr>
+<tr><td><tt class="LITERAL">0L000</tt></td><td>非法赋权人<br>(INVALID GRANTOR)</td><td>invalid_grantor</td></tr>
+<tr><td><tt class="LITERAL">0LP01</tt></td><td>非法赋权操作<br>(INVALID GRANT OPERATION)</td><td>invalid_grant_operation</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 0P &mdash; 非法角色声明</b></span></td></tr>
+<tr><td><tt class="LITERAL">0P000</tt></td><td>非法角色声明<br>(INVALID ROLE SPECIFICATION)</td><td>invalid_role_specification</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 21 &mdash; 势违例</b></span></td></tr>
+<tr><td><tt class="LITERAL">21000</tt></td><td>势违例<br>(CARDINALITY VIOLATION)</td><td>cardinality_violation</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 22 &mdash; 数据异常</b></span></td></tr>
+<tr><td><tt class="LITERAL">22000</tt></td><td>数据异常<br>(DATA EXCEPTION)</td><td>data_exception</td></tr>
+<tr><td><tt class="LITERAL">2202E</tt></td><td>数组下标错误<br>(ARRAY SUBSCRIPT ERROR)</td><td>array_subscript_error</td></tr>
+<tr><td><tt class="LITERAL">22021</tt></td><td>字符不在准备好的范围内<br>(CHARACTER NOT IN REPERTOIRE)</td><td>character_not_in_repertoire</td></tr>
+<tr><td><tt class="LITERAL">22008</tt></td><td>日期时间字段溢出<br>(DATETIME FIELD OVERFLOW)</td><td>datetime_field_overflow</td></tr>
+<tr><td><tt class="LITERAL">22012</tt></td><td>被零除<br>(DIVISION BY ZERO)</td><td>division_by_zero</td></tr>
+<tr><td><tt class="LITERAL">22005</tt></td><td>赋值中出错<br>(ERROR IN ASSIGNMENT)</td><td>error_in_assignment</td></tr>
+<tr><td><tt class="LITERAL">2200B</tt></td><td>逃逸字符冲突<br>(ESCAPE CHARACTER CONFLICT)</td><td>escape_character_conflict</td></tr>
+<tr><td><tt class="LITERAL">22022</tt></td><td>指示器溢出<br>(INDICATOR OVERFLOW)</td><td>indicator_overflow</td></tr>
+<tr><td><tt class="LITERAL">22015</tt></td><td>内部字段溢出<br>(INTERVAL FIELD OVERFLOW)</td><td>interval_field_overflow</td></tr>
+<tr><td><tt class="LITERAL">2201E</tt></td><td>对数运算的非法参数<br>(INVALID ARGUMENT FOR LOGARITHM)</td><td>invalid_argument_for_logarithm</td></tr>
+<tr><td><tt class="LITERAL">2201F</tt></td><td>指数函数的非法参数<br>(INVALID ARGUMENT FOR POWER FUNCTION)</td><td>invalid_argument_for_power_function</td></tr>
+<tr><td><tt class="LITERAL">2201G</tt></td><td>宽桶函数的非法参数<br>(INVALID ARGUMENT FOR WIDTH BUCKET FUNCTION)</td><td>invalid_argument_for_width_bucket_function</td></tr>
+<tr><td><tt class="LITERAL">22018</tt></td><td>类型转换时非法的字符值<br>(INVALID CHARACTER VALUE FOR CAST)</td><td>invalid_character_value_for_cast</td></tr>
+<tr><td><tt class="LITERAL">22007</tt></td><td>非法日期时间格式<br>(INVALID DATETIME FORMAT)</td><td>invalid_datetime_format</td></tr>
+<tr><td><tt class="LITERAL">22019</tt></td><td>非法的逃逸字符<br>(INVALID ESCAPE CHARACTER)</td><td>invalid_escape_character</td></tr>
+<tr><td><tt class="LITERAL">2200D</tt></td><td>非法的逃逸字节<br>(INVALID ESCAPE OCTET)</td><td>invalid_escape_octet</td></tr>
+<tr><td><tt class="LITERAL">22025</tt></td><td>非法逃逸序列<br>(INVALID ESCAPE SEQUENCE)</td><td>invalid_escape_sequence</td></tr>
+<tr><td><tt class="LITERAL">22P06</tt></td><td>非标准使用逃逸字符<br>(NONSTANDARD USE OF ESCAPE CHARACTER)</td><td>nonstandard_use_of_escape_character</td></tr>
+<tr><td><tt class="LITERAL">22010</tt></td><td>非法指示器参数值<br>(INVALID INDICATOR PARAMETER VALUE)</td><td>invalid_indicator_parameter_value</td></tr>
+<tr><td><tt class="LITERAL">22020</tt></td><td>非法限制值<br>(INVALID LIMIT VALUE)</td><td>invalid_limit_value</td></tr>
+<tr><td><tt class="LITERAL">22023</tt></td><td>非法参数值<br>(INVALID PARAMETER VALUE)</td><td>invalid_parameter_value</td></tr>
+<tr><td><tt class="LITERAL">2201B</tt></td><td>非法正则表达式<br>(INVALID REGULAR EXPRESSION)</td><td>invalid_regular_expression</td></tr>
+<tr><td><tt class="LITERAL">22009</tt></td><td>非法时区显示值<br>(INVALID TIME ZONE DISPLACEMENT VALUE)</td><td>invalid_time_zone_displacement_value</td></tr>
+<tr><td><tt class="LITERAL">2200C</tt></td><td>非法使用逃逸字符<br>(INVALID USE OF ESCAPE CHARACTER)</td><td>invalid_use_of_escape_character</td></tr>
+<tr><td><tt class="LITERAL">2200G</tt></td><td>最相关类型不匹配<br>(MOST SPECIFIC TYPE MISMATCH)</td><td>most_specific_type_mismatch</td></tr>
+<tr><td><tt class="LITERAL">22004</tt></td><td>不允许 NULL 值<br>(NULL VALUE NOT ALLOWED)</td><td>null_value_not_allowed</td></tr>
+<tr><td><tt class="LITERAL">22002</tt></td><td>NULL 值不能做指示器参数<br>(NULL VALUE NO INDICATOR PARAMETER)</td><td>null_value_no_indicator_parameter</td></tr>
+<tr><td><tt class="LITERAL">22003</tt></td><td>数字值超出范围<br>(NUMERIC VALUE OUT OF RANGE)</td><td>numeric_value_out_of_range</td></tr>
+<tr><td><tt class="LITERAL">22026</tt></td><td>字符串数据长度不匹配<br>(STRING DATA LENGTH MISMATCH)</td><td>string_data_length_mismatch</td></tr>
+<tr><td><tt class="LITERAL">22001</tt></td><td>字符串数据右边被截断<br>(STRING DATA RIGHT TRUNCATION)</td><td>string_data_right_truncation</td></tr>
+<tr><td><tt class="LITERAL">22011</tt></td><td>抽取子字符串错误<br>(SUBSTRING ERROR)</td><td>substring_error</td></tr>
+<tr><td><tt class="LITERAL">22027</tt></td><td>截断错误<br>(TRIM ERROR)</td><td>trim_error</td></tr>
+<tr><td><tt class="LITERAL">22024</tt></td><td>未结束的 C 字符串<br>(UNTERMINATED C STRING)</td><td>unterminated_c_string</td></tr>
+<tr><td><tt class="LITERAL">2200F</tt></td><td>零长度的字符串<br>(ZERO LENGTH CHARACTER STRING)</td><td>zero_length_character_string</td></tr>
+<tr><td><tt class="LITERAL">22P01</tt></td><td>浮点异常<br>(FLOATING POINT EXCEPTION)</td><td>floating_point_exception</td></tr>
+<tr><td><tt class="LITERAL">22P02</tt></td><td>非法文本表现形式<br>(INVALID TEXT REPRESENTATION)</td><td>invalid_text_representation</td></tr>
+<tr><td><tt class="LITERAL">22P03</tt></td><td>非法二进制表现形式<br>(INVALID BINARY REPRESENTATION)</td><td>invalid_binary_representation</td></tr>
+<tr><td><tt class="LITERAL">22P04</tt></td><td>错误的 COPY 格式<br>(BAD COPY FILE FORMAT)</td><td>bad_copy_file_format</td></tr>
+<tr><td><tt class="LITERAL">22P05</tt></td><td>不可翻译字符<br>(UNTRANSLATABLE CHARACTER)</td><td>untranslatable_character</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 23 &mdash; 违反完整性约束</b></span></td></tr>
+<tr><td><tt class="LITERAL">23000</tt></td><td>违反完整性约束<br>(INTEGRITY CONSTRAINT VIOLATION)</td><td>integrity_constraint_violation</td></tr>
+<tr><td><tt class="LITERAL">23001</tt></td><td>违反限制<br>(RESTRICT VIOLATION)</td><td>restrict_violation</td></tr>
+<tr><td><tt class="LITERAL">23502</tt></td><td>违反非空<br>(NOT NULL VIOLATION)</td><td>not_null_violation</td></tr>
+<tr><td><tt class="LITERAL">23503</tt></td><td>违反外键约束<br>(FOREIGN KEY VIOLATION)</td><td>foreign_key_violation</td></tr>
+<tr><td><tt class="LITERAL">23505</tt></td><td>违反唯一约束<br>(UNIQUE VIOLATION)</td><td>unique_violation</td></tr>
+<tr><td><tt class="LITERAL">23514</tt></td><td>违反检查<br>(CHECK VIOLATION)</td><td>check_violation</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 24 &mdash; 非法游标状态</b></span></td></tr>
+<tr><td><tt class="LITERAL">24000</tt></td><td>非法游标状态<br>(INVALID CURSOR STATE)</td><td>invalid_cursor_state</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 25 &mdash; 非法事务状态</b></span></td></tr>
+<tr><td><tt class="LITERAL">25000</tt></td><td>非法事务状态<br>(INVALID TRANSACTION STATE)</td><td>invalid_transaction_state</td></tr>
+<tr><td><tt class="LITERAL">25001</tt></td><td>活跃的 SQL 状态<br>(ACTIVE SQL TRANSACTION)</td><td>active_sql_transaction</td></tr>
+<tr><td><tt class="LITERAL">25002</tt></td><td>分支事务已经激活<br>(BRANCH TRANSACTION ALREADY ACTIVE)</td><td>branch_transaction_already_active</td></tr>
+<tr><td><tt class="LITERAL">25008</tt></td><td>持有的游标要求同样的隔离级别<br>(HELD CURSOR REQUIRES SAME ISOLATION LEVEL)</td><td>held_cursor_requires_same_isolation_level</td></tr>
+<tr><td><tt class="LITERAL">25003</tt></td><td>对分支事务的不恰当的访问方式<br>(INAPPROPRIATE ACCESS MODE FOR BRANCH TRANSACTION)</td><td>inappropriate_access_mode_for_branch_transaction</td></tr>
+<tr><td><tt class="LITERAL">25004</tt></td><td>对分支事务的不恰当的隔离级别<br>(INAPPROPRIATE ISOLATION LEVEL FOR BRANCH TRANSACTION)</td><td>inappropriate_isolation_level_for_branch_transaction</td></tr>
+<tr><td><tt class="LITERAL">25005</tt></td><td>分支事务没有活跃的 SQL 事务<br>(NO ACTIVE SQL TRANSACTION FOR BRANCH TRANSACTION)</td><td>no_active_sql_transaction_for_branch_transaction</td></tr>
+<tr><td><tt class="LITERAL">25006</tt></td><td>只读的 SQL 事务<br>(READ ONLY SQL TRANSACTION)</td><td>read_only_sql_transaction</td></tr>
+<tr><td><tt class="LITERAL">25007</tt></td><td>不支持混和的模式和数据语句<br>(SCHEMA AND DATA STATEMENT MIXING NOT SUPPORTED)</td><td>schema_and_data_statement_mixing_not_supported</td></tr>
+<tr><td><tt class="LITERAL">25P01</tt></td><td>没有活跃的 SQL 事务<br>(NO ACTIVE SQL TRANSACTION)</td><td>no_active_sql_transaction</td></tr>
+<tr><td><tt class="LITERAL">25P02</tt></td><td>在失败的 SQL 事务中<br>(IN FAILED SQL TRANSACTION)</td><td>in_failed_sql_transaction</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 26 &mdash; 非法 SQL 语句名</b></span></td></tr>
+<tr><td><tt class="LITERAL">26000</tt></td><td>非法 SQL 语句名<br>(INVALID SQL STATEMENT NAME)</td><td>invalid_sql_statement_name</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 27 &mdash; 触发的数据改变违规</b></span></td></tr>
+<tr><td><tt class="LITERAL">27000</tt></td><td>触发的数据改变违规<br>(TRIGGERED DATA CHANGE VIOLATION)</td><td>triggered_data_change_violation</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 28 &mdash; 非法授权声明</b></span></td></tr>
+<tr><td><tt class="LITERAL">28000</tt></td><td>非法授权声明<br>(INVALID AUTHORIZATION SPECIFICATION)</td><td>invalid_authorization_specification</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 2B &mdash; 依然存在依赖的优先级描述符</b></span></td></tr>
+<tr><td><tt class="LITERAL">2B000</tt></td><td>依然存在依赖的优先级描述符<br>(DEPENDENT PRIVILEGE DESCRIPTORS STILL EXIST)</td><td>dependent_privilege_descriptors_still_exist</td></tr>
+<tr><td><tt class="LITERAL">2BP01</tt></td><td>依赖性对象仍然存在<br>(DEPENDENT OBJECTS STILL EXIST)</td><td>dependent_objects_still_exist</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 2D &mdash; 非法的事务终止</b></span></td></tr>
+<tr><td><tt class="LITERAL">2D000</tt></td><td>非法的事务终止<br>(INVALID TRANSACTION TERMINATION)</td><td>invalid_transaction_termination</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 2F &mdash; SQL 过程异常</b></span></td></tr>
+<tr><td><tt class="LITERAL">2F000</tt></td><td>SQL 过程异常<br>(SQL ROUTINE EXCEPTION)</td><td>sql_routine_exception</td></tr>
+<tr><td><tt class="LITERAL">2F005</tt></td><td>执行的函数没有返回语句<br>(FUNCTION EXECUTED NO RETURN STATEMENT)</td><td>function_executed_no_return_statement</td></tr>
+<tr><td><tt class="LITERAL">2F002</tt></td><td>不允许修改 SQL 数据<br>(MODIFYING SQL DATA NOT PERMITTED)</td><td>modifying_sql_data_not_permitted</td></tr>
+<tr><td><tt class="LITERAL">2F003</tt></td><td>企图使用禁止的 SQL 语句<br>(PROHIBITED SQL STATEMENT ATTEMPTED)</td><td>prohibited_sql_statement_attempted</td></tr>
+<tr><td><tt class="LITERAL">2F004</tt></td><td>不允许读取 SQL 数据<br>(READING SQL DATA NOT PERMITTED)</td><td>reading_sql_data_not_permitted</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 34 &mdash; 非法游标名</b></span></td></tr>
+<tr><td><tt class="LITERAL">34000</tt></td><td>非法游标名<br>(INVALID CURSOR NAME)</td><td>invalid_cursor_name</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 38 &mdash; 外部过程异常</b></span></td></tr>
+<tr><td><tt class="LITERAL">38000</tt></td><td>外部过程异常<br>(EXTERNAL ROUTINE EXCEPTION)</td><td>external_routine_exception</td></tr>
+<tr><td><tt class="LITERAL">38001</tt></td><td>不允许包含的 SQL<br>(CONTAINING SQL NOT PERMITTED)</td><td>containing_sql_not_permitted</td></tr>
+<tr><td><tt class="LITERAL">38002</tt></td><td>不允许修改 SQL 数据<br>(MODIFYING SQL DATA NOT PERMITTED)</td><td>modifying_sql_data_not_permitted</td></tr>
+<tr><td><tt class="LITERAL">38003</tt></td><td>企图使用禁止的 SQL 语句<br>(PROHIBITED SQL STATEMENT ATTEMPTED)</td><td>prohibited_sql_statement_attempted</td></tr>
+<tr><td><tt class="LITERAL">38004</tt></td><td>不允许读取 SQL 数据<br>(READING SQL DATA NOT PERMITTED)</td><td>reading_sql_data_not_permitted</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 39 &mdash; 外部过程调用异常</b></span></td></tr>
+<tr><td><tt class="LITERAL">39000</tt></td><td>外部过程调用异常<br>(EXTERNAL ROUTINE INVOCATION EXCEPTION)</td><td>external_routine_invocation_exception</td></tr>
+<tr><td><tt class="LITERAL">39001</tt></td><td>返回了非法的 SQLSTATE<br>(INVALID SQLSTATE RETURNED)</td><td>invalid_sqlstate_returned</td></tr>
+<tr><td><tt class="LITERAL">39004</tt></td><td>不允许 NULL<br>(NULL VALUE NOT ALLOWED)</td><td>null_value_not_allowed</td></tr>
+<tr><td><tt class="LITERAL">39P01</tt></td><td>违反触发器协议<br>(TRIGGER PROTOCOL VIOLATED)</td><td>trigger_protocol_violated</td></tr>
+<tr><td><tt class="LITERAL">39P02</tt></td><td>违反 SRF 协议<br>(SRF PROTOCOL VIOLATED)</td><td>srf_protocol_violated</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 3B &mdash; 保存点异常</b></span></td></tr>
+<tr><td><tt class="LITERAL">3B000</tt></td><td>保存点异常<br>(SAVEPOINT EXCEPTION)</td><td>savepoint_exception</td></tr>
+<tr><td><tt class="LITERAL">3B001</tt></td><td>无效的保存点声明<br>(INVALID SAVEPOINT SPECIFICATION)</td><td>invalid_savepoint_specification</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 3D &mdash; 非法数据库名</b></span></td></tr>
+<tr><td><tt class="LITERAL">3D000</tt></td><td>非法数据库名<br>(INVALID CATALOG NAME)</td><td>invalid_catalog_name</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 3F &mdash; 非法模式名</b></span></td></tr>
+<tr><td><tt class="LITERAL">3F000</tt></td><td>非法模式名<br>(INVALID SCHEMA NAME)</td><td>invalid_schema_name</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 40 &mdash; 事务回滚</b></span></td></tr>
+<tr><td><tt class="LITERAL">40000</tt></td><td>事务回滚<br>(TRANSACTION ROLLBACK)</td><td>transaction_rollback</td></tr>
+<tr><td><tt class="LITERAL">40002</tt></td><td>违反事务完整性约束<br>(TRANSACTION INTEGRITY CONSTRAINT VIOLATION)</td><td>transaction_integrity_constraint_violation</td></tr>
+<tr><td><tt class="LITERAL">40001</tt></td><td>串行化失败<br>(SERIALIZATION FAILURE)</td><td>serialization_failure</td></tr>
+<tr><td><tt class="LITERAL">40003</tt></td><td>不知道语句是否结束<br>(STATEMENT COMPLETION UNKNOWN)</td><td>statement_completion_unknown</td></tr>
+<tr><td><tt class="LITERAL">40P01</tt></td><td>侦测到死锁<br>(DEADLOCK DETECTED)</td><td>deadlock_detected</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 42 &mdash; 语法错误或者违反访问规则</b></span></td></tr>
+<tr><td><tt class="LITERAL">42000</tt></td><td>语法错误或者违反访问规则<br>(SYNTAX ERROR OR ACCESS RULE VIOLATION)</td><td>syntax_error_or_access_rule_violation</td></tr>
+<tr><td><tt class="LITERAL">42601</tt></td><td>语法错误<br>(SYNTAX ERROR)</td><td>syntax_error</td></tr>
+<tr><td><tt class="LITERAL">42501</tt></td><td>权限不够<br>(INSUFFICIENT PRIVILEGE)</td><td>insufficient_privilege</td></tr>
+<tr><td><tt class="LITERAL">42846</tt></td><td>无法进行类型转换<br>(CANNOT COERCE)</td><td>cannot_coerce</td></tr>
+<tr><td><tt class="LITERAL">42803</tt></td><td>分组错误<br>(GROUPING ERROR)</td><td>grouping_error</td></tr>
+<tr><td><tt class="LITERAL">42830</tt></td><td>非法的外键<br>(INVALID FOREIGN KEY)</td><td>invalid_foreign_key</td></tr>
+<tr><td><tt class="LITERAL">42602</tt></td><td>非法名字<br>(INVALID NAME)</td><td>invalid_name</td></tr>
+<tr><td><tt class="LITERAL">42622</tt></td><td>名字太长<br>(NAME TOO LONG)</td><td>name_too_long</td></tr>
+<tr><td><tt class="LITERAL">42939</tt></td><td>保留名字<br>(RESERVED NAME)</td><td>reserved_name</td></tr>
+<tr><td><tt class="LITERAL">42804</tt></td><td>数据类型不匹配<br>(DATATYPE MISMATCH)</td><td>datatype_mismatch</td></tr>
+<tr><td><tt class="LITERAL">42P18</tt></td><td>未决的数据类型<br>(INDETERMINATE DATATYPE)</td><td>indeterminate_datatype</td></tr>
+<tr><td><tt class="LITERAL">42809</tt></td><td>错误的对象类型<br>(WRONG OBJECT TYPE)</td><td>wrong_object_type</td></tr>
+<tr><td><tt class="LITERAL">42703</tt></td><td>未定义的字段<br>(UNDEFINED COLUMN)</td><td>undefined_column</td></tr>
+<tr><td><tt class="LITERAL">42883</tt></td><td>未定义的函数<br>(UNDEFINED FUNCTION)</td><td>undefined_function</td></tr>
+<tr><td><tt class="LITERAL">42P01</tt></td><td>未定义的表<br>(UNDEFINED TABLE)</td><td>undefined_table</td></tr>
+<tr><td><tt class="LITERAL">42P02</tt></td><td>未定义的参数<br>(UNDEFINED PARAMETER)</td><td>undefined_parameter</td></tr>
+<tr><td><tt class="LITERAL">42704</tt></td><td>未定义对象<br>(UNDEFINED OBJECT)</td><td>undefined_object</td></tr>
+<tr><td><tt class="LITERAL">42701</tt></td><td>重复的字段<br>(DUPLICATE COLUMN)</td><td>duplicate_column</td></tr>
+<tr><td><tt class="LITERAL">42P03</tt></td><td>重复的游标<br>(DUPLICATE CURSOR)</td><td>duplicate_cursor</td></tr>
+<tr><td><tt class="LITERAL">42P04</tt></td><td>重复的数据库<br>(DUPLICATE DATABASE)</td><td>duplicate_database</td></tr>
+<tr><td><tt class="LITERAL">42723</tt></td><td>重复的函数<br>(DUPLICATE FUNCTION)</td><td>duplicate_function</td></tr>
+<tr><td><tt class="LITERAL">42P05</tt></td><td>重复的预备语句<br>(DUPLICATE PREPARED STATEMENT)</td><td>duplicate_prepared_statement</td></tr>
+<tr><td><tt class="LITERAL">42P06</tt></td><td>重复的模式<br>(DUPLICATE SCHEMA)</td><td>duplicate_schema</td></tr>
+<tr><td><tt class="LITERAL">42P07</tt></td><td>重复的表<br>(DUPLICATE TABLE)</td><td>duplicate_table</td></tr>
+<tr><td><tt class="LITERAL">42712</tt></td><td>重复的别名<br>(DUPLICATE ALIAS)</td><td>duplicate_alias</td></tr>
+<tr><td><tt class="LITERAL">42710</tt></td><td>重复的对象<br>(DUPLICATE OBJECT)</td><td>duplicate_object</td></tr>
+<tr><td><tt class="LITERAL">42702</tt></td><td>模糊的字段<br>(AMBIGUOUS COLUMN)</td><td>ambiguous_column</td></tr>
+<tr><td><tt class="LITERAL">42725</tt></td><td>模糊的函数<br>(AMBIGUOUS FUNCTION)</td><td>ambiguous_function</td></tr>
+<tr><td><tt class="LITERAL">42P08</tt></td><td>模糊的参数<br>(AMBIGUOUS PARAMETER)</td><td>ambiguous_parameter</td></tr>
+<tr><td><tt class="LITERAL">42P09</tt></td><td>模糊的别名<br>(AMBIGUOUS ALIAS)</td><td>ambiguous_alias</td></tr>
+<tr><td><tt class="LITERAL">42P10</tt></td><td>非法字段引用<br>(INVALID COLUMN REFERENCE)</td><td>invalid_column_reference</td></tr>
+<tr><td><tt class="LITERAL">42611</tt></td><td>非法字段定义<br>(INVALID COLUMN DEFINITION)</td><td>invalid_column_definition</td></tr>
+<tr><td><tt class="LITERAL">42P11</tt></td><td>非法游标定义<br>(INVALID CURSOR DEFINITION)</td><td>invalid_cursor_definition</td></tr>
+<tr><td><tt class="LITERAL">42P12</tt></td><td>非法数据库定义<br>(INVALID DATABASE DEFINITION)</td><td>invalid_database_definition</td></tr>
+<tr><td><tt class="LITERAL">42P13</tt></td><td>非法函数定义<br>(INVALID FUNCTION DEFINITION)</td><td>invalid_function_definition</td></tr>
+<tr><td><tt class="LITERAL">42P14</tt></td><td>非法预备语句定义<br>(INVALID PREPARED STATEMENT DEFINITION)</td><td>invalid_prepared_statement_definition</td></tr>
+<tr><td><tt class="LITERAL">42P15</tt></td><td>非法模式定义<br>(INVALID SCHEMA DEFINITION)</td><td>invalid_schema_definition</td></tr>
+<tr><td><tt class="LITERAL">42P16</tt></td><td>非法表定义<br>(INVALID TABLE DEFINITION)</td><td>invalid_table_definition</td></tr>
+<tr><td><tt class="LITERAL">42P17</tt></td><td>非法对象定义<br>(INVALID OBJECT DEFINITION)</td><td>invalid_object_definition</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 44 &mdash; 违反 WITH CHECK 选项</b></span></td></tr>
+<tr><td><tt class="LITERAL">44000</tt></td><td>违反 WITH CHECK 选项<br>(WITH CHECK OPTION VIOLATION)</td><td>with_check_option_violation</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 53 &mdash; 资源不够</b></span></td></tr>
+<tr><td><tt class="LITERAL">53000</tt></td><td>资源不够<br>(INSUFFICIENT RESOURCES)</td><td>insufficient_resources</td></tr>
+<tr><td><tt class="LITERAL">53100</tt></td><td>磁盘满<br>(DISK FULL)</td><td>disk_full</td></tr>
+<tr><td><tt class="LITERAL">53200</tt></td><td>内存耗尽<br>(OUT OF MEMORY)</td><td>out_of_memory</td></tr>
+<tr><td><tt class="LITERAL">53300</tt></td><td>太多连接<br>(TOO MANY CONNECTIONS)</td><td>too_many_connections</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 54 &mdash; 超过程序限制</b></span></td></tr>
+<tr><td><tt class="LITERAL">54000</tt></td><td>超过程序限制<br>(PROGRAM LIMIT EXCEEDED)</td><td>program_limit_exceeded</td></tr>
+<tr><td><tt class="LITERAL">54001</tt></td><td>语句太复杂<br>(STATEMENT TOO COMPLEX)</td><td>statement_too_complex</td></tr>
+<tr><td><tt class="LITERAL">54011</tt></td><td>字段太多<br>(TOO MANY COLUMNS)</td><td>too_many_columns</td></tr>
+<tr><td><tt class="LITERAL">54023</tt></td><td>参数太多<br>(TOO MANY ARGUMENTS)</td><td>too_many_arguments</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 55 &mdash; 对象不在预先要求的状态</b></span></td></tr>
+<tr><td><tt class="LITERAL">55000</tt></td><td>对象不在预先要求的状态<br>(OBJECT NOT IN PREREQUISITE STATE)</td><td>object_not_in_prerequisite_state</td></tr>
+<tr><td><tt class="LITERAL">55006</tt></td><td>对象在使用中<br>(OBJECT IN USE)</td><td>object_in_use</td></tr>
+<tr><td><tt class="LITERAL">55P02</tt></td><td>无法修改运行时参数<br>(CANT CHANGE RUNTIME PARAM)</td><td>cant_change_runtime_param</td></tr>
+<tr><td><tt class="LITERAL">55P03</tt></td><td>锁不可获得<br>(LOCK NOT AVAILABLE)</td><td>lock_not_available</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 57 &mdash; 操作者干涉</b></span></td></tr>
+<tr><td><tt class="LITERAL">57000</tt></td><td>操作者干涉<br>(OPERATOR INTERVENTION)</td><td>operator_intervention</td></tr>
+<tr><td><tt class="LITERAL">57014</tt></td><td>查询被取消<br>(QUERY CANCELED)</td><td>query_canceled</td></tr>
+<tr><td><tt class="LITERAL">57P01</tt></td><td>管理员关机<br>(ADMIN SHUTDOWN)</td><td>admin_shutdown</td></tr>
+<tr><td><tt class="LITERAL">57P02</tt></td><td>崩溃关机<br>(CRASH SHUTDOWN)</td><td>crash_shutdown</td></tr>
+<tr><td><tt class="LITERAL">57P03</tt></td><td>现在无法连接<br>(CANNOT CONNECT NOW)</td><td>cannot_connect_now</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 58 &mdash; 系统错误(PostgreSQL 自己内部的错误)</b></span></td></tr>
+<tr><td><tt class="LITERAL">58030</tt></td><td>IO 错误<br>(IO ERROR)</td><td>io_error</td></tr>
+<tr><td><tt class="LITERAL">58P01</tt></td><td>未定义的文件<br>(UNDEFINED FILE)</td><td>undefined_file</td></tr>
+<tr><td><tt class="LITERAL">58P02</tt></td><td>重复的文件<br>(DUPLICATE FILE)</td><td>duplicate_file</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 F0 &mdash; 配置文件错误</b></span></td></tr>
+<tr><td><tt class="LITERAL">F0000</tt></td><td>配置文件错误<br>(CONFIG FILE ERROR)</td><td>config_file_error</td></tr>
+<tr><td><tt class="LITERAL">F0001</tt></td><td>锁文件存在<br>(LOCK FILE EXISTS)</td><td>lock_file_exists</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 P0 &mdash; PL/pgSQL 错误</b></span></td></tr>
+<tr><td><tt class="LITERAL">P0000</tt></td><td>PLPGSQL 错误<br>(PLPGSQL ERROR)</td><td>plpgsql_error</td></tr>
+<tr><td><tt class="LITERAL">P0001</tt></td><td>抛出异常<br>(RAISE EXCEPTION)</td><td>raise_exception</td></tr>
+<tr><td><tt class="LITERAL">P0002</tt></td><td>未找到数据<br>(NO DATA FOUND)</td><td>no_data_found</td></tr>
+<tr><td><tt class="LITERAL">P0003</tt></td><td>行太多<br>(TOO MANY ROWS)</td><td>too_many_rows</td></tr>
+<tr><td colspan="3"><span class="bold"><b class="EMPHASIS">类 XX &mdash; 内部错误</b></span></td></tr>
+<tr><td><tt class="LITERAL">XX000</tt></td><td>内部错误<br>(INTERNAL ERROR)</td><td>internal_error</td></tr>
+<tr><td><tt class="LITERAL">XX001</tt></td><td>数据损坏<br>(DATA CORRUPTED)</td><td>data_corrupted</td></tr>
+<tr><td><tt class="LITERAL">XX002</tt></td><td>索引损坏<br>(INDEX CORRUPTED)</td><td>index_corrupted</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="appendixes.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="datetime-appendix.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">附录</td><td width="34%" align="center" valign="top"><a href="appendixes.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">日期/时间支持</td></tr>
+</table>
+</div>
+</body></html>

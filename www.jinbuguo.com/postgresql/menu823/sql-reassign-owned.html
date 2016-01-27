@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>REASSIGN OWNED</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-prepare-transaction.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-prepare-transaction.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-reindex.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-reindex.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-REASSIGN-OWNED"></a>REASSIGN OWNED</h1>
+<div class="REFNAMEDIV"><a name="AEN52935"></a><h2>名称</h2>REASSIGN OWNED&nbsp;--&nbsp;修改数据库对象的属主</div>
+<a name="AEN52938"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN52940"></a><h2>语法</h2>
+<pre class="SYNOPSIS">REASSIGN OWNED BY <tt class="REPLACEABLE"><i>old_role</i></tt> [, ...] TO <tt class="REPLACEABLE"><i>new_role</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN52944"></a><h2>描述</h2>
+<p><tt class="COMMAND">REASSIGN OWNED</tt> 要求系统将所有 old_roles 拥有的数据库对象的属主更改为 new_role</p>
+</div>
+<div class="REFSECT1"><a name="AEN52948"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>old_role</i></tt></dt>
+<dd><p>旧属主的角色名。当前数据库中该角色所拥有的所有对象的属主将改为 <tt class="REPLACEABLE"><i>new_role</i></tt></p></dd>
+<dt><tt class="REPLACEABLE"><i>new_role</i></tt></dt>
+<dd><p>将要成为这些对象属主的新角色的名字</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN52962"></a><h2>注意</h2>
+<p><tt class="COMMAND">REASSIGN OWNED</tt> 常用于在删除角色之前的准备工作。因为 <tt class="COMMAND">REASSIGN OWNED</tt> 仅影响当前数据库中的对象，所以必须在即将删除的角色拥有对象的每一个数据库中执行该命令。</p>
+<p><a href="sql-drop-owned.html"><i>DROP OWNED</i></a> 可以用来删除角色所拥有的所有对象。</p>
+<p><tt class="COMMAND">REASSIGN OWNED</tt> 并不影响 old_roles 在不被其拥有的对象上的权限。使用 <tt class="COMMAND">DROP OWNED</tt> 来删除这些权限。</p>
+</div>
+<div class="REFSECT1"><a name="AEN52972"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">REASSIGN OWNED</tt> 语句是一个 PostgreSQL 扩展。</p>
+</div>
+<div class="REFSECT1"><a name="AEN52977"></a><h2>又见</h2><a href="sql-drop-owned.html"><i>DROP OWNED</i></a>, <a href="sql-droprole.html"><i>DROP ROLE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-prepare-transaction.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-reindex.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PREPARE TRANSACTION</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">REINDEX</td></tr>
+</table>
+</div>
+</body></html>

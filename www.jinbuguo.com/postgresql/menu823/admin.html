@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>服务器管理</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="PART">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="populate.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="client-interfaces.html">快进</a></td><td width="10%" align="right" valign="top"><a href="installation.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="PART"><a name="ADMIN"></a>
+<div><h1>III. 服务器管理</h1>
+<div class="PARTINTRO"><a name="AEN17065"></a>
+<p>这部分覆盖的内容是那些 PostgreSQL 数据库管理员感兴趣的东西。包括安装软件、设置和配置服务器、管理用户和数据库、日常维护任务。任何运行 PostgreSQL 服务器的人，尤其是生产环境中的使用者，都应该熟悉这部分中讨论的内容。</p>
+<p>本部分的信息大致上是按照一个新用户的阅读顺序进行安排的。但是每个章节都是自包含的，可以独立阅读。本部分信息是以主题单元按照陈述风格排列的。如果读者需要查看特定命令的完整描述，那么应该看看 <a href="reference.html">Part VI</a> 。</p>
+<p>头几章书写的风格是让那些没有提前知识的朋友也能看懂，这样那些需要架设自己的服务器的读者就可以直接开始浏览这部分了。其它部分是有关调节和管理的，这部分的材料假设读者是那些经常使用 PostgreSQL 数据库系统的读者应该熟悉的东西。我们鼓励读者阅读 <a href="tutorial.html">Part I</a> 和 <a href="sql.html">Part II</a> 获取额外的信息。</p>
+</div>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>14. <a href="installation.html">安装指导</a></dt>
+<dd><dl>
+<dt>14.1. <a href="install-short.html">简版</a></dt>
+<dt>14.2. <a href="install-requirements.html">要求</a></dt>
+<dt>14.3. <a href="install-getsource.html">获取源码</a></dt>
+<dt>14.4. <a href="install-upgrading.html">如果你是在升级</a></dt>
+<dt>14.5. <a href="install-procedure.html">安装过程</a></dt>
+<dt>14.6. <a href="install-post.html">安装后的设置</a></dt>
+<dt>14.7. <a href="supported-platforms.html">支持的平台</a></dt>
+</dl></dd>
+<dt>15. <a href="install-win32.html">在 Windows 上安装客户端</a></dt>
+<dt>16. <a href="runtime.html">操作系统环境</a></dt>
+<dd><dl>
+<dt>16.1. <a href="postgres-user.html">PostgreSQL 用户帐户</a></dt>
+<dt>16.2. <a href="creating-cluster.html">创建数据库集群</a></dt>
+<dt>16.3. <a href="server-start.html">启动数据库服务器</a></dt>
+<dt>16.4. <a href="kernel-resources.html">管理内核资源</a></dt>
+<dt>16.5. <a href="server-shutdown.html">关闭服务器</a></dt>
+<dt>16.6. <a href="encryption-options.html">加密选项</a></dt>
+<dt>16.7. <a href="ssl-tcp.html">用 SSL 进行安全的 TCP/IP 连接</a></dt>
+<dt>16.8. <a href="ssh-tunnels.html">用 <span class="APPLICATION">SSH</span> 隧道进行安全 TCP/IP 连接</dt>
+</dl></dd>
+<dt>17. <a href="runtime-config.html">服务器配置</a></dt>
+<dd><dl>
+<dt>17.1. <a href="config-setting.html">设置参数</a></dt>
+<dt>17.2. <a href="runtime-config-file-locations.html">文件位置</a></dt>
+<dt>17.3. <a href="runtime-config-connection.html">连接和认证</a></dt>
+<dt>17.4. <a href="runtime-config-resource.html">资源消耗</a></dt>
+<dt>17.5. <a href="runtime-config-wal.html">预写式日志</a></dt>
+<dt>17.6. <a href="runtime-config-query.html">查询规划</a></dt>
+<dt>17.7. <a href="runtime-config-logging.html">错误报告和日志</a></dt>
+<dt>17.8. <a href="runtime-config-statistics.html">运行时统计</a></dt>
+<dt>17.9. <a href="runtime-config-autovacuum.html">自动清理</a></dt>
+<dt>17.10. <a href="runtime-config-client.html">客户端连接缺省</a></dt>
+<dt>17.11. <a href="runtime-config-locks.html">锁管理</a></dt>
+<dt>17.12. <a href="runtime-config-compatible.html">版本和平台兼容性</a></dt>
+<dt>17.13. <a href="runtime-config-preset.html">预置选项</a></dt>
+<dt>17.14. <a href="runtime-config-custom.html">自定义的选项</a></dt>
+<dt>17.15. <a href="runtime-config-developer.html">开发人员选项</a></dt>
+<dt>17.16. <a href="runtime-config-short.html">短选项</a></dt>
+</dl></dd>
+<dt>18. <a href="user-manag.html">数据库角色和权限</a></dt>
+<dd><dl>
+<dt>18.1. <a href="database-roles.html">数据库角色</a></dt>
+<dt>18.2. <a href="role-attributes.html">角色属性</a></dt>
+<dt>18.3. <a href="privileges.html">权限</a></dt>
+<dt>18.4. <a href="role-membership.html">角色成员</a></dt>
+<dt>18.5. <a href="perm-functions.html">函数和触发器</a></dt>
+</dl></dd>
+<dt>19. <a href="managing-databases.html">管理数据库</a></dt>
+<dd><dl>
+<dt>19.1. <a href="manage-ag-overview.html">概述</a></dt>
+<dt>19.2. <a href="manage-ag-createdb.html">创建一个数据库</a></dt>
+<dt>19.3. <a href="manage-ag-templatedbs.html">模板数据库</a></dt>
+<dt>19.4. <a href="manage-ag-config.html">数据库配置</a></dt>
+<dt>19.5. <a href="manage-ag-dropdb.html">删除数据库</a></dt>
+<dt>19.6. <a href="manage-ag-tablespaces.html">表空间</a></dt>
+</dl></dd>
+<dt>20. <a href="client-authentication.html">用户认证</a></dt>
+<dd><dl>
+<dt>20.1. <a href="auth-pg-hba-conf.html"><tt class="FILENAME">pg_hba.conf</tt> 文件</a></dt>
+<dt>20.2. <a href="auth-methods.html">认证方法</a></dt>
+<dt>20.3. <a href="client-authentication-problems.html">用户认证</a></dt>
+</dl></dd>
+<dt>21. <a href="charset.html">区域</a></dt>
+<dd><dl>
+<dt>21.1. <a href="locale.html">区域支持</a></dt>
+<dt>21.2. <a href="multibyte.html">字符集支持</a></dt>
+</dl></dd>
+<dt>22. <a href="maintenance.html">日常数据库维护工作</a></dt>
+<dd><dl>
+<dt>22.1. <a href="routine-vacuuming.html">日常清理</a></dt>
+<dt>22.2. <a href="routine-reindex.html">经常重建索引</a></dt>
+<dt>22.3. <a href="logfile-maintenance.html">日志文件维护</a></dt>
+</dl></dd>
+<dt>23. <a href="backup.html">备份与恢复</a></dt>
+<dd><dl>
+<dt>23.1. <a href="backup-dump.html">SQL 转储</a></dt>
+<dt>23.2. <a href="backup-file.html">文件系统级别的备份</a></dt>
+<dt>23.3. <a href="continuous-archiving.html">在线备份以及即时恢复(PITR)</a></dt>
+<dt>23.4. <a href="warm-standby.html">高可用性热备份服务器</a></dt>
+<dt>23.5. <a href="migration.html">在不同版本之间迁移</a></dt>
+</dl></dd>
+<dt>24. <a href="high-availability.html">高可用性与负载均衡</a></dt>
+<dt>25. <a href="monitoring.html">监控数据库的活动</a></dt>
+<dd><dl>
+<dt>25.1. <a href="monitoring-ps.html">标准 Unix 工具</a></dt>
+<dt>25.2. <a href="monitoring-stats.html">统计收集器</a></dt>
+<dt>25.3. <a href="monitoring-locks.html">查看锁</a></dt>
+<dt>25.4. <a href="dynamic-trace.html">动态跟踪</a></dt>
+</dl></dd>
+<dt>26. <a href="diskusage.html">监控磁盘使用情况</a></dt>
+<dd><dl>
+<dt>26.1. <a href="disk-usage.html">判断磁盘的使用量</a></dt>
+<dt>26.2. <a href="disk-full.html">磁盘满导致的失效</a></dt>
+</dl></dd>
+<dt>27. <a href="wal.html">可靠性和预写式日志</a></dt>
+<dd><dl>
+<dt>27.1. <a href="wal-reliability.html">可靠性</a></dt>
+<dt>27.2. <a href="wal-intro.html">预写式日志(WAL)</a></dt>
+<dt>27.3. <a href="wal-configuration.html">WAL 配置</a></dt>
+<dt>27.4. <a href="wal-internals.html">WAL 内部</a></dt>
+</dl></dd>
+<dt>28. <a href="regress.html">回归测试</a></dt>
+<dd><dl>
+<dt>28.1. <a href="regress-run.html">运行测试</a></dt>
+<dt>28.2. <a href="regress-evaluation.html">测试评估</a></dt>
+<dt>28.3. <a href="regress-variant.html">平台相关的比较文件</a></dt>
+</dl></dd>
+</dl>
+</div>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="populate.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="installation.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">向数据库中添加记录</td><td width="34%" align="center" valign="top">&nbsp;</td><td width="33%" align="right" valign="top">安装指导</td></tr>
+</table>
+</div>
+</body></html>

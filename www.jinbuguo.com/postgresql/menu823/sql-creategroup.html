@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE GROUP</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createfunction.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createfunction.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createindex.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createindex.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATEGROUP"></a>CREATE GROUP</h1>
+<div class="REFNAMEDIV"><a name="AEN47377"></a><h2>名称</h2>CREATE GROUP&nbsp;--&nbsp;定义一个新数据库角色</div>
+<a name="AEN47380"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN47382"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE GROUP <tt class="REPLACEABLE"><i>name</i></tt> [ [ WITH ] <tt class="REPLACEABLE"><i>option</i></tt> [ ... ] ]
+
+这里 <tt class="REPLACEABLE"><i>option</i></tt> 可以是：
+    
+      SUPERUSER | NOSUPERUSER
+    | CREATEDB | NOCREATEDB
+    | CREATEROLE | NOCREATEROLE
+    | CREATEUSER | NOCREATEUSER
+    | INHERIT | NOINHERIT
+    | LOGIN | NOLOGIN
+    | [ ENCRYPTED | UNENCRYPTED ] PASSWORD '<tt class="REPLACEABLE"><i>password</i></tt>'
+    | VALID UNTIL '<tt class="REPLACEABLE"><i>timestamp</i></tt>' 
+    | IN ROLE <tt class="REPLACEABLE"><i>rolename</i></tt> [, ...]
+    | IN GROUP <tt class="REPLACEABLE"><i>rolename</i></tt> [, ...]
+    | ROLE <tt class="REPLACEABLE"><i>rolename</i></tt> [, ...]
+    | ADMIN <tt class="REPLACEABLE"><i>rolename</i></tt> [, ...]
+    | USER <tt class="REPLACEABLE"><i>rolename</i></tt> [, ...]
+    | SYSID <tt class="REPLACEABLE"><i>uid</i></tt> </pre>
+</div>
+<div class="REFSECT1"><a name="AEN47395"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE GROUP</tt> 现在是 <a href="sql-createrole.html"><i>CREATE ROLE</i></a> 的别名，参阅后者获取更多信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN47400"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">CREATE GROUP</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN47404"></a><h2>又见</h2><a href="sql-createrole.html"><i>CREATE ROLE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createfunction.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createindex.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE FUNCTION</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE INDEX</td></tr>
+</table>
+</div>
+</body></html>

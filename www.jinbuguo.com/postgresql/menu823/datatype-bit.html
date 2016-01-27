@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>位串类型</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="datatype-net-types.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="datatype.html">快退</a></td><td width="60%" align="center" valign="bottom">章8. Data Types</td><td width="10%" align="right" valign="top"><a href="datatype.html">快进</a></td><td width="10%" align="right" valign="top"><a href="arrays.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="DATATYPE-BIT">8.9. 位串类型</a></h1><a name="AEN5690"></a>
+<p>位串就是一串 1 和 0 的字符串。它们可以用于存储和直观化位掩码。我们有两种 SQL 位类型：<tt class="TYPE">bit(<tt class="REPLACEABLE"><i>n</i></tt>)</tt> 和 <tt class="TYPE">bit varying(<tt class="REPLACEABLE"><i>n</i></tt>)</tt> ，这里的 <tt class="REPLACEABLE"><i>n</i></tt> 是一个正整数。</p>
+<p><tt class="TYPE">bit</tt> 类型的数据必须准确匹配长度 <tt class="REPLACEABLE"><i>n</i></tt> ，试图存储短些或者长一些的数据都是错误的。<tt class="TYPE">bit varying</tt> 类型数据是最长 <tt class="REPLACEABLE"><i>n</i></tt> 的变长类型；更长的串会被拒绝。写一个没有长度的 <tt class="TYPE">bit</tt> 等效于 <tt class="LITERAL">bit(1)</tt> ，没有长度的 <tt class="TYPE">bit varying</tt> 意思是没有长度限制。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>如果我们明确地把一个位串值转换成 <tt class="TYPE">bit(<tt class="REPLACEABLE"><i>n</i></tt>)</tt> ，那么它的右边将被截断或者在右边补齐零，直到刚好 <tt class="REPLACEABLE"><i>n</i></tt> 位，而不会抛出任何错误。类似地，如果我们明确地把一个位串数值转换成 <tt class="TYPE">bit varying(<tt class="REPLACEABLE"><i>n</i></tt>)</tt> ，如果它超过了 <tt class="REPLACEABLE"><i>n</i></tt> 位，那么它的右边将被截断。</p>
+</blockquote>
+</div>
+<p>请参考<a href="sql-syntax-lexical.html#SQL-SYNTAX-BIT-STRINGS">节4.1.2.3</a>获取有关位串常量的语法信息。还有一些位逻辑操作符和位处理函数可用；参见<a href="functions-bitstring.html">节9.6</a>。</p>
+<div class="EXAMPLE"><a name="AEN5718"></a>
+<p><b>例8-3. 使用位串类型</b></p>
+<pre class="PROGRAMLISTING">CREATE TABLE test (a BIT(3), b BIT VARYING(5));
+INSERT INTO test VALUES (B'101', B'00');
+INSERT INTO test VALUES (B'10', B'101');
+<samp class="COMPUTEROUTPUT">ERROR:  bit string length 2 does not match type bit(3)</samp>
+INSERT INTO test VALUES (B'10'::bit(3), B'101');
+SELECT * FROM test;
+<samp class="COMPUTEROUTPUT">  a  |  b
+-----+-----
+ 101 | 00
+ 100 | 101</samp></pre>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="datatype-net-types.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="arrays.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">网络地址类型</td><td width="34%" align="center" valign="top"><a href="datatype.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">数组</td></tr>
+</table>
+</div>
+</body></html>

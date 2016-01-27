@@ -1,0 +1,275 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="./style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="./style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="./style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>内容协商 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page">
+<div id="page-header"><p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="./images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="./images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="./index.html">版本2.2</a></div>
+
+<div id="translation-info">　　 <a href="./translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2008年8月11日</div>
+<div id="page-content"><div id="preamble"><h1>内容协商</h1>
+
+
+
+    <p>Apache支持HTTP/1.1规范中定义的内容协商，它可以根据浏览器提供的参数选择一个资源最合适的媒体类型、语言、字符集和编码的表现方式。它还实现了一些对浏览器发送不完整内容协商信息进行智能处理的能力。</p>
+
+    <p>内容协商由<code class="module"><a href="./mod/mod_negotiation.html">mod_negotiation</a></code>模块支持，并被默认编译进服务器。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="about" id="about">关于内容协商(Content Negotiation)</a></h2>
+
+    <p>一个资源可能会有多种不同的表现形式，比如，可能会有不同语言或者媒体类型的版本甚至其组合。最常用的选择方法是提供一个索引页以供选择。但是由于浏览器可以在请求头信息中提供其首选项的表现形式，因此就有可能让服务器进行自动选择。比如，浏览器可以表明希望看见法语的信息，如果没有，英语的也行。如需仅请求法语的表现形式，浏览器可以发出：</p>
+
+	<div class="example"><p><code>Accept-Language: fr</code></p></div>
+
+    <p>注意：此首选项信息仅当存在多种可选的语言表现形式时才有效。</p>
+
+    <p>下面是一个更复杂的请求，浏览器表明，可以接受法语和英语，但最好是法语；接受各种媒体类型，最好是HTML，但纯文件或其他文本类型也可以；最好是GIF或JPEG，但其他媒体类型也可以，并允许其他媒体类型作为最终表现形式：</p>
+
+<div class="example"><p><code>
+  Accept-Language: fr; q=1.0, en; q=0.5<br />
+  Accept: text/html; q=1.0, text/*; q=0.8, image/gif; q=0.6, image/jpeg; q=0.6, image/*; q=0.5, */*; q=0.1
+</code></p></div>
+
+    <p>Apache支持HTTP/1.1规范中定义的"服务器驱动"的内容协商， 可以完全地支持<code>Accept</code>、<code>Accept-Language</code>、<code>Accept-Charset</code>、<code>Accept-Encoding</code>请求头，这些是RFC2295和RFC2296中定义的实验协商协议，但是不支持这些RFC中定义的"功能协商"。</p>
+
+    <p><strong>资源(resource)</strong>是一个在URI(RFC2396)中定义的概念上的实体。一个HTTP服务器，比如Apache，以<strong>表现形式(representation)</strong>提供对其命名空间中资源的访问，各种表现形式由已定义的媒体类型、字符集和编码的字节流构成。任何一个特定的时刻，一个资源可以没有，或者有一个，或者有多个表现形式。如果有多个表现形式存在，则称该资源是<strong>可协商的(negotiable)</strong>，其各种表现形式称为<strong>变种(variant)</strong>。而一个可协商的资源的各种变种的区别途径称为<strong>变元(dimension)</strong>。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="negotiation" id="negotiation">Apache中的内容协商</a></h2>
+
+    <p>可以使用下述两种途径之一向服务器提供有关各变种的信息，以实现对资源的协商：</p>
+
+    <ul>
+      <li>使用类型表(也就是一个 <code>*.var</code>文件)明确指定各变种的文件名。</li>
+
+      <li>使用"MultiViews"搜索，即服务器执行一个隐含的文件名模式匹配，并在其结果中选择。</li>
+    </ul>
+
+   <h3><a name="type-map" id="type-map">使用类型表文件</a></h3>
+
+    <p>类型表是一个与<code>type-map</code>处理器关联的文档(或者兼容早期Apache配置的<a class="glossarylink" href="./glossary.html#mime-type" title="see glossary">MIME类型</a>：<code>application/x-type-map</code> )。要使用这个功能，必须在配置中建立处理器，以定义一个文件后缀为<code>type-map</code>，最好的方法是在配置文件中这样设置：</p>
+
+<div class="example"><p><code>AddHandler type-map .var</code></p></div>
+
+    <p>类型表文件应该与所描述的资源同名，且对每个有效变种都有一个块(entry)，每个块由若干连续的HTTP头行组成，不同变种的块用空行分开，块中不允许有空行。习惯上，类型表都以一个描述总体性质的组合块作为开始(这不是必须的，如果有也会被忽略)。下例是一个描述资源<code>foo</code>的命名为<code>foo.var</code>的类型表文件：</p>
+
+<div class="example"><p><code>
+  URI: foo<br />
+<br />
+  URI: foo.en.html<br />
+  Content-type: text/html<br />
+  Content-language: en<br />
+<br />
+  URI: foo.fr.de.html<br />
+  Content-type: text/html;charset=iso-8859-2<br />
+  Content-language: fr, de<br />
+</code></p></div>
+    <p>注意：即使将<code>MultiViews</code>设置为 <code>On</code> ，类型表仍然优先于文件后缀名。如果不同的变种具有不同的资源品质，就可以对媒体类型使用"qs"参数来表示这种不同。下例演示了一个图片的 jpeg, gif, ASCII-art 三个有效变种：</p>
+
+	<div class="example"><p><code>
+  URI: foo<br />
+<br />
+  URI: foo.jpeg<br />
+  Content-type: image/jpeg; qs=0.8<br />
+<br />
+  URI: foo.gif<br />
+  Content-type: image/gif; qs=0.5<br />
+<br />
+  URI: foo.txt<br />
+  Content-type: text/plain; qs=0.01<br />
+</code></p></div>
+
+    <p>qs的取值范围是0.000到1.000，取值为0.000的变种永远不会被选择，没有指定qs值的变种其qs值为1.0。qs值表示一个变种相对于其他变种的"品质"，比如在表现一张照片时，jpeg通常比字符构图有更高的品质；而如果要表现的本来就是一个ASCII-art ，那么当然字符构图就会比jpeg文件有更高的品质。因此，qs的值取决于变种所表现的资源本身。</p>
+
+    <p><a href="mod/mod_negotiation.html#typemaps">mod_negotation类型表</a>文档中有完整的HTTP头的列表。</p>
+
+
+<h3><a name="multiviews" id="multiviews">Multiviews</a></h3>
+
+    <p><code>MultiViews</code>是一个针对每个目录的选项，也就是说可以在<code>httpd.conf</code>或<code>.htaccess</code>(如果正确设置了<code class="directive"><a href="./mod/core.html#allowoverride">AllowOverride</a></code>)文件中的<code class="directive"><a href="./mod/core.html#directory">&lt;Directory&gt;</a></code>、<code class="directive"><a href="./mod/core.html#location">&lt;Location&gt;</a></code>、<code class="directive"><a href="./mod/core.html#files">&lt;Files&gt;</a></code>配置段中，用<code class="directive"><a href="./mod/core.html#options">Options</a></code>指令来指定。注意，<code>Options All</code> 并不会设置<code>MultiViews</code> ，你必须明确地指定。</p>
+
+    <p><code>MultiViews</code>的效果是：如果服务器收到对<code>/some/dir/foo</code>的请求，而<code>/some/dir/foo</code>并<em>不</em>存在，但是如果<code>/some/dir</code>启用了<code>MultiViews</code> ，则服务器会查找这个目录下所有的foo.* 文件，并有效地伪造一个说明这些foo.* 文件的类型表，分配给他们相同的媒体类型及内容编码，并选择其中最合适的匹配返回给客户。</p>
+
+    <p><code>MultiViews</code>还可以在服务器检索一个目录时，用于<code class="directive"><a href="./mod/mod_dir.html#directoryindex">DirectoryIndex</a></code>指令搜索的文件名。如果设置了：</p>
+	<div class="example"><p><code>DirectoryIndex index</code></p></div>
+    <p>而<code>index.html</code>和<code>index.html3</code>并存，则服务器会作一个权衡；如果都没有，但是有<code>index.cgi</code> ，则服务器会执行它。</p>
+
+    <p>如果一个目录中没有任何文件具有<code>mod_mime</code>可以识别的表示其字符集、内容类型、语言和编码的后缀，那么其结果将取决于<code class="directive"><a href="./mod/mod_mime.html#multiviewsmatch">MultiViewsMatch</a></code>指令的设置，这个指令决定了在MultiViews协商中将使用的处理器、过滤器和其他后缀类型。</p>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="methods" id="methods">协商的方法</a></h2>
+
+    <p>Apache从一个类型表或者某个目录的文件名中得到一个资源变种列表以后，会使用两种方法之一选择可能的"最佳"变种返回给客户。使用Apache的内容协商功能并不需要了解其细节，以下文档对这些方法加以详细说明，供有兴趣的人看看。</p>
+
+    <p>协商有两种方法：</p>
+
+    <ol>
+      <li><strong>使用Apache算法的服务器驱动协商</strong> 是通常情况下的默认方法。使用这个算法(下面有详细的描述)，为了得到更好的效果，Apache有时会"打乱"一个特定变元(dimension)的品质因子，其方法稍后会详细阐述。</li>
+
+      <li><strong>透明内容协商</strong> 仅当浏览器明确地用RFC2295中定义的机制发出请求时才使用。这种方法可以给予浏览器对"最佳"变种选择的完全控制，因此其效果也取决于浏览器使用的算法。作为透明协商过程的一部分，浏览器可以要求Apache执行RFC2296中定义的"远程变种选择算法"。</li>
+    </ol>
+
+<h3><a name="dimensions" id="dimensions">协商的变元(Dimension)</a></h3>
+
+    <table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA">
+<tr valign="top"><th>变元</th><th>说明</th></tr>
+<tr valign="top"><td>媒体类型</td><td>浏览器在<code>Accept</code>头中指明首选项，其中各项与品质因子关联，变种描述也可以有品质因子(参数"qs")。</td></tr>
+<tr valign="top"><td>语言</td><td>浏览器在<code>Accept-Language</code>头中指明首选项，其中各项与品质因子关联，变种可以与零个、一个或多个语言关联。</td></tr>
+<tr valign="top"><td>编码</td><td>浏览器在<code>Accept-Encoding</code>头中指明首选项，其中各项与品质因子关联。</td></tr>
+<tr valign="top"><td>字符集</td><td>浏览器在<code>Accept-Charset</code>头中指明首选项，其中各项与品质因子关联，变种可以指定一个字符集作为媒体类型的一个参数。</td></tr>
+</table>
+
+
+<h3><a name="algorithm" id="algorithm">Apache协商算法</a></h3>
+
+    <p>Apache使用下述算法选择可能的"最佳"变种返回给浏览器。此算法不能被再配置。其过程如下：</p>
+
+    <ol>
+      <li>首先，对每个协商变元，检查其适当的<em>Accept*</em> 头，并对每个变种指定一个品质。如果一个变元的<em>Accept*</em> 头指示不接受这个变种，则被剔除。如果最终没有变种了，则转到步骤4。</li>
+
+      <li>顺序执行以下的测试，使用逐步剔除的方法来选择"最佳"变种。不能通过测试的变种将被剔除。每个测试完成后，如果仅剩一个变种，则作为最佳匹配，转到步骤3；如果多于一个，则继续下一个测试。
+
+        <ol>
+          <li>将<code>Accept</code>头的品质因子乘以该变种媒体类型的还原品质因子，选择乘积最高者。</li>
+
+          <li>选择语言品质因子最高的变种。</li>
+
+          <li>使用<code>Accept-Language</code>头中的语言顺序(如果存在的话)，或者使用<code>LanguagePriority</code>指令中的语言顺序(如果存在的话)选择最匹配的语言。</li>
+
+          <li>选择最高"等级"媒体参数的变种(用以确定text/html的媒体类型)。</li>
+
+          <li>选择<code>Accept-Charset</code>头中指定的最佳字符集媒体参数的变种。如果没有明确指定，则使用ISO-8859-1字符集。具有<code>text/*</code> 媒体类型而没有明确地与一个特定字符集关联的变种，将使用ISO-8859-1。</li>
+
+          <li>选择与之关联字符集<em>不是</em>ISO-8859-1的变种，如果没有这样的变种，则选择所有的变种。</li>
+
+          <li>选择最佳编码的变种。如果存在用户代理可以接受的编码的变种，则选择之；否则，如果存在混合编码的或者未编码的变种，则选择未编码的变种。如果所有的变种都是编码的，或者所有变种都是未编码的，则选择所有的变种。</li>
+
+          <li>选择内容长度最小的变种。</li>
+
+          <li>选择剩余变种的最前一个，这个变种或是类型表文件中的第一个，或从目录中读取变种被时，以ASCII编码顺序的第一个文件。</li>
+        </ol>
+      </li>
+
+      <li>这时，此算法已经选择了一个"最佳"变种，并将之返回作为响应。HTTP响应头的<code>Vary</code>会指明协商的变元(浏览器和缓存可以利用此信息缓存该资源)。</li>
+
+      <li>如果没有一个变种被选择(因为没有一种可以被浏览器接受)，则返回一个状态值为406响应体，并包含一个HTML格式的有效变种列表，同样，在HTTP头的<code>Vary</code>中指明了变种的变元。</li>
+    </ol>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="better" id="better">打乱品质值</a></h2>
+
+    <p>Apache有时会改变按照Apache协商算法应该被严格解析的品质值，从而在浏览器没有发送完整的精确的信息时获得更好的效果。有些很常用的浏览器在许多情况下，会发送导致变种选择错误的<code>Accept</code>头信息。如果一个浏览器发送了完整的且正确的信息，则不会有打乱操作。</p>
+
+<h3><a name="wildcards" id="wildcards">媒体类型与通配符</a></h3>
+
+   <p><code>Accept:</code> 请求头指明了媒体类型的首选项，也可以包含"通配"媒体类型，如"image/*"和匹配任何字符串的"*/*"。所以，如果一个请求包含：</p>
+
+<div class="example"><p><code>Accept: image/*, */*</code></p></div>
+
+   <p>会指明可以接受任何以"image/"开头的类型，和其他任何类型(因而前面的"image/*"就是多余的)。有些浏览器就会这样例行公事地在明确指定允许的类型后面附加通配类型，比如：</p>
+
+<div class="example"><p><code>
+  Accept: text/html, text/plain, image/gif, image/jpeg, */*
+</code></p></div>
+   <p>其目的是表明，明确列出的是首选项，其他不同的表现也可以。这种用法不是不可以，但是"*/*"其实可以通配所有其他类型，所以不推荐这样用，而应该对"*.*"赋予一个较低的品质(首选)值0.01，如：</p>
+<div class="example"><p><code>
+  Accept: text/html, text/plain, image/gif, image/jpeg, */*; q=0.01
+</code></p></div>
+   <p>明确指定的类型没有品质值，所以其品质值是默认的最高值1.0，而"*/*"是较低的0.01，所以，只有在没有匹配明确指定类型的变种时，才会返回其他类型。</p>
+
+   <p>如果<code>Accept:</code> 头<em>没有</em>指定任何q因子，那么Apache设置"*/*"的q值为0.01来模拟上述推荐的行为，还会设置"type/*"的q值为0.02，使之优先于"*/*"。如果<code>Accept:</code> 头中任何媒体类型指定了q因子，则<em>不会</em>使用这些特殊值，以使正确发送信息的浏览器能正常运作。</p>
+
+
+	<h3><a name="exceptions" id="exceptions">语言协商的例外</a></h3>
+
+   <p>在Apache 2.0中的协商算法中，新增了一些例外的规则，以允许在语言协商匹配失败的情况下，作巧妙的妥协。</p>
+
+   <p>通常，当客户端向服务器请求一个不能与浏览器<code>Accept-language</code>所匹配的唯一的页面时，服务器会返回一个"No Acceptable Variant" 或者 "Multiple Choices" 响应。但是，有可能通过配置Apache，忽略这些情况下的<code>Accept-language</code> ，而返回一个不是非常匹配客户请求的文本，以避免这些错误信息的出现。<code class="directive"><a href="./mod/mod_negotiation.html#forcelanguagepriority">ForceLanguagePriority</a></code>指令可以屏蔽这两种错误信息，并接管由<code class="directive"><a href="./mod/mod_negotiation.html#languagepriority">LanguagePriority</a></code>指令控制的服务器裁定机制。</p>
+
+   <p>服务器还会在匹配失败时尝试用语言子集来匹配。例如，如果一个客户请求了一个语言是<code>en-GB</code>的英国英语的页面，而服务器只支持HTTP/1.1标准的简单的<code>en</code> 。(注意，在<code>Accept-Language</code>中指定<code>en-GB</code>而不是<code>en</code>几乎绝对是个错误，因为它似乎暗示阅读的人懂英国英语却不懂大众英语。而不幸的是，许多流行的客户端的默认配置却是这样的)。如果没有可以匹配的语言，服务器将会忽略其语言子集的设定，返回"No Acceptable Variants"错误，或者按<code class="directive"><a href="./mod/mod_negotiation.html#languagepriority">LanguagePriority</a></code>指令作妥协。Apache会隐含地在客户可接受语言的列表中附加一个具有很低品质值的父语言，但是，如果客户请求"en-GB; q=0.9, fr; q=0.8" 那么将返回"fr"的文本，这对遵循HTTP/1.1标准以使正确配置的浏览器能正常工作是必须的。</p>
+
+   <p>为了支持用于确定用户首选语言的高级技术(比如cookies或特殊的URL路径)，从2.0.47版本起<code class="module"><a href="./mod/mod_negotiation.html">mod_negotiation</a></code>模块开始支持<code>prefer-language</code><a href="env.html">环境变量</a>。如果存在并且包含一个语言标签，<code class="module"><a href="./mod/mod_negotiation.html">mod_negotiation</a></code>模块将会尝试选择一个匹配的变种。如果不存在这样的变种，将会使用上述通常的协商过程。</p>
+
+   <div class="example"><h3>示例</h3><p><code>
+      SetEnvIf Cookie "language=(.+)" prefer-language=$1<br />
+	  Header append Vary cookie
+   </code></p></div>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="extensions" id="extensions">透明内容协商的扩展</a></h2> 
+
+<p>Apache在变种列表中使用了一个新的<code>{encoding ..}</code>元素来标记变种，从而扩展了透明内容协商协议(RFC2295)。实现RVSA/1.0算法(RFC2296)的目的是识别列表中被编码的变种，作为可以被<code>Accept-Encoding</code>请求头接受的候选变种。在选择最佳变种之前，RVSA/1.0的实现不会对品质因子作四舍五入的运算。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="naming" id="naming">超链和名称转换说明</a></h2>
+
+   <p>如果使用语言协商，由于文件可以有不止一个后缀，因此就可以选择不同的名称转换，其后缀顺序通常是无关紧要的(参见<a href="mod/mod_mime.html#multipleext">mod_mime</a>文档)。</p>
+
+   <p>一个典型的有MIME类型后缀的文件(如<code>html</code>)，其后缀可以是编码后缀(如<code>gz</code>)，也可以是语言变种后缀(如<code>en</code>)</p>
+
+   <p>例如：</p>
+
+   <ul>
+     <li>foo.en.html</li>
+
+     <li>foo.html.en</li>
+
+     <li>foo.en.html.gz</li>
+   </ul>
+
+   <p>文件名和有效及无效超链的例子：</p>
+
+   <table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="bordered">
+<tr><th>文件名</th><th>有效超链</th><th>无效超链</th></tr>
+<tr><td><em>foo.html.en</em></td><td>foo<br />
+         foo.html</td><td>-</td></tr>
+<tr><td><em>foo.en.html</em></td><td>foo</td><td>foo.html</td></tr>
+<tr><td><em>foo.html.en.gz</em></td><td>foo<br />
+         foo.html</td><td>foo.gz<br />
+         foo.html.gz</td></tr>
+<tr><td><em>foo.en.html.gz</em></td><td>foo</td><td>foo.html<br />
+         foo.html.gz<br />
+         foo.gz</td></tr>
+<tr><td><em>foo.gz.html.en</em></td><td>foo<br />
+         foo.gz<br />
+         foo.gz.html</td><td>foo.html</td></tr>
+<tr><td><em>foo.html.gz.en</em></td><td>foo<br />
+         foo.html<br />
+         foo.html.gz</td><td>foo.gz</td></tr>
+</table>
+
+   <p>可以看出，上表中使用没有任何后缀的超链(如<code>foo</code>)总是可行的，其优点是可以隐藏rsp. 文件的真实类型，而可以在将来作更改，比如，不用修改超链本身，而改变<code>html</code>为<code>shtml</code>或<code>cgi</code>  。</p>
+
+   <p>如果希望在超链中继续使用MIME类型(如<code>foo.html</code>)，则语言后缀(还包括一个编码后缀)必须出现在MIME类型后缀的右边(如<code>foo.html.en</code>)。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="caching" id="caching">缓冲说明</a></h2>
+
+   <p>如果缓存中有一个与特定URL关联的表现形式(representation)，那么下一次该URL被请求时，缓存就可以使用它。但是，如果这个资源在服务器端是可协商的，则可能只有第一次请求的变种是正确的，而其后由于缓存中命中而取出的结果是错误的。为避免这种情况的发生，Apache通常把内容协商之后返回的响应标记为不可以被HTTP/1.1客户端缓冲。另外Apache还支持HTTP/1.1协议的功能以允许缓冲已协商的请求。</p>
+
+   <p>对来自HTTP/1.0客户端的请求(浏览器或缓存)，<code class="directive"><a href="./mod/mod_negotiation.html#cachenegotiateddocs">CacheNegotiatedDocs</a></code>指令可以允许缓存服从协商的请求。此指令应该出现在主服务器或虚拟主机的配置中，没有参数，并且对来自HTTP/1.1客户端的请求没有影响。</p>
+
+   <p>对于遵守HTTP/1.1规范的客户端，Apache发送一个<code>Vary</code>应答头以指定该应答的协商变元。缓存可以使用这个信息来判断一个其后的请求是否可以从本地副本中提供服务。为了鼓励缓存使用本地副本而不是协商变元，请设置<code>force-no-vary</code><a href="env.html#special">环境变量</a>。</p>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="./images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="more" id="more">更多信息</a></h2>
+
+   <p>更多有关内容协商的信息，可以参见Alan J. Flavell的<a href="http://ppewww.ph.gla.ac.uk/~flavell/www/lang-neg.html">Language Negotiation Notes</a>，但是注意，此文档可能没有升级以包含Apache2.0中的改变。</p>
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="./translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="./mod/index.html">模块索引</a> | <a href="./mod/directives.html">指令索引</a> | <a href="./faq/index.html">常见问题</a> | <a href="./glossary.html">词汇表</a> | <a href="./sitemap.html">站点导航</a></p></div>
+</body></html>

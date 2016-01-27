@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>4.6. 关于软件包测试套件</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第四章 最后的准备工作</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="aboutsbus.html" title="关于 SBU">后退</a>
+          <p>关于 SBU</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../chapter05/chapter05.html" title="构建临时编译环境">前进</a>
+          <p>构建临时编译环境</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter04.html" title="第四章 最后的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">4.6. 关于软件包测试套件</h1>
+      </div>
+      <p>大多数软件包提供了测试程序集。编译完一个软件包之后立即运行一下它提供的测试程序是个好主意，因为测试程序将进行一次"<span class="quote">健全检查</span>"来确认所有的代码是否都正确编译了。通过了测试程序集的一系列检查，通常意味着软件包在按照开发者的预期工作，但是这并不保证这个软件包就完全没有 bug 了。</p>
+      <p>某些软件包的测试程序是极为重要的，例如核心工具链软件包 GCC 、Binutils 、Glibc 的测试程序，这是因为这些软件包在一个良好工作的系统里的处于核心角色。GCC 和 Glibc 的测试程序需要运行很长时间，尤其在速度慢的硬件上，但我们仍然强烈建议您运行这些测试程序。</p>
+      <div class="note">
+        <div class="admonhead">
+          <img alt="[Note]" src="../images/note.png" />
+          <h3 class="admontitle">注意</h3>
+        </div>
+        <div class="admonbody">
+          <p>经验显示，运行<a href="../chapter05/chapter05.html">第五章</a>中的测试程序时会有点小问题。不可避免的是，宿主系统总是对这一章的测试程序施加某些影响，常常导致无法解释的测试失败。因为<a href="../chapter05/chapter05.html">第五章</a>中编译的工具是临时的，而且在最后会被丢弃，我们不推荐中等水平的读者运行<a href="../chapter05/chapter05.html">第五章</a>中的测试程序，这些测试程序的指令是为开发和测试人员准备的，它们不是必需的。</p>
+        </div>
+      </div>
+      <p>Binutils 和 GCC 的测试程序一个常见的问题就是在伪终端(PTY)外运行，这样可能会出现大量的测试失败。可能的原因有几个，但最可能的原因是宿主系统没有正确的设置  <tt class="systemitem">devpts</tt> 文件系统，这个问题在<a href="../chapter05/chapter05.html">第五章</a>中有详细的讨论。</p>
+      <p>某些软件包测试程序可能会给出错误的失败信息，请参考 LFS Wiki <a href="http://www.linuxfromscratch.org/lfs/build-logs/6.2/"><i>http://www.linuxfromscratch.org/lfs/build-logs/6.2/</i></a> 以确认您所遇到的测试失败是否是预期会出现的。这个站点的内容对于本书所有的测试都是正确的。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="aboutsbus.html" title="关于 SBU">后退</a>
+          <p>关于 SBU</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="../chapter05/chapter05.html" title="构建临时编译环境">前进</a>
+          <p>构建临时编译环境</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter04.html" title="第四章 最后的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

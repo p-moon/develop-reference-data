@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>规则系统</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="trigger-example.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="triggers.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="xplang.html">快进</a></td><td width="10%" align="right" valign="top"><a href="querytree.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="RULES"></a>章35. 规则系统</h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>35.1. <a href="querytree.html">查询树</a></dt>
+<dt>35.2. <a href="rules-views.html">视图和规则系统</a></dt>
+<dd><dl>
+<dt>35.2.1. <a href="rules-views.html#RULES-SELECT"><tt class="COMMAND">SELECT</tt> 规则如何运转</a></dt>
+<dt>35.2.2. <a href="rules-views.html#AEN38743">非 <tt class="COMMAND">SELECT</tt> 语句的视图规则</a></dt>
+<dt>35.2.3. <a href="rules-views.html#AEN38799">PostgreSQL 里视图的强大能力</a></dt>
+<dt>35.2.4. <a href="rules-views.html#RULES-VIEWS-UPDATE">更新一个视图</a></dt>
+</dl></dd>
+<dt>35.3. <a href="rules-update.html">在 <tt class="COMMAND">INSERT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt> 上的规则</a></dt>
+<dd><dl>
+<dt>35.3.1. <a href="rules-update.html#AEN38848">更新规则是如何运转的</a></dt>
+<dt>35.3.2. <a href="rules-update.html#RULES-UPDATE-VIEWS">与视图合作</a></dt>
+</dl></dd>
+<dt>35.4. <a href="rules-privileges.html">规则和权限</a></dt>
+<dt>35.5. <a href="rules-status.html">规则和命令状态</a></dt>
+<dt>35.6. <a href="rules-triggers.html">规则与触发器的比较</a></dt>
+</dl>
+</div>
+<a name="AEN38534"></a>
+<p>本章讨论 PostgreSQL 里的规则系统。生产规则系统的概念是很简单的，但是在实际使用的时候会碰到很多细节问题。</p>
+<p>有些其它数据库系统定义动态的数据库规则。这些通常是存储过程和触发器，在 PostgreSQL 里，这些东西也可以通过函数和触发器来实现。</p>
+<p>规则系统(更准确地说是查询重写规则系统)是和存储过程和触发器完全不同的东西。它把查询修改为需要考虑规则的形式，然后把修改过的查询传递给查询规划器执行。这是非常有效的工具并且可以用于许多像查询语言过程、视图、版本等。这个规则系统的理论基础和能力在 <a href="biblio.html#STON90B"><i><a href="http://s2k-ftp.CS.Berkeley.EDU:8000/postgres/papers/ERL-M90-36.pdf" target="_top">On Rules, Procedures, Caching and Views in Database Systems</a></I></A> 和 <a href="biblio.html#ONG90"><i>A Unified Framework for Version Modeling Using Production Rules in a Database System</i></a> 里有讨论。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="trigger-example.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="querytree.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">一个完整的例子</td><td width="34%" align="center" valign="top"><a href="server-programming.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">查询树</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>PL/Perl - Perl 过程语言</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="CHAPTER">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="pltcl-procnames.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="pltcl.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="plpython.html">快进</a></td><td width="10%" align="right" valign="top"><a href="plperl-funcs.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="CHAPTER"><h1><a name="PLPERL"></a>章39. PL/Perl - Perl 过程语言</h1>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>39.1. <a href="plperl-funcs.html">PL/Perl 函数和参数</a></dt>
+<dt>39.2. <a href="plperl-database.html">从 PL/Perl 访问数据库</a></dt>
+<dt>39.3. <a href="plperl-data.html">PL/Perl 里的数据值</a></dt>
+<dt>39.4. <a href="plperl-global.html">PL/Perl 里的全局变量</a></dt>
+<dt>39.5. <a href="plperl-trusted.html">可信的和不可信的 PL/Perl</a></dt>
+<dt>39.6. <a href="plperl-triggers.html">PL/Perl 触发器</a></dt>
+<dt>39.7. <a href="plperl-missing.html">限制及缺少的特性</a></dt>
+</dl>
+</div>
+<a name="AEN41242"></a><a name="AEN41244"></a>
+<p>PL/Perl 是一种可加载的过程语言，通过它可以用 <a href="http://www.perl.com" target="_top">Perl 语言</a>编写 PostgreSQL 函数。</p>
+<p>使用 PL/Perl 的优点是允许在函数中大量使用来自 Perl 的处理字符串的操作和函数。PL/pgSQL 很难分析的复杂字符串对 Perl 来说却是小菜一碟。</p>
+<p>要在特定数据库里安装 PL/Perl ，使用 <tt class="LITERAL">createlang plperl <tt class="REPLACEABLE"><i>dbname</i></tt></tt></p>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b>如果某种编程语言安装到 <tt class="LITERAL">template1</tt> ，那么所有随后创建的数据库都会自动安装这种语言。</p>
+</blockquote>
+</div>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>使用源码包的用户必须在安装过程中特别打开 PL/Perl 的编译。请参考<a href="install-short.html">节14.1</a>获取更多信息。二进制包的用户可能会在一些独立的子包中找到 PL/Perl 。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="pltcl-procnames.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="plperl-funcs.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">Tcl 过程名字</td><td width="34%" align="center" valign="top"><a href="server-programming.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">PL/Perl 函数和参数</td></tr>
+</table>
+</div>
+</body></html>

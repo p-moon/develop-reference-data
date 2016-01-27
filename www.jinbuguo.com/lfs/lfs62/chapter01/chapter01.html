@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>第一章 简介</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>Part I. 简介</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="../part1.html" title="简介">后退</a>
+          <p>简介</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="whatsnew.html" title="与上一版本有何不同?">前进</a>
+          <p>与上一版本有何不同?</p>
+        </li>
+        <li class="up"><a accesskey="u" href="../part1.html" title="Part I. 简介">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="chapter">
+      <div class="titlepage">
+        <h1 class="chapter">1. 简介</h1>
+      </div>
+      <div class="sect1">
+        <div class="titlepage">
+          <a id="ch-intro-how" name="ch-intro-how"></a>
+          <h2 class="sect1">1.1. 如何构建一个 LFS 系统?</h2>
+        </div>
+        <p>我们将用一个已安装好的 Linux 发行版(例如 Debian、Mandrake、Red Hat、SuSE)来构建 LFS 系统。这个已存在的 Linux 系统(宿主系统)将作为建立新系统的起点，提供包括编译器、连接器和 Shell 等创建新系统的必要工具。您安装这个发行版的时候，需要选择"<span class="quote">development(开发/编程)</span>"选项，以便可以使用这些工具。</p>
+        <p>另一个选择是使用 Linux From Scratch 的 LiveCD 。这个CD是一个非常好的宿主系统，它包含了构建一个完整 LFS 系统所需要的一切工具，另外还包含了所有的软件包源代码、补丁和一个本书的拷贝。使用这个CD ，你可以不需要任何网络连接或者下载任何额外的东西。要了解更多关于 LFS LiveCD 的信息或者想下载它，请查看：<a href="http://www.linuxfromscratch.org/livecd/"><i>http://www.linuxfromscratch.org/livecd/</i></a> 。</p>
+        <p><a href="../chapter02/chapter02.html">第二章</a>描述了怎样创建一个新的 Linux 本地分区和文件系统，新的 LFS 系统将在该分区上编译和安装。<a href="../chapter03/chapter03.html">第三章</a>解释了构建一个 LFS 系统需要那些软件包和补丁，以及怎样把它们存放到新文件系统上。<a href="../chapter04/chapter04.html">第四章</a>讨论了建立一个适当的工作环境。请仔细阅读<a href="../chapter04/chapter04.html">第四章</a>，因为它讨论了在开始<a href="../chapter05/chapter05.html">第五章</a>及其后面的步骤之前，开发者需要知道的几个重要问题。</p>
+        <p><a href="../chapter05/chapter05.html">第五章</a>解释了形成一个基本开发套件(或称为工具链)所需的许多软件的安装，这个工具链将被用来构建<a href="../chapter06/chapter06.html">第六章</a>中的实际系统。其中一些软件包需要解决循环依赖关系：例如，要编译一个编译器，您首先就需要一个编译器。</p>
+        <p><a href="../chapter05/chapter05.html">第五章</a>告诉用户如何第一遍编译工具链，包括 Binutils 和 GCC(第一遍主要的意思就是指这两个核心软件包后面还将第二次安装)。这些软件包里的程序将静态连接以便在使用时独立于宿主系统。接下来的步骤是编译 Glibc ，也就是 C 运行时库。Glibc 将由第一遍建立的工具链程序编译。然后将第二遍编译的工具链动态连接到刚刚编译好的 Glibc 库上。<a href="../chapter05/chapter05.html">第五章</a>余下的软件包将使用第二遍建立的工具链来编译。完成这些步骤之后，LFS 的安装过程除了正在运行的内核外，将不再依赖于宿主系统。</p>
+        <p>为了不依赖宿主系统，初看起来我们需要做很多工作。<a href="../chapter05/toolchaintechnotes.html" title="5.2. 工具链技术说明">节 5.2,"工具链技术说明"</a>提供了一个完整的技术说明，包括静态连接的程序和动态连接的程序之间的差异。</p>
+        <p><a href="../chapter06/chapter06.html">第六章</a>将构建完整的 LFS 系统。<span><strong class="command">chroot</strong></span>(改变root)程序用来进入一个虚拟的环境并开始一个新的 shell，其根目录是 LFS 分区。这非常类似于重启并让内核将 LFS 分区挂载为根分区。系统实际上并没有重启，而是由 <span><strong class="command">chroot</strong></span> 代替了，因为建立一个可启动的系统需要做一些现在还不需要做的额外工作。主要的好处在于"<span class="quote">虚根环境(chrooting)</span>"允许您在构建 LFS 的同时可以继续使用宿主系统。在等待软件包编译完成的时候，用户可以切换到不同的虚拟控制台(VC)或者 X 桌面，就像平常一样继续使用计算机。</p>
+        <p>为了完成安装，<a href="../chapter07/chapter07.html">第七章</a>设置启动脚本，<a href="../chapter08/chapter08.html">第八章</a>安装内核和启动引导程序。<a href="../chapter09/chapter09.html">第九章</a>包含在本书之外获得进一步 LFS 体验的信息。在本书中所有步骤都完成之后，计算机就已经准备好重启进入新的 LFS 系统了。</p>
+        <p>以上就是概略的过程，在接下来的章节和软件包描述中会讨论每一步的细节。看似复杂的项目将详细阐明，随着读者(就是你啦)踏上 LFS 冒险之路，每一件事情都将依序出现。</p>
+      </div>
+	 <div class="titlepage">
+          <a id="success" name="success"></a>
+          <h2 class="sect1">
+            1.2. 如何提高 LFS 制作的成功率?
+          </h2>
+     </div>
+	 <p>新手第一次做 LFS 的时候通常会遇见各种各样的问题，有许多人就此止步了，这不能不说是一个遗憾。热心的 youbest 兄有一篇大作专门针对新手经常遇见的问题，给出了<a href="http://www.linuxsir.org/bbs/showthread.php?t=252928" target="_blank">如何提高 LFS 的成功率以及部分问题的解决方法</a>，建议大家在制作过程中参考。</p>
+	 <div class="titlepage">
+          <a id="reboot" name="reboot"></a>
+          <h2 class="sect1">
+            1.3. 在制作中途关闭计算机以后怎么办?
+          </h2>
+     </div>
+	 <p>LFS 的制作过程是相当漫长的，特别是对机器不太好的朋友，有时候不得不中途关机，但对一些不太清楚 LFS 的工作原理的朋友，可能重新开机以后无法正确的恢复到先前的工作状态，因此为了能成功的完成 LFS 全过程，不得不持续开机几十个小时。幸好 youbest 兄有一篇大作解决了这个头疼的问题，给出了<a href="http://www.linuxsir.org/bbs/thread322895.html" target="_blank">制作 LFS 过程中各个阶段恢复工作状态的详细方法(适合LFS6.3)</a>，虽然是基于 LFS 6.1 版本的，但仍然具有很实用的参考价值。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="../part1.html" title="简介">后退</a>
+          <p>简介</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="whatsnew.html" title="与上一版本有何不同?">前进</a>
+          <p>与上一版本有何不同?</p>
+        </li>
+        <li class="up"><a accesskey="u" href="../part1.html" title="Part I. 简介">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

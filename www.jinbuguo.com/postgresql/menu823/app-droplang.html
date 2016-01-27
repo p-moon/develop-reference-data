@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>droplang</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="app-dropdb.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="app-dropdb.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-dropuser.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-dropuser.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-DROPLANG"></a><span class="APPLICATION">droplang</span></h1>
+<div class="REFNAMEDIV"><a name="AEN56319"></a><h2>名称</h2>droplang&nbsp;--&nbsp;删除一个过程语言</div>
+<a name="AEN56323"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN56325"></a><h2>语法</h2>
+<p><tt class="COMMAND">droplang</tt> [<tt class="REPLACEABLE"><i>connection-option</i></tt>...]  <tt class="REPLACEABLE"><i>langname</i></tt>  [<tt class="REPLACEABLE"><i>dbname</i></tt>]<br><tt class="COMMAND">droplang</tt> [<tt class="REPLACEABLE"><i>connection-option</i></tt>...]  --list | -l   <tt class="REPLACEABLE"><i>dbname</i></tt></p>
+</div>
+<div class="REFSECT1"><a name="R1-APP-DROPLANG-1"></a><h2>描述</h2>
+<p><span class="APPLICATION">droplang</span> 是一个从数据库中删除一种现有编程语言的工具。<span class="APPLICATION">droplang</span> 可以删除任何过程语言，甚至是那些 PostgreSQL 版本没有自带的。</p>
+<p>尽管可以用 SQL 命令直接删除后端编程语言，但还是推荐使用 <span class="APPLICATION">droplang</span> ，因为它进行了一些检查而且更容易使用。参阅 <a href="sql-droplanguage.html"><i>DROP LANGUAGE</i></a> 获取更多信息。</p>
+</div>
+<div class="REFSECT1"><a name="AEN56354"></a><h2>选项</h2>
+<p><span class="APPLICATION">droplang</span> 接受下面的命令行参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>langname</i></tt></dt>
+<dd><p>即将被删除的后端编程语言的名称</p></dd>
+<dt><tt class="OPTION">[<span class="OPTIONAL">-d</span>] <tt class="REPLACEABLE"><i>dbname</i></tt></tt><br><tt class="OPTION">[<span class="OPTIONAL">--dbname</span>] <tt class="REPLACEABLE"><i>dbname</i></tt></tt></dt>
+<dd><p>指定从哪个数据库删除该语言。缺省使用和当前系统用户同名的数据库。</p></dd>
+<dt><tt class="OPTION">-e</tt><br><tt class="OPTION">--echo</tt></dt>
+<dd><p>回显执行的 SQL 命令</p></dd>
+<dt><tt class="OPTION">-l</tt><br><tt class="OPTION">--list</tt></dt>
+<dd><p>显示一个在目标数据库里已经安装的语言的列表</p></dd>
+</dl>
+</div>
+<p><span class="APPLICATION">droplang</span> 还接受下列命令行参数作为连接参数：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-h <tt class="REPLACEABLE"><i>host</i></tt></tt><br><tt class="OPTION">--host <tt class="REPLACEABLE"><i>host</i></tt></tt></dt>
+<dd><p>指定运行服务器的主机名。如果数值以斜杠开头，则被用作到 Unix 域套接字的路径。</p></dd>
+<dt><tt class="OPTION">-p <tt class="REPLACEABLE"><i>port</i></tt></tt><br><tt class="OPTION">--port <tt class="REPLACEABLE"><i>port</i></tt></tt></dt>
+<dd><p>指定服务器正在侦听的 TCP 端口或本地 Unix 域套接字文件的扩展(描述符)</p></dd>
+<dt><tt class="OPTION">-U <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--username <tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>连接的用户名</p></dd>
+<dt><tt class="OPTION">-W</tt><br><tt class="OPTION">--password</tt></dt>
+<dd><p>强制口令提示</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN56426"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGDATABASE</tt><br><tt class="ENVAR">PGHOST</tt><br><tt class="ENVAR">PGPORT</tt><br><tt class="ENVAR">PGUSER</tt></dt>
+<dd><p>缺省连接参数</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN56440"></a><h2>诊断</h2>
+<p>多数错误信息都是自解释的。如果不是，使用 <tt class="OPTION">--echo</tt> 选项运行 <span class="APPLICATION">droplang</span> 然后针对相应的 SQL 命令检查细节。</p>
+</div>
+<div class="REFSECT1"><a name="AEN56446"></a><h2>注意</h2>
+<p>使用 <a href="app-createlang.html"><span class="APPLICATION">createlang</span></a> 增加一种语言。</p>
+</div>
+<div class="REFSECT1"><a name="AEN56450"></a><h2>例子</h2>
+<p>删除 <tt class="LITERAL">pltcl</tt> 语言：</p>
+<pre class="SCREEN"><samp class="PROMPT">$ </samp><kbd class="USERINPUT">droplang pltcl dbname</kbd></pre>
+</div>
+<div class="REFSECT1"><a name="AEN56457"></a><h2>又见</h2><a href="app-createlang.html"><span class="APPLICATION">createlang</span></a>, <a href="sql-droplanguage.html"><i>DROP LANGUAGE</i></a>, 环境变量(<a href="libpq-envars.html">节29.12</a>)</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="app-dropdb.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-dropuser.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><span class="APPLICATION">dropdb</span></td><td width="34%" align="center" valign="top"><a href="reference-client.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><span class="APPLICATION">dropuser</span></td></tr>
+</table>
+</div>
+</body></html>

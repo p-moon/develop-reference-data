@@ -1,0 +1,67 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>worker(MPM) － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>Apache MPM worker</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>支持混合的多线程多进程的多路处理模块</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>MPM</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>mpm_worker_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>worker.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>此多路处理模块(MPM)使网络服务器支持混合的多线程多进程。由于使用线程来处理请求，所以可以处理海量请求，而系统资源的开销小于基于进程的MPM。但是，它也使用了多进程，每个进程又有多个线程，以获得基于进程的MPM的稳定性。</p>
+
+    <p>控制这个MPM的最重要的指令是，控制每个子进程允许建立的线程数的<code class="directive"><a href="../mod/mpm_common.html#threadsperchild">ThreadsPerChild</a></code>指令，和控制允许建立的总线程数的<code class="directive"><a href="../mod/mpm_common.html#maxclients">MaxClients</a></code>指令。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="how-it-works" id="how-it-works">工作方式</a></h2>
+    <p>每个进程可以拥有的线程数量是固定的。服务器会根据负载情况增加或减少进程数量。一个单独的控制进程(父进程)负责子进程的建立。每个子进程可以建立<code class="directive"><a href="../mod/mpm_common.html#threadsperchild">ThreadsPerChild</a></code>数量的服务线程和一个监听线程，该监听线程监听接入请求并将其传递给服务线程处理和应答。</p>
+
+    <p>Apache总是试图维持一个<dfn>备用(spare)</dfn>或是空闲的服务线程池。这样，客户端无须等待新线程或新进程的建立即可得到处理。初始化时建立的进程数量由<code class="directive"><a href="../mod/mpm_common.html#startservers">StartServers</a></code>指令决定。随后父进程检测所有子进程中空闲线程的总数，并新建或结束子进程使空闲线程的总数维持在<code class="directive"><a href="../mod/mpm_common.html#minsparethreads">MinSpareThreads</a></code>和<code class="directive"><a href="../mod/mpm_common.html#maxsparethreads">MaxSpareThreads</a></code>所指定的范围内。由于这个过程是自动调整的，几乎没有必要修改这些指令的缺省值。可以并行处理的客户端的最大数量取决于<code class="directive"><a href="../mod/mpm_common.html#maxclients">MaxClients</a></code>指令。活动子进程的最大数量取决于<code class="directive"><a href="../mod/mpm_common.html#maxclients">MaxClients</a></code>除以<code class="directive"><a href="../mod/mpm_common.html#threadsperchild">ThreadsPerChild</a></code>的值。</p>
+
+    <p>有两个指令设置了活动子进程数量和每个子进程中线程数量的硬限制。要想改变这个硬限制必须完全停止服务器然后再启动服务器(直接重启是不行的)，<code class="directive"><a href="../mod/mpm_common.html#serverlimit">ServerLimit</a></code>是活动子进程数量的硬限制，它必须大于或等于<code class="directive"><a href="../mod/mpm_common.html#maxclients">MaxClients</a></code>除以<code class="directive"><a href="../mod/mpm_common.html#threadsperchild">ThreadsPerChild</a></code>的值。<code class="directive"><a href="../mod/mpm_common.html#threadlimit">ThreadLimit</a></code>是所有服务线程总数的硬限制，它必须大于或等于<code class="directive"><a href="../mod/mpm_common.html#threadsperchild">ThreadsPerChild</a></code>指令。这两个指令必须出现在其他<code class="module"><a href="../mod/worker.html">worker</a></code>MPM指令的前面。</p>
+
+    <p>在设置的活动子进程数量之外，还可能有额外的子进程处于"正在中止"的状态但是其中至少有一个服务线程仍然在处理客户端请求，直到到达<code class="directive"><a href="../mod/mpm_common.html#maxclients">MaxClients</a></code>以致结束进程，虽然实际数量会很小。这个行为能够通过以下禁止特别的子进程中止的方法来避免：</p>
+
+    <ul>
+      <li>将<code class="directive"><a href="../mod/mpm_common.html#maxrequestsperchild">MaxRequestsPerChild</a></code>设为"0"</li>
+
+      <li>将<code class="directive"><a href="../mod/mpm_common.html#maxsparethreads">MaxSpareThreads</a></code>和<code class="directive"><a href="../mod/mpm_common.html#maxclients">MaxClients</a></code>设为相同的值</li>
+    </ul>
+
+    <p>一个典型的针对<code class="module"><a href="../mod/worker.html">worker</a></code>MPM的配置如下：</p>
+
+    <div class="example"><p><code>
+      ServerLimit         16<br />
+      StartServers         2<br />
+      MaxClients         150<br />
+      MinSpareThreads     25<br />
+      MaxSpareThreads     75<br />
+      ThreadsPerChild     25
+    </code></p></div>
+
+    <p>在Unix中，为了能够绑定80端口，父进程一般都是以<code>root</code>身份启动，随后，Apache以较低权限的用户建立子进程和线程。<code class="directive"><a href="../mod/mpm_common.html#user">User</a></code>和<code class="directive"><a href="../mod/mpm_common.html#group">Group</a></code>指令用于设置Apache子进程的权限。虽然子进程必须对其提供的内容拥有读权限，但应该尽可能给予它较少的特权。另外，除非使用了<code class="program"><a href="../programs/suexec.html">suexec</a></code> ，否则，这些指令设置的权限将被CGI脚本所继承。</p>
+
+    <p><code class="directive"><a href="../mod/mpm_common.html#maxrequestsperchild">MaxRequestsPerChild</a></code>指令用于控制服务器建立新进程和结束旧进程的频率。</p>
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

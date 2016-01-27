@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>5.2. 工具链技术说明</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第五章 构建临时编译环境</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="chapter05.html" title="构建临时编译环境">后退</a>
+          <p>构建临时编译环境</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="binutils-pass1.html" title="Binutils-2.16.1 - 第一遍">前进</a>
+          <p>Binutils-2.16.1 - 第一遍</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">5.2. 工具链技术说明</h1>
+      </div>
+      <p>本节阐述了整个构建方法的一些基本原理和技术细节，您不必马上就理解本节中的所有内容。在您实际操作之后，就会了解大多数的东西，您可以在任何时候回顾本节。</p>
+      <p><a href="chapter05.html">第五章</a>的总体目标是提供一个临时环境，您可以 chroot 到这个环境，在里面构建一个<a href="../chapter06/chapter06.html">第六章</a>中的干净、没有问题的目标 LFS 系统。为了尽量的与宿主系统分开，我们创建了一个自包含、自依赖的工具链。要注意的是，这个创建过程被设计为尽量减少新手犯错误的可能，同时尽可能多的提供教育价值。</p>
+      <div class="important">
+        <div class="admonhead">
+          <img alt="[Important]" src="../images/important.png" />
+          <h3 class="admontitle">重要</h3>
+        </div>
+        <div class="admonbody">
+          <p>在继续之前，要先知道工作平台的名称，就是所谓的"target triplet"(目标三元组)，许多时候，target triplet 可能是 <span class="emphasis"><em>i686-pc-linux-gnu</em></span> 。要确定 target triplet 的名称，有一个简单的方法就是运行许多源码包里都有的 <span><strong class="command">config.guess</strong></span> 脚本。解开 Binutils 的源码包，然后运行脚本 <strong class="userinput"><tt>./config.guess</tt></strong> 并注意输出的内容。</p>
+          <p>工作平台的动态连接器名称也需要知道，这里指的是动态加载器(不要与 Binutils 里的标准连接器 <span><strong class="command">ld</strong></span> 混淆了)。动态连接器由 Glibc 提供，用来找到并加载一个程序运行时所需的共享库，在做好程序运行的准备之后，运行这个程序。动态连接器的名称通常是 <tt class="filename">ld-linux.so.2</tt> ，在不怎么流行的平台上则可能是 <tt class="filename">ld.so.1</tt> ，而在新的 64 位平台上更可能是别的完全不同的名称。查看宿主系统的 <tt class="filename">/lib</tt> 目录可以确定动态连接器的名称。确定这个名称还有一个必杀技，就是在宿主系统上随便找一个二进制文件，运行 <strong class="userinput"><tt>readelf -l &lt;二进制文件名&gt; | grep interpreter</tt></strong> 并查看输出的内容。涵盖所有平台的权威参考请查看 Glibc 源码根目录里的 <tt class="filename">shlib-versions</tt> 文件。</p>
+        </div>
+      </div>
+      <p><a href="chapter05.html">第五章</a>中构建方法是如何工作的一些技术要点：</p>
+      <div class="itemizedlist">
+        <ul>
+          <li>
+            <p>这个过程在原理上与交叉编译类似，通过把工具安装在同一个目录(使用相同的"prefix")中以便协同工作，还利用了一点 GNU 的"<span class="quote">魔法</span>"。</p>
+          </li>
+          <li>
+            <p>小心处理标准连接器的库文件搜索路径，确保程序仅连接到指定的库上。</p>
+          </li>
+          <li>
+            <p>小心处理 <span><strong class="command">gcc</strong></span> 的 <tt class="filename">specs</tt> 文件，告诉编译器要使用哪个动态连接器。</p>
+          </li>
+        </ul>
+      </div>
+      <p>首先安装的是 Binutils ，因为 GCC 和 Glibc 的 <span><strong class="command">configure</strong></span> 脚本要在汇编器和连接器上执行各种各样的特性测试，以确定软件的哪些功能要启用，哪些功能要禁用。这样做比你想像的还要重要，配置不正确的 GCC 或者 Glibc 会导致工具链出现微妙的错误，这样的错误造成的影响可能直到整个系统快要编译完成的时候才显现出来。测试程序通常会在其它的许多工作进行之前给出错误警告(以避免其后的无效劳动)。</p>
+      <p>Binutils 的汇编器和连接器安装在两个位置：<tt class="filename">/tools/bin</tt> 和 <tt class="filename">/tools/$TARGET_TRIPLET/bin</tt> ，一个位置的程序是另外一个位置的硬链接。连接器的一个重要方面是它的库搜索顺序，将 <em class="parameter"><tt>--verbose</tt></em> 选项传递给 <span><strong class="command">ld</strong></span> 可以获得详细的信息。例如，输入命令：<strong class="userinput"><tt>ld --verbose | grep SEARCH</tt></strong> 将显示当前搜索路径和顺序。要显示 <span><strong class="command">ld</strong></span> 连接的是哪些文件，可以编译一个伪(dummy)程序并把 <em class="parameter"><tt>--verbose</tt></em> 选项传递给连接器。举个例子，输入 <strong class="userinput"><tt>gcc dummy.c -Wl,--verbose 2&gt;&amp;1 | grep succeeded</tt></strong> 将显示所有连接成功的文件。</p>
+      <p>第二个安装的软件包是 GCC 。下面是运行 <span><strong class="command">configure</strong></span> 脚本时，输出内容的一个示例：</p>
+      <pre class="screen"><tt class="computeroutput">checking what assembler to use...
+        /tools/i686-pc-linux-gnu/bin/as
+checking what linker to use... /tools/i686-pc-linux-gnu/bin/ld</tt></pre>
+      <p>基于上面提到过的原因，这是重要的步骤，它同时证明了 GCC 的配置脚本并不是搜索 PATH 里的目录来寻找要使用哪个工具的，而且，在 <span><strong class="command">gcc</strong></span> 的实际操作中，相同的搜索路径不一定会被使用。要知道 <span><strong class="command">gcc</strong></span> 会使用哪个标准连接器，请运行 <strong class="userinput"><tt>gcc -print-prog-name=ld</tt></strong> 命令。</p>
+      <p>在编译一个伪程序的时候，给 <span><strong class="command">gcc</strong></span> 命令传递 <em class="parameter"><tt>-v</tt></em> 选项可以获得详细的信息。举个例子：<strong class="userinput"><tt>gcc -v dummy.c</tt></strong> 将显示在预处理、编译和汇编各个阶段的详细信息，包括 <span><strong class="command">gcc</strong></span> 文件包含的搜索路径及其顺序。</p>
+      <p>接下来安装的软件包是 Glibc 。编译 Glibc 的时候，最需要注意的地方是编译器、二进制工具(Binutils)和内核头文件。编译器一般不是问题，因为 Glibc 总是使用在 <tt class="envar">PATH</tt> 目录里找到的 <span><strong class="command">gcc</strong></span> 。二进制工具和内核头文件则有点复杂，因此，为慎重起见，明确使用配置开关(选项)来强制进行正确的选择。在运行 <span><strong class="command">configure</strong></span> 之后，请检查 <tt class="filename">config.make</tt> 文件的内容(位于 <tt class="filename">glibc-build</tt> 目录下)，查看所有重要的细节。注意，<em class="parameter"><tt>CC="gcc -B/tools/bin/"</tt></em>的作用是控制要使用哪个二进制工具；而 <em class="parameter"><tt>-nostdinc</tt></em> 和 <em class="parameter"><tt>-isystem</tt></em> 选项则是控制编译器的文件包含搜索路径。这些选项表明了 Glibc 软件包的一个重要特征：根据其编译方法，它是非常自给自足的，而且一般不依赖于工具链的默认值。</p>
+      <p>装完 Glibc 之后，需要做一些调整使得只在 <tt class="filename">/tools</tt> 目录里搜索和连接。安装一个调整好的 <span><strong class="command">ld</strong></span> ，将它的固化搜索路径限制在 <tt class="filename">/tools/lib</tt> 目录。然后修改 <span><strong class="command">gcc</strong></span> 的 specs 文件以指向 <tt class="filename">/tools/lib</tt> 目录里新的动态连接器。最后这一步在整个过程中至关重要，像上面提到的，指向动态连接器的固化路径被嵌入到每个 ELF 可执行文件里。可以通过 <strong class="userinput"><tt>readelf -l &lt;二进制文件名&gt; | grep interpreter</tt></strong> 命令来检查。修改 gcc 的 specs 文件以确保本章后面编译的每一个程序都使用位于 <tt class="filename">/tools/lib</tt> 目录里新的动态连接器。</p>
+      <p>需要使用新动态连接器也是第二遍编译 GCC 需要打 Specs 补丁的原因。不这样做的结果是 GCC 会把宿主系统 <tt class="filename">/lib</tt> 目录下动态连接器的名字嵌入进来，这样有悖于与宿主系统隔离的目标。</p>
+      <p>第二遍编译 Binutils 的过程中，我们利用 <em class="parameter"><tt>--with-lib-path</tt></em> 选项来控制 <span><strong class="command">ld</strong></span> 的库搜索路径。如前面所指出的，核心工具链是自包含和自依赖的，所以<a href="chapter05.html">第五章</a>余下的软件包的编译将依赖于 <tt class="filename">/tools</tt> 下新的 Glibc 。</p>
+      <p>在<a href="../chapter06/chapter06.html">第六章</a>进入虚根环境后，第一个安装的主要软件包就是 Glibc ，原因是上面所提到的 Glibc 自给自足的特性。一旦 Glibc 安装到 <tt class="filename">/usr</tt> 目录后，马上改变工具链的默认值，然后构建目标 LFS 系统的其它部分。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="chapter05.html" title="构建临时编译环境">后退</a>
+          <p>构建临时编译环境</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="binutils-pass1.html" title="Binutils-2.16.1 - 第一遍">前进</a>
+          <p>Binutils-2.16.1 - 第一遍</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter05.html" title="第五章 构建临时编译环境">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

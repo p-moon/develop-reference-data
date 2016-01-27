@@ -1,0 +1,1544 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; color:#600; }
+pre { background: #edc; }
+</style>
+<title>Linux 内核引导参数简介 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>Linux 内核引导参数简介</h1><h2 id="auth_name">作者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文作者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文作者不保证作品内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留作者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文作者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于作者水平有限，因此不能保证作品内容准确无误。如果你发现了作品中的错误(哪怕是错别字也好)，请来信指出，任何提高作品质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+<h2>概述</h2>
+<p>内核引导参数大体上可以分为两类：一类与设备无关、另一类与设备有关。与设备有关的引导参数多如牛毛，需要你自己阅读内核中的相应驱动程序源码以获取其能够接受的引导参数。比如，如果你想知道可以向 AHA1542 SCSI 驱动程序传递哪些引导参数，那么就查看 drivers/scsi/aha1542.c 文件，一般在前面 100 行注释里就可以找到所接受的引导参数说明。大多数参数是通过"__setup()"函数设置的，少部分是通过"early_param()"或"module_param()"或"module_param_named()"之类的函数设置的，逗号前的部分就是引导参数的名称，后面的部分就是处理这些参数的函数名。</p>
+<p>[提示]你可以在源码树的根目录下试一试下面几个命令：</p>
+<pre>
+grep -r '\b__setup *(' *
+grep -r '\bearly_param *(' *
+grep -r '\bmodule_param *(' *
+grep -r '\bmodule_param_named *(' *
+</pre>
+<p>格式上，多个参数之间用空格分割，参数值是一个逗号分割的列表，并且参数值中不能包含空白。</p>
+<pre>
+正确：ether=9,0x300,0xd0000,0xd4000,eth0  root=/dev/sda2
+错误：ether = 9, 0x300, 0xd0000, 0xd4000, eth0  root = /dev/sda2
+</pre>
+<p>注意，所有引导参数都是大小写敏感的！</p>
+<p>在内核运行起来之后，可以通过 cat /proc/cmdline 命令查看当初使用的引导参数以及相应的值。</p>
+
+<h2>内核模块</h2>
+<p>对于模块而言，引导参数只能用于直接编译到核心中的模块，格式是"模块名.参数=值"，比如"usbcore.blinkenlights=1"。动态加载的模块则可以在 modprobe 命令行上指定相应的参数值，比如"modprobe usbcore blinkenlights=1"。</p>
+<p>可以使用"modinfo -p ${modulename}"命令显示可加载模块的所有可用参数。已经加载到内核中的模块会在 /sys/module/${modulename}/parameters/ 中显示出其参数，并且某些参数的值还可以在运行时通过"echo -n ${value} &gt; /sys/module/${modulename}/parameters/${parm}"进行修改。</p>
+
+<h2>内核如何处理引导参数</h2>
+<p>绝大部分的内核引导参数的格式如下(每个参数的值列表中最多只能有十项)：</p>
+<pre>name[=value_1][,value_2]...[,value_10]</pre>
+<p>如果"name"不能被识别并且满足"name=value"的格式，那么将被解译为一个环境变量(比如"TERM=linux"或"BOOT_IMAGE=vmlinuz.bak")，否则将被原封不动的传递给 init 程序(比如"single")。</p>
+<p>内核可以接受的参数个数没有限制，但是整个命令行的总长度(参数/值/空格全部包含在内)却是有限制的，定义在 include/asm/setup.h 中的 COMMAND_LINE_SIZE 宏中(对于X86_64而言是2048)。</p>
+
+<h2>内核引导参数精选</h2>
+<p>由于引导参数多如牛毛，本文不可能涉及全部，因此本文只基于 X86_64 平台以及 Linux-3.13.2 精选了一些与设备无关的引导参数以及少部分与设备有关的引导参数，过时的参数、非x86平台参数、与设备有关的参数，基本上都被忽略了。</p>
+<p>[提示]内核源码树下的 <a href="http://lxr.linux.no/linux/Documentation/kernel-parameters.txt">Documentation/kernel-parameters.txt</a> 和 <a href="http://lxr.linux.no/linux/Documentation/x86/x86_64/boot-options.txt">Documentation/x86/x86_64/boot-options.txt</a> 文件列出了所有可用的引导参数，并作了简要说明。</p>
+
+<h3>标记说明</h3>
+<p>并不是所有的参数都是永远可用的，只有在特定的模块存在并且相应的硬件也存在的情况下才可用。引导参数上面的方括号说明了其依赖关系，其中使用的标记解释如下：</p>
+<pre>
+ACPI     开启了<a href="http://zh.wikipedia.org/wiki/%E9%AB%98%E7%BA%A7%E9%85%8D%E7%BD%AE%E4%B8%8E%E7%94%B5%E6%BA%90%E6%8E%A5%E5%8F%A3">高级配置与电源接口</a>(CONFIG_ACPI)支持
+AGP      开启了AGP(CONFIG_AGP)支持
+APIC     开启了<a href="http://blogs.gnome.org/raywang/2007/11/19/acpi%E5%92%8Capic%E6%9C%89%E4%BB%80%E4%B9%88%E5%85%B3%E7%B3%BB/">高级可编程中断控制器</a>支持(2000年以后的CPU都支持)
+APPARMOR 开启了AppArmor(CONFIG_SECURITY_APPARMOR)支持
+DRM      开启了Direct Rendering Manager(CONFIG_DRM)支持
+EFI      开启了EFI分区(CONFIG_EFI_PARTITION)支持
+EVM      开启了Extended Verification Module(CONFIG_EVM)支持
+FB       开启了帧缓冲设备(CONFIG_FB)支持
+HIBERNATION  开启了"休眠到硬盘"(CONFIG_HIBERNATION)支持
+HPET_MMAP    允许对HPET寄存器进行映射(CONFIG_HPET_MMAP)
+HW       存在相应的硬件设备
+IOMMU    开启了IOMMU(CONFIG_IOMMU_SUPPORT)支持
+IOSCHED  开启了多个不同的I/O调度程序(CONFIG_IOSCHED_*)
+IPV6     开启了IPv6(CONFIG_IPV6)支持
+IP_PNP   开启了自动获取IP的协议(DHCP,BOOTP,RARP)支持
+IP_VS_FTP    开启了IPVS FTP协议连接追踪(CONFIG_IP_VS_FTP)支持
+KVM      开启了KVM(CONFIG_KVM_*)支持
+LIBATA   开启了libata(CONFIG_ATA)驱动支持
+LOOP     开启了回环设备(CONFIG_BLK_DEV_LOOP)支持
+MCE      开启了Machine Check Exception(CONFIG_X86_MCE)支持
+MOUSE    开启了鼠标(CONFIG_INPUT_MOUSEDEV)支持
+MSI      开启了PCI MSI(CONFIG_PCI_MSI)支持
+NET      开启了网络支持
+NETFILTER    开启了Netfilter(CONFIG_NETFILTER)支持
+NFS      开启了NFS(网络文件系统)支持
+NUMA     开启了NUMA(CONFIG_NUMA)支持
+PCI      开启了PCI总线(CONFIG_PCI)支持
+PCIE     开启了PCI-Express(CONFIG_PCIEPORTBUS)支持
+PNP      开启了即插即用(CONFIG_PNP)支持
+PV_OPS   内核本身是半虚拟化的(paravirtualized)
+RAID     开启了软RAID(CONFIG_BLK_DEV_MD)支持
+SECURITY 开启了多个不同的安全模型(CONFIG_SECURITY)
+SELINUX  开启了SELinux(CONFIG_SECURITY_SELINUX)支持
+SLUB     开启了SLUB内存分配管理器(CONFIG_SLUB)
+SMP      开启了对称多处理器(CONFIG_SMP)支持
+TPM      开启了可信赖平台模块(CONFIG_TCG_TPM)支持
+UMS      开启了USB大容量存储设备(CONFIG_USB_STORAGE)支持
+USB      开启了USB(CONFIG_USB_SUPPORT)支持
+USBHID   开启了USB HID(CONFIG_USB_HID)支持
+VMMIO    开启了使用内存映射机制的virtio设备驱动(CONFIG_VIRTIO_MMIO)
+VT       开启了虚拟终端(CONFIG_VT)支持
+</pre>
+<p>此外，下面的标记在含义上与上面的有所不同：</p>
+<pre>
+BUGS    用于解决某些特定硬件的缺陷
+KNL     是一个内核启动参数
+BOOT    是一个引导程序参数
+</pre>
+<p>标记为"BOOT"的参数实际上由引导程序(例如GRUB)使用，对内核本身没有直接的意义。如果没有特别的需求，请不要修改此类参数的语法，更多信息请阅读 <a href="http://lxr.linux.no/linux/Documentation/x86/boot.txt">Documentation/x86/boot.txt</a> 文档。</p>
+<p>说明：下文中的 [KMG] 后缀表示 2<sup>10</sup>, 2<sup>20</sup>, 2<sup>30</sup> 的含义。</p>
+
+
+
+
+<h3>控制台与终端</h3>
+<p></p>
+<dl>
+<dt>[KNL]<br>console=设备及选项</dt>
+<dd>设置输出控制台使用的设备及选项。例如：ttyN 表示使用第N个虚拟控制台。其它用法主要针对嵌入式环境(<a href="http://lxr.linux.no/linux/Documentation/serial-console.txt">Documentation/serial-console.txt</a>)。</dd>
+
+<dt>[KNL]<br>consoleblank=秒数</dt>
+<dd>控制台多长时间无操作后黑屏，默认值是600秒，设为0表示禁止黑屏。</dd>
+
+<dt>[HW]<br>no_console_suspend</dt>
+<dd>永远也不要将控制台进入休眠状态。因为当控制台进入休眠之后，所有内核的消息就都看不见了(包括串口与VGA)。开启此参数有助于调试系统在休眠/唤醒中发生的故障。</dd>
+
+<dt>[VT]<br>vt.default_utf8={0|1}</dt>
+<dd>是否将所有TTY都默认设置为UTF-8模式。默认值"1"表示将所有新打开的终端都设置为UTF-8模式。</dd>
+</dl>
+
+
+
+
+<h3>日志与调试</h3>
+<p></p>
+<dl>
+<dt>earlyprintk=设备[,keep]</dt>
+<dd>
+使用哪个设备显示早期的引导信息，主要用于调试硬件故障。此选项默认并未开启，因为在某些情况下并不能正常工作。<br>
+在传统的控制台初始化之前，在哪个设备上显示内核日志信息。不使用此参数，那么你将永远没机会看见这些信息。<br>
+在尾部加上",keep"选项表示在真正的内核控制台初始化并接管系统后，不会抹掉本选项消息的显示。<br>
+earlyprintk=vga 表示在VGA上显示内核日志信息，这是最常用的选项，但不能用于EFI环境。<br>
+earlyprintk=efi v3.13新增，表示将错误日志写入EFI framebuffer，专用于EFI环境。<br>
+earlyprintk=xen 仅可用于XEN的半虚拟化客户机。
+</dd>
+
+<dt>loglevel={0|1|2|3|4|5|6|7}</dt>
+<dd>设置内核日志的级别，所有小于该数字的内核信息(具有更高优先级的信息)都将在控制台上显示出来。这个级别可以使用 klogd 程序或者修改 /proc/sys/kernel/printk 文件进行调整。取值范围是"0"(不显示任何信息)到"7"(显示所有级别的信息)。建议至少设为"4"(WARNING)。[提示]级别"7"要求编译时加入了调试支持。</dd>
+
+<dt>[KNL]<br>ignore_loglevel</dt>
+<dd>忽略内核日志等级的设置，向控制台输出所有内核消息。仅用于调试目的。</dd>
+
+<dt>[KNL]<br>debug</dt>
+<dd>将引导过程中的所有调试信息都显示在控制台上。相当于设置"loglevel=7"(DEBUG)。</dd>
+
+<dt>[KNL]<br>quiet</dt>
+<dd>静默模式。相当于设置"loglevel=4"(WARNING)。</dd>
+
+<dt>log_buf_len=n[KMG]</dt>
+<dd>内核日志缓冲区的大小。"n"必须是2的整数倍(否则会被自动上调到最接近的2的整数倍)。该值也可以通过内核配置选项CONFIG_LOG_BUF_SHIFT来设置。</dd>
+
+<dt>[KNL]<br>initcall_debug</dt>
+<dd>跟踪所有内核初始化过程中调用的函数。有助于诊断内核在启动过程中死在了那个函数上面。</dd>
+
+<dt>kstack=N</dt>
+<dd>在内核异常(oops)时，应该打印出内核栈中多少个字(word)到异常转储中。仅供调试使用。</dd>
+
+<dt>[KNL]<br>kmemleak={on|off}</dt>
+<dd>
+是否开启检测内核内存泄漏的功能(CONFIG_DEBUG_KMEMLEAK)，默认为"on"，仅供调试使用。<br>
+检测方法类似于跟踪内存收集器，一个内核线程每10分钟(默认值)扫描内存，并打印发现新的未引用的对象的数量。
+</dd>
+
+<dt>[KNL]<br>memtest=整数</dt>
+<dd>设置内存测试(CONFIG_MEMTEST)的轮数。"0"表示禁止测试。仅在你确实知道这是什么东西并且确实需要的时候再开启。</dd>
+
+<dt>norandmaps</dt>
+<dd>默认情况下，内核会随机化程序的启动地址，也就是每一次分配给程序的虚拟地址空间都不一样，主要目的是为了防止缓冲区溢出攻击。但是这也给程序调试增加了麻烦，此参数(相当于"echo 0 > /proc/sys/kernel/randomize_va_space")的目的就是禁用该功能以方便调试。</dd>
+
+<dt>[PNP]<br>pnp.debug=1</dt>
+<dd>开启PNP调试信息(需要内核已开启CONFIG_PNP_DEBUG_MESSAGES选项)，仅用于调试目的。也可在运行时通过 /sys/module/pnp/parameters/debug 来控制。</dd>
+
+<dt>show_msr=CPU数</dt>
+<dd>显示启动时由BIOS初始化的MSR(Model-Specific Register)寄存器设置。CPU数设为"1"表示仅显示"boot CPU"的设置。</dd>
+
+<dt>printk.time={0|1}</dt>
+<dd>是否在每一行printk输出前都加上时间戳，仅供调试使用。默认值是"0"(不添加)</dd>
+
+<dt>boot_delay=毫秒数</dt>
+<dd>在启动过程中，为每一个printk动作延迟指定的毫秒数，取值范围是[0-10000](最大10秒)，超出这个范围将等价于"0"(无延迟)。仅用于调试目的。</dd>
+
+<dt>pause_on_oops=秒数</dt>
+<dd>当内核发生异常时，挂起所有CPU的时间。当异常信息太多，屏幕持续滚动时，这个选项就很有用处了。主要用于调试目的。</dd>
+</dl>
+
+
+
+<h3>异常检测与处理</h3>
+<p></p>
+<dl>
+<dt>[MCE]<br>mce=off</dt>
+<dd>彻底禁用MCE(CONFIG_X86_MCE)</dd>
+
+<dt>[MCE]<br>mce=dont_log_ce</dt>
+<dd>不为已纠正错误(corrected error)记录日志。</dd>
+
+<dt>[MCE]<br>mce=容错级别[,超时]</dt>
+<dd>
+容错级别(还可通过sysfs设置)：<br>
+0  在出现未能纠正的错误时panic，记录所有已纠正的错误<br>
+1(默认值)  在出现未能纠正的错误时panic或SIGBUS，记录所有已纠正的错误<br>
+2  在出现未能纠正的错误时SIGBUS或记录日志，记录所有已纠正的错误<br>
+3  从不panic或SIGBUS，记录所有日志。仅用于调试目的。<br>
+超时(单位是微秒[百万分之一秒])：在machine check时等待其它CPU的时长，"0"表示不等待。
+</dd>
+
+<dt>[ACPI]<br>erst_disable</dt>
+<dd>禁用<a href="http://www.ibm.com/developerworks/cn/linux/l-cn-apei/">ERST</a>(Error Record Serialization Table)支持。主要用于解决某些有缺陷的BIOS导致的ERST故障。</dd>
+
+<dt>[ACPI]<br>hest_disable</dt>
+<dd>禁用<a href="http://www.ibm.com/developerworks/cn/linux/l-cn-apei/">HEST</a>(Hardware Error Source Table)支持。主要用于解决某些有缺陷的BIOS导致的HEST故障。</dd>
+
+<dt>[KNL]<br>nosoftlockup</dt>
+<dd>禁止内核进行软<a href="http://blog.chinaunix.net/uid-25942458-id-3823545.html">死锁检测</a></dd>
+
+<dt>[KNL]<br>softlockup_panic={0|1}</dt>
+<dd>是否在检测到软死锁(soft-lockup)的时候让内核panic，其默认值由 CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE 确定</dd>
+
+<dt>[KNL]<br>nowatchdog</dt>
+<dd>禁止硬死锁检测(<a href="http://www.cnblogs.com/sdphome/archive/2011/11/16/2251042.html">NMI watchdog</a>)</dd>
+
+<dt>[KNL,BUGS]<br>nmi_watchdog={0|panic|nopanic}</dt>
+<dd>
+配置<a href="http://bbs.chinaunix.net/thread-4095844-1-1.html">nmi_watchdog</a>(不可屏蔽中断看门狗)。更多信息可查看"lockup-watchdogs.txt"文档。<br>
+0 表示关闭看门狗；<br>
+panic 表示出现看门狗超时(长时间没喂狗)的时候触发<a href="http://baike.baidu.com/view/5538970.htm">内核错误</a>，通常和"panic="配合使用，以实现在系统出现锁死的时候自动重启。<br>
+nopanic 正好相反，表示即使出现看门狗超时(长时间没喂狗)，也不触发内核错误。
+</dd>
+
+<dt>unknown_nmi_panic</dt>
+<dd>在收到未知的NMI(不可屏蔽中断)时直接panic</dd>
+
+<dt>oops=panic</dt>
+<dd>在内核oops时直接panic(而默认是仅仅杀死oops进程[这样做会有很小的概率导致死锁])，而且这同样也会导致在发生MCE(CONFIG_X86_MCE)时直接panic。主要目的是和"panic="参数连用以实现自动重启。</dd>
+
+<dt>[KNL]<br>panic=秒数</dt>
+<dd>
+内核在遇到panic时等待重启的行为：<br>
+秒数&gt;0 等待指定的秒数后重启<br>
+秒数=0(默认值) 只是简单的挂起，而永不重启<br>
+秒数&lt;0 立即重启
+</dd>
+</dl>
+
+
+
+<h3>时钟(Timer)</h3>
+<p><a href="http://msdn.microsoft.com/zh-cn/windows/hardware/gg463347">时钟(Timer)</a>的功能有两个：(1)定时触发中断；(2)维护和读取当前时间。x86_64平台常见的<a href="http://www.ibm.com/developerworks/cn/linux/1307_liuming_linuxtime2/">时钟硬件</a>有以下这些：<br>
+RTC(Real Time Clock)  实时时钟的独特之处在于，RTC是主板上一块电池供电的CMOS芯片(精度一般只到秒级)，RTC(Clock)吐出来的是"时刻"(例如"2014-2-22 23:38:44")，而其他硬件时钟(Timer)吐出来的是"时长"(我走过了XX个周期，按照我的频率，应该是10秒钟)。<br>
+PIT(Programmable Interval Timer)  PIT是最古老的时钟源，产生周期性的时钟中断(IRQ0)，精度在100-1000Hz，现在基本已经被HPET取代。<br>
+APIC Timer  这是PIT针对多CPU环境的升级，每个CPU上都有一个APIC Timer(而PIT则是所有CPU共享的)，但是它经常有BUG且精度也不高(3MHz左右)，所实际很少使用。<br>
+ACPI Timer(Power Management Timer)  它唯一的功能就是为每个时钟周期提供一个时间戳，用于提供与处理器速度无关的可靠时间戳。但其精度并不高(3.579545MHz)。<br>
+HPET(High Precision Event Timer)  HPET提供了更高的精度(14.31818MHz)以及更宽的计数器(64位)。HPET可以替代前述除RTC之外的所有时钟硬件(Timer)，因为它既能定时触发中断，又能维护和读取当前时间。一个HPET包含了一个固定频率的数值递增的计数器以及3-32个独立计数器，每个计数器又包含了一个比较器和一个寄存器，当两者数值相等时就会触发中断。HPET的出现将允许删除芯片组中的一些冗余的旧式硬件。2006年之后的主板基本都已支持HPET。<br>
+TSC(Time Stamp Counter)  TSC是位于CPU里面的一个64位寄存器，与传统的周期性时钟不同，TSC并不触发中断，它是以计数器形式存在的单步递增性时钟。也就是说，周期性时钟是通过周期性触发中断达到计时目的，如心跳一般。而单步递增时钟则不发送中断，取而代之的是由软件自己在需要的时候去主动读取TSC寄存器的值来获得时间。TSC的精度(纳秒级)远超HPET并且速度更快，但仅能在较新的CPU(Sandy Bridge之后)上使用。
+</p>
+<dl>
+<dt>[HW,ACPI]<br>acpi_skip_timer_override</dt>
+<dd>用于解决某些有缺陷的Nvidia nForce2 BIOS中的计时器覆盖问题(例如开启ACPI后频繁死机或时钟故障)。</dd>
+
+<dt>[HW,ACPI]<br>acpi_use_timer_override</dt>
+<dd>用于解决某些有缺陷的Nvidia nForce5 BIOS中的计时器覆盖问题(例如开启ACPI后频繁死机或时钟故障)。</dd>
+
+<dt>[APIC]<br>no_timer_check</dt>
+<dd>禁止运行内核中时钟IRQ源缺陷检测代码。主要用于解决某些AMD平台的<a href="http://www.ensode.net/no_timer_check.html">CPU占用过高以及时钟过快</a>的故障。</dd>
+
+<dt>pmtmr=十六进制端口号</dt>
+<dd>手动指定pmtimer(CONFIG_X86_PM_TIMER)的I/O端口(16进制值)，例如：pmtmr=0x508</dd>
+
+<dt>acpi_pm_good</dt>
+<dd>跳过pmtimer(CONFIG_X86_PM_TIMER)的bug检测，强制内核认为这台机器的pmtimer没有毛病。用于解决某些有缺陷的BIOS导致的故障。</dd>
+
+<dt>[APIC]<br>apicpmtimer</dt>
+<dd>使用pmtimer(CONFIG_X86_PM_TIMER)来校准APIC timer。此参数隐含了"apicmaintimer"。用于<a href="http://www.ibm.com/developerworks/cn/linux/l-cn-timerm/">PIT timer</a>彻底坏掉的场合。</dd>
+
+<dt>[APIC]<br>apicmaintimer<br>noapicmaintimer</dt>
+<dd>
+apicmaintimer  将APIC timer用于计时(而不是PIT/HPET中断)。这主要用于PIT/HPET中断不可靠的场合。<br>
+noapicmaintimer  不将APIC timer用于计时(而是使用PIT/HPET中断)。这是默认值。但有时候依然需要明确指定。
+</dd>
+
+<dt>[APIC]<br>lapic_timer_c2_ok</dt>
+<dd>按照ACPI规范的要求，local APIC Timer 不能在C2休眠状态下关闭，但可以在C3休眠状态下关闭。但某些BIOS(主要是AMD平台)会在向操作系统报告CPU进入C2休眠状态时，实际进入C3休眠状态。因此，内核默认采取了保守的假定：认为 local APIC Timer 在C2/C3状态时皆处于关闭状态。如果你确定你的BIOS没有这个问题，那么可以使用此参数明确告诉内核，即使CPU在C2休眠状态，local APIC Timer 也依然可用。</dd>
+
+<dt>[APIC]<br>noapictimer</dt>
+<dd>禁用CPU <a href="http://www.giraffetea.com/?p=61">Local APIC Timer</a></dd>
+
+<dt>enable_timer_pin_1<br>disable_timer_pin_1</dt>
+<dd>开启/关闭APIC定时器的PIN1，内核将尽可能自动探测正确的值。但有时需要手动指定以解决某些有缺陷的ATI芯片组故障。</dd>
+
+<dt>clocksource={jiffies|acpi_pm|hpet|tsc}</dt>
+<dd>
+强制使用指定的时钟源，以代替内核默认的时钟源。<br>
+jiffies 最差的时钟源，只能作为最后的选择。<br>
+acpi_pm [ACPI]符合ACPI规范的主板都提供的硬件时钟源(CONFIG_X86_PM_TIMER)，提供3.579545MHz固定频率，这是传统的硬件时钟发生器。<br>
+hpet 一种取代传统"acpi_pm"的高精度硬件时钟源(CONFIG_HPET)，提供14.31818MHz固定频率。2007年以后的芯片组一般都支持。<br>
+tsc TSC(Time Stamp Counter)的主体是位于CPU里面的一个64位TSC寄存器，与传统的以中断形式存在的周期性时钟不同，TSC是以计数器形式存在的单步递增性时钟，两者的区别在于，周期性时钟是通过周期性触发中断达到计时目的，如心跳一般。而单步递增时钟则不发送中断，取而代之的是由软件自己在需要的时候去主动读取TSC寄存器的值来获得时间。TSC的精度更高并且速度更快，但仅能在较新的CPU(Sandy Bridge之后)上使用。
+</dd>
+
+<dt>[KNL]<br>highres={"on"|"off"}</dt>
+<dd>启用(默认值)还是禁用高精度定时器模式。主要用于关闭主板上有故障的高精度时钟源。</dd>
+
+<dt>nohpet</dt>
+<dd>禁用HPET timer(CONFIG_HPET)</dd>
+
+<dt>[HPET_MMAP]<br>hpet_mmap</dt>
+<dd>v3.13新增，默认允许对HPET寄存器进行映射，相当于开启了内核CONFIG_HPET_MMAP_DEFAULT选项。需要注意的是，某些包含HPET硬件寄存器的页中同时还含有其他不该暴露给用户的信息。</dd>
+
+<dt>notsc<br>tsc=reliable<br>tsc=noirqtime</dt>
+<dd>
+设置TSC时钟源的属性。<br>
+notsc 表示不将TSC用作"wall time"时钟源，主要用于不能在多个CPU之间保持正确同步的SMP系统。<br>
+tsc=reliable 表示TSC时钟源是绝对稳定的，关闭启动时和运行时的稳定性检查。用于在某些老旧硬件/虚拟化环境使用TSC时钟源。<br>
+tsc=noirqtime 不将TSC用于统计进程IRQ时间。主要用于在RDTSC速度较慢的CPU上禁止内核的CONFIG_IRQ_TIME_ACCOUNTING功能。<br>
+关于"TSC时钟源"，详见"clocksource="参数的说明。
+</dd>
+</dl>
+
+
+
+
+
+<h3>中断</h3>
+<p>常见的中断控制器有两种：传统的8259A和新式的APIC，前者也被称为"PIC"。8259A只适合单CPU的场合，而APIC则能够把中断传递给系统中的每个CPU，从而充分挖掘SMP体系结构的并行性。所以8259A已经被淘汰了。<a href="http://blog.csdn.net/ustc_dylan/article/details/4132046">APIC</a>系统由3部分组成：APIC总线(前端总线)、IO-APIC(南桥)、本地APIC(CPU)。每个CPU中集成了一个本地APIC，负责传递中断信号到处理器。而IO-APIC是系统芯片组中一部分，负责收集来自I/O设备的中断信号并发送到本地APIC。APIC总线则是连接IO-APIC和各个本地APIC的桥梁。</p>
+<dl>
+<dt>[SMP,APIC]<br>noapic</dt>
+<dd>禁止使用IO-APIC(输入输出高级可编程输入控制器)，主要用于解决某些有缺陷的BIOS导致的APIC故障。</dd>
+
+<dt>[APIC]<br>nolapic<br>disableapic</dt>
+<dd>禁止使用local APIC。主要用于解决某些有缺陷的BIOS导致的APIC故障。"nolapic"是为了保持传统习惯的兼容写法，与"disableapic"的含义相同。</dd>
+
+<dt>[APIC]<br>nox2apic</dt>
+<dd>关闭x2APIC支持(CONFIG_X86_X2APIC)</dd>
+
+<dt>[APIC]<br>x2apic_phys</dt>
+<dd>在支持x2apic的平台上使用physical模式代替默认的cluster模式。</dd>
+
+<dt>[KNL]<br>threadirqs</dt>
+<dd>强制线程化所有的中断处理器(明确标记为IRQF_NO_THREAD的除外)</dd>
+
+<dt>[SMP,APIC]<br>pirq=</dt>
+<dd>手动指定mp-table的设置。此参数仅对某些有缺陷的、具备多个IO-APIC的高端主板有意义。详见<a href="http://lxr.linux.no/linux/Documentation/x86/i386/IO-APIC.txt">Documentation/x86/i386/IO-APIC.txt</a>文档</dd>
+
+<dt>[HW]<br>irqfixup</dt>
+<dd>用于修复简单的中断问题：当一个中断没有被处理时搜索所有可用的中断处理器。用于解决某些简单的固件缺陷。</dd>
+
+<dt>[HW]<br>irqpoll</dt>
+<dd>用于修复高级的中断问题：当一个中断没有被处理时搜索所有可用的中断处理器，并且对每个时钟中断都进行搜索。用于解决某些严重的固件缺陷。</dd>
+</dl>
+
+
+
+
+
+<h3>ACPI</h3>
+<p>高级配置与电源管理接口(Advanced Configuration and Power Interface)是提供操作系统与应用程序管理所有电源管理接口，包括了各种软件和硬件方面的规范。2004年推出3.0规范；2009年推出4.0规范；2011年推出5.0规范。2013年之后新的ACPI规格将由UEFI论坛制定。ACPI可以实现的功能包括：电源管理；性能管理；配置与即插即用；系统事件；温度管理；电池管理；SMBus控制器；嵌入式控制器。</p>
+<dl>
+<dt>[HW,ACPI]<br>acpi={force|off|noirq|strict|rsdt|nocmcff|copy_dsdt}</dt>
+<dd>
+ACPI的总开关。<br>
+force  表示强制启用ACPI(即使BIOS中已关闭)；<br>
+off  表示强制禁用ACPI(即使BIOS中已开启)；<br>
+noirq  表示不要将ACPI用于IRQ路由；<br>
+strict  表示严格要求系统遵循ACPI规格(降低兼容性)；<br>
+rsdt  表示使用老旧的RSDT(Root System Description Table)代替较新的XSDT(Extended System Description Table)；<br>
+copy_dsdt  表示将DSDT(Differentiated System Description Table)复制到内存中。<br>
+更多信息可参考<a href="http://lxr.linux.no/linux/Documentation/power/runtime_pm.txt">Documentation/power/runtime_pm.txt</a>以及"pci=noacpi"。
+</dd>
+
+<dt>[HW,ACPI]<br>acpi_backlight={vendor|video}</dt>
+<dd>
+选择<a href="https://wiki.archlinux.org/index.php/Backlight">屏幕背光亮度调节</a>驱动。<br>
+video(默认值)表示使用通用的ACPI video.ko驱动(CONFIG_ACPI_VIDEO)，该驱动仅可用于集成显卡。<br>
+vendor表示使用厂商特定的ACPI驱动(thinkpad_acpi,sony_acpi等)。<br>
+详见<a href="http://lxr.linux.no/linux/Documentation/acpi/video_extension.txt">Documentation/acpi/video_extension.txt</a>文档。
+</dd>
+
+<dt>[HW,ACPI]<br>acpi_os_name="字符串"</dt>
+<dd>
+告诉ACPI BIOS操作系统的名称。<br>
+常用于哄骗有缺陷的BIOS，让其以为运行的是Windows系统而不是Linux系统。<br>
+"Linux" = Linux<br>
+"Microsoft Windows" = Windows 98<br>
+"Windows 2000" = Windows 2000<br>
+"Windows 2001" = Windows XP<br>
+"Windows 2001 SP2" = Windows XP SP2<br>
+"Windows 2001.1" = Windows Server 2003<br>
+"Windows 2001.1 SP1" = Windows Server 2003 SP1<br>
+"Windows 2006" = Windows Vista<br>
+"Windows 2006 SP1" = Windows Vista SP1<br>
+"Windows 2006.1" = Windows Server 2008<br>
+"Windows 2009" = Windows 7 / Windows Server 2008 R2<br>
+"Windows 2012" = Windows 8 / Windows Server 2012<br>
+"Windows 2013" = Windows 8.1 / Windows Server 2012 R2
+</dd>
+
+<dt>[HW,ACPI]<br>acpi_osi="字符串"</dt>
+<dd>
+对于较新的内核(Linux-2.6.23之后)而言，当BIOS询问内核："你是Linux吗?"，内核都会回答"No"，但历史上(Linux-2.6.22及更早版本)内核会如实回答"Yes"，结果造成很多BIOS兼容性问题(主要是电源管理方面)。具体故事的细节请到内核源码文件<a href="http://lxr.linux.no/linux/drivers/acpi/osl.c">drivers/acpi/osl.c</a>中搜索"The story of _OSI(Linux)"注释。<br>
+此参数用于修改内核中的操作系统接口字符串(<a href="http://msdn.microsoft.com/zh-cn/library/windows/hardware/gg463275.aspx">_OSI string</a>)列表默认值，这样当BIOS向内核询问："你是xxx吗?"的时候，内核就可以根据修改后的列表中是否存在"xxx"回答"Yes"或"No"了，主要用于解决BIOS兼容性问题导致的故障(例如<a href="https://wiki.archlinux.org/index.php/Backlight">屏幕亮度调整</a>)。<br>
+acpi_osi="Linux"表示添加"Linux"；<br>
+acpi_osi="!Linux"表示删除"Linux"；<br>
+acpi_osi=!* 表示删除所有字符串(v3.13新增)，可以和多个acpi_osi="Linux"格式联合使用；<br>
+acpi_osi=! 表示删除所有内置的字符串(v3.13新增)，可以和多个acpi_osi="Linux"格式联合使用；<br>
+acpi_osi= 表示禁用所有字符串，仅可单独使用(不能联合使用)。
+</dd>
+
+<dt>[HW,ACPI]<br>acpi_serialize</dt>
+<dd>强制内核以串行方式执行AML(ACPI Machine Language)字节码。用于解决某些有缺陷的BIOS导致的故障。</dd>
+
+<dt>[ACPI]<br>acpi_enforce_resources={strict|lax|no}</dt>
+<dd>
+检查驱动程序和ACPI操作区域(SystemIO,SystemMemory)之间资源冲突的方式。<br>
+strict(默认值)禁止任何驱动程序访问已被ACPI声明为"受保护"的操作区域，这是最安全的方式，可以从根本上避免冲突。<br>
+lax允许驱动程序访问已被ACPI声明的保护区域(但会显示一个警告)。这可能会造成冲突，但是可以兼容某些老旧且脑残的驱动程序(例如某些硬件监控驱动)。<br>
+no表示根本不声明任何ACPI保护区域，也就是完全允许任意驱动程序访问ACPI操作区域。
+</dd>
+
+<dt>[ACPI]<br>pnpacpi=off</dt>
+<dd>禁用ACPI的即插即用功能，转而使用古董的PNPBIOS来代替。</dd>
+</dl>
+
+
+
+
+<h3>休眠与唤醒</h3>
+<p></p>
+<dl>
+<dt>[HW,ACPI]<br>acpi_sleep={s3_bios,s3_mode,s3_beep,s4_nohwsig,old_ordering,nonvs,sci_force_enable}</dt>
+<dd>
+ACPI休眠选项。<br>
+(1)s3_bios和s3_mode与显卡有关。计算机从S3状态(挂起到内存)恢复时，硬件需要被正确的初始化。这对大多数硬件都不是问题，但因为显卡是由BIOS初始化的，内核无法获取必要的恢复信息(仅存在于BIOS中，内核无法读取)，所以这里就提供了两个选项，以允许内核通过两种不同的方式来恢复显卡，更多细节请参考<a href="http://lxr.linux.no/linux/Documentation/power/video.txt">Documentation/power/video.txt</a>文档。<br>
+(2)s3_beep主要用于调试，它让PC喇叭在内核的实模式入口点被调用时发出响声。<br>
+(3)s4_nohwsig用于关闭ACPI硬件签名功能，某些有缺陷的BIOS会因为这个原因导致从S4状态(挂起到硬盘)唤醒时失败。<br>
+(4)old_ordering用于兼容古董级的ACPI 1.0 BIOS<br>
+(5)nonvs表示阻止内核在挂起/唤醒过程中保存/恢复ACPI NVS内存信息，主要用于解决某些有缺陷的BIOS导致的挂起/唤醒故障。<br>
+(6)sci_force_enable表示由内核直接设置SCI_EN(ACPI模式开关)的状态，主要用于解决某些有缺陷的BIOS导致的从S1/S3状态唤醒时的故障。
+</dd>
+
+<dt>[HIBERNATION]<br>noresume</dt>
+<dd>禁用内核的休眠到硬盘功能(CONFIG_HIBERNATION)，也就是不从先前的休眠状态中恢复(即使该状态已经被保存在了硬盘的swap分区上)，并且清楚先前已经保存的休眠状态(如果有的话)。</dd>
+
+<dt>[HIBERNATION]<br>hibernate={noresume|nocompress}</dt>
+<dd>
+设置休眠/唤醒属性：<br>
+noresume 表示禁用唤醒，也就是在启动过程中无视任何已经存在的休眠镜像，完全重新启动。<br>
+nocompress 表示禁止对休眠镜像进行压缩/解压。
+</dd>
+
+<dt>[HIBERNATION]<br>resume={ /dev/swap | PARTUUID=uuid | major:minor | hex }</dt>
+<dd>
+告诉内核被挂起的内存镜像存放在那个磁盘分区(默认值是CONFIG_PM_STD_PARTITION)。<br>
+假定内存镜像存放在"/dev/sdc15"分区上，该分区的 UUID=0123456789ABCDEF ，其主设备号是"8"，次设备号是"47"，那么这4种表示法应该分别这样表示：<br>
+resume=/dev/sdc15 (这是内核设备名称，有可能与用户空间的设备名称不同)<br>
+resume=PARTUUID=0123456789ABCDEF<br>
+resume=08:47<br>
+resume=082F
+</dd>
+
+<dt>[HIBERNATION]<br>resume_offset=整数</dt>
+<dd>
+指定swap header所在位置的偏移量(单位是PAGE_SIZE)，偏移量的计算基准点是"resume="分区的起点。<br>
+仅在使用swap文件(而不是分区)的时候才需要此参数。详见<a href="http://lxr.linux.no/linux/Documentation/power/swsusp-and-swap-files.txt">Documentation/power/swsusp-and-swap-files.txt</a>文档
+</dd>
+
+<dt>[HIBERNATION]<br>resumedelay=秒数</dt>
+<dd>在读取resume文件(设备)之前延迟的秒数，主要用于等待那些反应速度较慢的异步检测的设备就绪(例如USB/MMC)。</dd>
+
+<dt>[HIBERNATION]<br>resumewait</dt>
+<dd>在resume设备没有就绪之前无限等待，主要用于等待那些反应速度较慢的异步检测的设备就绪(例如USB/MMC)。</dd>
+</dl>
+
+
+
+
+<h3>温度控制</h3>
+<p></p>
+<dl>
+<dt>[HW,ACPI]<br>thermal.act=摄氏度</dt>
+<dd>
+-1 禁用所有"主动散热"标志点(active trip point)<br>
+正整数 强制设置所有的最低"主动散热"标志点的温度值，单位是摄氏度。<br>
+详见<a href="http://lxr.linux.no/linux/Documentation/thermal/sysfs-api.txt">Documentation/thermal/sysfs-api.txt</a>文档。
+</dd>
+
+<dt>[HW,ACPI]<br>thermal.psv=摄氏度</dt>
+<dd>
+-1 禁用所有"被动散热"标志点(passive trip point)<br>
+正整数 强制设置所有的"被动散热"标志点的温度值，单位是摄氏度。<br>
+详见<a href="http://lxr.linux.no/linux/Documentation/thermal/sysfs-api.txt">Documentation/thermal/sysfs-api.txt</a>文档。
+</dd>
+
+<dt>[HW,ACPI]<br>thermal.crt=摄氏度</dt>
+<dd>
+-1 禁用所有"紧急"标志点(critical trip point)<br>
+正整数 强制设置所有的"紧急"标志点的温度值，单位是摄氏度。<br>
+详见<a href="http://lxr.linux.no/linux/Documentation/thermal/sysfs-api.txt">Documentation/thermal/sysfs-api.txt</a>文档。
+</dd>
+
+<dt>[HW,ACPI]<br>thermal.nocrt=1</dt>
+<dd>禁止在ACPI热区(thermal zone)温度达到"紧急"标志点时采取任何动作。</dd>
+
+<dt>[HW,ACPI]<br>thermal.off=1</dt>
+<dd>彻底关闭ACPI热量控制(CONFIG_ACPI_THERMAL)</dd>
+
+<dt>[HW,ACPI]<br>thermal.tzp=整数</dt>
+<dd>
+设置ACPI热区(thermal zone)的轮询速度：<br>
+0(默认值) 不轮询<br>
+正整数 轮询间隔，单位是十分之一秒。
+</dd>
+</dl>
+
+
+
+
+<h3>CPU节能</h3>
+<p></p>
+<dl>
+<dt>[KNL]<br>nohz={on|off}</dt>
+<dd>启用/禁用内核的dynamic ticks特性。默认值是"on"。</dd>
+
+<dt>[KNL,BOOT]<br>nohz_full=CPU列表</dt>
+<dd>
+在内核"CONFIG_NO_HZ_FULL=y"的前提下，指定哪些CPU核心可以进入完全无滴答状态。<br>
+"CPU列表"是一个逗号分隔的CPU编号(从0开始计数)，也可以使用"-"界定一个范围。例如"0,2,4-7"等价于"0,2,4,5,6,7"<br>
+[注意](1)"boot CPU"(通常都是"0"号CPU)会无条件的从列表中剔除。(2)这里列出的CPU编号必须也要同时列进"rcu_nocbs=..."参数中。
+</dd>
+
+<dt>[HW,ACPI]<br>processor.nocst</dt>
+<dd>不使用_CST方法检测C-states，而是用老旧的FADT方法检测。</dd>
+
+<dt>[HW,ACPI]<br>processor.max_cstate={0|1|2|3|4|5|6|7|8|9}</dt>
+<dd>无视ACPI表报告的值，强制指定CPU的最大<a href="http://www.expreview.com/25426.html">C-state</a>值(必须是一个有效值)：C0为正常状态，其他则为不同的省电模式(数字越大表示CPU休眠的程度越深/越省电)。"9"表示无视所有的DMI黑名单限制。</dd>
+
+<dt>[KNL,HW,ACPI]<br>intel_idle.max_cstate=[0|正整数]</dt>
+<dd>设置intel_idle驱动(CONFIG_INTEL_IDLE)允许使用的最大<a href="http://www.expreview.com/25426.html">C-state</a>深度。"0"表示禁用intel_idle驱动，转而使用通用的acpi_idle驱动(CONFIG_CPU_IDLE)</dd>
+
+<dt>idle=poll<br>idle=halt<br>idle=nomwait</dt>
+<dd>
+对CPU进入<a href="http://www.expreview.com/25426.html">休眠状态</a>的额外设置。<br>
+poll 从根本上禁用休眠功能(也就是禁止进入C-states状态)，可以略微提升一些CPU性能，但是却需要多消耗许多电力，得不偿失。不推荐使用。<br>
+halt 表示直接使用HALT指令让CPU进入C1/C1E休眠状态，但是不再继续进入C2/C3以及更深的休眠状态。此选项兼容性最好，唤醒速度也最快。但是电力消耗并不最低。<br>
+nomwait 表示进入休眠状态时禁止使用CPU的MWAIT指令。MWAIT是专用于Intel超线程技术的线程同步指令，有助于提升CPU的超线程效能，但对于不具备超线程技术的CPU没有意义。<br>
+[提示]可以同时使用halt和nomwait，也就是"idle=halt idle=nomwait"(但不是：idle=halt,nomwait)
+</dd>
+
+<dt>intel_pstate=disable</dt>
+<dd>禁用 Intel CPU 的 P-state 驱动(CONFIG_X86_INTEL_PSTATE)，也就是Intel CPU专用的频率调节器驱动</dd>
+</dl>
+
+
+
+
+<h3>PCI与PCIE</h3>
+<p></p>
+<dl>
+<dt>[PCI]<br>pci=选项[,选项...]</dt>
+<dd>
+指定各种PCI子系统选项：<br>
+earlydump 在内核做出任何改变之前，首先转储出<a href="http://zhuyi108.blog.51cto.com/2087327/408127">PCI配置空间</a>。主要用于调试目的。<br>
+off 不检测PCI总线，也就是关闭所有PCI设备。<br>
+conf1 强制使用"PCI配置机制1"(目前的事实标准)<br>
+conf2 强制使用"PCI配置机制2"(已被抛弃的老古董)<br>
+noaer [PCIE]禁止使用CONFIG_PCIEAER功能(PCI Express Root Port Advanced Error Reporting)<br>
+nodomains 禁止支持多个PCI root domain(也就是<a href="http://blog.sina.com.cn/s/blog_6472c4cc0100qg5i.html">PCI总线域</a>[PCI segment])<br>
+nommconf 禁止使用通过MMCONFIG(CONFIG_PCI_MMCONFIG)方式访问PCI配置空间，MMCONFIG是PCI Express引入的新总线枚举方式。<br>
+check_enable_amd_mmconf 在 AMD family 10h CPU 上检查并启用正确配置的MMIO以访问PCI配置空间<br>
+nomsi [MSI]在全系统范围内禁止MSI中断(CONFIG_PCI_MSI)的使用<br>
+noioapicquirk [APIC]禁止屏蔽任何boot中断(CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS)，以确保boot IRQ永远可用。应该永远不需要使用此选项。<br>
+ioapicreroute [APIC]允许将boot IRQ重新路由到主IO-APIC(相当于开启CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS)，用于修复某些芯片组bug(在某些情况下会发送多余的"boot IRQ")。<br>
+noioapicreroute [APIC]禁止将boot IRQ重新路由到主IO-APIC(相当于关闭CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS)，不建议使用此项。<br>
+rom 为扩展ROM分配地址空间。使用此选项要小心，因为某些设备在ROM与其它资源之间共享地址译码器。<br>
+norom 即使BIOS没有为扩展ROM分配地址空间，也禁止内核为扩展ROM分配地址空间。<br>
+nobar 即使BIOS没有为BAR分配地址空间，也禁止内核为BAR分配地址空间。<br>
+irqmask=0xMMMM 指定允许自动分配到PCI设备的IRQ位掩码，目的是为了避免使用那些被ISA设备占用的IRQ。<br>
+pirqaddr=0xAAAAA 如果PIRQ表(通常情况下由BIOS生成)在F0000h-100000h范围之外，此选项可用于明确指定其物理地址。<br>
+lastbus=N 通过扫描N号总线来扫描全部总线。如果内核不能找到第二条总线，可以通过此方法明确告知其位置。<br>
+assign-busses 总是使用内核自己生成的PCI总线号码替代固件自己生成的值。<br>
+usepirqmask 优先使用可能存在于BIOS $PIR表中的IRQ掩码。某些有缺陷的BIOS需要这个选项(例如HP Pavilion N5400和Omnibook XE3笔记本)。此选项仅在noioapicreroute(相当于关闭CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS)的前提下有效。<br>
+noacpi 不为IRQ路由或PCI扫描使用ACPI<br>
+use_crs 使用来自ACPI的PCI主桥的窗口信息。在2008年之后的BIOS上，这是默认值，如果需要明确使用此项，请当做bug上报开发者。<br>
+nocrs 忽略来自ACPI的PCI主桥的窗口信息，如果需要明确使用此项，请当做bug上报开发者。<br>
+routeirq 对所有PCI设备使用IRQ路由。这个通常是由内核的pci_enable_device()函数完成，所以此项仅为那些忘记调用此函数的驱动提供的临时解决方案。<br>
+skip_isa_align 不对齐ISA IO起始地址，这样就可以处理更多的PCI卡<br>
+noearly 不做任何"early type 1"扫描，这样许多针对主板缺陷的检测将被禁止，同时某些IOMMU驱动也会失效。仅用于解决某些有缺陷的主板故障。<br>
+bfsort 按照宽度优先(breadth-first)的顺序对PCI设备进行排序。目的是为了以与2.4内核兼容的方式获取设备序号。<br>
+nobfsort 不按宽度优先(breadth-first)的顺序对PCI设备进行排序。<br>
+pcie_bus_tune_off 不对PCIe MPS(<a href="http://blog.sina.com.cn/s/blog_6472c4cc0102dse9.html">Max Payload Size</a>)进行调整，而是使用BIOS配置好的默认值。<br>
+pcie_bus_safe 将每个设备的MPS都设为root complex下所有设备支持的MPS中的最大值<br>
+pcie_bus_perf 将设备的MPS设为其上级总线允许的最大MPS，同时将MRRS(<a href="http://blog.sina.com.cn/s/blog_6472c4cc0102dse9.html">Max Read Request Size</a>)设为能支持的最大值(但不能大于设备或总线所支持的MPS值)<br>
+pcie_bus_peer2peer 将每个设备的MPS都设为最安全的"128B"，以确保支持所有设备之间的点对点DMA，同时也能保证热插入(hot-added)设备能够正常工作，但代价是可能会造成性能损失。<br>
+cbiosize=nn[KMG] 从CardBus桥的IO窗口中保留的固定长度的总线空间(bus space)，默认值是256B。<br>
+cbmemsize=nn[KMG] 从CardBus桥的内存窗口中保留的固定长度的总线空间(bus space)，默认值是64MB。<br>
+resource_alignment=[对齐规则@][域:]总线:插槽.功能[; ...] 为重新分配已对齐的内存资源指定对齐方式与设备。如果未指定对齐规则，那么将使用PAGE_SIZE作为对齐规则。也可以通过指定PCI-PCI桥来扩展资源窗口(resource windows)。<br>
+ecrc={bios|on|off} 启用/禁用PCIe ECRC(事务层的端对端CRC校验)。默认值是"bios"(使用BIOS/固件的设定)。<br>
+hpiosize=nn[KMG] 为热插拔桥的IO窗口保留的固定总线空间的大小，默认值是256B。<br>
+hpmemsize=nn[KMG] 为热插拔桥的内存窗口保留的固定总线空间的大小，默认值是2MB。<br>
+realloc={on|off} 当BIOS分配的PCI桥资源太小而无法满足所有子设备的需求时，是否由内核重新分配PCI桥资源。没有默认值(内核的默认值为"undefined")<br>
+realloc 等价于"realloc=on"<br>
+noari 不使用PCIe ARI<br>
+pcie_scan_all 扫描所有可能的PCIe设备。默认只在每个PCIe下游端口扫描一个设备。
+</dd>
+
+<dt>[PCIE]<br>pcie_hp=nomsi</dt>
+<dd>禁止PCIe本地热插拔使用MSI(CONFIG_PCI_MSI)，这将导致所有PCIe端口使用INTx中断提供热插拔服务。</dd>
+
+<dt>[PCIE]<br>pcie_ports={auto|native|compat}</dt>
+<dd>
+PCIe端口处理方式：<br>
+auto 由BIOS来决定是否使用关联在PCIe端口上的本地PCIe服务(PME, hot-plug, AER)<br>
+native 无条件的使用关联在PCIe端口上的本地PCIe服务(PME, hot-plug, AER)<br>
+compat 禁用PCIe端口驱动，同时将PCIe端口当做PCI-to-PCI桥处理。
+</dd>
+
+<dt>[PCIE]<br>pcie_aspm={off|force}</dt>
+<dd>
+强制启用/禁用PCIe Active State Power Management(CONFIG_PCIEASPM)。内核的默认值取决于内核"Default ASPM policy"的配置。<br>
+off 强制禁用<br>
+force 即使设备声明不支持ASPM也强制启用(可能会导致系统锁死)。
+</dd>
+
+<dt>[PCIE]<br>pcie_pme=nomsi</dt>
+<dd>禁止本地PCIe PME信号使用MSI(CONFIG_PCI_MSI)，这将导致所有PCIe root端口使用INTx中断提供所有服务。</dd>
+</dl>
+
+
+
+
+<h3>LIBATA</h3>
+<p></p>
+<dl>
+<dt>[LIBATA]<br>libata.noacpi</dt>
+<dd>在libata驱动休眠/唤醒过程中禁止使用ACPI。主要用于解决某些有缺陷的BIOS导致的<a href="http://blog.163.com/jiangh_1982/blog/static/1219505201371451210392/">硬盘假死</a>问题。</dd>
+
+<dt>[LIBATA]<br>libata.dma=整数</dt>
+<dd>
+控制DMA特性的使用<br>
+libata.dma=0 表示完全禁止所有SATA/PATA端口使用DMA<br>
+libata.dma=1 表示仅允许SATA/PATA硬盘使用DMA<br>
+libata.dma=2 表示仅允许ATAPI(CDROM)使用DMA<br>
+libata.dma=4 表示仅允许CF卡使用DMA<br>
+上述1,2,4实际上是位掩码，可以组合使用，例如 libata.dma=3 表示允许硬盘和CDROM使用DMA，但是禁止CF卡使用DMA
+</dd>
+
+<dt>[LIBATA]<br>libata.ignore_hpa={0|1}</dt>
+<dd>是否忽略<a href="http://www.360doc.com/content/11/1213/19/1309227_172018855.shtml">HPA</a>(Host Protected Area)的限制。"0"(默认值)表示不忽略；"1"表示忽略(也就是可以使用整个磁盘空间)</dd>
+
+<dt>[LIBATA]<br>libata.force=PORT[.DEVICE]:VAL,PORT[.DEVICE]:VAL,...</dt>
+<dd>
+手动强制指定libata的配置。<br>
+其中的"PORT[.DEVICE]"是libata驱动在控制台上以相同格式显示出来的ATA ID字符串(PORT和DEVICE都是十进制数字)，下面是两个实例("1.00","2.00")：<br>
+<pre>
+ata1.00: ATAPI: VBOX CD-ROM, 1.0, max UDMA/133
+ata2.00: ATA-6: VBOX HARDDISK, 1.0, max UDMA/133
+</pre>
+如果不指定DEVICE部分，那么就表示适用于该PORT端口上的所有设备。<br>
+VAL部分用来强制设定设备属性：<br>
+40c, 80c, short40c, unk, ign, sata  这些都用于指定线缆类型<br>
+1.5Gbps, 3.0Gbps  这些都用于指定SATA连接速度<br>
+noncq, ncq  关闭还是开启NCQ功能<br>
+dump_id  转储IDENTIFY数据<br>
+pio[0-7], mwdma[0-4], udma[0-7](或者这么写也一样：udma[16,25,33,44,66,100,133])  数据传输模式<br>
+nohrst, nosrst, norst  只禁止硬重置,只禁止软重置,同时禁止硬重置和软重置<br>
+rstonce  在热拔连接恢复(hot-unplug link recovery)过程中仅尝试一次重置<br>
+atapi_dmadir  开启 ATAPI DMADIR bridge 支持<br>
+disable  禁用该设备
+</dd>
+</dl>
+
+
+
+
+
+<h3>键盘/鼠标/触摸板</h3>
+<p></p>
+<dl>
+<dt>[HW]<br>atkbd.set={2|3}</dt>
+<dd>设置atkbd驱动(CONFIG_KEYBOARD_ATKBD)的键盘类型：2(默认值)表示AT键盘；3 表示PS/2键盘。</dd>
+
+<dt>[HW]<br>atkbd.reset</dt>
+<dd>在初始化AT或PS/2键盘时重置键盘状态。常用于解决从休眠状态唤醒后键盘失效的故障。</dd>
+
+<dt>[HW]<br>atkbd.softraw={0|1}</dt>
+<dd>
+当键盘按键被按下时，是返回原始的扫描码(Scancode)还是经过转换之后的键码(Keycode)。常用于解决某些<a href="http://www.linuxsir.org/bbs/thread312288.html">功能键(例如Fn键)</a>故障。<br>
+0 表示返回原始的扫描码(Scancode)<br>
+1(默认值)表示返回转换之后的键码(Keycode)
+</dd>
+
+<dt>[USBHID]<br>usbhid.mousepoll=毫秒数</dt>
+<dd>USB鼠标的轮询时间间隔，单位是毫秒。默认值是"10"，也就是每秒轮询100次，相当于100Hz</dd>
+
+<dt>[MOUSE]<br>mousedev.tap_time=毫秒数</dt>
+<dd>手指触碰和离开触摸板的最大时间间隔，只有小于此间隔的触碰才会被当成鼠标左键单击。此参数仅对工作在绝对模式的触摸板有意义。</dd>
+
+<dt>[MOUSE]<br>mousedev.xres=正整数<br>mousedev.yres=正整数</dt>
+<dd>触摸板的水平(X)/垂直(Y)方向的分辨率。</dd>
+</dl>
+
+
+
+
+
+<h3>USB</h3>
+<p></p>
+<dl>
+<dt>[USB]<br>nousb</dt>
+<dd>禁用USB子系统(CONFIG_USB_SUPPORT)</dd>
+
+<dt>[USB]<br>usbcore.authorized_default={-1|0|1}</dt>
+<dd>
+USB设备的默认授权规则：<br>
+-1(默认值) 对除无线USB之外的设备默认授权<br>
+0 对所有设备都默认不授权<br>
+1 对所有设备都默认授权
+</dd>
+
+<dt>[USB]<br>usbcore.autosuspend=秒数</dt>
+<dd>
+让USB设备(新检测到的设备以及空闲设备)进入自动休眠前的延迟秒数。默认为2秒。<br>
+如果将秒数设为负数，则表示永不进入自动休眠状态。
+</dd>
+
+<dt>[USB]<br>usbcore.initial_descriptor_timeout=毫秒数</dt>
+<dd>等待设备回应初始化64位USB_REQ_GET_DESCRIPTOR请求的超时时间。默认值是"5000"，也就是5秒。</dd>
+
+<dt>[USB]<br>usbcore.blinkenlights={0|1}</dt>
+<dd>是否让所有的USB集线器(HUB)上的LED指示灯闪烁。默认值"0"表示不闪烁，"1"表示闪烁。</dd>
+
+<dt>[USB]<br>usbcore.usbfs_snoop={0|1}</dt>
+<dd>是否在在日志中记录所有的usbfs traffic信息。默认值"0"表示不记录，"1"表示记录。</dd>
+
+<dt>[USB]<br>usbcore.old_scheme_first={0|1}</dt>
+<dd>是否优先使用老旧的USB设备初始化方法。默认值"0"表示不优先使用。</dd>
+
+<dt>[USB]<br>usbcore.use_both_schemes={0|1}</dt>
+<dd>是否在第一种USB设备初始化方法失败之后，继续尝试第二种方法。默认值"1"表示继续尝试第二种方法。</dd>
+
+<dt>[USB]<br>usbcore.usbfs_memory_mb=[0-2047]</dt>
+<dd>由usbfs分配的缓存上限。取值范围是[0-2047]，默认值是"16"，单位是"MB"。</dd>
+
+<dt>[UMS]<br>usb-storage.delay_use=秒数</dt>
+<dd>在扫描新USB存储设备上的逻辑单元(Logical Unit)前暂停的秒数。默认值是"5"秒。</dd>
+
+<dt>[UMS]<br>usb-storage.quirks=VID:PID:Flags[,VID:PID:Flags]...</dt>
+<dd>
+设置一系列的修正项(quirk)，用于增补或者改写内核内置的unusual_devs列表内容。该列表用于修正各种有缺陷的USB存储设备的怪毛病。<br>
+多个修正项之间用逗号分隔，修正项的格式是"VID:PID:Flags"，其中VID和PID的含义分别是4位16进制数表示的"Vendor ID"与"Product ID"。<br>
+而Flags则是一组字符的组合，其中的每个字符都对应一个具有特定含义的修正(quirk)标记：<br>
+a = SANE_SENSE (收集超过18字节的传感器数据)<br>
+b = BAD_SENSE (不收集超过18字节的传感器数据)<br>
+c = FIX_CAPACITY (无条件的将设备报告的扇区数(容量)减少一个扇区)<br>
+d = NO_READ_DISC_INFO (不使用 READ_DISC_INFO 命令)<br>
+e = NO_READ_CAPACITY_16 (不使用 READ_CAPACITY_16 命令)<br>
+h = CAPACITY_HEURISTICS (如果设备报告的扇区数(容量)是奇数，那么就减少一个扇区)<br>
+i = IGNORE_DEVICE (不绑定此设备)<br>
+l = NOT_LOCKABLE (不要尝试锁定/解锁可弹出媒体)<br>
+m = MAX_SECTORS_64 (每次传输最大不超过64个扇区(32KB)的数据)<br>
+n = INITIAL_READ10 (强制重试初始的 READ(10) 命令(如果最初一次读取失败的话))<br>
+o = CAPACITY_OK (完全信任设备报告的扇区数(容量))<br>
+p = WRITE_CACHE (默认开启设备写入缓存[不怕数据丢失的风险])<br>
+r = IGNORE_RESIDUE (不相信设备报告的[容量]剩余值)<br>
+s = SINGLE_LUN (此设备只有一个逻辑单元(Logical Unit))<br>
+w = NO_WP_DETECT (不检测设备是否有写保护)<br>
+例如：usb-storage.quirks=0419:aaf5:rl,0421:0433:rc
+</dd>
+
+<dt>[USB]<br>uhci-hcd.ignore_oc={0|1}</dt>
+<dd>
+是否忽略"电流超限"(overcurrent)事件。<br>
+0(默认值) 不忽略<br>
+1 忽略。某些有缺陷的主板会在USB端口未连接任何设备时，报告很多虚假的"电流超限"事件。设为"1"之后可以避免在内核日志中出现大量的"电流超限"警告，但同时，真实的"电流超限"事件也会被一并忽略。
+</dd>
+</dl>
+
+
+
+
+<h3>IOMMU</h3>
+<p>
+<a href="http://blog.csdn.net/force_eagle/article/details/7744896">IOMMU</a>非常类似于<a href="http://baike.baidu.com/view/969924.htm">MMU</a>，主要有如下功能：(1)IO地址转换[在64位系统上支持32位设备]；(2)分散-聚集(scatter-gather)支持[简化驱动程序的编写]；(3)DMA重映射与IRQ重映射[简化了IO设备的虚拟化]。<br>
+Linux内核当前的DMA映射有如下4种具体实现：<br>
+(1)在内存不足3G的机器上，根本不使用任何IOMMU功能，因为根本没必要。内核消息："PCI-DMA: Disabling IOMMU"<br>
+(2)基于GART(CONFIG_GART_IOMMU)的硬件IOMMU。内核消息："PCI-DMA: using GART IOMMU"<br>
+(3)如果内存大于3G同时机器上又没有IOMMU硬件(或者用了"iommu=soft")，那么就使用软件模拟的IOMMU(CONFIG_BOUNCE)。内核消息："PCI-DMA: Using software bounce buffering for IO (SWIOTLB)"<br>
+(4)基于IBM Calgary硬件的IOMMU，仅用于IBM pSeries/xSeries系列服务器。内核消息："PCI-DMA: Using Calgary IOMMU"
+</p>
+<dl>
+<dt>[IOMMU]<br>iommu={off,force,noforce,soft}</dt>
+<dd>
+通用IOMMU设置：<br>
+off  彻底关闭IOMMU功能<br>
+force  强制使用硬件IOMMU，即使硬件可能有缺陷(例如VIA芯片组)或者根本没有必要这样做(例如内存不足3G)。<br>
+noforce(默认)  在内存不足3G的机器上，不使用硬件IOMMU，因为根本没有必要。<br>
+soft(Intel平台的默认值)  使用通过软件模拟的IOMMU(SWIOTLB)，同时禁止使用硬件IOMMU(即使存在)。
+</dd>
+
+<dt>[IOMMU]<br>iommu=[SIZE][,allowed][,fullflush|nofullflush][,leak[=NUM]][,memaper[=N]|noaperture][,noagp][,merge|nomerge][,forcesac][,panic][,allowdac|nodac][,calgary]</dt>
+<dd>
+仅适用于硬件IOMMU(GART与Calgary)的设置：<br>
+SIZE  重映射区域的大小，单位是字节。<br>
+allowed  含义与"force"相同，即使硬件可能有缺陷(例如VIA芯片组)也强制使用硬件IOMMU<br>
+fullflush(默认)  每次分配时都刷新IOMMU<br>
+nofullflush  不刷新IOMMU<br>
+leak=NUM  开启IOMMU泄漏跟踪(CONFIG_IOMMU_LEAK)，NUM是的泄漏页数(默认值是20)。<br>
+memaper=N  在RAM中分配的固有窗口(own aperture)的大小，算法是 2<sup>N</sup>*32MB，N的默认值是"1"，也就是64MB。<br>
+noaperture  禁止IOMMU使用AGP的"aperture"。<br>
+noagp  不初始化AGP驱动，使用完全的"aperture"。<br>
+merge  强制"scatter-gather"合并，隐含了"force"，这是一个实验性选项。<br>
+nomerge  禁止"scatter-gather"合并<br>
+forcesac  对于少于40位的掩码强制使用单地址周期(single-address cycle)，这是一个实验性选项。<br>
+panic  当IOMMU益处时，允许panic<br>
+allowdac  将32位PCI地址用两个时钟周期推入64位地址，这就是DAC的作用。<br>
+nodac  禁用DAC，也就是所有4GB以上的DMA将强制通过IOMMU(硬件的或模拟的)<br>
+calgary  使用IBM Calgary IOMMU
+</dd>
+
+<dt>swiotlb=页数[,force]</dt>
+<dd>
+仅适用于软件IOMMU(CONFIG_BOUNCE)的设置：<br>
+页数  为"IO bounce buffer"预先保留的页数，每个页的大小是128K<br>
+force  强制所有IO都透过软件IOMMU
+</dd>
+
+<dt>[AMD-IOMMU]<br>amd_iommu={fullflush|off|force_isolation}</dt>
+<dd>
+向AMD IOMMU驱动(CONFIG_AMD_IOMMU)传递参数<br>
+fullflush 表示当IO/TLB项被取消映射的时候立即刷新IO/TLB项(严格模式，速度较慢)，否则将仅在IO/TLB项被重用之前进行刷新(宽松模式，速度更快)<br>
+off 表示彻底禁用AMD IOMMU功能<br>
+force_isolation 表示为所有设备强制启用IOMMU隔离(映射)，这样IOMMU驱动就不再需要自己去发起隔离请求。注意：此选项不会覆盖"iommu=pt"
+</dd>
+
+<dt>[Intel-IOMMU]<br>intel_iommu={on,off,igfx_off,forcedac,strict,sp_off}</dt>
+<dd>
+Intel-IOMMU驱动(CONFIG_INTEL_IOMMU)的主要功能就是DMA重映射，该参数用于设置其特性。<br>
+on 开启Intel-IOMMU驱动<br>
+off 关闭Intel-IOMMU驱动<br>
+igfx_off 关闭Intel集成显卡的DMA重映射功能(默认值为开启)<br>
+forcedac 强制PCI设备使用DAC，而禁止进行地址转换(默认值为允许)<br>
+strict 禁止批量刷写IOTLB(默认值为允许)<br>
+sp_off 关闭super page支持(默认值为开启)
+</dd>
+
+<dt>[Intel-IOMMU]<br>intremap={on,off,nosid,no_x2apic_optout}</dt>
+<dd>
+设置中断重映射功能：<br>
+on(默认值)开启中断重映射<br>
+off 关闭中断重映射<br>
+nosid 重映射时不对SID(Source ID)做检查<br>
+no_x2apic_optout 无视BIOS的设置，强制禁用x2APIC特性，主要用于解决某些对x2APIC支持有缺陷的BIOS导致的故障
+</dd>
+</dl>
+
+
+
+
+<h3>虚拟化</h3>
+<p></p>
+<dl>
+<dt>[PV_OPS]<br>noreplace-paravirt</dt>
+<dd>禁止使用内核通用的半虚拟化接口<a href="http://www.chenjunlu.com/2013/05/a-common-paravirtualization-interface-paravirt_ops/">paravirt_ops</a>，主要用于解决某些在Virtual PC上安装或运行Linux的故障。</dd>
+
+<dt>[VMMIO]<br>virtio_mmio.device=size@baseaddr:irq[:id]</dt>
+<dd>
+实例化virtio-mmio设备(CONFIG_VIRTIO_MMIO)。可以多次使用以实例化多个设备。<br>
+size 大小(可以使用K,M,G后缀)<br>
+baseaddr 物理基准地址(physical base address)<br>
+irq 中断号(将会被传递给request_irq())<br>
+id(可选) platform设备号(device id)<br>
+例子：virtio_mmio.device=1K@0x100b0000:48:7
+</dd>
+
+<dt>[KVM]<br>kvm.ignore_msrs={0|1}</dt>
+<dd>是否忽略客户机对未经处理的MSR(unhandled MSR)的访问。"0"(默认值)表示不忽略但是会注入#GP；"1"表示忽略。</dd>
+
+<dt>[KVM]<br>kvm.mmu_audit={0|1}</dt>
+<dd>是否允许在运行时对KVM MMU进行审计。"0"(默认值)表示禁止审计；"1"表示允许审计。</dd>
+
+<dt>[KVM,AMD]<br>kvm-amd.nested={0|1}</dt>
+<dd>是否允许嵌套虚拟化(在虚拟机内再创建虚拟机)。"0"表示禁止嵌套；"1"(默认值)表示允许嵌套。</dd>
+
+<dt>[KVM,AMD]<br>kvm-amd.npt={0|1}</dt>
+<dd>是否允许客户机使用嵌套页表(Nested Page Table)。"0"表示禁止使用；"1"(默认值)表示允许使用。</dd>
+
+<dt>[KVM,Intel]<br>kvm-intel.ept={0|1}</dt>
+<dd>是否允许客户机使用扩展页表(Extended Page Table)。"0"表示禁止使用；"1"(默认值)表示允许使用。</dd>
+
+<dt>[KVM,Intel]<br>kvm-intel.emulate_invalid_guest_state={0|1}</dt>
+<dd>是否允许仿真无效的客户机状态。"0"(默认值)表示禁止仿真；"1"表示允许仿真。</dd>
+
+<dt>[KVM,Intel]<br>kvm-intel.flexpriority={0|1}</dt>
+<dd>是否允许使用FlexPriority技术(TPR[Task Priority Register] shadow)。"0"表示禁止使用；"1"(默认值)表示允许使用。</dd>
+
+<dt>[KVM,Intel]<br>kvm-intel.nested={0|1}</dt>
+<dd>是否允许VMX嵌套(nVMX)。"0"(默认值)表示禁止；"1"表示允许。</dd>
+
+<dt>[KVM,Intel]<br>kvm-intel.unrestricted_guest={0|1}</dt>
+<dd>是否允许使用"unrestricted guest"技术。"0"表示禁止使用；"1"(默认值)表示允许使用。</dd>
+
+<dt>[KVM,Intel]<br>kvm-intel.vpid={0|1}</dt>
+<dd>是否允许使用"Virtual Processor Identification"(tagged TLB)技术。"0"表示禁止使用；"1"(默认值)表示允许使用。</dd>
+</dl>
+
+
+
+
+
+<h3>内存</h3>
+<p></p>
+<dl>
+<dt>[KNL,BOOT]<br>mem=nn[KMG]</dt>
+<dd>强制指定内核使用多少数量的内存。仅在你想限定内存使用量时，才需要指定这个参数。同时为了避免PCI设备使用指定范围之外的内存，你还应该配合"memmap="一起使用。</dd>
+
+<dt>[KNL]<br>memmap=exactmap</dt>
+<dd>表示将要使用随后的"memmap=..."等参数进行精确的<a href="http://deltamaster.is-programmer.com/posts/37297.html">E820内存映射</a>(因为有时候E820报告的并不准确)，同时禁止内核进行任何自动的探测。比如对于一个4G内存的机器可能是："memmap=exactmap memmap=640K@0 memmap=4095M@1M"。</dd>
+
+<dt>[KNL]<br>memmap=nn[KMG]@ss[KMG]</dt>
+<dd>强制只使用从ss开始的nn长度的特定内存区域。可以多次使用以指定多个区域。</dd>
+
+<dt>[KNL,ACPI]<br>memmap=nn[KMG]#ss[KMG]</dt>
+<dd>强制将从ss开始的nn长度的特定内存区域标记为ACPI数据。</dd>
+
+<dt>[KNL,ACPI]<br>memmap=nn[KMG]$ss[KMG]</dt>
+<dd>强制保留(不使用)从ss开始的nn长度的特定内存区域。</dd>
+
+<dt>[KNL,BUGS]<br>reserve=起点,长度[,起点,长度]... </dt>
+<dd>
+禁止设备驱动程序自动探测某些iomem区域，因为某些设计不良的硬件会导致自动探测失败或出错。此外，还可以用于人为禁止内核初始化某些端口上的设备。<br>
+内核会将此处指定的iomem区域标记为"reserved"(意为"已经在此处找到设备")，从而将该区域保留。<br>
+因为设备驱动不应该去侦测标记为"reserved"的区域，除非另一个启动参数明确地指示它这样做，所以此参数经常和其它启动参数一起使用：<br>
+用"reserve="保留一段区域禁止所有其他驱动的探测，同时再明确指定一个驱动去检测被保留的区域。例如：<br>
+<pre>reserve=0x300,32  blah=0x300</pre>
+的意思是：除了允许"blah"驱动探测 0x300 之外，禁止任何其他驱动探测 0x300-0x31f 区域。<br>
+绝大部份的机器都不需要此参数。只有真正有缺陷的硬件或特殊情况才会需要使用它。<br>
+[注意]每个"reserve="参数最多可以指定4个保留区域，如果你有异常复杂的需求，可以使用多重"reserve="来指定。
+</dd>
+
+<dt>reservelow=nn[K]</dt>
+<dd>设置为BIOS保留的底端地址空间数量。</dd>
+
+<dt>memory_corruption_check={0|1}</dt>
+<dd>是否开启低位内存脏数据检查(CONFIG_X86_CHECK_BIOS_CORRUPTION)。某些有bug的BIOS经常会在执行系统休眠/唤醒之类动作的时候，破坏内存中前64k的内容。如果始终检查到错误,那么就应该通过"memmap="参数来避免使用这段内存。</dd>
+
+<dt>memory_corruption_check_size=字节数</dt>
+<dd>低位内存脏数据检查(CONFIG_X86_CHECK_BIOS_CORRUPTION)的内存范围。默认值是"64K"，表示"0-64K"这个内存范围。</dd>
+
+<dt>memory_corruption_check_period=秒数</dt>
+<dd>低位内存脏数据检查(CONFIG_X86_CHECK_BIOS_CORRUPTION)的周期。默认值是60秒。设为"0"则表示禁止这种周期性的检查。</dd>
+
+<dt>[KNL,BOOT]<br>vmalloc=nn[KMG]</dt>
+<dd>强制指定vmalloc区域的大小。可用于增加vmalloc区域的最小尺寸(x86默认128MB)，也可以用于减少vmalloc的大小，增加更多的空间用于直接映射内核RAM。</dd>
+
+<dt>[SLUB]<br>slub_min_order=整数<br>slub_max_order=整数</dt>
+<dd>SLUB页块最小与最大order数(默认值分别是"0"与"3")，当然slub_min_order必须小于slub_max_order。每一个slab需要2<sup>order</sup>个物理页框。过高的值可能会导致内存溢出错误。详见<a href="http://lxr.linux.no/linux/Documentation/vm/slub.txt">Documentation/vm/slub.txt</a></dd>
+
+<dt>[SLUB]<br>slub_min_objects=整数</dt>
+<dd>每个slab的最小object总数目(默认值是"4")。详见<a href="http://lxr.linux.no/linux/Documentation/vm/slub.txt">Documentation/vm/slub.txt</a></dd>
+
+<dt>[SLUB]<br>slub_nomerge</dt>
+<dd>禁止合并大小相近的多个slab，主要用于调试目的。</dd>
+
+<dt>[KNL]<br>dhash_entries=正整数</dt>
+<dd>设置内核目录项缓存中哈希表默认项数。仅供内核专家使用。</dd>
+
+<dt>[KNL]<br>ihash_entries=正整数</dt>
+<dd>
+内核会在内存中缓存一定数量的inode结构来加速文件访问，每个inode对应一个文件(不同于文件系统中的inode概念)，包含文件访问权限/属主/组/大小/生成时间/访问时间/最后修改时间等信息。这些inode保存在一个哈希表中。<br>
+这个值用于指定这个哈希表的最大项数。你可以根据自己硬盘上可能被访问的文件数量对默认值进行调整(注意需要考虑哈希值的碰撞)。仅供内核专家使用。
+</dd>
+
+<dt>[KNL]<br>transparent_hugepage={always|madvise|never}</dt>
+<dd>
+设置透明大内存页(CONFIG_TRANSPARENT_HUGEPAGE)的默认用法：<br>
+always 表示总是对所有应用程序启用透明大内存页支持<br>
+madvise 表示仅对明确要求该特性的程序启用<br>
+never 表示彻底禁用。<br>
+其默认值由内核的编译时设置决定。详见"<a href="http://lxr.linux.no/linux/Documentation/vm/transhuge.txt">Documentation/vm/transhuge.txt</a>"文档。
+</dd>
+
+<dt>[HW]<br>default_hugepagesz={2M|1G}</dt>
+<dd>
+默认的HugeTLB页大小。若未指定，那么其默认值就是CPU自身的默认值。<br>
+大多数现代计算机体系结构提供对多页面大小的支持，比如X86_64支持4K和2M(要求CPU带有"pse"标记)以及1G(要求CPU带有"pdpe1gb"标记)。<br>
+因此Linux将物理内存划分成许多固定大小的页面(默认为4K)，每个页对应一个page结构，这些结构组成一个mem_map[]数组。TLB(Translation Lookaside Buffer)是虚拟地址到物理地址的翻译缓冲区，这种缓冲区在处理器上是很宝贵的，操作系统总是尝试将有限的TLB资源发挥到极致。特别是能够轻松获得若干G内存的时候(大于4G)，这种优化就显得尤为关键。而HugeTLB特性则允许将某些页的尺寸增大到2MB或1GB，从而大大减小TLB的尺寸，提高缓冲区的命中率，进而提升内存性能。
+</dd>
+
+<dt>[HW]<br>hugepagesz={2M|1G}</dt>
+<dd>
+指定HugeTLB页的大小，通常与"hugepages="联合使用(可使用多次)，为不同尺寸的大页分别预留不同的数量。<br>
+例如：hugepagesz=2M hugepages=128 hugepagesz=1G hugepages=8<br>
+注意：1GB的大页只能在命令行上使用"hugepages="预先分配，且分配之后不可在运行时释放。
+</dd>
+
+<dt>[HW]<br>hugepages=正整数</dt>
+<dd>在启动时分配的HugeTLB页数量，仅在内核开启了CONFIG_HUGETLBFS之后有效。</dd>
+
+<dt>gbpages<br>nogbpages</dt>
+<dd>是否允许内核页表对大小为1GB的Hugepages进行直接映射(CONFIG_DIRECT_GBPAGES)。当"CONFIG_DIRECT_GBPAGES=y"时，默认值是"gbpages"。</dd>
+
+<dt>vdso={0|1|2}</dt>
+<dd>
+vdso=0  禁用<a href="http://blog.csdn.net/juana1/article/details/6904932">VDSO</a>(Virtual Dynamic Shared Object)映射<br>
+vdso=1  启用<a href="http://blog.csdn.net/juana1/article/details/6904932">VDSO</a>(Virtual Dynamic Shared Object)映射，这是"CONFIG_COMPAT_VDSO=n"时的默认值。<br>
+vdso=2  将<a href="http://blog.csdn.net/juana1/article/details/6904932">VDSO</a>(Virtual Dynamic Shared Object)映射到旧式的确定性地址，这是"CONFIG_COMPAT_VDSO=y"时的默认值。
+</dd>
+
+<dt>vdso32={0|1|2}</dt>
+<dd>
+vdso32=0  禁用32位<a href="http://blog.csdn.net/juana1/article/details/6904932">VDSO</a>(Virtual Dynamic Shared Object)映射<br>
+vdso32=1  启用32位<a href="http://blog.csdn.net/juana1/article/details/6904932">VDSO</a>(Virtual Dynamic Shared Object)映射，这是"CONFIG_COMPAT_VDSO=n"时的默认值。<br>
+vdso32=2  将32位<a href="http://blog.csdn.net/juana1/article/details/6904932">VDSO</a>(Virtual Dynamic Shared Object)映射到旧式的确定性地址，这是"CONFIG_COMPAT_VDSO=y"时的默认值。
+</dd>
+</dl>
+
+
+
+
+
+<h3>MTRR与PAT</h3>
+<p></p>
+<dl>
+<dt>enable_mtrr_cleanup<br>disable_mtrr_cleanup</dt>
+<dd>开启/关闭MTRR cleanup(CONFIG_MTRR_SANITIZER)特性。</dd>
+
+<dt>mtrr_chunk_size=nn[KMG]</dt>
+<dd>用于"MTRR cleanup"(CONFIG_MTRR_SANITIZER)功能，设置允许的最大连续块尺寸(也就是uncacheable项)。</dd>
+
+<dt>mtrr_gran_size=nn[KMG]</dt>
+<dd>用于"MTRR cleanup"(CONFIG_MTRR_SANITIZER)功能，设置MTRR块的粒度(每块的大小)。默认值是"1"。较大的值可以防止小的对齐耗尽MTRR。</dd>
+
+<dt>mtrr_spare_reg_nr=N</dt>
+<dd>用于"MTRR cleanup"(CONFIG_MTRR_SANITIZER)功能，设置备用MTRR项的编号。也就是告诉内核reg0N可以被清理或改写(参见"/proc/mtrr"文件)，默认值是"1"。</dd>
+
+<dt>nopat</dt>
+<dd>禁用PAT支持(CONFIG_X86_PAT)。主要用于解决某PAT故障导致的无法正常启动或者显卡驱动不能正常工作的问题。</dd>
+</dl>
+
+
+
+
+<h3>图形与显示</h3>
+<p></p>
+<dl>
+<dt>[AGP]<br>agp={off|try_unsupported}</dt>
+<dd>
+off 表示关闭内核的AGP(CONFIG_AGP)支持；<br>
+try_unsupported 表示尝试驱动那些不受支持的芯片(可能会导致系统崩溃或数据错误)
+</dd>
+
+<dt>[HW,DRM]<br>gamma=浮点数</dt>
+<dd>设置显示器的<a href="http://www2.xitek.com/info/showarticle.php?id=2521">Gamma</a>值。</dd>
+
+<dt>video.brightness_switch_enabled={0|1}</dt>
+<dd>
+[背景知识]如果ACPI video.ko驱动(CONFIG_ACPI_VIDEO)能够收到用户通过键盘热键触发的ACPI事件(这需要固件的帮助)，video.ko将会把收到的ACPI事件转化为一个"key"类型输入事件，并通过其创建的输入设备发送到用户空间，这样用户空间的工具就可以通过sysfs接口去修改显示器的亮度。这是传统的做法。<br>
+但是从v3.13内核开始，新增了此参数，并且其默认值为"1"，表示video.ko驱动除了向用户空间传递事件之外，还要自己在内核层去改变显示器的亮度。<br>
+如果设为"0"则表示不在内核层改变显示器的亮度，依然留给用户层的工具去通过sysfs接口修改。<br>
+详见<a href="http://lxr.linux.no/linux/Documentation/acpi/video_extension.txt">Documentation/acpi/video_extension.txt</a>文档。
+</dd>
+
+<dt>[DRM]<br>i915.invert_brightness={-1|0|1}</dt>
+<dd>
+反转显示器背光亮度控制变量(brightness)的含义。<br>
+通常情况下，brightness的值为"0"表示关闭背光(全黑)，随着brightness的值增大到最大值，表示最大亮度。<br>
+但是通过这个参数，可以反转brightness的含义，让"0"表示最亮，而随着brightness值的递增亮度逐渐降低，直到最大值关闭背光(全黑)。<br>
+-1 表示绝不反转其含义，也就是"0"始终表示关闭，最大值始终表示最亮。<br>
+0  表示内核不对此变量的含义加以干预，使用机器自身的默认含义。<br>
+1  表示强制反转其含义，也就是"0"始终表示最亮，最大值始终表示关闭。<br>
+此选项常用于解决某些使用Intel集显/核显(CONFIG_DRM_I915)的电脑在启动时黑屏的问题。
+</dd>
+
+<dt>[FB]<br>logo.nologo</dt>
+<dd>在系统启动时不显示Linux的企鹅标志图(企鹅数=CPU核心数)</dd>
+</dl>
+
+
+
+
+<h3>网络</h3>
+<p></p>
+<dl>
+<dt>[IPV6]<br>disable_ipv6={0|1}</dt>
+<dd>是否在所有网络接口上禁用IPv6支持：0(默认值)表示在所有网络接口上开启IPv6支持；1 表示在所有网络接口上关闭IPv6支持。</dd>
+
+<dt>[IPV6]<br>autoconf={0|1}</dt>
+<dd>
+是否在所有网络接口上开启IPv6地址自动配置。<br>
+0 表示禁止自动配置，这样就只有IPv6回环地址(::1)和"link-local"地址会被自动添加到网络接口上。如果你不想从路由器公告(Router Advertisements)中的地址前缀自动生成IPv6地址，可以使用此项。<br>
+1(默认值) 表示在所有网络接口上开启IPv6地址自动配置
+</dd>
+
+<dt>[IP_PNP]<br>ip=[client-ip:server-ip:gateway-ip:netmask:hostname:device:]autoconf[:dns0-ip:dns1-ip]</dt>
+<dd>
+此参数告诉内核如何在启动过程中配置网卡的IP地址及路由表(而不是在启动完成后依赖用户空间的脚本去配置)。仅在内核已启用了CONFIG_IP_PNP的前提下有效。通常用于需要将NFS挂载为根文件系统(CONFIG_ROOT_NFS)的场合。<br>
+此参数有以下4种用法：<br>
+(1)ip={off|none}或者没有使用"ip"参数。这是默认值，表示彻底关闭自动配置功能。<br>
+(2)ip={dhcp|bootp|rarp|any}  表示内核全自动完成所有配置工作(也就是将所有字段设为各自的默认值)。各选项的含义参见下面对autoconf字段的说明。<br>
+(3)将autoconf字段设为{off|none}之一，并明确指定所有其它字段。表示全静态配置，也就是手动指定各字段的值(禁止自动检测)。<br>
+(4)将autoconf字段设为{dhcp|bootp|rarp|any}之一，并明将部分字段留空(字段分割符":"不能省略)。表示半自动配置，也就是将留空的字段设为各自的默认值(自动检测)，而将手动指定的字段设为指定的值(禁止自动检测)。<br>
+各字段的说明如下：<br>
+client-ip  NFS客户端IP地址。若留空，其默认值将通过自动检测获取。<br>
+server-ip  NFS服务器IP地址。该字段仅在需要将NFS挂载为根文件系统(root=/dev/nfs)的时候才是必须的。如果使用RARP检测client-ip并且此字段非空，那么将仅接受指定服务器的应答。若留空，其默认值将通过自动检测获取(也就是自动配置服务器的地址)。<br>
+gateway-ip  网关的IP地址。仅在NFS服务器位于不同子网的时候才是必须的。若留空，其默认值将通过自动检测获取。<br>
+netmask  子网掩码。若留空，其默认值将通过自动检测获取(根据client-ip所属的地址类型[A/B/C之类])。<br>
+hostname  NFS客户端的主机名。若留空，其默认值将通过自动检测获取(client-ip的ASCII表示形式)。<br>
+device  使用的网卡。若留空，其默认值将通过自动检测获取：若有多个网卡，那么将通过所有网卡同时发送自动配置请求包，并将最先接收到应答的网卡设为默认网卡。<br>
+autoconf  自动配置方式。{off|none}表示不使用自动配置(必须手动指定个字段的值)；{dhcp|bootp|rarp}分别表示只使用DHCP/BOOTP/RARP协议进行自动配置(当然内核必须支持指定的协议)；"any"表示使用内核支持的所有自动配置协议(同时发送不同协议的自动配置请求包，以最先接收到的应答为准)。
+dns0-ip  主DNS服务器IP地址。若留空，其默认值将通过自动检测获取。其值将通过 /proc/net/pnp 导出到用户空间。在嵌入式系统上，/etc/resolv.conf 常常是到 /proc/net/pnp 的软连接。<br>
+dns1-ip  辅DNS服务器IP地址。其它同上。
+</dd>
+
+<dt>[KNL,NET]<br>rhash_entries=正整数</dt>
+<dd>设置内核路由缓冲区哈希表的大小，仅供内核网络专家使用。</dd>
+
+<dt>[KNL,NET]<br>thash_entries=正整数</dt>
+<dd>设置内核允许使用的TCP链接哈希表的大小。</dd>
+
+<dt>[KNL,NET]<br>uhash_entries=正整数</dt>
+<dd>设置内核允许使用的UDP/UDP-Lite链接哈希表的大小。</dd>
+
+<dt>[NETFILTER]<br>nf_conntrack.acct={0|1}</dt>
+<dd>是否允许对连接追踪(CONFIG_NF_CONNTRACK)流进行记账。"0"(默认值)表示禁止记账，"1"表示允许记账。</dd>
+</dl>
+
+
+
+
+<h3>块设备与磁盘阵列</h3>
+<p></p>
+<dl>
+<dt>blkdevparts=</dt>
+<dd>手动设置块设备分区表(而不是从块设备读取)，主要用于嵌入式环境或分区表损坏恢复的场合。详情参见<a href="http://lxr.linux.no/linux/Documentation/block/cmdline-partition.txt">Documentation/block/cmdline-partition.txt</a>文档</dd>
+
+<dt>[EFI]<br>gpt</dt>
+<dd>强制将拥有有效GPT签名但同时又包含无效"保护MBR"的磁盘当做GPT格式的磁盘。</dd>
+
+<dt>[IOSCHED]<br>elevator={"bfq"|"cfq"|"deadline"|"noop"}</dt>
+<dd>指定默认的IO调度器</dd>
+
+<dt>[LOOP]<br>loop.max_loop=[0-256]</dt>
+<dd>在系统启动时无条件的预先创建的回环(loopback)设备数，默认值由CONFIG_BLK_DEV_LOOP_MIN_COUNT决定。如果你使用util-linux-2.21以上版本,建议设为"0"(loop设备将通过/dev/loop-control动态创建)。</dd>
+
+<dt>[HW,RAID]<br>raid={autodetect|noautodetect,partitionable|part}</dt>
+<dd>
+明确向内核的MD驱动(CONFIG_BLK_DEV_MD)传递RAID配置属性<br>
+autodetect|noautodetect 表示内核是否应该自动检测RAID模式(CONFIG_MD_AUTODETECT)。如果关闭了自动检测，那么必须使用"md="明确告诉内核RAID模式及配置。<br>
+partitionable|part 两者含义相同，都表示内核应该将组装之后得到的RAID设备视为"可分区"设备。
+</dd>
+
+<dt>[HW,RAID]<br>md=N,dev0,dev1,...</dt>
+<dd>
+明确向内核的MD驱动(CONFIG_BLK_DEV_MD)传递RAID配置信息，并将列出的设备(dev0,dev1,...)组装为 /dev/mdN 阵列(表现为一个块设备文件)。<br>
+建议仅在根文件系统位于RAID上的情况下使用这个参数。其他非根文件系统的RAID最好在系统启动后(挂载完根之后)再组装。<br>
+N 可以是 0,1,2,3,...,255 中的任意一个整数，表示被创建的md设备的编号，例如：<br>
+<pre>md=2,/dev/sda,/dev/sdb,/dev/sdc,/dev/sdd</pre>
+表示将 /dev/sda,/dev/sdb,/dev/sdc,/dev/sdd 组装成 /dev/md2 块设备(至于RAID级别之类的信息则由存储在超级块中的元数据提供)。<br>
+[提示]2.6.28之前的老版本内核对创建的阵列还有所谓"可分区阵列"和"不可分区阵列"的区别，具体表现是：如果在N前加上字母"d"，则表示所创建的阵列是一个可分区阵列，否则就是不可分区阵列。不过现在已经没有这个区别了，所有创建的阵列都是可分区的，因此"d"也就没有存在的必要了。
+</dd>
+</dl>
+
+
+
+
+<h3>根文件系统</h3>
+<p></p>
+<dl>
+<dt>[KNL]<br>root=字符串</dt>
+<dd>
+指定根文件系统的所在位置。通常这是一个必须明确设置的参数。<br>
+"字符串"可以使用如下几种形式：<br>
+XXxx 一个16进制数，其中"XX"是主设备号，"xx"是次设备号。例如"/dev/sdc15"(主设备号是"8"，次设备号是"47")，可以表示成"082F"。<br>
+/dev/nfs 表示使用由nfsroot参数指定的NFS磁盘，仅在根文件系统位于NFS文件系统上的时候才使用。<br>
+/dev/disk 表示一块完整的无分区块设备。比如：/dev/md0  /dev/loop0  /dev/sdb  /dev/mmcblk0<br>
+/dev/diskN 表示disk磁盘的第N(十进制)个分区。这是最常见的用法，比如：/dev/sda2  /dev/ubda1  /dev/xvda13<br>
+/dev/diskpN 含义与上面的一样，也表示disk磁盘的第N(十进制)个分区，但是用于disk本身以数字结尾的情况(避免混淆)。比如：/dev/md0p3  /dev/emd/0p2  /dev/mmcblk0p1<br>
+PARTUUID=00112233-4455-6677-8899-AABBCCDDEEFF 仅用于EFI/GPT格式的磁盘，表示分区表中UUID值为"00112233-4455-6677-8899-AABBCCDDEEFF"的分区。[提示]可以使用<a href="http://linux.die.net/man/8/blkid">blkid</a>查看"PARTUUID"。<br>
+PARTUUID=SSSSSSSS-PP 仅用于传统的MSDOS分区表。"SSSSSSSS"是用16进制表示的32位"NT disk signature"，"PP"是用16进制表示的分区号。比如：PARTUUID=97531ACF-02 可能相当于 /dev/sda2 <br>
+PARTUUID=XXXX/PARTNROFF=N 表示以UUID="XXXX"的分区为基准，偏移N个分区。假定 /dev/sdb5 的UUID=XXXX，那么 PARTUUID=XXXX/PARTNROFF=3 就表示 /dev/sdb8 ，而 PARTUUID=XXXX/PARTNROFF=-3 则表示 /dev/sdb2<br>
+major:minor 由一对十进制数组成，其中major是主设备号，minor是次设备号。例如"/dev/sdc15"(主设备号是"8"，次设备号是"47")，可以表示成"8:47"。<br>
+LABEL=??? 表示卷标为"???"的分区。比如：root=LABEL=/ 。不过这种格式并不被内核直接支持，仅是发行版通过initramfs中的脚本添加了这种格式的支持而已。所以并不通用。
+</dd>
+
+<dt>[KNL]<br>rootfstype=文件系统类型</dt>
+<dd>指定根文件系统的类型。例如："xfs"或"ext4"之类</dd>
+
+<dt>[KNL]<br>rootflags=挂载选项</dt>
+<dd>设置根文件系统的挂载选项，比如"noatime,ro"。各种不同的文件系统所能使用的选项各不相同，可以参考 mount 程序的选项。</dd>
+
+<dt>[KNL]<br>ro<br>rw</dt>
+<dd>以只读(ro)/读写(rw)模式挂载根文件系统</dd>
+
+<dt>[KNL]<br>rootdelay=秒数</dt>
+<dd>在挂载根文件系统前延迟多少秒，主要用于等待那些反应速度较慢的异步检测的设备就绪(例如USB/MMC/FireWire)。</dd>
+
+<dt>[KNL]<br>rootwait</dt>
+<dd>在根文件系统就绪之前无限等待。主要用于等待那些反应速度较慢的异步检测的设备就绪(例如USB/MMC/FireWire)。</dd>
+</dl>
+
+
+
+
+
+<h3>系统初始化(init)</h3>
+<p></p>
+<dl>
+<dt>[KNL]<br>init=文件全路径</dt>
+<dd>指定内核挂载根文件系统后运行的第一个用户空间程序的绝对路径。默认为"/sbin/init"。</dd>
+
+<dt>[KNL]<br>rdinit=全路径</dt>
+<dd>
+设置从initramfs中运行的第一个用户空间程序的绝对路径，默认为"/init"。<br>
+[注意]一旦使用了initramfs并且成功的运行了其中的"/init"，所有"init"以及与根文件系统相关的参数(包括"nfsroot")对内核而言都将失效。<br>
+initramfs中的脚本必须自己分析各个内核引导参数(/proc/cmdline)并完成根文件系统的挂载与切换，当然也包括启动真正的"init"进程。
+</dd>
+
+<dt>[KNL]<br>S</dt>
+<dd>以单用户模式运行"init"。注意，这不是一个真正的内核参数，只是给initramfs中的脚本用的。所以并不通用。</dd>
+</dl>
+
+
+
+
+
+<h3>NFS(网络文件系统)</h3>
+<p></p>
+<dl>
+<dt>[NFS]<br>lockd.nlm_grace_period=秒数</dt>
+<dd>为NFS锁管理器指定宽限时间，单位是秒。取值范围在[0-240]？</dd>
+
+<dt>[NFS]<br>lockd.nlm_tcpport=端口号</dt>
+<dd>为NFS锁管理器指定TCP端口</dd>
+
+<dt>[NFS]<br>lockd.nlm_timeout=秒数</dt>
+<dd>为NFS锁管理器指定默认超时时间，单位是秒。默认值是10秒。取值范围在[3-20]？</dd>
+
+<dt>[NFS]<br>lockd.nlm_udpport=端口号</dt>
+<dd>为NFS锁管理器指定UDP端口</dd>
+
+<dt>[NFS]<br>nfsroot=[server-ip:]root-dir[,nfs-options]</dt>
+<dd>
+指定NFS根文件系统的位置。如果没有设置此参数，那么将使用"/tftpboot/本机IP"(默认值)作为根文件系统，并使用默认的NFS挂载选项。<br>
+server-ip  NFS服务器IP地址。其默认值是"ip"参数中的server-ip字段的值。<br>
+root-dir  作为根文件系统挂载的NFS服务器的目录。如果其中包含"%s"，那么将会被替换为本机IP地址的ASCII表示形式。<br>
+nfs-options  标准的NFS文件系统挂载选项(例如"ro")，多个选项之间使用逗号分隔。下面是默认使用的值：<br>
+<pre>
+  port     = 由NFS服务器的portmap守护进程给出
+  rsize    = 4096
+  wsize    = 4096
+  timeo    = 7
+  retrans  = 3
+  acregmin = 3
+  acregmax = 60
+  acdirmin = 30
+  acdirmax = 60
+  flags    = hard,nointr,noposix,cto,ac
+</pre>
+</dd>
+
+<dt>[NFS]<br>nfsrootdebug</dt>
+<dd>在启动过程中，在内核日志里显示详细的NFS相关的调试信息(挂载选项、服务器IP地址、根文件系统路径等)，以方便调试和故障诊断。</dd>
+
+<dt>[NFS]<br>nfs.callback_tcpport=端口号</dt>
+<dd>设置NFSv4回复通道(callback channel)监听的TCP端口</dd>
+
+<dt>[NFS]<br>nfs.cache_getent=路径</dt>
+<dd>设置用于更新NFS客户端缓存项的程序的路径。默认值是"/sbin/nfs_cache_getent"。</dd>
+
+<dt>[NFS]<br>nfs.cache_getent_timeout=秒数</dt>
+<dd>尝试更新缓存项超时秒数，超过指定时间仍未更新成功则视为更新失败。默认值是15秒。</dd>
+
+<dt>[NFS]<br>nfs.idmap_cache_timeout=秒数</dt>
+<dd>设置idmapper缓存项的最大寿命，单位是秒。</dd>
+
+<dt>[NFS]<br>nfs.enable_ino64={0|1}</dt>
+<dd>是否开启64位inode号。"0"表示NFS客户端将会为readdir()与stat()系统调用模拟一个32位inode号(而不是返回真实的64位inode号)。"1"(默认值)表示返回真实的64位inode号。</dd>
+
+<dt>[NFSv4.1]<br>nfs.max_session_slots=正整数</dt>
+<dd>设置NFS客户端尝试和服务器端协商的最大会话slot数。这也同时限定了客户端能够像服务器端发送的最大并发RPC请求数。默认值是64。将此值设置为比max_tcp_slot_table_limit大是没有价值的。</dd>
+
+<dt>[NFSv4]<br>nfs.nfs4_unique_id=字符串</dt>
+<dd>指定NFSv4客户端插入到nfs_client_id4字符串中的额外的唯一标识字符串。这通常是一个在系统安装时自动生成的UUID。</dd>
+
+<dt>[NFSv4.1]<br>nfs.send_implementation_id={0|1}</dt>
+<dd>是否在exchange_id请求中包含客户端实现识别信息(implementation identification information)。"0"表示不发送，默认值"1"表示发送。</dd>
+
+<dt>[NFSv4]<br>nfs.recover_lost_locks={0|1}</dt>
+<dd>v3.12新增。是否尝试恢复服务器上由于租约超时而丢失的锁。需要注意的是，这样做很有可能会导致数据错误，因为无法保证超时后的锁文件未被更改。默认值"0"表示不做这样的尝试，而"1"则表示尝试恢复(这是v3.11及之前内核的默认行为)。</dd>
+
+<dt>[NFSv4]<br>nfs.nfs4_disable_idmapping={0|1}</dt>
+<dd>默认值"1"表示在使用了"sec=sys"挂载选项的情况下，RPC身份认证和NFS操作都使用数字化的uid/gid。这会导致idmapping被禁用，从而让NFSv2/v3向NFSv4的迁移变得更加容易。客户端将会自动检测不支持此种操作模式的服务器，并回退到使用idmapper的模式。"0"表示禁止这种行为。</dd>
+
+<dt>[NFSv4]<br>nfsd.nfs4_disable_idmapping={0|1}</dt>
+<dd>默认值"1"表示NFSv4服务器与那些使用auth_sys的客户端之间只使用数字化的uid/gid(包括发送与接收)，从而让NFSv2/v3向NFSv4的迁移变得更加容易。"0"表示禁止这种行为。</dd>
+</dl>
+
+
+
+
+
+<h3>模块功能</h3>
+<p></p>
+<dl>
+<dt>nomodule</dt>
+<dd>禁用内核模块加载功能(CONFIG_MODULES)。</dd>
+
+<dt>[KNL]<br>module.sig_enforce</dt>
+<dd>强制内核在加载模块时检查模块签名(CONFIG_MODULE_SIG)，并且只接受具有合法签名的模块。如果内核开启了CONFIG_MODULE_SIG_FORCE，那么无论是否使用此参数，都将强制检查模块的签名。</dd>
+</dl>
+
+
+
+
+<h3>安全</h3>
+<p></p>
+<dl>
+<dt>no_file_caps</dt>
+<dd>要求内核无视文件的权限。这样，执行文件的唯一途径就只有：由root去执行或者setuid root</dd>
+
+<dt>noexec={on|off}<br>noexec32={on|off}</dt>
+<dd>
+是否允许将某部分内存映射为"禁止执行"，这是一种防止数据缓冲区溢出攻击的保护措施(也就是WinXP SP2曾经大力宣传的<a href="http://baike.baidu.com/view/187961.htm">数据执行保护</a>功能)，建议保持默认值"on"。<br>
+[说明]noexec对32bit代码以及64bit代码都有约束力，而noexec32只针对32bit代码。
+</dd>
+
+<dt>nosmap</dt>
+<dd>禁用SMAP(CONFIG_X86_SMAP)支持。SMAP是Intel从Haswell微架构开始引入的一种新特征，用途是禁止内核因为自身错误意外访问用户空间的数据，以避免一些内核漏洞所导致的安全隐患。</dd>
+
+<dt>nosmep</dt>
+<dd>禁用SMEP(Supervisor Mode Execution Prevention)支持。SMEP与SMAP类似，也是Intel从Haswell微架构开始引入的一种新特征，用途是禁止内核因为自身错误意外执行用户空间的代码。以避免一些内核漏洞所导致的安全隐患。</dd>
+
+<dt>nordrand</dt>
+<dd>即使CPU支持(CONFIG_ARCH_RANDOM)，也禁止内核使用RDRAND指令(不过用户空间依然可以使用此指令)。由于很多人<a href="http://www.solidot.org/story?sid=37584">怀疑</a>RDRAND指令所依赖的硬件随机数生成器所使用的加密标准(<a href="http://www.solidot.org/story?sid=36411">NIST SP800-90</a>)被NSA植入了后门，所以提供了该参数以禁用它，不过大神<a href="http://news.zol.com.cn/article/154061.html">Torvalds不以为然</a>。</dd>
+
+<dt>vsyscall={emulate|native|none}</dt>
+<dd>
+控制<a href="http://www.cppblog.com/hex108/archive/2010/11/22/134313.html">vsyscall</a>系统调用(调用固定的地址0xffffffffff600x00)的行为。大多数静态链接的可执行程序和老旧的Glibc会使用这个系统调用。因为vsyscall始终位于固定的地址，所以很容易被攻击者利用。<br>
+emulate(默认值) 捕捉vsyscalls系统调用，并对其进行安全的模拟。这是比较安全的选项，但效率并不最高。<br>
+native 将vsyscall系统调用直接转变成本地syscall指令，这比模拟方式效率稍微高一些。但是很容易被攻击。<br>
+none 完全禁用vsyscall系统调用。这是最安全的选项，但是有可能会导致系统工作异常。
+</dd>
+
+<dt>[EVM]<br>evm="fix"</dt>
+<dd>不管当前的完整性状态如何，都允许更新"security.evm"。</dd>
+
+<dt>[SECURITY]<br>security={selinux|smack|tomoyo|apparmor|yama}</dt>
+<dd>选择启用的安全模块。仅在内核同时开启了多个安全模块的情况下才有意义。</dd>
+
+<dt>[SELINUX]<br>selinux={0|1}</dt>
+<dd>
+是否在启动时就开启SELinux功能(CONFIG_SECURITY_SELINUX_BOOTPARAM)："0"表示关闭，"1"表示开启。<br>
+默认值由内核在编译时确定(CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE)。<br>
+即使设为"1"，随后也可以通过 /selinux/disable 在加载安全策略前禁止SELinux功能。
+</dd>
+
+<dt>[SELINUX]<br>enforcing={0|1}</dt>
+<dd>
+是否在启动时强制启用SELinux规则。<br>
+"0"(默认值)表示仅仅做记录违规操作日志而不真正拒绝违规操作；<br>
+"1"表示真正拒绝违规操作并做记录违规操作日志。<br>
+该参数还可以在运行时通过 /selinux/enforce 进行修改
+</dd>
+
+<dt>[SELINUX]<br>checkreqprot={0|1}</dt>
+<dd>
+设置"checkreqprot"标记的初始值。<br>
+"0"表示由内核强制执行检查保护(包括其中隐含的所有执行保护)<br>
+"1"表示由应用程序自己主动请求执行检查保护<br>
+默认值由内核在编译时确定，也可以在运行时通过 /selinux/checkreqprot 修改
+</dd>
+
+<dt>[APPARMOR]<br>apparmor={0|1}</dt>
+<dd>
+是否在启动时就开启AppArmor功能(CONFIG_SECURITY_APPARMOR)："0"表示关闭，"1"表示开启。<br>
+默认值由内核在编译时确定(CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE)。
+</dd>
+</dl>
+
+
+
+
+<h3>多CPU与CPU间调度</h3>
+<p>SMP(对称多处理器)系统中，所有的CPU共享全部资源(总线，内存，I/O等)，最大的特点就是所有资源共享，多个CPU之间没有区别。NUMA(非一致内存访问)的基本特征是具有多个CPU节点，每个CPU节点由多个CPU组成，并且具有独立的本地内存与I/O槽口等。因此，虽然每个CPU都可以访问整个系统的内存，但是访问本地节点内存的速度远远高于访问其它节点的内存。详见<a href="http://www.cnblogs.com/yubo/archive/2010/04/23/1718810.html">《SMP/NUMA/MPP体系结构对比》</a></p>
+<dl>
+<dt>[SMP]<br>nosmp</dt>
+<dd>强制禁用SMP，这是个已被反对使用的旧参数</dd>
+
+<dt>[SMP]<br>maxcpus=整数</dt>
+<dd>最大允许使用的CPU核心数。"0"表示禁用SMP特性(等价于已被反对使用的旧"nosmp"参数)，同时也禁用IO APIC；正整数"n"表示最大允许使用n个CPU核心。</dd>
+
+<dt>[SMP]<br>nr_cpus=正整数</dt>
+<dd>允许SMP内核支持的最大CPU核心数(等价于CONFIG_NR_CPUS)。配合CPU热插拔(CONFIG_HOTPLUG_CPU)，可在运行时增加CPU数目。</dd>
+
+<dt>cpu0_hotplug</dt>
+<dd>
+强制允许CPU0(boot CPU)热插拔(CONFIG_BOOTPARAM_HOTPLUG_CPU0)。下列特性必须依赖于cpu0，所此参数应谨慎使用：<br>
+(1)从休眠状态(S3,S4)唤醒以及从运行状态进入休眠状态<br>
+(2)PIC中断，也就是某些情况下，关机和重启也会依赖于cpu0
+</dd>
+
+<dt>[SMP]<br>additional_cpus=整数</dt>
+<dd>最大允许热插拔的CPU数量。默认值由BIOS决定。相见<a href="http://lxr.linux.no/linux/Documentation/x86/x86_64/cpu-hotplug-spec">Documentation/x86/x86_64/cpu-hotplug-spec</a></dd>
+
+<dt>[NUMA]<br>numa={off|noacpi}</dt>
+<dd>
+off  关闭NUMA支持，也就是让所有内存都只属于同一个节点。<br>
+noacpi  不为NUMA解析ACPI SRAT表
+</dd>
+
+<dt>[KNL]<br>numa_balancing={enable|disable}</dt>
+<dd>启用/禁用NUMA均衡(CONFIG_NUMA_BALANCING)，其默认值由CONFIG_NUMA_BALANCING_DEFAULT_ENABLED决定</dd>
+
+<dt>[KNL,BOOT]<br>numa_zonelist_order={zone|node|default}</dt>
+<dd>设置NUMA的zonelist顺序。这里设置的值还可以在运行中通过sysctl来修改。详见<a href="http://lxr.linux.no/linux/Documentation/sysctl/vm.txt">Documentation/sysctl/vm.txt</a></dd>
+
+<dt>[KNL,SMP]<br>isolcpus=CPU编号列表</dt>
+<dd>
+将列表中的CPU从内核SMP平衡和调度算法中剔除。<br>
+[注意]提出后并不是绝对不能再使用该CPU的，操作系统仍然可以强制指定特定的进程使用哪个CPU(可以通过taskset来做到)。<br>
+该参数的目的主要是用于实现<a href="http://blog.csdn.net/maray/article/category/295160">特定cpu只运行特定进程</a>的目的。<br>
+CPU编号从"0"开始计数，列表的表示方法有三种：<br>
+numA,numB,...,numN<br>
+numA-numN<br>
+以及上述两种表示方法的组合：<br>
+numA,...,numM-numN<br>
+例如：0,3,4-7,9
+</dd>
+
+<dt>[KNL,SMP]<br>relax_domain_level={-1|0|1|2|3|4|5}</dt>
+<dd>
+设置CPUSET调度域(sched domain)的默认级别。大于此级别的调度域层次将禁用闲时均衡和唤醒均衡，而其余级别的调度域都开启。<br>
+-1(默认值) 使用系统的默认值(取决于不同的硬件架构)或者由其他的请求确定，也就是不人为指定默认级别。<br>
+0  禁用所有调度域的闲时均衡和唤醒均衡<br>
+1  超线程域(siblings)，也就是同一个物理核心内的不同超线程<br>
+2  核域(cores)，也就是同一个物理CPU中不同的核心<br>
+3  节点域(node)，对于NUMA系统来说就是同一个NUMA节点内，对于non-NUMA系统来说这是整个系统范围<br>
+4  节点组域(chunk of node)，仅适用于NUMA系统，表示在一组特定的NUMA节点范围内<br>
+5  全系统(system wide)，全部系统范围内<br>
+详见<a href="http://lxr.linux.no/linux/Documentation/cgroups/cpusets.txt">Documentation/cgroups/cpusets.txt</a>文档
+</dd>
+</dl>
+
+
+
+
+<h3>控制组(Control Group)</h3>
+<p>Cgroup(CONFIG_CGROUPS)是一种进程管理机制，也是内核的资源分配框架。</p>
+<dl>
+<dt>[KNL]<br>cgroup_disable="控制器名称"</dt>
+<dd>禁用cgroup中特定的控制器名称。目前只支持一个"memory"控制器。</dd>
+
+<dt>noautogroup</dt>
+<dd>禁止自动创建进程组(CONFIG_SCHED_AUTOGROUP)，服务器环境可以考虑使用此参数。</dd>
+
+<dt>[KNL]<br>swapaccount={0|1}</dt>
+<dd>是否统计换入(swap in)内存的资源。"0"表示不统计，"1"表示统计。详见<a href="http://lxr.linux.no/linux/Documentation/cgroups/memory.txt">Documentation/cgroups/memory.txt</a>文档。</dd>
+</dl>
+
+
+
+
+<h3>EFI/UEFI</h3>
+<p></p>
+<dl>
+<dt>noefi</dt>
+<dd>禁用EFI支持(CONFIG_EFI)。</dd>
+
+<dt>[EFI]<br>add_efi_memmap</dt>
+<dd>将EFI内存映像包括在内核的可用物理内存映像之中</dd>
+
+<dt>pstore.backend=efivars</dt>
+<dd>将"efivars"(CONFIG_EFI_VARS_PSTORE)用作<a href="http://www.ibm.com/developerworks/cn/linux/l-cn-apei/">pstore</a>内存文件系统的后端。</dd>
+</dl>
+
+
+
+
+
+<h3>杂项</h3>
+<p></p>
+<dl>
+<dt>[IP_VS_FTP]<br>ports=portA,portB,...</dt>
+<dd><a href="http://www.linuxvirtualserver.org/software/ipvs.html">IPVS</a>(IP Virtual Server) FTP帮助模块所使用的端口，最多允许指定8个。默认值是"21"。</dd>
+
+<dt>io_delay={0x80|0xed|udelay|none}</dt>
+<dd>
+设置IO延迟方式<br>
+0x80(CONFIG_IO_DELAY_0X80) 传统的Linux IO延迟方式,久经考验,也最安全<br>
+0xed(CONFIG_IO_DELAY_0XED) 基于0xed端口的IO延迟方式,主要是为了避免和基于0x80端口的主板诊断卡冲突<br>
+udelay(CONFIG_IO_DELAY_UDELAY) 使用内核端udelay()函数作为延迟方法(简单的延迟2微秒).可以不占用任何IO端口空间.<br>
+none(CONFIG_IO_DELAY_NONE) 不使用任何port-IO延迟机制.只要你的机器不是老古董,这个应该是首选.
+</dd>
+
+<dt>[KNL]<br>reboot=[mode][,type][,force]</dt>
+<dd>
+指定系统重启的方式：<br>
+mode 用于指定重启模式，可以使用如下2种模式之一：warm(热重启[跳过内存检测]), cold(冷重启[检测并重新初始化所有硬件])<br>
+type 用于指定重启类型，可以使用如下4种类型之一：bios(为热重启使用CPU reboot vector), acpi(优先使用FADT中的ACPI RESET_REG,若失败再转kbd), kbd(使用键盘控制器冷重启,这是默认值), triple, efi(优先使用EFI提供的reset_system运行时服务,若失败再转kbd)<br>
+结尾的"force"表示在重启时不停用其它的CPU，在某些情况下可以让reboot更可靠。
+</dd>
+
+<dt>[KNL]<br>reset_devices</dt>
+<dd>强制驱动程序在初始化底层设备的过程中重置设备</dd>
+
+<dt>[KNL]<br>rcu_nocbs=</dt>
+<dd>在"CONFIG_RCU_NOCB_CPU=y"的情况下,指定哪些CPU是No-CB CPU</dd>
+
+<dt>[KNL]<br>nodelayacct</dt>
+<dd>禁止在针对每个进程的统计信息中包含进程等候系统资源(cpu,IO同步,内存交换等)所花费的时间，相当于禁用CONFIG_TASK_DELAY_ACCT模块。</dd>
+
+<dt>[KNL]<br>sysfs.deprecated={0|1}</dt>
+<dd>为了兼容旧版本的应用程序而保留过时的sysfs特性(CONFIG_SYSFS_DEPRECATED)，其默认值由CONFIG_SYSFS_DEPRECATED_V2确定。</dd>
+</dl>
+
+
+
+<hr />
+
+</body></html>

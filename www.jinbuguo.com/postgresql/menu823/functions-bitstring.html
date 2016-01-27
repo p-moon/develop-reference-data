@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>位串函数和操作符</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-binarystring.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="functions-matching.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-BITSTRING">9.6. 位串函数和操作符</a></h1><a name="AEN9047"></a>
+<p>本节描述用于检查和操作位串的函数和操作符，也就是操作类型为 <tt class="TYPE">bit</tt> 和 <tt class="TYPE">bit varying</tt> 值的函数和操作符。除了常用的比较操作符之外，还可以使用<a href="functions-bitstring.html#FUNCTIONS-BIT-STRING-OP-TABLE">表9-10</a>里显示的操作符。<tt class="LITERAL">&amp;</tt>, <tt class="LITERAL">|</tt>, <tt class="LITERAL">#</tt> 的位串操作数必须等长。在移位的时候，保留原始的位串长度(并以 0 填充)，如例子所示。</p>
+<div class="TABLE"><a name="FUNCTIONS-BIT-STRING-OP-TABLE"></a>
+<p><b>表9-10. 位串操作符</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>操作符</th><th>描述</th><th>例子</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="LITERAL">||</tt></td><td>连接</td><td><tt class="LITERAL">B'10001' || B'011'</tt></td><td><tt class="LITERAL">10001011</tt></td></tr>
+<tr><td><tt class="LITERAL">&amp;</tt></td><td>位与</td><td><tt class="LITERAL">B'10001' &amp; B'01101'</tt></td><td><tt class="LITERAL">00001</tt></td></tr>
+<tr><td><tt class="LITERAL">|</tt></td><td>位或</td><td><tt class="LITERAL">B'10001' | B'01101'</tt></td><td><tt class="LITERAL">11101</tt></td></tr>
+<tr><td><tt class="LITERAL">#</tt></td><td>位异或</td><td><tt class="LITERAL">B'10001' # B'01101'</tt></td><td><tt class="LITERAL">11100</tt></td></tr>
+<tr><td><tt class="LITERAL">~</tt></td><td>位非</td><td><tt class="LITERAL">~ B'10001'</tt></td><td><tt class="LITERAL">01110</tt></td></tr>
+<tr><td><tt class="LITERAL">&lt;&lt;</tt></td><td>位左移</td><td><tt class="LITERAL">B'10001' &lt;&lt; 3</tt></td><td><tt class="LITERAL">01000</tt></td></tr>
+<tr><td><tt class="LITERAL">&gt;&gt;</tt></td><td>位右移</td><td><tt class="LITERAL">B'10001' &gt;&gt; 2</tt></td><td><tt class="LITERAL">00100</tt></td></tr>
+</tbody>
+</table>
+</div>
+<p>下面的 SQL 标准函数除了可以用于字符串之外，也可以用于位串：<tt class="LITERAL"><code class="FUNCTION">length</code></tt>, <tt class="LITERAL"><code class="FUNCTION">bit_length</code></tt>, <tt class="LITERAL"><code class="FUNCTION">octet_length</code></tt>, <tt class="LITERAL"><code class="FUNCTION">position</code></tt>, <tt class="LITERAL"><code class="FUNCTION">substring</code></tt> 。</p>
+<p>另外，我们可以在整数和 <tt class="TYPE">bit</tt> 之间来回转换。例子：</p>
+<pre class="PROGRAMLISTING">44::bit(10)                    <i class="LINEANNOTATION">0000101100</i>
+44::bit(3)                     <i class="LINEANNOTATION">100</i>
+cast(-44 as bit(12))           <i class="LINEANNOTATION">111111010100</i>
+'1110'::bit(4)::integer        <i class="LINEANNOTATION">14</i></pre>
+<p>请注意，只是转换为"bit"的意思是转换成 <tt class="LITERAL">bit(1)</tt> ，因此只会转换成整数的最低位。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 PostgreSQL 8.0以前，把一个整数转换成 <tt class="TYPE">bit(n)</tt> 将拷贝整数的最左边的 <tt class="LITERAL">n</tt> 位，而现在是拷贝最右边的 <tt class="LITERAL">n</tt> 位。还有，把一个整数转换成比整数本身长的位串，就会扩展最左边的位(非负数为 0 ，负数为 1)。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-binarystring.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="functions-matching.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">二进制字符串函数和操作符</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">模式匹配</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>4.3. 添加 LFS 用户</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第四章 最后的准备工作</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="creatingtoolsdir.html" title="创建 $LFS/tools 目录">后退</a>
+          <p>创建 $LFS/tools 目录</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="settingenvironment.html" title="设置工作环境">前进</a>
+          <p>设置工作环境</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter04.html" title="第四章 最后的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">4.3. 添加 LFS 用户</h1>
+      </div>
+      <p>以 <span class="emphasis"><em>root</em></span> 用户登录的时候，犯一个错误就足以损坏甚至摧毁系统，因此，本章我们推荐使用一个无特权的用户来编译和安装软件包。您可以使用您自己的用户名，不过为了建立一个干净的工作环境，建议您新建一个名为 <span class="emphasis"><em>lfs</em></span> 的组，并在其中添加一个名为 <span class="emphasis"><em>lfs</em></span> 的用户，我们将在安装过程中使用这个用户。以 <span class="emphasis"><em>root</em></span> 用户运行下列命令来添加新用户：</p>
+      <pre class="userinput"><kbd class="command">groupadd lfs
+useradd -s /bin/bash -g lfs -m -k /dev/null lfs</kbd></pre>
+      <div class="variablelist">
+        <p class="title">
+          <b>命令行选项的含义：</b></p>
+        <dl>
+          <dt>
+            <span class="term"><em class="parameter"><tt>-s /bin/bash</tt></em></span>
+          </dt>
+          <dd>
+            <p>指定 <span><strong class="command">bash</strong></span> 作为 <span class="emphasis"><em>lfs</em></span> 用户的默认 shell </p>
+          </dd>
+          <dt>
+            <span class="term"><em class="parameter"><tt>-g lfs</tt></em></span>
+          </dt>
+          <dd>
+            <p>将 <span class="emphasis"><em>lfs</em></span> 用户添加到 <span class="emphasis"><em>lfs</em></span> 组</p>
+          </dd>
+          <dt>
+            <span class="term"><em class="parameter"><tt>-m</tt></em></span>
+          </dt>
+          <dd>
+            <p>为 <span class="emphasis"><em>lfs</em></span> 用户创建 home 目录</p>
+          </dd>
+          <dt>
+            <span class="term"><em class="parameter"><tt>-k /dev/null</tt></em></span>
+          </dt>
+          <dd>
+            <p>这个参数通过修改输入位置为特殊的空设备来防止从框架目录(默认为 <tt class="filename">/etc/skel</tt>)拷贝文件</p>
+          </dd>
+          <dt>
+            <span class="term"><em class="parameter"><tt>lfs</tt></em></span>
+          </dt>
+          <dd>
+            <p>这是所创建的组和用户的实际名字</p>
+          </dd>
+        </dl>
+      </div>
+      <p>为了可以使用 <tt class="systemitem">lfs</tt> 用户登录(与从 <tt class="systemitem">root</tt> 用户切换到 <tt class="systemitem">lfs</tt> 用户不同，这种切换不需要 <tt class="systemitem">lfs</tt> 用户有一个密码)，必须先为 <tt class="systemitem">lfs</tt> 用户设置一个密码：</p>
+      <pre class="userinput"><kbd class="command">passwd lfs</kbd></pre>
+      <p>通过把 <tt class="systemitem">lfs</tt> 用户设置为 <tt class="filename">$LFS/tools</tt> 目录的所有者来授予 <span class="emphasis"><em>lfs</em></span> 用户对该目录的完全访问权限：</p>
+      <pre class="userinput"><kbd class="command">chown -v lfs $LFS/tools</kbd></pre>
+      <p>如果您依照建议创建了独立的工作目录，请将该目录的所有权赋予 <tt class="systemitem">lfs</tt> 用户：</p>
+      <pre class="userinput"><kbd class="command">chown -v lfs $LFS/sources</kbd></pre>
+      <p>接下来，以 <tt class="systemitem">lfs</tt> 用户登录。您可以通过一个虚拟控制台，或者通过显示管理器，或者用下面的切换用户命令：</p>
+      <pre class="userinput"><kbd class="command">su - lfs</kbd></pre>
+      <p> "<span class="quote"><em class="parameter"><tt>-</tt></em></span>" 参数指示 <span><strong class="command">su</strong></span> 开启一个登陆Shell(login shell)而不是非登陆Shell(non-login shell)，这两种 shell 的不同之处请参考 <tt class="filename">bash(1)</tt> 和 <span><strong class="command">info bash</strong></span> 。</p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="creatingtoolsdir.html" title="创建 $LFS/tools 目录">后退</a>
+          <p>创建 $LFS/tools 目录</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="settingenvironment.html" title="设置工作环境">前进</a>
+          <p>设置工作环境</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter04.html" title="第四章 最后的准备工作">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

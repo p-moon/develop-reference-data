@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>7.7. 配置 sysklogd 脚本</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第七章 配置系统启动脚本</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="console.html" title="配置 Linux 控制台">后退</a>
+          <p>配置 Linux 控制台</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="inputrc.html" title="创建 /etc/inputrc 文件">前进</a>
+          <p>创建 /etc/inputrc 文件</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter07.html" title="第七章 配置系统启动脚本">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="sect1">
+      <div class="titlepage">
+        <h1 class="sect1">7.7. 配置 sysklogd 脚本</h1>
+      </div>
+      <p><tt class="filename">sysklogd</tt> 脚本用 <em class="parameter"><tt>-m 0</tt></em> 选项调用 <span><strong class="command">syslogd</strong></span> 程序，该选项关闭了周期时间戳标记，这个标记默认让 <span><strong class="command">syslogd</strong></span> 每 20 分钟写入一次 log 文件。要打开周期时间戳标记，请编辑 <tt class="filename">sysklogd</tt> 脚本做相应修改。请运行 <strong class="userinput"><tt>man syslogd</tt></strong> 以获得更多信息。
+      </p>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="console.html" title="配置 Linux 控制台">后退</a>
+          <p>配置 Linux 控制台</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="inputrc.html" title="创建 /etc/inputrc 文件">前进</a>
+          <p>创建 /etc/inputrc 文件</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter07.html" title="第七章 配置系统启动脚本">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

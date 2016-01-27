@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>部分索引</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="indexes-expressional.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="indexes.html">快退</a></td><td width="60%" align="center" valign="bottom">章11. 索引</td><td width="10%" align="right" valign="top"><a href="indexes.html">快进</a></td><td width="10%" align="right" valign="top"><a href="indexes-opclass.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INDEXES-PARTIAL">11.7. 部分索引</a></h1><a name="AEN16195"></a>
+<p><i class="FIRSTTERM">部分索引</i>是建立在一个表的子集上的索引；该子集是由一个条件表达式定义的(叫做部分索引的<i class="FIRSTTERM">谓词</i>)。该索引只包含表中那些满足这个谓词的行。部分索引是一个特殊的特性，但是在某些场合很有用。</p>
+<p>部分索引的主要动机是为了避免对普通数值(大量重复的数值)建立索引。因为在普通数值上的查询就算使用索引也没什么好处，那么还不如从索引中剔除这些大量重复的行。这样可以减小索引尺寸，提高那些真正使用索引的查询的速度。同时它也能提高更新操作的速度，因为不是所有情况都需要更新索引。<a href="indexes-partial.html#INDEXES-PARTIAL-EX1">例11-1</a>显示了一个潜在的这方面应用的例子。</p>
+<div class="EXAMPLE"><a name="INDEXES-PARTIAL-EX1"></a>
+<p><b>例11-1. 设置一个部分索引以排除普通数值</b></p>
+<p>假设你在数据库中存储 web 服务器的访问日志。大多数访问是从你的组织内部的 IP 地址范围发起的，但也有一小部分来自其它地方(比如那些通过拨号进行连接的雇员)。如果你主要搜索来自外部访问的 IP ，那么你就不需要对组织子网的 IP 范围进行索引。</p>
+<p>假设表像下面这样：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE access_log (
+    url varchar,
+    client_ip inet,
+    ...
+);</pre>
+<p>要创建符合例子的索引，使用像下面这样的命令：</p>
+<pre class="PROGRAMLISTING">CREATE INDEX access_log_client_ip_ix ON access_log (client_ip)
+    WHERE NOT (client_ip &gt; inet '192.168.100.0' AND client_ip &lt; inet '192.168.100.255');</pre>
+<p>一个可以使用这个索引的典型的查询像这样：</p>
+<pre class="PROGRAMLISTING">SELECT * FROM access_log WHERE url = '/index.html' AND client_ip = inet '212.78.10.32';</pre>
+<p>一个不能使用这个索引的查询是：</p>
+<pre class="PROGRAMLISTING">SELECT * FROM access_log WHERE client_ip = inet '192.168.100.23';</pre>
+<p>我们通过观察可以看出，这种类型的部分索引要求普通数值是可以预计的。如果数值的分布是固有的(来自应用自身的性质)并且是静态的(不随时间而改变)，那做到这一点(跟踪普通数值)并不困难，但是如果普通数值只是因为一致的数据装载，那么它可能就要花很多维护性工作，不时地改变索引定义。</p>
+</div>
+<p>另外一个用途在<a href="indexes-partial.html#INDEXES-PARTIAL-EX2">例11-2</a>里显示，它把不感兴趣的数值排除在索引之外。这个结果有与上面列出的同样的优点，但是它完全拒绝了通过索引访问"不感兴趣"的数值，即使索引扫描可能对那些数据也有利。显然，为这种情况设置部分索引需要非常仔细并且需要大量试验。</p>
+<div class="EXAMPLE"><a name="INDEXES-PARTIAL-EX2"></a>
+<p><b>例11-2. 设置一个部分索引以排除不感兴趣的数值</b></p>
+<p>如果你有一个表，包含已付款和未付款的定单，而未付款的定单只占总表的一小部分并且是经常使用的部分，那么你可以通过只在未付款定单上创建一个索引来改善性能。创建索引的命令看起来会像这样：</p>
+<pre class="PROGRAMLISTING">CREATE INDEX orders_unbilled_index ON orders (order_nr)
+    WHERE billed is not true;</pre>
+<p>可能用到这个索引的查询看起来像</p>
+<pre class="PROGRAMLISTING">SELECT * FROM orders WHERE billed is not true AND order_nr &lt; 10000;</pre>
+<p>不过，该索引也可以用于那些完全不涉及 <tt class="STRUCTFIELD">order_nr</tt> 查询，比如</p>
+<pre class="PROGRAMLISTING">SELECT * FROM orders WHERE billed is not true AND amount &gt; 5000.00;</pre>
+<p>这个查询不像在 <tt class="STRUCTFIELD">amount</tt> 字段上的部分索引那么有效，因为系统必须扫描整个索引。但是，如果未付款的定单相对较少，那么用这个部分索引找出未付款的定单将会更快些。</p>
+<p>请注意下面这个查询无法使用这个索引：</p>
+<pre class="PROGRAMLISTING">SELECT * FROM orders WHERE order_nr = 3501;</pre>
+<p>定单 3501 可能是已付款也可能是未付款。</p>
+</div>
+<p><a href="indexes-partial.html#INDEXES-PARTIAL-EX2">例11-2</a>还说明了建了索引的字段和谓词中的字段不必相配。PostgreSQL 支持带任意谓词的部分索引，只要只涉及被索引表的字段就行。不过，我们要记住的是谓词必须和那些希望从该索引中获益的查询条件相匹配。准确说，只有在系统能够识别出该查询的 <tt class="LITERAL">WHERE</tt> 条件在数学上蕴涵了该索引的谓词时，这个部分索引才能用于该查询。PostgreSQL 还没有智能到可以完全识别那些形式不同但数学上相等的谓词。做到这样不仅非常困难，而且在实际使用中也可能非常慢。系统可以识别简单的不相等蕴涵，比如"x &lt; 1"蕴涵"x &lt; 2"；否则，谓词条件必须准确匹配查询的 <tt class="LITERAL">WHERE</tt> 条件，不然系统将无法识别该索引是可用的。匹配发生在查询规划期间，而不是运行期间。因此，参数化的查询子句必定不会使用部分索引。例如，一个预先写好的、带有参数的查询可能指定了"x &lt; ?"，它不可能对所有可能的参数值都蕴涵"x &lt; 2"。</p>
+<p>部分索引的第三种用途是禁止在查询中使用索引。如<a href="indexes-partial.html#INDEXES-PARTIAL-EX3">例11-3</a>所示，这里的概念是在表的子集里创建唯一索引。这样就强制在满足谓词的行中保持唯一性，而并不约束那些不需要唯一的行。</p>
+<div class="EXAMPLE"><a name="INDEXES-PARTIAL-EX3"></a>
+<p><b>例11-3. 设置一个部分唯一索引</b></p>
+<p>假设我们有一个记录测试输出的表。我们希望确保在每个目标和课题的组合中只有一个"成功"记录，但是可以有任意数量的"不成功"记录。下面是实现方法：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE tests (
+    subject text,
+    target text,
+    success boolean,
+    ...
+);
+
+CREATE UNIQUE INDEX tests_success_constraint ON tests (subject, target)
+    WHERE success;</pre>
+<p>如果只有少数成功测试而有很多不成功测试，那么这是一种非常有效的实现方法。</p>
+</div>
+<p>最后，部分索引也可以用于取代系统选择的查询规划。可能会出现这样的情况：如果数据集的分布是比较特定的形状，那么会导致系统在不该使用索引的时候使用它。在这种情况下，我们可以把索引设置为在违反规律的查询中不可用。通常 PostgreSQL 对索引的使用会做出合理的选择(比如，它在检索普通数值的时候避免使用它，因此前面的例子实际上只是节约了索引的尺寸，它并不要求避免索引的使用)，但是如果出现了错误的规划选择那么请提交一个臭虫报告。</p>
+<p>请记住一件事：设置一个部分索引表示你至少和查询规划器知道的一样多，特别是你知道什么场合下索引是有效的。要形成这些知识要求你经验丰富并且理解 PostgreSQL 的索引是如何运作的。在大多数情况下，部分索引对普通索引的优势并不太明显。</p>
+<p>更多有关部分索引的信息可以在 <a href="biblio.html#STON89B"><i><a href="http://s2k-ftp.CS.Berkeley.EDU:8000/postgres/papers/ERL-M89-17.pdf" target="_top">The case for partial indexes</a></I></A>, <a href="biblio.html#OLSON93"><i>Partial indexing in POSTGRES: research project</i></a>, <a href="biblio.html#SESHADRI95"><i><a href="http://simon.cs.cornell.edu/home/praveen/papers/partindex.de95.ps.Z" target="_top">Generalized Partial Indexes</a></I></A> 获得。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="indexes-expressional.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="indexes-opclass.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">表达式上的索引</td><td width="34%" align="center" valign="top"><a href="indexes.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">操作符类</td></tr>
+</table>
+</div>
+</body></html>

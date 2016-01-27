@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>SQL 语言</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="PART">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="tutorial-conclusion.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="tutorial.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="admin.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-syntax.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="PART"><a name="SQL"></a>
+<div><h1>II. SQL 语言</h1>
+<div class="PARTINTRO"><a name="AEN1060"></a>
+<p>这一部分描述 PostgreSQL 里面 SQL 语言的使用。我们从描述 SQL 的一般语法开始，然后解释如何创建保存数据的结构、如何填充数据库、以及如何查询数据库。中间部分列出了用户可以在 SQL 命令中使用的数据类型和函数。剩下的部分讨论那些对调节数据库，优化其性能很重要的几个方面。</p>
+<p>这部分的信息是这样安排的：新手可以从头读到尾，便可以获取相关主题的完整信息，而不需要向前引用太多的次数。里面的章节是设计成自包含的，这样高级用户就可以选择独立的章节来阅读。这部分的信息是按照主题单元以叙述的方式组织的。如果你需要了解特定命令的完整描述，那么应该看看 <a href="reference.html">Part VI</a> 。</p>
+<p>本书的读者应该知道如何与一个 PostgreSQL 数据库连接并发出 SQL 命令。我们建议那些不熟悉这些方面的读者首先阅读 <a href="tutorial.html">Part I</a> 。通常 SQL 命令是用 PostgreSQL 交互终端 <span class="APPLICATION">psql</span> 输入的，但其它有类似功能的程序也可以使用。</p>
+</div>
+<div>
+<dl>
+<dt><b>目录</b></dt>
+<dt>4. <a href="sql-syntax.html">SQL 语法</a></dt>
+<dd><dl>
+<dt>4.1. <a href="sql-syntax-lexical.html">词法结构</a></dt>
+<dt>4.2. <a href="sql-expressions.html">值表达式</a></dt>
+</dl></dd>
+<dt>5. <a href="ddl.html">数据定义</a></dt>
+<dd><dl>
+<dt>5.1. <a href="ddl-basics.html">表的基本概念</a></dt>
+<dt>5.2. <a href="ddl-default.html">缺省值</a></dt>
+<dt>5.3. <a href="ddl-constraints.html">约束</a></dt>
+<dt>5.4. <a href="ddl-system-columns.html">系统字段</a></dt>
+<dt>5.5. <a href="ddl-alter.html">修改表</a></dt>
+<dt>5.6. <a href="ddl-priv.html">权限</a></dt>
+<dt>5.7. <a href="ddl-schemas.html">模式</a></dt>
+<dt>5.8. <a href="ddl-inherit.html">继承</a></dt>
+<dt>5.9. <a href="ddl-partitioning.html">分区</a></dt>
+<dt>5.10. <a href="ddl-others.html">其它数据库对象</a></dt>
+<dt>5.11. <a href="ddl-depend.html">依赖性跟踪</a></dt>
+</dl></dd>
+<dt>6. <a href="dml.html">数据操作</a></dt>
+<dd><dl>
+<dt>6.1. <a href="dml-insert.html">插入数据</a></dt>
+<dt>6.2. <a href="dml-update.html">更新数据</a></dt>
+<dt>6.3. <a href="dml-delete.html">删除数据</a></dt>
+</dl></dd>
+<dt>7. <a href="queries.html">查询</a></dt>
+<dd><dl>
+<dt>7.1. <a href="queries-overview.html">概述</a></dt>
+<dt>7.2. <a href="queries-table-expressions.html">表表达式</a></dt>
+<dt>7.3. <a href="queries-select-lists.html">选择列表</a></dt>
+<dt>7.4. <a href="queries-union.html">组合查询</a></dt>
+<dt>7.5. <a href="queries-order.html">行排序</a></dt>
+<dt>7.6. <a href="queries-limit.html"><tt class="LITERAL">LIMIT</tt> 和 <tt class="LITERAL">OFFSET</tt></a></dt>
+<dt>7.7. <a href="queries-values.html"><tt class="LITERAL">VALUES</tt> 列表</a></dt>
+</dl></dd>
+<dt>8. <a href="datatype.html">数据类型</a></dt>
+<dd><dl>
+<dt>8.1. <a href="datatype-numeric.html">数值类型</a></dt>
+<dt>8.2. <a href="datatype-money.html">货币类型</a></dt>
+<dt>8.3. <a href="datatype-character.html">字符类型</a></dt>
+<dt>8.4. <a href="datatype-binary.html">二进制数据类型</a></dt>
+<dt>8.5. <a href="datatype-datetime.html">日期/时间类型</a></dt>
+<dt>8.6. <a href="datatype-boolean.html">布尔类型</a></dt>
+<dt>8.7. <a href="datatype-geometric.html">几何类型</a></dt>
+<dt>8.8. <a href="datatype-net-types.html">网络地址类型</a></dt>
+<dt>8.9. <a href="datatype-bit.html">位串类型</a></dt>
+<dt>8.10. <a href="arrays.html">数组</a></dt>
+<dt>8.11. <a href="rowtypes.html">复合类型</a></dt>
+<dt>8.12. <a href="datatype-oid.html">对象标识符类型</a></dt>
+<dt>8.13. <a href="datatype-pseudo.html">伪类型</a></dt>
+<dt>8.14. <a href="datatype-xml.html">XML文档支持</a></dt>
+</dl></dd>
+<dt>9. <a href="functions.html">函数和操作符</a></dt>
+<dd><dl>
+<dt>9.1. <a href="functions-logical.html">逻辑操作符</a></dt>
+<dt>9.2. <a href="functions-comparison.html">比较操作符</a></dt>
+<dt>9.3. <a href="functions-math.html">数学函数和操作符</a></dt>
+<dt>9.4. <a href="functions-string.html">字符串函数和操作符</a></dt>
+<dt>9.5. <a href="functions-binarystring.html">二进制字符串函数和操作符</a></dt>
+<dt>9.6. <a href="functions-bitstring.html">位串函数和操作符</a></dt>
+<dt>9.7. <a href="functions-matching.html">模式匹配</a></dt>
+<dt>9.8. <a href="functions-formatting.html">数据类型格式化函数</a></dt>
+<dt>9.9. <a href="functions-datetime.html">时间/日期函数和操作符</a></dt>
+<dt>9.10. <a href="functions-geometry.html">几何函数和操作符</a></dt>
+<dt>9.11. <a href="functions-net.html">网络地址函数和操作符</a></dt>
+<dt>9.12. <a href="functions-sequence.html">序列操作函数</a></dt>
+<dt>9.13. <a href="functions-conditional.html">条件表达式</a></dt>
+<dt>9.14. <a href="functions-array.html">数组函数和操作符</a></dt>
+<dt>9.15. <a href="functions-aggregate.html">聚集函数</a></dt>
+<dt>9.16. <a href="functions-subquery.html">子查询表达式</a></dt>
+<dt>9.17. <a href="functions-comparisons.html">行和数组比较</a></dt>
+<dt>9.18. <a href="functions-srf.html">返回集合的函数</a></dt>
+<dt>9.19. <a href="functions-info.html">系统信息函数</a></dt>
+<dt>9.20. <a href="functions-admin.html">系统管理函数</a></dt>
+</dl></dd>
+<dt>10. <a href="typeconv.html">类型转换</a></dt>
+<dd><dl>
+<dt>10.1. <a href="typeconv-overview.html">概述</a></dt>
+<dt>10.2. <a href="typeconv-oper.html">操作符</a></dt>
+<dt>10.3. <a href="typeconv-func.html">函数</a></dt>
+<dt>10.4. <a href="typeconv-query.html">值存储</a></dt>
+<dt>10.5. <a href="typeconv-union-case.html"><tt class="LITERAL">UNION</tt>, <tt class="LITERAL">CASE</tt> 和相关构造</a></dt>
+</dl></dd>
+<dt>11. <a href="indexes.html">索引</a></dt>
+<dd><dl>
+<dt>11.1. <a href="indexes-intro.html">介绍</a></dt>
+<dt>11.2. <a href="indexes-types.html">索引类型</a></dt>
+<dt>11.3. <a href="indexes-multicolumn.html">多字段索引</a></dt>
+<dt>11.4. <a href="indexes-bitmap-scans.html">组合多个索引</a></dt>
+<dt>11.5. <a href="indexes-unique.html">唯一索引</a></dt>
+<dt>11.6. <a href="indexes-expressional.html">表达式上的索引</a></dt>
+<dt>11.7. <a href="indexes-partial.html">部分索引</a></dt>
+<dt>11.8. <a href="indexes-opclass.html">操作符类</a></dt>
+<dt>11.9. <a href="indexes-examine.html">检查索引的使用</a></dt>
+</dl></dd>
+<dt>12. <a href="mvcc.html">并发控制</a></dt>
+<dd><dl>
+<dt>12.1. <a href="mvcc-intro.html">介绍</a></dt>
+<dt>12.2. <a href="transaction-iso.html">事务隔离</a></dt>
+<dt>12.3. <a href="explicit-locking.html">明确锁定</a></dt>
+<dt>12.4. <a href="applevel-consistency.html">应用层数据完整性检查</a></dt>
+<dt>12.5. <a href="locking-indexes.html">锁和索引</a></dt>
+</dl></dd>
+<dt>13. <a href="performance-tips.html">性能提升技巧</a></dt>
+<dd><dl>
+<dt>13.1. <a href="using-explain.html">使用 <tt class="COMMAND">EXPLAIN</tt></a></dt>
+<dt>13.2. <a href="planner-stats.html">规划器使用的统计信息</a></dt>
+<dt>13.3. <a href="explicit-joins.html">用明确的 <tt class="LITERAL">JOIN</tt> 控制规划器</a></dt>
+<dt>13.4. <a href="populate.html">向数据库中添加记录</a></dt>
+</dl></dd>
+</dl>
+</div>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="tutorial-conclusion.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-syntax.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">结论</td><td width="34%" align="center" valign="top">&nbsp;</td><td width="33%" align="right" valign="top">SQL 语法</td></tr>
+</table>
+</div>
+</body></html>

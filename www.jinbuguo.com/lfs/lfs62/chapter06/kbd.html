@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN" xml:lang="zh-CN">
+<head><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+    <title>6.42. Kbd-1.12</title>
+    <link rel="stylesheet" href="../stylesheets/lfs.css" type="text/css" />
+    <link rel="stylesheet" href="../stylesheets/lfs-print.css" type="text/css" media="print" />
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+  <body id="lfs" class="6.2">
+    <div class="navheader">
+      <div class="headertitles">
+        <h4>Linux From Scratch - 版本 6.2</h4>
+        <h3>第六章 安装系统基础软件</h3>
+      </div>
+      <ul class="headerlinks">
+        <li class="prev">
+          <a accesskey="p" href="iproute2.html" title="IPRoute2-2.6.16-060323">后退</a>
+          <p>IPRoute2-2.6.16-060323</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="less.html" title="Less-394">前进</a>
+          <p>Less-394</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a></li>
+      </ul>
+    </div>
+    <div class="wrap">
+      <div class="titlepage">
+        <h1 class="sect1">6.42. Kbd-1.12</h1>
+      </div>
+      <div class="package">
+        <p>Kbd 包含键盘映射表和键盘工具。</p>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">预计编译时间：</span></strong> <span class="seg">少于 0.1 SBU</span>
+            </div>
+            <div class="seg">
+              <strong><span class="segtitle">所需磁盘空间：</span></strong> <span class="seg">12.3 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="installation">
+        <div class="titlepage">
+          <h2 class="sect2">6.42.1. 安装 Kbd</h2>
+        </div>
+        <p>Backspace 键和 Delete 键的功能在 kbd 包的键盘映射中是不一样的。下面的 patch 修正了 i386 的键盘映射中的这个问题：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../kbd-1.12-backspace-1.patch</kbd></pre>
+        <p>打完 patch 之后，Backspace 键会产生字符编码 127，Delete 键会产生一个著名的逃脱序列。</p>
+        <p>应用 patch 来修正 Kbd 中的 <span><strong class="command">setfont</strong></span> 在 GCC-4.0.3 下编译出错的问题：</p>
+        <pre class="userinput"><kbd class="command">patch -Np1 -i ../kbd-1.12-gcc4_fixes-1.patch</kbd></pre>
+        <p>为编译 Kbd 做准备：</p>
+        <pre class="userinput"><kbd class="command">./configure --datadir=/lib/kbd</kbd></pre>
+        <div class="variablelist">
+          <p class="title">
+            <b>配置选项的含义：</b></p>
+          <dl>
+            <dt>
+              <span class="term"><em class="parameter"><tt>--datadir=/lib/kbd</tt></em></span>
+            </dt>
+            <dd>
+              <p>这个选项把键盘布局信息存放到根分区内，而不是存放在默认的
+                <tt class="filename">/usr/share/kbd</tt>。</p>
+            </dd>
+          </dl>
+        </div>
+        <p>编译软件包：</p>
+        <pre class="userinput"><kbd class="command">make</kbd></pre>
+        <p>这个软件包没有附带测试程序。</p>
+        <p>安装软件包：</p>
+        <pre class="userinput"><kbd class="command">make install</kbd></pre>
+        <div class="note">
+          <div class="admonhead">
+            <img alt="[Note]" src="../images/note.png" />
+            <h3 class="admontitle">注意</h3>
+          </div>
+          <div class="admonbody">
+            <p>对于一些语言（例如，白俄罗斯），在 Kbd 包中没有提供相应的键盘映射。系统假定使用 ISO-8859-5 编码，通常使用 CP1251 键盘映射。
+            这些语种的用户需要单独下载相应的键盘映射：</p>
+          </div>
+        </div>
+        <p> LFS-Bootscripts 包中的一些脚本依赖于
+          <span><strong class="command">kbd_mode</strong></span>，
+          <span><strong class="command">openvt</strong></span>，和
+          <span><strong class="command">setfont</strong></span>。因为
+          <tt class="filename">/usr</tt> 在启动的早些时候是无法访问的（没有挂载）。那些二进制文件需要放在根分区上：</p>
+        <pre class="userinput"><kbd class="command">mv -v /usr/bin/{kbd_mode,openvt,setfont} /bin</kbd></pre>
+      </div>
+      <div class="content">
+        <div class="titlepage">
+          <a id="contents-kbd" name="contents-kbd"></a>
+          <h2 class="sect2">6.42.2. Kbd 的内容</h2>
+        </div>
+        <div class="segmentedlist">
+          <div class="seglistitem">
+            <div class="seg">
+              <strong><span class="segtitle">安装的程序：</span></strong> <span class="seg">chvt, deallocvt,
+              dumpkeys, fgconsole, getkeycodes, kbd_mode, kbdrate, loadkeys,
+              loadunimap, mapscrn, openvt, psfaddtable(→psfxtable),
+              psfgettable(→psfxtable), psfstriptable(→psfxtable), psfxtable, resizecons, setfont, setkeycodes,
+              setleds, setmetamode, showconsolefont, showkey, unicode_start, unicode_stop</span>
+            </div>
+          </div>
+        </div>
+        <div class="variablelist">
+          <h3><a id="id3690918" name="id3690918"></a>简要描述</h3>
+          <table border="0">
+            <col align="left" valign="top" />
+            <tbody>
+              <tr>
+                <td><a id="chvt" name="chvt"></a><span class="term"><span><strong class="command">chvt</strong></span></span></td>
+                <td><p>改变前台虚拟终端</p></td>
+              </tr>
+              <tr>
+                <td><a id="deallocvt" name="deallocvt"></a><span class="term"><span><strong class="command">deallocvt</strong></span></span></td>
+                <td><p>重新分配不用的虚拟终端</p></td>
+              </tr>
+              <tr>
+                <td><a id="dumpkeys" name="dumpkeys"></a><span class="term"><span><strong class="command">dumpkeys</strong></span></span></td>
+                <td><p>显示键盘转换表</p></td>
+              </tr>
+              <tr>
+                <td><a id="fgconsole" name="fgconsole"></a><span class="term"><span><strong class="command">fgconsole</strong></span></span></td>
+                <td><p>显示活动虚拟控制台的数量</p></td>
+              </tr>
+              <tr>
+                <td><a id="getkeycodes" name="getkeycodes"></a><span class="term"><span><strong class="command">getkeycodes</strong></span></span></td>
+                <td><p>显示内核中扫描码与键盘码的转换表</p></td>
+              </tr>
+              <tr>
+                <td><a id="kbd_mode" name="kbd_mode"></a><span class="term"><span><strong class="command">kbd_mode</strong></span></span></td>
+                <td><p>设置或显示键盘模式</p></td>
+              </tr>
+              <tr>
+                <td><a id="kbdrate" name="kbdrate"></a><span class="term"><span><strong class="command">kbdrate</strong></span></span></td>
+                <td><p>设置或显示键盘重复和延迟的速度</p></td>
+              </tr>
+              <tr>
+                <td><a id="loadkeys" name="loadkeys"></a><span class="term"><span><strong class="command">loadkeys</strong></span></span></td>
+                <td><p>加载键盘转换表</p></td>
+              </tr>
+              <tr>
+                <td><a id="loadunimap" name="loadunimap"></a><span class="term"><span><strong class="command">loadunimap</strong></span></span></td>
+                <td><p>加载内核的 Unicode 到字体(unicode-to-font)之间的影射表</p></td>
+              </tr>
+              <tr>
+                <td><a id="mapscrn" name="mapscrn"></a><span class="term"><span><strong class="command">mapscrn</strong></span></span></td>
+                <td><p>把用户定义的输出字符影射表加载到控制台驱动器中。注意这个程序已经过时，它实现的功能已经并入 <span><strong class="command">setfont</strong></span> 程序。</p></td>
+              </tr>
+              <tr>
+                <td><a id="openvt" name="openvt"></a><span class="term"><span><strong class="command">openvt</strong></span></span></td>
+                <td><p>在一个新虚拟终端启动一个程序</p></td>
+              </tr>
+              <tr>
+                <td><a id="psfaddtable" name="psfaddtable"></a><span class="term"><span><strong class="command">psfaddtable</strong></span></span></td>
+                <td><p>链接到 <span><strong class="command">psfxtable</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="psfgettable" name="psfgettable"></a><span class="term"><span><strong class="command">psfgettable</strong></span></span></td>
+                <td><p>链接到 <span><strong class="command">psfxtable</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="psfstriptable" name="psfstriptable"></a><span class="term"><span><strong class="command">psfstriptable</strong></span></span></td>
+                <td><p>链接到 <span><strong class="command">psfxtable</strong></span></p></td>
+              </tr>
+              <tr>
+                <td><a id="psfxtable" name="psfxtable"></a><span class="term"><span><strong class="command">psfxtable</strong></span></span></td>
+                <td><p>一套处理控制台字体的 Unicode 字符表的工具</p></td>
+              </tr>
+              <tr>
+                <td><a id="resizecons" name="resizecons"></a><span class="term"><span><strong class="command">resizecons</strong></span></span></td>
+                <td><p>让内核改变控制台的大小</p></td>
+              </tr>
+              <tr>
+                <td><a id="setfont" name="setfont"></a><span class="term"><span><strong class="command">setfont</strong></span></span></td>
+                <td><p>改变控制台的 EGA 或 VGA 字体</p></td>
+              </tr>
+              <tr>
+                <td><a id="setkeycodes" name="setkeycodes"></a><span class="term"><span><strong class="command">setkeycodes</strong></span></span></td>
+                <td><p>告诉内核的键盘驱动程序在扫描码/键码(scancode-to-keycode)影射表中加入新的影射，当你的键盘上有某些特殊建的时候这个就很有用了。</p></td>
+              </tr>
+              <tr>
+                <td><a id="setleds" name="setleds"></a><span class="term"><span><strong class="command">setleds</strong></span></span></td>
+                <td><p>设置当前终端键盘的发光二极管(LED)标志</p></td>
+              </tr>
+              <tr>
+                <td><a id="setmetamode" name="setmetamode"></a><span class="term"><span><strong class="command">setmetamode</strong></span></span></td>
+                <td><p>设置键盘的元键(meta key)</p></td>
+              </tr>
+              <tr>
+                <td><a id="showconsolefont" name="showconsolefont"></a><span class="term"><span><strong class="command">showconsolefont</strong></span></span></td>
+                <td><p>显示当前 EGA / VGA 终端的屏幕字体</p></td>
+              </tr>
+              <tr>
+                <td><a id="showkey" name="showkey"></a><span class="term"><span><strong class="command">showkey</strong></span></span></td>
+                <td><p>测试键盘发出的扫描码和键码</p></td>
+              </tr>
+              <tr>
+                <td><a id="unicode_start" name="unicode_start"></a><span class="term"><span><strong class="command">unicode_start</strong></span></span></td>
+                <td><p>使控制台进入 UNICODE 模式。在 LFS 系统中从不使用，因为应用程序并未配置为支持 UNICODE 。</p></td>
+              </tr>
+              <tr>
+                <td><a id="unicode_stop" name="unicode_stop"></a><span class="term"><span><strong class="command">unicode_stop</strong></span></span></td>
+                <td><p>终止控制台的 UNICODE 模式</p></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="navfooter">
+      <ul>
+        <li class="prev">
+          <a accesskey="p" href="iproute2.html" title="IPRoute2-2.6.16-060323">后退</a>
+          <p>IPRoute2-2.6.16-060323</p>
+        </li>
+        <li class="next">
+          <a accesskey="n" href="less.html" title="Less-394">前进</a>
+          <p>Less-394</p>
+        </li>
+        <li class="up"><a accesskey="u" href="chapter06.html" title="第六章 安装系统基础软件">上一级</a></li>
+        <li class="home"><a accesskey="h" href="../index.html" title="Linux From Scratch - 版本 6.2">首页</a>.
+        </li>
+      </ul>
+    </div>
+</body></html>

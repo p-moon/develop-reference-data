@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_language</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-inherits.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-largeobject.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-LANGUAGE">43.20. <tt class="STRUCTNAME">pg_language</tt></a></h1><a name="AEN63751"></a>
+<p><tt class="STRUCTNAME">pg_language</tt> 登记编程语言，你可以用这些语言或接口写函数或者存储过程。参阅 <a href="sql-createlanguage.html"><i>CREATE LANGUAGE</i></a> 和<a href="xplang.html">章36</a>获取更多关于语言处理器的信息。</p>
+<div class="TABLE"><a name="AEN63757"></a>
+<p><b>表43-20. <tt class="STRUCTNAME">pg_language</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">lanname</tt></td><td><tt class="TYPE">name</tt></td><td>&nbsp;</td><td>语言的名字</td></tr>
+<tr><td><tt class="STRUCTFIELD">lanispl</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>对于内部语言而言是假(比如 SQL)，对于用户定义的语言则是真。目前，<span class="APPLICATION">pg_dump</span> 仍然使用这个东西判断哪种语言需要转储，但是这些可能在将来被其它机制取代。</td></tr>
+<tr><td><tt class="STRUCTFIELD">lanpltrusted</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>如果这是可信语言则为真，意味着系统相信它不会被授予任何正常 SQL 执行环境之外的权限。只有超级用户可以创建不可信的语言。</td></tr>
+<tr><td><tt class="STRUCTFIELD">lanplcallfoid</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>对于非内部语言，这是指向该语言处理器的引用，语言处理器是一个特殊函数，负责执行以某种语言写的所有函数。</td></tr>
+<tr><td><tt class="STRUCTFIELD">lanvalidator</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-proc.html"><tt class="STRUCTNAME">pg_proc</tt></a>.oid</tt></td><td>这个字段引用一个语言校验器函数，它负责检查新创建的函数的语法和有效性。如果没有提供校验器，则为零。</td></tr>
+<tr><td><tt class="STRUCTFIELD">lanacl</tt></td><td><tt class="TYPE">aclitem[]</tt></td><td>&nbsp;</td><td>访问权限，参阅 <a href="sql-grant.html"><i>GRANT</i></a> 和 <a href="sql-revoke.html"><i>REVOKE</i></a> 获取细节。</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-inherits.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-largeobject.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_inherits</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_largeobject</tt></td></tr>
+</table>
+</div>
+</body></html>

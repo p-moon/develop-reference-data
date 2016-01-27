@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>向数据库中添加记录</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="explicit-joins.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="performance-tips.html">快退</a></td><td width="60%" align="center" valign="bottom">章13. 性能提升技巧</td><td width="10%" align="right" valign="top"><a href="performance-tips.html">快进</a></td><td width="10%" align="right" valign="top"><a href="admin.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="POPULATE">13.4. 向数据库中添加记录</a></h1>
+<p>第一次填充数据库时可能需要做大量的表插入。下面是一些建议，可以尽可能高效地处理这些事情。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="DISABLE-AUTOCOMMIT">13.4.1. 关闭自动提交</a></h2><a name="AEN16981"></a>
+<p>关闭自动提交，并且只在每次(数据拷贝)结束的时候做一次提交。在纯 SQL 里，这就意味着在开始的时候发出 <tt class="COMMAND">BEGIN</tt> 并且在结束的时候执行 <tt class="COMMAND">COMMIT</tt> 。有些客户端的库可能背着你干这些事情，这种情况下你必须确信只有在你确实要那些库干这些事情的时候它才做。如果你允许每个插入都独立地提交，那么 PostgreSQL 会为所增加的每行记录做大量的处理。在一个事务里完成所有插入的动作的最大的好处就是，如果有一条记录插入失败，那么，到该点为止的所有已插入记录都将被回滚，这样你就不会很难受地面对一个只装载了一部分数据的表。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="POPULATE-COPY-FROM">13.4.2. 使用 <tt class="COMMAND">COPY</tt></a></h2>
+<p>使用 <a href="sql-copy.html"><i>COPY</i></a> 在一条命令里装载所有记录，而不是一连串的 <tt class="COMMAND">INSERT</tt> 命令。<tt class="COMMAND">COPY</tt> 命令是为装载数量巨大的数据行优化过的；它没 <tt class="COMMAND">INSERT</tt> 那么灵活，但是在大量装载数据的情况下，导致的荷载也少很多。因为 <tt class="COMMAND">COPY</tt> 是单条命令，因此填充表的时候就没有必要关闭自动提交了。</p>
+<p>如果你不能使用 <tt class="COMMAND">COPY</tt> ，那么使用 <a href="sql-prepare.html"><i>PREPARE</i></a> 来创建一个预备 <tt class="COMMAND">INSERT</tt> ，然后使用 <tt class="COMMAND">EXECUTE</tt> 多次效率更高。这样就避免了重复分析和规划 <tt class="COMMAND">INSERT</tt> 的开销。</p>
+<p>请注意，在装载大量数据行的时候，<tt class="COMMAND">COPY</tt> 几乎总是比 <tt class="COMMAND">INSERT</tt> 快，即使使用了 <tt class="COMMAND">PREPARE</tt> 并且把多个 <tt class="COMMAND">INSERT</tt> 命令绑在一个事务中也是这样。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="POPULATE-RM-INDEXES">13.4.3. 删除索引</a></h2>
+<p>如果你正在装载一个新创建的表，最快的方法是创建表，用 <tt class="COMMAND">COPY</tt> 批量装载，然后创建表需要的任何索引。在已存在数据的表上创建索引要比递增地更新所装载的每一行记录要快。</p>
+<p>如果你对现有表增加大量的数据，可能先删除索引，装载表，然后重新创建索引更快些。当然，在缺少索引的期间，其它数据库用户的数据库性能将有负面的影响。并且我们在删除唯一索引之前还需要仔细考虑清楚，因为唯一约束提供的错误检查在缺少索引的时候会消失。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="POPULATE-RM-FKEYS">13.4.4. 删除外键约束</a></h2>
+<p>和索引一样，"批量地"检查外键约束比一行行检查更高效。因此，也许我们先删除外键约束，装载数据，然后重建约束会更高效。同样，装载数据和缺少约束而失去错误检查之间也有一个平衡。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="POPULATE-WORK-MEM">13.4.5. 增大 <tt class="VARNAME">maintenance_work_mem</tt></a></h2>
+<p>在装载大量的数据的时候，临时增大 <a href="runtime-config-resource.html#GUC-MAINTENANCE-WORK-MEM">maintenance_work_mem</a> 配置变量可以改进性能。这个参数也可以帮助加速 <tt class="COMMAND">CREATE INDEX</tt> 和 <tt class="COMMAND">ALTER TABLE ADD FOREIGN KEY</tt> 命令。它不会对 <tt class="COMMAND">COPY</tt> 本身有多大作用，所以这个建议只有在你使用上面的两个技巧时才有效。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="POPULATE-CHECKPOINT-SEGMENTS">13.4.6. 增大 <tt class="VARNAME">checkpoint_segments</tt></a></h2>
+<p>临时增大 <a href="runtime-config-wal.html#GUC-CHECKPOINT-SEGMENTS">checkpoint_segments</a> 配置变量也可以让大量数据装载得更快。这是因为向 PostgreSQL 里面装载大量的数据可以导致检查点操作(由配置变量 <tt class="VARNAME">checkpoint_timeout</tt> 声明)比平常更加频繁发生。在发生一个检查点的时候，所有脏数据都必须刷新到磁盘上。通过在大量数据装载的时候临时增加 <tt class="VARNAME">checkpoint_segments</tt> ，所要求的检查点的数目可以减少。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="POPULATE-ANALYZE">13.4.7. 事后运行 <tt class="COMMAND">ANALYZE</tt> Afterwards</a></h2>
+<p>不管什么时候，如果你在增加或者更新了大量数据之后，运行 <a href="sql-analyze.html"><i>ANALYZE</i></a> 都是个好习惯。运行 <tt class="COMMAND">ANALYZE</tt> 或者 <tt class="COMMAND">VACUUM ANALYZE</tt> 可以保证规划器有表数据的最新统计。如果没有统计数据或者统计数据太陈旧，那么规划器可能选择很差劲的查询规划，导致表的查询性能恶化。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="POPULATE-PG-DUMP">13.4.8. <span class="APPLICATION">pg_dump</span></a> 的一些注意事项</h2>
+<p><span class="APPLICATION">pg_dump</span> 生成的转储脚本自动使用上面的若干个技巧，但不是全部。要尽可能快地装载 <span class="APPLICATION">pg_dump</span> 转储，我们需要手工做几个事情。请注意，这些要点适用于<span class="emphasis"><i class="EMPHASIS">恢复</i></span>一个转储，而不是<span class="emphasis"><i class="EMPHASIS">创建</i></span>一个转储的时候。同样的要点也适用于使用 <span class="APPLICATION">pg_restore</span> 从 <span class="APPLICATION">pg_dump</span> 归档文件装载数据的时候。</p>
+<p>缺省的时候，<span class="APPLICATION">pg_dump</span> 使用 <tt class="COMMAND">COPY</tt> ，在它生成一个完整的模式和数据的转储的时候，它会很小心地先装载数据，然后创建索引和外键。因此，在这个情况下，头几条技巧是自动处理的。你需要做的只是在装载转储脚本之前设置比正常状况大的 <tt class="VARNAME">maintenance_work_mem</tt> 和 <tt class="VARNAME">checkpoint_segments</tt> 值，然后在装载完成之后运行 <tt class="COMMAND">ANALYZE</tt> 。</p>
+<p>只保存数据的转储仍然会使用 <tt class="COMMAND">COPY</tt> ，但是它不会删除或者重建索引，并且它不会自动修改外键。<a name="AEN17057" href="#FTN.AEN17057"><span class="footnote">[1]</span></a>因此，在装载只有数据的转储的时候，是否使用删除以及重建索引和外键等技巧完全取决于你。装载数据的时候，增大 <tt class="VARNAME">checkpoint_segments</tt> 仍然是有用的，但是增大 <tt class="VARNAME">maintenance_work_mem</tt> 就没什么必要了；你只是应该在事后手工创建索引和外键的事后增大它。最后结束时不要忘记 <tt class="COMMAND">ANALYZE</tt> 命令。</p>
+</div>
+</div>
+<h3 class="FOOTNOTES">注意</h3>
+<table border="0" class="FOOTNOTES" width="100%">
+<tr><td align="LEFT" valign="TOP" width="5%"><a name="FTN.AEN17057" href="populate.html#AEN17057"><span class="footnote">[1]</span></a></td><td align="LEFT" valign="TOP" width="95%"><p>你可以通过使用 <tt class="OPTION">--disable-triggers</tt> 选项的方法获取关闭外键的效果。不过要意识到这么做是消除，而不只是推迟违反外键约束，因此如果你使用这个选项，将有可能插入坏数据。</p></td></tr>
+</table>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="explicit-joins.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="admin.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">用明确的 <tt class="LITERAL">JOIN</tt> 控制规划器</td><td width="34%" align="center" valign="top"><a href="performance-tips.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">服务器管理</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ALTER FUNCTION</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-alterdomain.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-alterdomain.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-altergroup.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-altergroup.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ALTERFUNCTION"></a>ALTER FUNCTION</h1>
+<div class="REFNAMEDIV"><a name="AEN43995"></a><h2>名称</h2>ALTER FUNCTION&nbsp;--&nbsp;修改一个函数的定义</div>
+<a name="AEN43998"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN44000"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ALTER FUNCTION <tt class="REPLACEABLE"><i>name</i></tt> ( [ [ <tt class="REPLACEABLE"><i>argmode</i></tt> ] [ <tt class="REPLACEABLE"><i>argname</i></tt> ] <tt class="REPLACEABLE"><i>argtype</i></tt> [, ...] ] )
+    <tt class="REPLACEABLE"><i>action</i></tt> [, ... ] [ RESTRICT ]
+ALTER FUNCTION <tt class="REPLACEABLE"><i>name</i></tt> ( [ [ <tt class="REPLACEABLE"><i>argmode</i></tt> ] [ <tt class="REPLACEABLE"><i>argname</i></tt> ] <tt class="REPLACEABLE"><i>argtype</i></tt> [, ...] ] )
+    RENAME TO <tt class="REPLACEABLE"><i>new_name</i></tt>
+ALTER FUNCTION <tt class="REPLACEABLE"><i>name</i></tt> ( [ [ <tt class="REPLACEABLE"><i>argmode</i></tt> ] [ <tt class="REPLACEABLE"><i>argname</i></tt> ] <tt class="REPLACEABLE"><i>argtype</i></tt> [, ...] ] )
+    OWNER TO <tt class="REPLACEABLE"><i>new_owner</i></tt>
+ALTER FUNCTION <tt class="REPLACEABLE"><i>name</i></tt> ( [ [ <tt class="REPLACEABLE"><i>argmode</i></tt> ] [ <tt class="REPLACEABLE"><i>argname</i></tt> ] <tt class="REPLACEABLE"><i>argtype</i></tt> [, ...] ] )
+    SET SCHEMA <tt class="REPLACEABLE"><i>new_schema</i></tt>
+
+这里的 <tt class="REPLACEABLE"><i>action</i></tt> 是如下之一：
+
+    CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT
+    IMMUTABLE | STABLE | VOLATILE
+    [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER</pre>
+</div>
+<div class="REFSECT1"><a name="AEN44023"></a><h2>描述</h2>
+<p><tt class="COMMAND">ALTER FUNCTION</tt> 修改一个函数的定义。</p>
+<p>要使用 <tt class="COMMAND">ALTER FUNCTION</tt> ，你必须拥有该函数。要修改一个函数的模式，你还必须在新模式上拥有 <tt class="LITERAL">CREATE</tt> 权限。要修改所有者，你还必须是新的所有角色的直接或间接成员，并且该成员必须在此函数的模式上有 <tt class="LITERAL">CREATE</tt> 权限。这些限制强制了修改该所有者不会做任何通过删除和重建函数不能做的事情。不过，超级用户可以以任何方式修改任意函数的所有权。</p>
+</div>
+<div class="REFSECT1"><a name="AEN44031"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>一个现有的函数名字(可以有模式修饰)</p></dd>
+<dt><tt class="REPLACEABLE"><i>argmode</i></tt></dt>
+<dd><p>参数的模式：可以是 <tt class="LITERAL">IN</tt>(缺省), <tt class="LITERAL">OUT</tt>, <tt class="LITERAL">INOUT</tt> 之一。请主意 <tt class="COMMAND">ALTER FUNCTION</tt> 实际不会注意任何 <tt class="LITERAL">OUT</tt> 参数，因为判断函数的身份只需要输入参数。因此列出 <tt class="LITERAL">IN</tt> 和 <tt class="LITERAL">INOUT</tt> 参数就足够了。</p></dd>
+<dt><tt class="REPLACEABLE"><i>argname</i></tt></dt>
+<dd><p>参数的名字。请注意 <tt class="COMMAND">ALTER FUNCTION</tt> 实际上不会注意参数的名字，因为只有参数的数据类型用于判断函数的身份。</p></dd>
+<dt><tt class="REPLACEABLE"><i>argtype</i></tt></dt>
+<dd><p>如果有的话，是该函数参数的数据类型(可以用模式修饰)。</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_name</i></tt></dt>
+<dd><p>函数的新名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_owner</i></tt></dt>
+<dd><p>函数的新所有者。请注意如果函数标记为 <tt class="LITERAL">SECURITY DEFINER</tt> ，那么它随后将以新的所有者执行。</p></dd>
+<dt><tt class="REPLACEABLE"><i>new_schema</i></tt></dt>
+<dd><p>函数的新模式</p></dd>
+<dt><tt class="LITERAL">CALLED ON NULL INPUT</tt><br><tt class="LITERAL">RETURNS NULL ON NULL INPUT</tt><br><tt class="LITERAL">STRICT</tt></dt>
+<dd><p><tt class="LITERAL">CALLED ON NULL INPUT</tt> 把函数改成在所有参数都是 NULL 的时候也会调用它。<tt class="LITERAL">RETURNS NULL ON NULL INPUT</tt> 或 <tt class="LITERAL">STRICT</tt> 把函数改成如果任何一个参数是 NULL 就根本不执行并且自动返回 NULL 。参阅 <a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a> 获取更多信息。</p></dd>
+<dt><tt class="LITERAL">IMMUTABLE</tt><br><tt class="LITERAL">STABLE</tt><br><tt class="LITERAL">VOLATILE</tt></dt>
+<dd><p>把函数的易失属性修改为指定类型。参阅 <a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a> 获取细节。</p></dd>
+<dt><tt class="LITERAL">[<span class="OPTIONAL">EXTERNAL</span>] SECURITY INVOKER</tt><br><tt class="LITERAL">[<span class="OPTIONAL">EXTERNAL</span>] SECURITY DEFINER</tt></dt>
+<dd><p>修改函数的安全性定义，标识它是否是安全定义器。出于兼容 SQL 标准，关键字 <tt class="LITERAL">EXTERNAL</tt> 将被忽略。参阅 <a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a> 获取更多有关这个功能的信息。</p></dd>
+<dt><tt class="LITERAL">RESTRICT</tt></dt>
+<dd><p>因兼容 SQL 标准而忽略</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN44118"></a><h2>例子</h2>
+<p>把参数类型为 <tt class="TYPE">integer</tt> 的函数 <tt class="LITERAL">sqrt</tt> 重命名为 <tt class="LITERAL">square_root</tt> ：</p>
+<pre class="PROGRAMLISTING">ALTER FUNCTION sqrt(integer) RENAME TO square_root;</pre>
+<p>把参数类型为 <tt class="TYPE">integer</tt> 的函数 <tt class="LITERAL">sqrt</tt> 的所有者修改为 <tt class="LITERAL">joe</tt> ：</p>
+<pre class="PROGRAMLISTING">ALTER FUNCTION sqrt(integer) OWNER TO joe;</pre>
+<p>把参数类型为 <tt class="TYPE">integer</tt> 的函数 <tt class="LITERAL">sqrt</tt> 的模式修改为 <tt class="LITERAL">maths</tt> ：</p>
+<pre class="PROGRAMLISTING">ALTER FUNCTION sqrt(integer) SET SCHEMA maths;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN44135"></a><h2>兼容性</h2>
+<p>这个语句部分兼容 SQL 标准里面的 <tt class="COMMAND">ALTER FUNCTION</tt> 语句。标准允许修改函数的更多属性，但是没有提供修改函数名字的功能，也没有提供把一个函数定义为安全定义器的功能，更没有修改函数所有者、模式、易失性的功能。标准还要求 <tt class="LITERAL">RESTRICT</tt> 关键字；这在 PostgreSQL 里是可选的。</p>
+</div>
+<div class="REFSECT1"><a name="AEN44141"></a><h2>又见</h2><a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a>, <a href="sql-dropfunction.html"><i>DROP FUNCTION</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-alterdomain.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-altergroup.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ALTER DOMAIN</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">ALTER GROUP</td></tr>
+</table>
+</div>
+</body></html>

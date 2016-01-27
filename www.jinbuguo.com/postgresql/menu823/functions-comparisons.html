@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>行和数组比较</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="functions-subquery.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="functions.html">快退</a></td><td width="60%" align="center" valign="bottom">章9. 函数和操作符</td><td width="10%" align="right" valign="top"><a href="functions.html">快进</a></td><td width="10%" align="right" valign="top"><a href="functions-srf.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="FUNCTIONS-COMPARISONS">9.17. 行和数组比较</a></h1><a name="AEN14045"></a><a name="AEN14047"></a><a name="AEN14049"></a><a name="AEN14051"></a><a name="AEN14053"></a><a name="AEN14055"></a><a name="AEN14057"></a><a name="AEN14060"></a><a name="AEN14062"></a>
+<p>本节描述几个特殊的构造，用于在多组值之间进行多重比较。这些形式语法上和上一节的子查询形式相关，但是不涉及子查询。这种形式涉及的数组子表达式是 PostgreSQL 的扩展；其它的是 SQL 兼容的。所有本节记录的表达式形式都返回布尔值(真/假)。</p>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN14067">9.17.1. <tt class="LITERAL">IN</tt></a></h2>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>expression</i></tt> IN (<tt class="REPLACEABLE"><i>value</i></tt> [<span class="OPTIONAL">, ...</span>])</pre>
+<p>右边是一个圆括弧包围的标量列表。如果左边的表达式结果等于任何右边表达式中的一个，结果为"真"。它是下面这种方式的缩写</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>expression</i></tt> = <tt class="REPLACEABLE"><i>value1</i></tt>
+OR
+<tt class="REPLACEABLE"><i>expression</i></tt> = <tt class="REPLACEABLE"><i>value2</i></tt>
+OR
+...</pre>
+<p>请注意，如果左边表达式的值为 NULL ，或者没有相等的右边值并且至少有一个右边表达式的值为 NULL ，那么 <tt class="TOKEN">IN</tt> 的结果将是 NULL ，而不是假。这个行为遵照 SQL 处理布尔值和 NULL 组合时的规则。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN14083">9.17.2. <tt class="LITERAL">NOT IN</tt></a></h2>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>expression</i></tt> NOT IN (<tt class="REPLACEABLE"><i>value</i></tt> [<span class="OPTIONAL">, ...</span>])</pre>
+<p>右边是一个圆括弧包围的标量列表。如果左边的表达式结果不等于任何右边表达式，结果为"真"。它是下面这种方式的缩写</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>expression</i></tt> &lt;&gt; <tt class="REPLACEABLE"><i>value1</i></tt>
+AND
+<tt class="REPLACEABLE"><i>expression</i></tt> &lt;&gt; <tt class="REPLACEABLE"><i>value2</i></tt>
+AND
+...</pre>
+<p>请注意，如果左边表达式的值为 NULL ，或者没有相等的右边值并且至少有一个右边表达式的值为 NULL ，那么 <tt class="TOKEN">NOT IN</tt> 的结果将是 NULL ，而不是真。这个行为遵照 SQL 处理布尔值和 NULL 组合时的规则。</p>
+<div class="TIP">
+<blockquote class="TIP">
+<p><b>【提示】</b><tt class="LITERAL">x NOT IN y</tt> 在所有场合都等价于 <tt class="LITERAL">NOT (x IN y)</tt> 。但是，在处理 NULL 的时候，用 <tt class="TOKEN">NOT IN</tt> 比用 <tt class="TOKEN">IN</tt> 更容易迷惑新手。最好用正逻辑来表达你的条件。</p>
+</blockquote>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN14105">9.17.3. <tt class="LITERAL">ANY</tt>/<tt class="LITERAL">SOME</tt> (数组)</a></h2>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>expression</i></tt> <tt class="REPLACEABLE"><i>operator</i></tt> ANY (<tt class="REPLACEABLE"><i>array expression</i></tt>)
+<tt class="REPLACEABLE"><i>expression</i></tt> <tt class="REPLACEABLE"><i>operator</i></tt> SOME (<tt class="REPLACEABLE"><i>array expression</i></tt>)</pre>
+<p>右边是一个圆括弧包围的表达式，它必须生成一个数组值。左边表达式使用 <tt class="REPLACEABLE"><i>operator</i></tt> 对数组的每一个元素进行一次计算和比较，其结果必须是布尔值。如果至少获得一个真值，则 <tt class="TOKEN">ANY</tt> 结果为"真"。如果全部获得假值，则结果是"假"(包括数组不含任何元素的情况)。</p>
+<p>如果数组表达式的值为 NULL ，那么 <tt class="TOKEN">ANY</tt> 的结果也为 NULL 。如果左边表达式的值为 NULL ，那么 <tt class="TOKEN">ANY</tt> 的结果通常也为 NULL(某些不严格的比较操作符可能得到不同的结果)。另外，如果右边的数组表达式中包含 NULL 元素并且没有为真的比较结果，那么 <tt class="TOKEN">ANY</tt> 的结果将是 NULL(某些不严格的比较操作符可能得到不同的结果)，而不是假。这个行为遵照 SQL 处理布尔值和 NULL 组合时的规则。</p>
+<p><tt class="TOKEN">SOME</tt> 是 <tt class="TOKEN">ANY</tt> 的同意词。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="AEN14128">9.17.4. <tt class="LITERAL">ALL</tt> (数组)</a></h2>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>expression</i></tt> <tt class="REPLACEABLE"><i>operator</i></tt> ALL (<tt class="REPLACEABLE"><i>array expression</i></tt>)</pre>
+<p>右边是一个圆括弧包围的表达式，它必须生成一个数组值。左边表达式使用 <tt class="REPLACEABLE"><i>operator</i></tt> 对数组的每一个元素进行一次计算和比较，其结果必须是布尔值。如果全部获得真值，<tt class="TOKEN">ALL</tt> 结果为"真"(包括数组不含任何元素的情况)。如果至少获得一个假值，则结果是"假"。</p>
+<p>的结果也为 NULL 。如果左边表达式的值为 NULL ，那么 <tt class="TOKEN">ALL</tt> 的结果也为 NULL 。如果左边表达式的值为 NULL ，那么 <tt class="TOKEN">ALL</tt> 的结果通常也为 NULL(某些不严格的比较操作符可能得到不同的结果)。另外，如果右边的数组表达式中包含 NULL 元素并且没有为假的比较结果，那么 <tt class="TOKEN">ALL</tt> 的结果将是 NULL(某些不严格的比较操作符可能得到不同的结果)，而不是真。这个行为遵照 SQL 处理布尔值和 NULL 组合时的规则。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="ROW-WISE-COMPARISON">9.17.5. 逐行比较</a></h2>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>row_constructor</i></tt> <tt class="REPLACEABLE"><i>operator</i></tt> <tt class="REPLACEABLE"><i>row_constructor</i></tt></pre>
+<p>两边都是一个<a href="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">节4.2.11</a>所述的行构造器；两个行的字段数必须相同。两边都被计算并且逐行比较。目前，用于比较的 <tt class="REPLACEABLE"><i>operator</i></tt> 操作符仅允许为 <tt class="LITERAL">=</tt>, <tt class="LITERAL">&lt;&gt;</tt>, <tt class="LITERAL">&lt;</tt>, <tt class="LITERAL">&lt;=</tt>, <tt class="LITERAL">&gt;</tt>, <tt class="LITERAL">&gt;=</tt> 或与其具有相似的语意。特别地，如果一个操作符属于 B-Tree 操作符类，那么该操作符可以是一个行比较操作符或除 <tt class="LITERAL">=</tt> 之外的 B-Tree 操作符类。</p>
+<p><tt class="LITERAL">=</tt> 和 <tt class="LITERAL">&lt;&gt;</tt> 与其它操作符稍有区别。如果两行对应的元素全都非空且相等，那么这两行就被认为是相等的；如果两行对应的元素中有任意一对非空且不等，那么这两行就被认为是不等的；否则这两行的比较结果是未知(NULL)。</p>
+<p>对于 <tt class="LITERAL">&lt;</tt>, <tt class="LITERAL">&lt;=</tt>, <tt class="LITERAL">&gt;</tt>, <tt class="LITERAL">&gt;=</tt> 操作符，行中的元素将按照从左到右的顺序依次进行比较，直到遇见一对不相等的元素或者一对 NULL 值。如果这对元素中存在至少一个 NULL 值，那么比较的结果是 NULL ；否则这对元素的比较结果就是最终的比较结果。例如，<tt class="LITERAL">ROW(1,2,NULL) &lt; ROW(1,3,0)</tt> 的结果是真而不是 NULL ，因为比较到第二对元素的时候就已经得到了最终结果，不需要对第三对元素进行比较了。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 PostgreSQL 8.2之前，<tt class="LITERAL">&lt;</tt>, <tt class="LITERAL">&lt;=</tt>, <tt class="LITERAL">&gt;</tt>, <tt class="LITERAL">&gt;=</tt> 并不遵守 SQL 标准。比如，<tt class="LITERAL">ROW(a,b) &lt; ROW(c,d)</tt> 将等价于 <tt class="LITERAL">a &lt; c AND b &lt; d</tt> ，而正确的做法应当是等价于 <tt class="LITERAL">a &lt; c OR (a = c AND b &lt; d)</tt> 。</p>
+</blockquote>
+</div>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>row_constructor</i></tt> IS DISTINCT FROM <tt class="REPLACEABLE"><i>row_constructor</i></tt></pre>
+<p>这个构造类似于 <tt class="LITERAL">&lt;&gt;</tt> 行比较，但是它对 NULL 输入不生成 NULL ，而是认为任何 NULL 都不等于任何非 NULL ，并且 NULL 之间是相等的。因此，结果要么是真要么是假，而绝不会是未知(NULL)。</p>
+<pre class="SYNOPSIS"><tt class="REPLACEABLE"><i>row_constructor</i></tt> IS NOT DISTINCT FROM <tt class="REPLACEABLE"><i>row_constructor</i></tt></pre>
+<p>这个构造类似于 <tt class="LITERAL">=</tt> 行比较，但是它对 NULL 输入不生成 NULL ，而是认为任何 NULL 都不等于任何非 NULL ，并且 NULL 之间是相等的。因此，结果要么是真要么是假，而绝不会是未知(NULL)。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="functions-subquery.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="functions-srf.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">子查询表达式</td><td width="34%" align="center" valign="top"><a href="functions.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">返回集合的函数</td></tr>
+</table>
+</div>
+</body></html>

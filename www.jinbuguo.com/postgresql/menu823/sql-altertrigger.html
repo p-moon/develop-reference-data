@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ALTER TRIGGER</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-altertablespace.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-altertablespace.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-altertype.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-altertype.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ALTERTRIGGER"></a>ALTER TRIGGER</h1>
+<div class="REFNAMEDIV"><a name="AEN45333"></a><h2>名称</h2>ALTER TRIGGER&nbsp;--&nbsp;修改一个触发器的定义</div>
+<a name="AEN45336"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN45338"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ALTER TRIGGER <tt class="REPLACEABLE"><i>name</i></tt> ON <tt class="REPLACEABLE"><i>table</i></tt> RENAME TO <tt class="REPLACEABLE"><i>newname</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN45343"></a><h2>描述</h2>
+<p><tt class="COMMAND">ALTER TRIGGER</tt> 改变一个现有触发器的定义。<tt class="LITERAL">RENAME</tt> 子句修改触发器的名称，而不用改变触发器的定义。</p>
+<p>你必需拥有该触发器作用的表才能改变其属性。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45349"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>需要修改的现有触发器的名称</p></dd>
+<dt><tt class="REPLACEABLE"><i>table</i></tt></dt>
+<dd><p>该触发器作用的表的名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>newname</i></tt></dt>
+<dd><p>现有触发器的新名字</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN45367"></a><h2>注意</h2>
+<p>临时打开或者关闭触发器的能力是由 <a href="sql-altertable.html"><i>ALTER TABLE</i></a> 而不是 <tt class="COMMAND">ALTER TRIGGER</tt> 提供的，因为 <tt class="COMMAND">ALTER TRIGGER</tt> 没有一次打开或者关闭所有表的触发器的选项。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45373"></a><h2>例子</h2>
+<p>重新命名一个现有触发器：</p>
+<pre class="PROGRAMLISTING">ALTER TRIGGER emp_stamp ON emp RENAME TO emp_track_chgs;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN45377"></a><h2>兼容性</h2>
+<p><tt class="COMMAND">ALTER TRIGGER</tt> 是 PostgreSQL 对 SQL 标准的扩展。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45382"></a><h2>又见</h2><a href="sql-altertable.html"><i>ALTER TABLE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-altertablespace.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-altertype.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ALTER TABLESPACE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">ALTER TYPE</td></tr>
+</table>
+</div>
+</body></html>

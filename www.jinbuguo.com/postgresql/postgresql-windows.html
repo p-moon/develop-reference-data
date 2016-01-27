@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+pre { background: #edc; }
+</style>
+<title>在原生 Windows 上安装和运行 PostgreSQL [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>在原生 Windows 上安装和运行 PostgreSQL</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+<p>以下内容来自于 <a href="http://wiki.postgresql.org/wiki/Running_%26_Installing_PostgreSQL_On_Native_Windows">Running &amp; Installing PostgreSQL On Native Windows</a></p>
+
+
+
+
+<h3>支持的系统平台</h3>
+<a href="#1.1">1.1</a>) PostgreSQL 可以运行在哪些 Windows 版本上？<br />
+<a href="#1.2">1.2</a>) PostgreSQL 不可以运行在哪些 Windows 版本上？<br />
+<a href="#1.3">1.3</a>) 我听说 PostgreSQL 可以在 Windows NT4/2000 平台上运行，是这样吗？<br />
+<a href="#1.4">1.4</a>) PostgreSQL 可以运行在 Windows 95/98/ME 平台上吗？<br />
+<a href="#1.5">1.5</a>) 在 Windows 平台上存在64位版本的 PostgreSQL 吗？<br />
+<a href="#1.6">1.6</a>) 64位 ODBC 驱动的状况如何？<br />
+
+<h3>安装</h3>
+<a href="#2.1">2.1</a>) 在 Windows 上安装 PostgreSQL 需要做些什么准备？<br />
+<a href="#2.2">2.2</a>) 我想自已从源代码编译 PostgreSQL 该怎么做？<br />     
+<a href="#2.3">2.3</a>) 为何运行 PostgreSQL 需要一个非管理员帐号？<br />
+<a href="#2.4">2.4</a>) 可以将 PostgreSQL 安装在 FAT 分区吗？<br />
+<a href="#2.5">2.5</a>) PostgreSQL 需要什么样的文件系统权限？<br />
+<a href="#2.6">2.6</a>) 为什么我不能选择 Unicode 编码？<br />
+<a href="#2.7">2.7</a>) 我在安装时选择了一个非英文的语言，但所有的信息仍显示为英文！<br />
+<a href="#2.8">2.8</a>) [译者添加]如何使用免安装版本完全手动安装？<br />
+
+<h3>常见的安装错误</h3>
+<a href="#3.1">3.1</a>) PostgreSQL与/或其安装程序在启动时崩溃、不能正常启动或是启动后挂起<br />
+<a href="#3.2">3.2</a>) 安装程序声称指定的帐号是管理员帐号，但(你认为)不是！<br />
+<a href="#3.3">3.3</a>) 我收到一个错误信息显示 PostgreSQL 不能从一个终端服务(Terminal Services)会话中进行安装<br />
+<a href="#3.4">3.4</a>) 我收到一个类似"the user has not been granted the requested logon type at this computer(用户没有被分配必需的登录权限)"的错误信息<br />
+<a href="#3.5">3.5</a>) 怎样删除 PostgreSQL 服务的帐号 - 它并未在 users 组中列出<br />
+
+<h3>常见的运行时错误</h3>
+<a href="#4.1">4.1</a>) 我在安装一个过程语言时收到"dynamic load error"错误<br />
+<a href="#4.2">4.2</a>) 虽然我只启动了一次服务但却发现有很多 postgres.exe 进程<br />
+<a href="#4.3">4.3</a>) 怎样设置环境变量？<br />
+<a href="#4.4">4.4</a>) PostgreSQL 始终不能同时接受超过 125 个连接，我的硬件是很强悍的！<br />
+
+<h3>与 Windows 版本相关的问题</h3>
+<a href="#5.1">5.1</a>) 我可以在 64-bit Windows 上安装 32-bit PostgreSQL 吗？<br />
+<a href="#5.2">5.2</a>) PostgreSQL ODBC 驱动在哪里？我在 64-bit Windows 上运行 32-bit PostgreSQL<br />
+<hr />
+
+
+<h2>支持的系统平台</h2>
+
+<h3><a name="1.1" id="1.1">1.1</a>) PostgreSQL 可以运行在哪些 Windows 版本上？</h3>
+<p>PostgreSQL 9.x 可运行在 Windows XP/2003 或更高版本上，既支持32位也支持64位。</p>
+<p>对于较新版本 Windows 的基本支持规律是：PostgreSQL 无法测试未来版本的 Windows 系统。例如，Windows 7 的发布晚于 PostgreSQL 8.4 的发布，所以，PostgreSQL 8.3 就不再对 Windows 7 进行测试。同样的，对于 RHEL 7 ，只有 PostgreSQL 9.4.x 才会对其提供正式的支持。我们的目标是让新版本的 PostgreSQL 支持新版本的 Windows ，但不强求老版本的 PostgreSQL 支持新版本的 Windows 。</p>
+<p>有关一键安装程序对 Windows 平台的支持状况，请查看<a href="http://www.postgresql.org/download/windows/">专用于 Windows 平台的下载页面</a>。</p>
+<p>有关非 Windows 平台的相关信息，请查看 <a href="http://wiki.postgresql.org/wiki/FAQ">FAQ</a> 与<a href="http://www.postgresql.org/download/">主下载页</a>。</p>
+
+<h3><a name="1.2" id="1.2">1.2</a>) PostgreSQL 不可以运行在哪些 Windows 版本上？</h3>
+<p>下面这些平台不被支持：</p>
+<ul>
+	<li>Windows XP Embedded</li>
+	<li>Windows 2000</li>
+	<li>Windows NT 4</li>
+	<li>Windows NT 3.5.x</li>
+	<li>Windows 95/98/ME/3.x</li>
+	<li>Windows CE</li>
+	<li>Windows Mobile</li>
+</ul>
+
+<h3><a name="1.3" id="1.3">1.3</a>) 我听说 PostgreSQL 可以在 Windows NT4/2000 平台上运行，是这样吗？</h3>
+<p>虽然官方未表示支持，事实上 PostgreSQL 可以运行在 Windows NT4/2000 系统上，但存在以下一些小问题：</p>
+   <ul>
+     <li>安装程序不能正常运行，你需要自已手动编译或者使用 .zip 版本安装 PostgreSQL 。</li>
+	 <li>PostgreSQL 利用 NTFS 文件系统中的一项"多分点(reparse points)"功能来完成表空间功能，"多分点"功能不能在 NT4 下使用，因此 PostgreSQL 的表空间功能自然也不能使用。</li>
+	 <li>Windows NT4 下没有"runas.exe"程序，因此以管理员帐号来启动 PostgreSQL 非常困难。</li>
+   </ul>
+<p>另外要说明的是，我们并未对 Windows NT4/2000 系统进行任何测试，所以可能还会有不可预知的问题。</p>
+
+<h3><a name="1.4" id="1.4">1.4</a>) PostgreSQL 可以运行在 Windows 95/98/ME 平台上吗？</h3>
+<p>PostgreSQL 所必需的一些操作系统功能在这些操作系统下不存在，因此不能运行。</p>
+
+<h3><a name="1.5" id="1.5">1.5</a>) 在 Windows 平台上存在64位版本的 PostgreSQL 吗？</h3>
+<p>是的，PostgreSQL 9.0 之后都有专用于64位 Windows 平台的版本。32位版本的 PostgreSQL 也可以用于64位 Windows 平台，但是 shared_buffers 最大不能超过 1GB 。</p>
+
+<h3><a name="1.6" id="1.6">1.6</a>) 64位 ODBC 驱动的状况如何？</h3>
+<p>写作本文时，<a href="http://psqlodbc.projects.pgfoundry.org/">psqlODBC</a> 的源代码中已经出现了64位代码，但是官方的二进制发布里面尚不支持64位。</p>
+
+
+
+
+<h2>安装</h2>
+
+<h3><a name="2.1" id="2.1">2.1</a>) 在 Windows 上安装 PostgreSQL 需要做些什么准备？</h3>
+<p>参见 <a href="http://www.postgresql.org/download/windows/">PostgreSQL Windows 版专用下载页</a>以了解各种在 Windows 上安装 PostgreSQL 的方法。</p>
+<p>在 Windows 上安装 PostgreSQL 最简单的方法是从上述页面下载由 EnterpriseDB 制作的一键安装程序，这个安装程序除了安装 PostgreSQL 之外，还会安装图形化的 <a href="http://www.pgadmin.org/">pgAdmin</a> 管理工具、提供额外功能的附加模块(可选)、过程语言(可选)。此外，还户安装一个叫 StackBuilder 的工具，以帮助下载和安装额外的附加组件，例如 ODBC 或 JDBC 驱动之类。</p>
+
+<h3><a name="2.2" id="2.2">2.2</a>) 我想自已从源代码编译 PostgreSQL 该怎么做？</h3>
+<p>请查看在 Windows 下从源代码编译 PostgreSQL 的<a href="http://www.postgresql.org/docs/current/static/install-windows.html">指导文档</a>。</p>
+ 
+<h3><a name="2.3" id="2.3">2.3</a>) 为何运行 PostgreSQL 需要一个非管理员帐号？</h3>
+<p>当黑客利用一个软件的BUG进入一台计算机时，他就获得了这个软件运行所使用的用户帐号的权限。目前我们不知道 PostgreSQL 是否有这样的BUG，但我们坚持使用非管理员帐号运行 PostgreSQL 的目的就是为了减少(万一)黑客利用在 PostgreSQL 发现的BUG可能对系统造成的损害。</p>
+<p>在UNIX的世界中，不使用管理员帐号进入系统已是一个常见的习惯了，在Windows世界中，微软和其他软件供应商们为了提高系统的安全性，也开始逐渐将这一操作变成标准习惯。</p>
+<p>注意，可以用管理员账号运行 PostgreSQL 8.2 或更高版本，因为从 8.2 版本开始，PostgreSQL 会在启动时主动放弃管理员权限，并且不可恢复。</p>
+
+<h3><a name="2.4" id="2.4">2.4</a>) 可以将 PostgreSQL 安装在 FAT 分区吗？</h3>
+<p>我们反对在 FAT/FAT32 文件系统上运行 PostgreSQL ，并且不对其提供支持，更不对其进行测试。FAT/FAT32 文件系统对任何数据库而言，都是噩梦。</p>
+<p>PostgreSQL 的首要任务是要保证数据完整性。FAT 和 FAT32 文件系统不能提供这样的可靠性保障，而且 FAT 文件系统缺乏安全性保障，使得保护原始数据无法保证不被未经授权的更改。最后，PostgreSQL 使用一项"多分点"的功能来完成表空间功能，这一特性在 FAT 文件系统下也是无法实现的。</p>
+<p>NTFS 文件系统是一个日志文件系统，提供了好得多的可靠性和恢复功能，而且它有较全面的访问控制功能，并提供 PostgreSQL 要用到的多分点功能。</p>
+<p>基本上述原因，PostgreSQL 安装程序只能在 NTFS 分区中完成数据库的初始化工作，而 PostgreSQL 服务器程序自身和一些工具程序可以安装在任何分区中。</p>
+<p>然而也要看到，在一些系统中，特别是开发人员的电脑上，也许只有一种 FAT 分区，在这种情况下，你可以象正常情况下一样安装 PostgreSQL ，但不要进行数据库的初始化工作，在安装完成后，在 FAT 分区上手动执行 initdb.exe 程序，但安全性和可靠性就不能保证了，并且建立表空间也会失败。<strong>切勿在生产环境中使用 FAT/FAT32 文件系统</strong>。</p>
+<p>有些人想要在 FAT/FAT32 格式的U盘或移动硬盘上存放 PostgreSQL 数据库以方便携带，请不要这样做！你<strong>应该</strong>首先将U盘或移动硬盘格式化为 NTFS 格式，然后再将 PostgreSQL 数据库放在上面。事实上，如果你想在U盘或移动硬盘上存放任何重要数据，都应该将它格式化为 NTFS 格式。</p>
+
+<h3><a name="2.5" id="2.5">2.5</a>) PostgreSQL 需要什么样的文件系统权限？</h3>
+<p>PostgreSQL 的运行帐号需要对 PostgreSQL 安装目录及其所有子目录具有<b>读</b>权限，同时<b>只</b>需要对数据目录具有<b>写</b>权限，特别是这个帐号<b>不应</b>具有对含有二进制程序文件的目录除了<b>读</b>权限以外的任何权限。所有安装目录下的目录权限，安装程序均会自动设置好，所以除非你想改变什么设置，一般情况下，安装后没有任何权限设置问题。</p>
+<p>PostgreSQL 还需要对系统DLL文件(如 kernel32.dll 和 user32.dll 以及其他DLL文件)具有<b>读</b>权限， 默认这些权限是已分配的，但对 CMD.EXE 程序的执行，在某些情况下，会被锁定，需额外分配此权限。</p>
+<p>如果你在一个多用户系统中运行 PostgreSQL ，你应该移除非管理员对 PostgreSQL 目录的操作权限，非管理员用户<b>永远不需要</b>任何 PostgreSQL 文件的权限，所有的通讯都是通过 libpq 连接来完成，直接存取 PostgreSQL 数据文件会导致数据不安全和系统的不稳定！</p>
+
+<h3><a name="2.6" id="2.6">2.6</a>) 为什么我不能选择 Unicode 编码？</h3>
+<p>从 PostgreSQL 8.1 版本开始，UTF-8 编码在 Windows 平台上是完全支持的。Unicode ODBC 驱动支持 UTF-16 ，JDBC 驱动也对 Unicode 提供了完整的支持。</p>
+<p>但是 PostgreSQL 既不支持在数据库存储时使用 UTF-16 和 UTF-32 编码，也不支持在与客户端通信时使用 UTF-16 和 UTF-32 编码。因为 Windows 默认的 Unicode 编码是 UTF-16 ，所以 Windows 环境下的"Unicode"往往暗指 UTF-16 编码。不过一般来说这不是问题，ODBC 和 JDBC 也能很好的自动处理这个歧义。只有那些直接使用 libpq 的程序需要注意这个差异。</p>
+
+<h3><a name="2.7" id="2.7">2.7</a>) 我在安装时选择了一个非英文的语言，但所有的信息仍显示为英文！</h3>
+<p>在安装时选择的语言只是选择了安装程序的语言，要改变提示信息的语言，首先确认你已安装了<i>自然语言支持(Natural language support)</i>特性，然后编辑 postgresql.conf 文件来改变 <b>lc_messages</b> 参数的值来选择你想要的语言。</p>
+
+<h3><a name="2.8" id="2.8">2.8</a>) [译者添加]如何使用免安装版本完全手动安装？</h3>
+<p>这里以 Windows XP SP3 默认环境进行手动安装为例，其他版本未经测试。</p>
+<p>首先下载并安装 <a href="http://www.microsoft.com/zh-cn/download/details.aspx?id=8328">Microsoft Visual C++ 2010 SP1 Redistributable Package (x86)</a></p>
+<p>接着下载 <a href="http://get.enterprisedb.com/postgresql/postgresql-9.3.3-1-windows-binaries.zip">postgresql-9.3.3-1-windows-binaries.zip</a> ，假设解压后的目录是：C:\pgsql（下面使用"$PG"表示该目录）。<br />
+在"$PG"目录下创建一个 rootpass.txt 文件，内容为数据库的超级用户密码(不要有任何多余的空白字符/换行符/空白行)。<br />
+准备工作到此结束，下面的步骤以管理员身份执行。</p>
+<p>复制 DLL 文件：
+<pre>
+cd $PG
+copy  lib\*.dll   bin\
+</pre></p>
+<p>添加新的 postgres 用户，并将密码设为：p
+<pre>
+net user postgres p /ADD /EXPIRES:NEVER /PASSWORDCHG:NO
+net localgroup users postgres /delete
+</pre></p>
+<p>创建 data 目录并设置访问权限：
+<pre>
+md data
+cacls .    /T /E /P postgres:R
+cacls data /T /E /P postgres:C
+</pre></p>
+<p>初始化 PostgreSQL 数据库，需要手动输入 postgres 用户的密码：p
+<pre>
+runas /noprofile /env /user:postgres "bin\initdb -A md5 -D data -E UTF8 --locale=C -U root --pwfile=rootpass.txt"
+</pre></p>
+<p>这样就安装好了。数据库默认编码为：UTF8，区域设置为：C(相当于没有区域)，数据库超级用户名为：root ，密码为 rootpass.txt 文件内容，使用 md5 认证。</p>
+<p>以后可以使用如下命令启动 PostgreSQL ：
+<pre>runas /noprofile /env /user:postgres "$PG\bin\pg_ctl start -w -D $PG\data"</pre>
+使用如下命令关闭 PostgreSQL ：<pre>$PG\bin\pg_ctl stop -D $PG\data -m smart</pre></p>
+
+
+
+<h2>常见的安装错误</h2>
+
+<h3><a name="3.1" id="3.1">3.1</a>) PostgreSQL与/或其安装程序在启动时崩溃、不能正常启动或是启动后挂起</h3>
+<p>造成这一现象最主要的原因是 Windows Scripting Host (Windows 脚本宿主)故障，以及防病毒软件和防火墙软件造成的。还有些时候是 postgres 账户的密码问题所致。</p>
+<p>下面会逐个讨论这些问题，请在寻求帮助前，先仔细阅读它们。</>
+<h4>防病毒软件</h4>
+<p>如果你的电脑上安装有防病毒软件，你<b>必须</b>禁止它对 PostgreSQL 使用的 data 目录进行监控，同时还<b>必须</b>禁止它对 postgresql.exe 进程的监控。如果这样还不能起作用(依然龟速或有各种奇怪的问题)，也许需要完全地从你的电脑中卸载它。</p>
+<p>那么，哪些防病毒软件是兼容的？</p>
+<p>经过我们的测试，Sophos AV 与 AVG Free Edition 以及 Microsoft Security Essentials 都可以与 PostgreSQL 兼容。</p>
+<p>有一些关于<i>nod32</i>防病毒产品的特例情况，如果你使用这个产品，在其高级选项中，将"postmaster.exe"加入到它不处理程序列表中去(在"高级选项"中)，这样就可以解决这个问题。</p>
+<p>也有一些关于 Mcafee 和 Panda 防病毒软件以及 NetLimiter 网络监控软件的特例情况报告，由于一些人能够使 PostgreSQL 与这些软件共同工作，因此对那些 PostgreSQL 与这些软件不能正常运行的情况没有特殊的或是推荐的方案，问题表现出安装有一定的特殊性，有时需要卸载或重新安装。</p>
+<h4>第三方软件防火墙</h4>
+<p>如果你安装了第三方软件防火墙，请<b>禁用</b>或卸载它们，因为 Windows XP 之后根本不需要安装第三方防火墙，内置的防火墙就已经足够了。卸载之后，你可能还需要重置防火墙的设置。</p>
+<h4>安装程序因为"运行时错误"而退出</h4>
+<p>安装程序因为类似下面这样的错误而退出："An error occured executing the Microsoft VC++ runtime installer"。可能的原因有两个：</p>
+<p>1) Windows Scripting Host 不能执行 VBscript ，这通常是由于 Scripting Host 被禁用(可能性较小)，或者安装被损坏。典型的错误信息类似这样：CScript Error: Can't find script engine "VBScript" for script "C:\.... 这可以通过重新注册 VBscript 脚本解释器来解决：</p>
+<pre>regsvr32 %systemroot%\system32\vbscript.dll</pre>
+<p>此外，还需要确保注册表中 HKEY_CLASSES_ROOT\.vbs\(Default) 的值是"VBSFile"。</p>
+<p>2) 安装程序不能读写系统的 TEMP 目录。这主要发生在 TEMP 或 TMP 环境变量被设置为非标准值的时候。表现在日志中就是找不到或者不能执行脚本。解决之道是确保 TEMP 和 TMP 被设置为正确的值。</p>
+<h4>postgres 账号的密码导致的问题</h4>
+<p>Dave Page 有一篇很好的<a href="http://pgsnake.blogspot.com/2010/07/postgresql-passwords-and-installers.html">博客</a>(被墙)详细的讨论了这个问题。</p>
+<h4>PATH 环境变量</h4>
+<p>如果你安装了 cygwin 并且 cygwin\bin 目录存在于 PATH 环境变量中，同时 cygwin 目录中与解释语言(TCL, perl, python)相关的 DLL 文件又有缺陷，这可能会导致安装程序或者已安装的 PostgreSQL 挂起或者崩溃。将 cygwin\bin 目录从 PATH 中移除之后，重新安装可以解决此问题。</p>
+<h4>在运行 initdb 时遇到权限错误</h4>
+<p>确认 PostgreSQL 服务的帐号对安装的 PostgreSQL 目录具有(合适的)权限。安装程序会对 PostgreSQL 的安装目录设置正确的权限，但是却不会设置其父目录的权限。</p>
+<p>有时你还会在一键安装时看到"The database Cluster initialisation failed"这样的错误。如果你检查安装日志，多半会发现这由权限错误导致。你可以首先纠正目录权限，之后再重新运行 initcluster.vbs 脚本：</p>
+<pre>cscript //NoLogo "INSTALL_PATH/installer/server/initcluster.vbs" "postgres" "postgres" "PASSWORD" "INSTALL_PATH" "DATA_PATH" 5432 "DEFAULT"</pre>
+<h4>%COMSPEC% 环境变量</h4>
+<p>有些 Windows 的 %COMSPEC% 环境变量设置错误也会导致无法执行 initdb ，在命令行提示符中输入：<pre>echo %COMSPEC%</pre> 你应该得到类似下面这样的结果：<pre>C:\Windows\system32\cmd.exe</pre> 其中的"C:\Windows"应该是 Windows 的安装目录。</p>
+<p>如果你发现设置不正确，那么必须将其设置为 cmd.exe 的正确路径。</p>
+
+<h3><a name="3.2" id="3.2">3.2</a>) 安装程序声称指定的帐号是管理员帐号，但(你认为)不是！</h3>
+<p>最大可能是你所指定的帐号是一个管理员帐号或是 Power 用户组帐号，但是你还未意识到这一点。安装程序会特别针对管理员组和 Power 用户组的成员进行检查。按照你原来的方法使用本地用户和工作组再操作一次 --- 打开管理员工作组，看一下有哪些成员。然后检查任何属于管理员级别的工作组(域中或本地组)，同时也检查这些组的成员。 PostgreSQL 可以对嵌套的工作组设置进行深入的检查。</p>
+
+<h3><a name="3.3" id="3.3">3.3</a>) 我收到一个错误信息显示 PostgreSQL 不能从一个终端服务(Terminal Services)会话中进行安装</h3>
+<p>很不幸，确实是这样。PostgreSQL 的后台程序不能够从终端服务会话中运行，为了能够初始化数据库，安装程序需要启动一个独立的后台进程，因此安装程序需要从控制台中启动。如果你使用的是 Windows Server 2003 ，你可以获取对真正控制台的远程存取权限，为了做到这一点，可以通过执行<pre>mstsc /console</pre>命令来启动远程桌面连接，这会锁定服务器上的本地控制台而给你完全的控制权，在这种情况下，PostgreSQL 的安装没有问题。</p>
+ 
+<h3><a name="3.4" id="3.4">3.4</a>) 我收到一个类似"the user has not been granted the requested logon type at this computer(用户没有被分配必需的登录权限)"的错误信息</h3>
+<p>首先确认所指定的 PostgreSQL 帐号有"作为服务程序登录"和"本地登录"的权限，"本地登录"的权限只是在安装时需要，安装完成后可以根据安全策略的需要删除此权限(权限的分配和删除可进入MMC(管理控制台)程序的"本地安全策略"的子栏目，"本地登录"的权限是默认的，"作为服务程序登录"的权限正常情况下是由安装程序分配的)。</p>
+<p>如果仍然存在此问题，打开"审核允许"权限(也在"本地安全策略"的子栏目中)，同时也请通知我们在这种情况下还需要什么权限。</p>
+<p>注意，如果你的计算机是"域"中的成员，你的安全策略设置也许是在域服务器上使用工作组安全策略来设定的。</p>
+
+<h3><a name="3.5" id="3.5">3.5</a>) 怎样删除 PostgreSQL 服务的帐号 - 它并未在 users 组中列出</h3>
+<p>Windows 有时候会在 GUI 工具中隐藏一些账号，以防止这些账号被删除。这其中就包括自动生成的 PostgreSQL 服务的帐号(也可能是先前安装的版本遗留下来的)。可以使用下来命令删除这个账号：<br>
+<pre>NET USER postgres /DELETE</pre>
+这里的 postgres 通常就是账号的名称。</p>
+
+
+
+<h2>常见的运行时错误</h2>
+
+<h3><a name="4.1" id="4.1">4.1</a>) 我在安装一个过程语言时收到"dynamic load error"错误</h3>
+<p>大多数情况下这表示与某个过程语言相关的 DLL 文件丢失，PostgreSQL 的 DLL 文件只包含了该语言的绑定，还需要该过程语言自身的 DLL 文件存在于系统的环境变量 PATH(搜索路径)中。不同的过程语言需要的不同的 DLL 文件，详情可参见<a href="http://pginstaller.projects.postgresql.org/">安装指南</a>。</p>
+<p>为了找出具体哪一个 DLL 文件丢失，你可以使用来自微软的依赖性检查工具，它在微软的支持软件工具包中，在一个单独的安装光盘上，只要运行 <pre>depends plpython.dll</pre> (对PL/python语言来说)就可以显示出哪一个 DLL 文件不存在了。</p>
+
+<h3><a name="4.2" id="4.2">4.2</a>) 虽然我只启动了一次服务但却发现有很多 postgres.exe 进程</h3>
+<p>这是正常情况。PostgreSQL 使用多进程体系结构，在一个无用户连接的空系统中会有2至5个进程，一旦用户开始连接服务器，PostgreSQL 的进程数就会增加。</p>
+
+<h3><a name="4.3" id="4.3">4.3</a>) 怎样设置环境变量？</h3>
+<p>PostgreSQL 的某些设置会使用到环境变量。在大多数版本的 Windows 版本上，可以到 我的电脑-属性-高级-环境变量 里面去设置环境变量。需要注意的是，环境变量一共有两组：一组是"系统环境变量"(作用于所有用户)，另一组是"用户环境变量"(仅作用于特定的用户)。如果你想让设置的环境变量能够影响到 PostgreSQL 服务，那么必须设置在"系统环境变量"中，然后还需要重启 PostgreSQL 服务才能生效。</p>
+
+<h3><a name="4.4" id="4.4">4.4</a>) PostgreSQL 始终不能同时接受超过大约 125 个连接，我的硬件是很强悍的！</h3>
+<p>发生这种情况的原因在于某些 PostgreSQL 说依赖的库依赖于 user32.dll ，而 user32.dll 要从"Desktop Heap"中分配内存。"Desktop Heap"用于为每个登陆会话分配内存，每个非交互式会话大约分配 512KB ，同时每个 postgres.exe 进程消耗大约 3.2KB 的"Desktop Heap"，这样大约 125 连接就差不多可以耗尽全部的"Desktop Heap"空间。不过这种情况不会发生在从命令行运行的场合，因为命令行是交互式登陆会话，通常只需要 3MB 大小的"Desktop Heap"就可以了。</p>
+<p>要解决这个问题，你必须通过修改注册表中的 SharedSection 值来增加非交互式"Desktop Heap"的尺寸，具体方法参见微软知识库中的<a href="http://support.microsoft.com/kb/184802">文章</a>。需要注意的是，设置太高的值有可能导致系统无法启动。</p>
+
+
+
+<h2>与 Windows 版本相关的问题</h2>
+
+<h3><a name="5.1" id="5.1">5.1</a>) 我可以在 64-bit Windows 上安装 32-bit PostgreSQL 吗？</h3>
+<p>8.3 以上的 32-bit PostgreSQL 可以安装在 64-bit Windows XP 或更高版本的 Windows 上，但是依然会受到 32-bit 进程地址空间的限制(包括共享内存)。</p>
+
+<h3><a name="5.2" id="5.2">5.2</a>) PostgreSQL ODBC 驱动在哪里？我在 64-bit Windows 上运行 32-bit PostgreSQL</h3>
+<p>你需要使用 32-bit ODBC 管理工具为 32-bit 应用程序使用 32-bit 驱动安装数据源。</p>
+
+<hr />
+
+
+</body></html>

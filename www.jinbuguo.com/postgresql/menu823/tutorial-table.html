@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>创建新表</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="tutorial-concepts.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="tutorial-sql.html">快退</a></td><td width="60%" align="center" valign="bottom">章2. SQL 语言</td><td width="10%" align="right" valign="top"><a href="tutorial-sql.html">快进</a></td><td width="10%" align="right" valign="top"><a href="tutorial-populate.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TUTORIAL-TABLE">2.3. 创建新表</a></h1><a name="AEN641"></a>
+<p>你可以通过声明表的名字和所有字段的名字及其类型来创建表：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE weather (
+    city            varchar(80),
+    temp_lo         int,           -- 最低气温
+    temp_hi         int,           -- 最高气温
+    prcp            real,          -- 降水量
+    date            date
+);</pre>
+<p>你可以在 <tt class="COMMAND">psql</tt> 里连换行符一起键入这些东西。<tt class="COMMAND">psql</tt> 可以识别该命令直到分号才结束。</p>
+<p>你可以在 SQL 命令中自由使用空白(空格/tab/换行符)。这意味着你可以用和上面不同的对齐方式(甚至在同一行中)键入命令。双划线(<span class="QUOTE">"<tt class="LITERAL">--</tt>"</span>)引入注释，任何跟在它后面的东西直到该行的结尾都被忽略。SQL 是对关键字和标识符大小写不敏感的语言，只有在标识符用双引号包围时才能保留它们的大小写属性(上面没有这么干)。</p>
+<p><tt class="TYPE">varchar(80)</tt> 声明一个可以存储最长 80 个字符的任意字符串的数据类型。<tt class="TYPE">int</tt> 是普通的整数类型。<tt class="TYPE">real</tt> 是一种用于存储单精度浮点数的类型。<tt class="TYPE">date</tt> 类型应该可以自解释。没错，类型为 <tt class="TYPE">date</tt> 的字段名字也是 <tt class="LITERAL">date</tt> 。这么做可能比较方便，也可能容易让人混淆，你自己看啦。</p>
+<p>Postgres SQL 支持标准的 SQL 类型：<tt class="TYPE">int</tt>, <tt class="TYPE">smallint</tt>, <tt class="TYPE">real</tt>, <tt class="TYPE">double precision</tt>, <tt class="TYPE">char(<tt class="REPLACEABLE"><i>N</i></tt>)</tt>, <tt class="TYPE">varchar(<tt class="REPLACEABLE"><i>N</i></tt>)</tt>, <tt class="TYPE">date</tt>, <tt class="TYPE">time</tt>, <tt class="TYPE">timestamp</tt>, <tt class="TYPE">interval</tt> ，还支持其它的通用类型和丰富的几何类型。PostgreSQL 允许你自定义任意数量的数据类型。因而类型名并不是语法关键字，除了 SQL 标准要求支持的特例外。</p>
+<p>第二个例子将保存城市和它们相关的地理位置：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE cities (
+    name            varchar(80),
+    location        point
+);</pre>
+<p><tt class="TYPE">point</tt> 类型就是一种 PostgreSQL 特有的数据类型的例子。</p>
+<p><a name="AEN679"></a>最后，我们还要提到如果你不再需要某个表，或者你想创建一个不同的表，那么你可以用下面的命令删除它：</p>
+<pre class="SYNOPSIS">DROP TABLE <tt class="REPLACEABLE"><i>tablename</i></tt>;</pre>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="tutorial-concepts.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="tutorial-populate.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">概念</td><td width="34%" align="center" valign="top"><a href="tutorial-sql.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">向表中添加行</td></tr>
+</table>
+</div>
+</body></html>

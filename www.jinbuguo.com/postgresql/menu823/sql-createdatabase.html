@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>CREATE DATABASE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-createconversion.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-createconversion.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-createdomain.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-createdomain.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-CREATEDATABASE"></a>CREATE DATABASE</h1>
+<div class="REFNAMEDIV"><a name="AEN46927"></a><h2>名称</h2>CREATE DATABASE&nbsp;--&nbsp;创建一个新数据库</div>
+<a name="AEN46930"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN46932"></a><h2>语法</h2>
+<pre class="SYNOPSIS">CREATE DATABASE <tt class="REPLACEABLE"><i>name</i></tt>
+    [ [ WITH ] [ OWNER [=] <tt class="REPLACEABLE"><i>dbowner</i></tt> ]
+           [ TEMPLATE [=] <tt class="REPLACEABLE"><i>template</i></tt> ]
+           [ ENCODING [=] <tt class="REPLACEABLE"><i>encoding</i></tt> ]
+           [ TABLESPACE [=] <tt class="REPLACEABLE"><i>tablespace</i></tt> ]
+           [ CONNECTION LIMIT [=] <tt class="REPLACEABLE"><i>connlimit</i></tt> ] ]</pre>
+</div>
+<div class="REFSECT1"><a name="AEN46940"></a><h2>描述</h2>
+<p><tt class="COMMAND">CREATE DATABASE</tt> 创建一个新数据库。</p>
+<p>要创建一个数据库，你必须是一个超级用户或者有特殊的 <tt class="LITERAL">CREATEDB</tt> 权限。参阅 <a href="sql-createuser.html"><i>CREATE USER</i></a> 。</p>
+<p>通常，创建者将成为新数据库的管理员。超级用户可以用 <tt class="LITERAL">OWNER</tt> 子句创建其它用户所有的数据库。甚至可以创建没有特殊权限的用户所拥有的数据库。有 <tt class="LITERAL">CREATEDB</tt> 权限的非超级用户使用只能创建自己使用的数据库。</p>
+<p>缺省时，新数据库将通过克隆标准系统数据库 <tt class="LITERAL">template1</tt> 来创建。可以通过 <tt class="LITERAL">TEMPLATE <tt class="REPLACEABLE"><i>name</i></tt></tt> 指定不同的模板。尤其是，用 <tt class="LITERAL">TEMPLATE template0</tt> 创建一个很纯净的、只包括 PostgreSQL 预定义的标准对象的数据库。这个方法可以避免把任何已经加入到 <tt class="LITERAL">template1</tt> 里的本地安装对象拷贝到新数据库。</p>
+</div>
+<div class="REFSECT1"><a name="AEN46958"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>要创建的数据库名字</p></dd>
+<dt><tt class="REPLACEABLE"><i>dbowner</i></tt></dt>
+<dd><p>数据库用户的名字，他将拥有新数据库，或者是写 <tt class="LITERAL">DEFAULT</tt> 使用缺省用户(也就是执行命令的用户)。</p></dd>
+<dt><tt class="REPLACEABLE"><i>template</i></tt></dt>
+<dd><p>模板名(从哪个模板创建新数据库)，或者用 <tt class="LITERAL">DEFAULT</tt> 使用缺省模板(<tt class="LITERAL">template1</tt>)。</p></dd>
+<dt><tt class="REPLACEABLE"><i>encoding</i></tt></dt>
+<dd><p>创建新数据库使用的字符编码。可以使用文本名字(例如 <tt class="LITERAL">'SQL_ASCII'</tt>)、整数编号、<tt class="LITERAL">DEFAULT</tt>(模版数据库的编码)。PostgreSQL 服务器支持的字符集在<a href="multibyte.html#MULTIBYTE-CHARSET-SUPPORTED">节21.2.1</a>里描述。</p></dd>
+<dt><tt class="REPLACEABLE"><i>tablespace</i></tt></dt>
+<dd><p>和新数据库关联的表空间名字，或者用 <tt class="LITERAL">DEFAULT</tt> 表示模版数据库的表空间。这个表空间将成为在这个数据库里创建的对象的缺省表空间。参阅 <a href="sql-createtablespace.html"><i>CREATE TABLESPACE</i></a> 获取更多信息。</p></dd>
+<dt><tt class="REPLACEABLE"><i>connlimit</i></tt></dt>
+<dd><p>数据库可以接受多少并发的连接。-1(缺省)意味着没有限制。</p></dd>
+</dl>
+</div>
+<p>可选参数可以按任意顺序书写，而不仅仅是上面显示的顺序。</p>
+</div>
+<div class="REFSECT1"><a name="AEN47001"></a><h2>注意</h2>
+<p><tt class="COMMAND">CREATE DATABASE</tt> 不能在事务块里面执行。</p>
+<p>类似"could not initialize database directory"这样的错误最有可能是因为数据目录的权限不够或者磁盘满之类的文件系统问题。</p>
+<p>使用 <a href="sql-dropdatabase.html"><i>DROP DATABASE</i></a> 删除一个数据库</p>
+<p>程序 <a href="app-createdb.html"><i><i>createdb</i></i></a> 是这个命令的封装，使用更加方便。</p>
+<p>尽管可以通过把某数据库名声明为模板(而非 <tt class="LITERAL">template1</tt>)，但是这(还)不是一个通用的"<tt class="COMMAND">COPY DATABASE</tt>"功能。主要的限制是在从模版复制的时候不允许有其它会话链接到模版数据库上。如果在开始执行 <tt class="COMMAND">CREATE DATABASE</tt> 的时候有其它会话正连接在模版数据库上，那么将会失败；否则直到 <tt class="COMMAND">CREATE DATABASE</tt> 完成之后才允许建立新的会话连接。参见<a href="manage-ag-templatedbs.html">节19.3</a>获取更多信息。</p>
+<p><tt class="LITERAL">CONNECTION LIMIT</tt> 选项只是近似地强制；如果两个新的连接几乎同时发起，而只剩下一个连接"槽位"了，那么很可能两个连接都失效。同样，这个限制并不强加在超级用户上。</p>
+</div>
+<div class="REFSECT1"><a name="AEN47021"></a><h2>例子</h2>
+<p>创建一个新数据库：</p>
+<pre class="PROGRAMLISTING">CREATE DATABASE lusiadas;</pre>
+<p>创建一个由用户 <tt class="LITERAL">salesapp</tt> 拥有的数据库 <tt class="LITERAL">sales</tt> ，缺省表空间是 <tt class="LITERAL">salesspace</tt> ：</p>
+<pre class="PROGRAMLISTING">CREATE DATABASE sales OWNER salesapp TABLESPACE salesspace;</pre>
+<p>创建一个数据库 <tt class="LITERAL">music</tt> ，支持 ISO-8859-1 字符集：</p>
+<pre class="PROGRAMLISTING">CREATE DATABASE music ENCODING 'LATIN1';</pre>
+</div>
+<div class="REFSECT1"><a name="AEN47033"></a><h2>兼容性</h2>
+<p>在 SQL 标准里没有 <tt class="COMMAND">CREATE DATABASE</tt> 语句。数据库等同于目录，其创建是由实现决定的。</p>
+</div>
+<div class="REFSECT1"><a name="AEN47037"></a><h2>又见</h2><a href="sql-alterdatabase.html"><i>ALTER DATABASE</i></a>, <a href="sql-dropdatabase.html"><i>DROP DATABASE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-createconversion.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-createdomain.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">CREATE CONVERSION</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">CREATE DOMAIN</td></tr>
+</table>
+</div>
+</body></html>

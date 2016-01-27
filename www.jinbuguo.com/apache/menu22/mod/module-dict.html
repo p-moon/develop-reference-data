@@ -1,0 +1,67 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>描述模块的术语 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>描述模块的术语</h1>
+
+
+   <p>本文对用于描述<a href="./index.html">模块</a>的术语加以说明。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="Description" id="Description">说明</a></h2>
+<p>对模块用途的简要说明。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="Status" id="Status">状态(Status)</a></h2>
+
+    <p>状态(Status)代表了此模块与Apache服务器结合的紧密程度；也就是说，有可能需要重新编译服务器以获得一个模块的功能。其可能的值有：</p>
+
+    <dl>
+      <dt>MPM</dt>
+      <dd>一个<a href="../mpm.html">多路处理模块</a>。与其他类型的模块不同的是，必须在编译配置时进行选择，必须有且仅有一个MPM被静态编译到服务器中。此类型的模块负责基本的对请求的处理和指派。</dd>
+
+      <dt>Base</dt>
+      <dd>默认被编译进服务器的模块，因此始终是有效的，除非你刻意在编译时从配置中删除此模块。</dd>
+
+      <dt>Extension</dt>
+      <dd>默认没有被编译进服务器的模块。要激活此模块并使用其功能，有可能需要修改服务器的编译配置并重新编译Apache 。</dd>
+
+      <dt>Experimental</dt>
+      <dd>实验性的模块，虽然作为Apache包的一部分提供，但是需要你自己承担使用中的风险。对此模块提供文档仅仅是为了保持完整性，而并不一定有技术支持。</dd>
+
+      <dt>External</dt>
+      <dd>不包含在Apache基本发行版中模块("第三方模块")。我们对此模块免责，并且不提供技术支持。</dd>
+    </dl>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="SourceFile" id="SourceFile">源代码文件</a></h2>
+
+    <p>列出包含实现此模块的源代码文件，此名称也用于<code class="directive"><a href="../mod/core.html#ifmodule">&lt;IfModule&gt;</a></code>指令。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="ModuleIdentifier" id="ModuleIdentifier">模块标识符</a></h2>
+
+    <p>这个是<code class="directive"><a href="../mod/mod_so.html#loadmodule">LoadModule</a></code>指令在动态加载模块时用于指定模块的标识符。其实，它就是源代码文件中拼写模块的外部变量名。</p>
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="Compatibility" id="Compatibility">兼容性</a></h2>
+
+    <p>如果该模块不是原始Apache2.0的发行版的一部分，此处会写明此模块应该被使用于哪个版本；另外，如果此模块在特定平台上有功能限制，此处也会有详细说明。</p>
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

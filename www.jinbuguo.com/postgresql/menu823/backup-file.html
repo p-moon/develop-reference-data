@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>文件系统级别的备份</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="backup-dump.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="backup.html">快退</a></td><td width="60%" align="center" valign="bottom">章23. 备份与恢复</td><td width="10%" align="right" valign="top"><a href="backup.html">快进</a></td><td width="10%" align="right" valign="top"><a href="continuous-archiving.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="BACKUP-FILE">23.2. 文件系统级别的备份</a></h1>
+<p>另一个备份的策略是直接拷贝 PostgreSQL 用于存放数据库数据的文件。我们在<a href="creating-cluster.html">节16.2</a>里解释了这些文件的位置，不过如果你想用这个方法，你应该早就找到它们的位置了。你可以用自己喜欢的任何常用文件系统备份的方法，例如</p>
+<pre class="PROGRAMLISTING">tar -cf backup.tar /usr/local/pgsql/data</pre>
+<p>不过，你要受到两个限制，令这个方法不那么实用，或者至少比 <span class="APPLICATION">pg_dump</span> 的方法逊色一些：</p>
+<ol type="1">
+<li><p>为了进行有效的备份，数据库服务器<span class="emphasis"><i class="EMPHASIS">必须</i></span>被关闭。像拒绝所有连接这样的折衷的方法是<span class="emphasis"><i class="EMPHASIS">不行</i></span>的，因为总是有一些缓冲区数据存在。因为 <tt class="COMMAND">tar</tt> 和类似的工具在做备份的时候并不对文件系统的状态做原子快照。有关关闭服务器的信息可以在<a href="server-shutdown.html">节16.5</a>里面找到。不用说，你在恢复数据之前，同样必须关闭服务器。</p></li>
+<li><p>如果你曾经深入了解了数据库在文件系统布局的细节，你可能试图从对应的文件或目录里备份几个表或者数据库。这样做是<span class="emphasis"><i class="EMPHASIS">没用</i></span>的，因为包含在这些文件里的信息只是部分信息。还有一半信息在提交日志文件 <tt class="FILENAME">pg_clog/*</tt> 里面，它包含所有事务的提交状态。只有拥有这些信息，表文件的信息才是可用的。当然，试图只恢复表和相关的 <tt class="FILENAME">pg_clog</tt> 数据也是徒劳的，因为这样会把数据库集群里的所有其它没有用的表的信息都拿出来。所以文件系统的备份只适用于一个数据库集群的完整恢复。</p></li>
+</ol>
+<p>另外一个文件系统备份的方法是给数据目录做一个"一致的快照"，条件是文件系统支持这个功能(并且你愿意相信它是实现正确的)。典型的过程是制作一个包含数据库的卷的"冻结快照"，然后把整个数据库目录(不仅仅是部分，见上文)从快照拷贝到备份设备，然后释放冻结快照。这样甚至在数据库服务器在运行的时候都可以运转。不过，这样创建的备份会把数据库文件保存在一个没有恰当关闭数据库服务器的状态下；因此，如果你在这个备份目录下启动数据库服务器，它就会认为数据库服务器经历过崩溃并且重放 WAL 日志。这不是个问题，只要意识到它即可(并且确信在自己的备份中包含 WAL 文件)。</p>
+<p>如果你的数据库分布在多个文件系统上，那么可能就没有任何方法获取所有卷上准确的同步冻结快照。比如，你的数据文件和 WAL 日志在不同的磁盘上，或者表空间在不同的文件系统上，这种情况下就不可能使用快照，因为快照必须是同时的。在你信任这样的情况下的一致性快照的技术之前，仔细阅读你的文件系统文档。最安全的方法是关闭数据库服务器足够长的时间，以建立所有冻结快照。</p>
+<p>另外一个选择是使用 <span class="APPLICATION">rsync</span> 执行一次文件系统备份。这是通过在数据库服务器正在运行的时候运行第一次 <span class="APPLICATION">rsync</span> ，然后关闭数据库服务器一段足够的时间长度，用于运行第二次 <span class="APPLICATION">rsync</span> 。第二次 <span class="APPLICATION">rsync</span> 会比第一次快很多，因为它要传输的数据相对较少，并且最后的结果是一致的，因为服务器已经停止运行了。这个方法允许用很少的时间执行一次文件系统备份。</p>
+<p>还要说明的是，文件系统备份不会比 SQL 转储小。恰恰相反，大多数情况下它要大。比如 <span class="APPLICATION">pg_dump</span> 不用导出索引，只是创建它们的命令。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="backup-dump.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="continuous-archiving.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">SQL 转储</td><td width="34%" align="center" valign="top"><a href="backup.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">在线备份以及即时恢复(PITR)</td></tr>
+</table>
+</div>
+</body></html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>扩展索引接口</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="xoper-optimization.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="extend.html">快退</a></td><td width="60%" align="center" valign="bottom">章33. 扩展 SQL</td><td width="10%" align="right" valign="top"><a href="extend.html">快进</a></td><td width="10%" align="right" valign="top"><a href="triggers.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="XINDEX">33.14. 扩展索引接口</a></h1><a name="AEN37923"></a>
+<p>到目前为止描述的过程可以让你定义一个新类型、新函数、新操作符。但是，还不能在一个新数据类型的字段上面定义一个索引。为了达到这个目的，必须为新数据类型定义一个<i class="FIRSTTERM">操作符类</i>。下面将使用一个真实的例子来描述操作符类：一个用于 B-tree 访问方法的新操作符类，它保存复数并按照绝对值递增的顺序排序。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>在 PostgreSQL 7.3 之前，必须手工给系统表 <code class="CLASSNAME">pg_amop</code>, <code class="CLASSNAME">pg_amproc</code>, <code class="CLASSNAME">pg_opclass</code> 添加记录，以便于创建用户定义的操作符类。现在这个方法已经废弃了，因为有了 <a href="sql-createopclass.html"><i>CREATE OPERATOR CLASS</i></a> ，它在创建必要的表记录时更简单并且更不容易出错。</p>
+</blockquote>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="XINDEX-IM">33.14.1. 索引方法和操作符类</a></h2>
+<p><code class="CLASSNAME">pg_am</code> 表为每个索引方法(内部称作访问方法)都包含一条记录。对表的普通访问方法支持内建于 PostgreSQL ，但所有访问方法在 <code class="CLASSNAME">pg_am</code> 里都有描述。可以通过定义要求的接口过程并在 <code class="CLASSNAME">pg_am</code> 里创建一个新行的办法增加一个索引访问方法，不过这些些远远超出了本章的内容(参阅<a href="indexam.html">章49</a>)。</p>
+<p>一个索引方法的过程并不直接知道任何该索引方法将要操作的数据类型的信息。而是<i class="FIRSTTERM">操作符类</i>表明索引方法在操作特定数据类型的时候需要使用的操作集合。操作符类的名称的由来是因为它们声明是一种索引可以使用的 <tt class="LITERAL">WHERE</tt> 子句的操作符集(也就是可以转化成一个索引扫描条件)。一个操作符类也可以声明一些索引方法需要的内部操作的<i class="FIRSTTERM">支持过程</i>，但是它们并不直接和可以与索引一起使用的 <tt class="LITERAL">WHERE</tt> 子句操作符相关。</p>
+<p>可以为同一个数据类型和索引方法定义多个操作符类。这么做的结果是，可以为一种数据类型定义多套索引语义。比如，一个 B-tree 索引要求为它操作的每种数据类型定义一个排序顺序。对于一个复数数据类型而言，有一个通过复数绝对值对数据排序的 B-tree 操作符类可能会有用，还有一个是用实部排序，等等。通常其中一个操作符类会被认为最常用的，并且被标记为该数据类型和索引方法的缺省操作符类。</p>
+<p>同样的操作符类名字可以用于多种不同的索引方法(比如 B-tree 和 Hash 访问方法都有叫 <tt class="LITERAL">int4_ops</tt> 的操作符类)，但是每个这样的表都是一个独立的实体，必须分别定义。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="XINDEX-STRATEGIES">33.14.2. 索引方法策略</a></h2>
+<p>和一种操作符类相关联的操作符是通过"策略号"标识的，策略号用于标识每种操作符在它的操作符类环境里的语义。比如，B-tree 对键字有严格的排序要求，小于到大于，因此，像"小于"和"大于或等于"这样的操作符都是 B-tree 所感兴趣的。因为 PostgreSQL 允许用户定义操作符，PostgreSQL 无法仅通过查看操作符的名字(比如 <tt class="LITERAL">&lt;</tt> 或 <tt class="LITERAL">&gt;=</tt>)就明白它进行的比较是什么。实际上，索引方法定义了一套"策略"，它可以看作一般性的操作符。每种操作符类显示对于特定数据类型而言，是哪种实际操作符对应每种策略以及解释索引的语义。</p>
+<p>B-tree 索引定义了五种策略。在<a href="xindex.html#XINDEX-BTREE-STRAT-TABLE">表33-2</a>中显示。</p>
+<div class="TABLE"><a name="XINDEX-BTREE-STRAT-TABLE"></a>
+<p><b>表33-2. B-tree 策略</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>操作</th><th>策略号</th></tr>
+</thead>
+<tbody>
+<tr><td>小于</td><td>1</td></tr>
+<tr><td>小于或等于</td><td>2</td></tr>
+<tr><td>等于</td><td>3</td></tr>
+<tr><td>大于或等于</td><td>4</td></tr>
+<tr><td>大于</td><td>5</td></tr>
+</tbody>
+</table>
+</div>
+<p>Hash 索引只表示按位的相等，因此它们只定义了一个策略，在<a href="xindex.html#XINDEX-HASH-STRAT-TABLE">表33-3</a>里显示。</p>
+<div class="TABLE"><a name="XINDEX-HASH-STRAT-TABLE"></a>
+<p><b>表33-3. Hash 策略</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>操作</th><th>策略号</th></tr>
+</thead>
+<tbody>
+<tr><td>等于</td><td>1</td></tr>
+</tbody>
+</table>
+</div>
+<p>GiST 索引甚至更加灵活：它们根本就没有固定的策略集。实际上，是每个特定 GiST 操作符类的"一致性"支持过程解释策略号是什么样子。作为示例，有几个内置的 GiST 索引操作符类索引二维几何对象，提供<a href="xindex.html#XINDEX-RTREE-STRAT-TABLE">表33-4</a>中所示的"R-tree"策略。其中的四个是两维测试(重叠、相同、包含、包含于)、四个只考虑 x 坐标、四个对 y 坐标进行同样测试。</p>
+<div class="TABLE"><a name="XINDEX-RTREE-STRAT-TABLE"></a>
+<p><b>表33-4. GiST 两维"R-tree"策略</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>操作</th><th>策略号</th></tr>
+</thead>
+<tbody>
+<tr><td>严格地在...左边</td><td>1</td></tr>
+<tr><td>不扩展到...右边</td><td>2</td></tr>
+<tr><td>重叠</td><td>3</td></tr>
+<tr><td>不延伸到...左边</td><td>4</td></tr>
+<tr><td>严格地在...右边</td><td>5</td></tr>
+<tr><td>相同</td><td>6</td></tr>
+<tr><td>包含</td><td>7</td></tr>
+<tr><td>包含于</td><td>8</td></tr>
+<tr><td>不扩展到...上面</td><td>9</td></tr>
+<tr><td>严格地在...下面</td><td>10</td></tr>
+<tr><td>严格地在...上面</td><td>11</td></tr>
+<tr><td>不扩展到...下面</td><td>12</td></tr>
+</tbody>
+</table>
+</div>
+<p>GIN 索引在灵活性方面与 GiST 索引类似：它们都没有一个固定的策略集，而是由每个操作符类的支持过程根据操作符类的定义来解释策略号。作为示例，<a href="xindex.html#XINDEX-GIN-ARRAY-STRAT-TABLE">表33-5</a>显示了内置的数组操作符类使用的策略号。</p>
+<div class="TABLE"><a name="XINDEX-GIN-ARRAY-STRAT-TABLE"></a>
+<p><b>表33-5. GIN 数组策略</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>操作</th><th>策略号</th></tr>
+</thead>
+<tbody>
+<tr><td>重叠</td><td>1</td></tr>
+<tr><td>包含</td><td>2</td></tr>
+<tr><td>包含于</td><td>3</td></tr>
+<tr><td>相等</td><td>4</td></tr>
+</tbody>
+</table>
+</div>
+<p>请注意，所有策略操作符都返回布尔值。实际上，所有定义为索引方法策略的操作符都必须返回 <tt class="TYPE">boolean</tt> 类型，因为它们必须出现在一个 <tt class="LITERAL">WHERE</tt> 子句的顶层，这样才能被一个索引使用。</p>
+<p>顺便提一下，<code class="CLASSNAME">pg_am</code> 里的 <tt class="STRUCTFIELD">amorderstrategy</tt> 字段告诉该索引方法是否支持排序的扫描。零意味着它不支持；如果它支持，那么 <tt class="STRUCTFIELD">amorderstrategy</tt> 就是对应该排序操作符的策略号。比如，B-tree 的 <tt class="STRUCTFIELD">amorderstrategy</tt> = 1 是它的"小于"的策略号。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="XINDEX-SUPPORT">33.14.3. 索引方法支持过程</a></h2>
+<p>有时候，策略的信息还不足以让系统决定如何使用某个索引。因此，索引方法需要附加的一些过程来保证正常工作。例如，B-tree 索引方法必须能够比较两个键字以决定其中一个是大于、等于、还是小于另外一个。类似的还有 Hash 索引方法必须能够在键值上计算散列值。这些操作和 SQL 命令条件里使用的操作符并不对应；它们在内部被索引方法的管理过程调用。</p>
+<p>就像策略一样，操作符类声明在一定的数据类型和语义解释的条件下，哪个特定函数对应这些角色中的哪一个。索引方法声明它需要的函数集，而操作符类通过给它们赋予"支持函数编号"来标识要正确使用的函数。</p>
+<p>B-tree 需要一个<a href="xindex.html#XINDEX-BTREE-SUPPORT-TABLE">表33-6</a>里显示的支持函数。</p>
+<div class="TABLE"><a name="XINDEX-BTREE-SUPPORT-TABLE"></a>
+<p><b>表33-6. B-tree 支持函数</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>函数</th><th>支持号</th></tr>
+</thead>
+<tbody>
+<tr><td>比较两个键字并且返回一个小于、等于、大于零的整数，标识第一个键字小于、等于、大于第二个键字。</td><td>1</td></tr>
+</tbody>
+</table>
+</div>
+<p>类似的是 Hash 索引也需要一个支持函数，在<a href="xindex.html#XINDEX-HASH-SUPPORT-TABLE">表33-7</a>里显示。</p>
+<div class="TABLE"><a name="XINDEX-HASH-SUPPORT-TABLE"></a>
+<p><b>表33-7. Hash 支持函数</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>函数</th><th>支持号</th></tr>
+</thead>
+<tbody>
+<tr><td>为一个键字计算散列值</td><td>1</td></tr>
+</tbody>
+</table>
+</div>
+<p>GiST 索引需要七种支持函数，在<a href="xindex.html#XINDEX-GIST-SUPPORT-TABLE">表33-8</a>里显示。</p>
+<div class="TABLE"><a name="XINDEX-GIST-SUPPORT-TABLE"></a>
+<p><b>表33-8. GiST 支持函数</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>函数</th><th>支持号</th></tr>
+</thead>
+<tbody>
+<tr><td>一致性 - 检测键是否满足查询限定符</td><td>1</td></tr>
+<tr><td>联合 - 计算一套键的联合</td><td>2</td></tr>
+<tr><td>压缩 - 计算已索引键或值的压缩结果</td><td>3</td></tr>
+<tr><td>解压 - 计算已压缩键或值的解压结果</td><td>4</td></tr>
+<tr><td>性能恶化 - 计算使用给定的子树的键向子树中插入新键的性能恶化(penalty)</td><td>5</td></tr>
+<tr><td>拆分 - 检测页面中的那个项将被移动到新页面并为结果页计算联合键</td><td>6</td></tr>
+<tr><td>等于 - 比较两个键并在相等时返回真</td><td>7</td></tr>
+</tbody>
+</table>
+</div>
+<p>GIN 索引需要四种支持函数，在<a href="xindex.html#XINDEX-GIN-SUPPORT-TABLE">表33-9</a>里显示。</p>
+<div class="TABLE"><a name="XINDEX-GIN-SUPPORT-TABLE"></a>
+<p><b>表33-9. GIN 支持函数</b></p>
+<table border="1" class="CALSTABLE"><col><col>
+<thead>
+<tr><th>函数</th><th>支持号</th></tr>
+</thead>
+<tbody>
+<tr><td>比较 - 比较两个键并返回一个小于、等于、大于零的整数，标识第一个键小于、等于、大于第二个键。</td><td>1</td></tr>
+<tr><td>从值中抽取 - 从将被索引的值中抽取键</td><td>2</td></tr>
+<tr><td>从查询中抽取 - 从查询条件中抽取键</td><td>3</td></tr>
+<tr><td>一致性 - 检测值是否匹配查询条件</td><td>4</td></tr>
+</tbody>
+</table>
+</div>
+<p>和策略操作符不同，支持函数返回特定索引方法预期的数据类型，比如在 B-tree 的情况下，返回一个有符号整数。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="XINDEX-EXAMPLE">33.14.4. 例子</a></h2>
+<p>既然已经了解了这些概念，那么现在就来看一个创建新操作符类的例子。你可以在 <tt class="FILENAME">src/tutorial/complex.c</tt> 和 <tt class="FILENAME">src/tutorial/complex.sql</tt> 中找到这里讲述的例子。操作符类封装了那些以绝对值顺序对复数排序的操作符，这样就可以选择 <tt class="LITERAL">complex_abs_ops</tt> 这个名字。首先，需要一个操作符集合。用于定义操作符的过程已经在<a href="xoper.html">节33.12</a>讨论过了。对这个用于 B-tree 的操作符类，需要的操作符是：</p>
+<ul compact="COMPACT">
+<li>绝对值 小于 (策略 1)</li>
+<li>绝对值 小于等于 (策略 2)</li>
+<li>绝对值 等于 (策略 3)</li>
+<li>绝对值 大于等于 (策略 4)</li>
+<li>绝对值 大于 (策略 5)</li>
+</ul>
+<p>定义一组相关的比较操作符最不容易出错的方法是首先写出 B-tree 比较支持函数，然后再写出其它包装了支持函数的单行函数。这就减少了某些情况下导致不一致结果的机会。根据这个指引，首先写出：</p>
+<pre class="PROGRAMLISTING">#define Mag(c)  ((c)-&gt;x*(c)-&gt;x + (c)-&gt;y*(c)-&gt;y)
+
+static int
+complex_abs_cmp_internal(Complex *a, Complex *b)
+{
+    double      amag = Mag(a),
+                bmag = Mag(b);
+
+    if (amag &lt; bmag)
+        return -1;
+    if (amag &gt; bmag)
+        return 1;
+    return 0;
+}</pre>
+<p>现在，小于函数看起来像这样：</p>
+<pre class="PROGRAMLISTING">PG_FUNCTION_INFO_V1(complex_abs_lt);
+
+Datum
+complex_abs_lt(PG_FUNCTION_ARGS)
+{
+    Complex    *a = (Complex *) PG_GETARG_POINTER(0);
+    Complex    *b = (Complex *) PG_GETARG_POINTER(1);
+
+    PG_RETURN_BOOL(complex_abs_cmp_internal(a, b) &lt; 0);
+}</pre>
+<p>其它四个函数的不同之处仅在它们如何将内部函数的结果与零比较。</p>
+<p>下一步，基于 SQL 函数声明函数和操作符：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION complex_abs_lt(complex, complex) RETURNS bool
+    AS '<tt class="REPLACEABLE"><i>filename</i></tt>', 'complex_abs_lt'
+    LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OPERATOR &lt; (
+   leftarg = complex, rightarg = complex, procedure = complex_abs_lt,
+   commutator = &gt; , negator = &gt;= ,
+   restrict = scalarltsel, join = scalarltjoinsel
+);</pre>
+<p>指定正确的交换器和"非"操作符以及声明限制和连接选择性函数都是非常重要的，否则优化器将无法有效地利用索引。请注意，小于、等于、大于三种情况下应该使用不同的选择性函数。</p>
+<p>其它几个值得注意的问题：</p>
+<ul>
+<li><p>只有可以有一个已命名操作符(<tt class="LITERAL">=</tt>)把 <tt class="TYPE">complex</tt> 类型做为其两个操作数。这种情况下没有其它用于 <tt class="TYPE">complex</tt> 的 <tt class="LITERAL">=</tt> 操作符，但是如果要制作一个实用的数据类型，可能需要 <tt class="LITERAL">=</tt> 做为用于复数的普通等于操作的操作符。这种情况下，可能需要使用一些其它操作符名称来命名 <code class="FUNCTION">complex_abs_eq</code> 。</p></li>
+<li><p>尽管 PostgreSQL 可以处理 SQL 名字相同的函数，只要它们的输入数据类型不同，而 C 只能处理一个具有给定名称的全局过程。因此不能把 C 函数命名为像 <tt class="FILENAME">abs_eq</tt> 这样简单的名字。通常在 C 函数名里面包含数据类型名称是一个好习惯，这样就不会和用于其它数据类型的函数冲突。</p></li>
+<li><p>可以制作名为 <tt class="FILENAME">abs_eq</tt> 的 SQL 函数，依靠 PostgreSQL 通过输入数据类型的不同来区分任何其它同名 SQL 函数。为了令例子简单，做的函数在 C 层次和 SQL 层次都有相同的名称。</p></li>
+</ul>
+<p>下一步是注册 B-tree 需要的比较"支持过程"。实现这个例子的 C 代码在包含操作符过程的同一个文件中，下面是定义函数的方法：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION complex_abs_cmp(complex, complex)
+    RETURNS integer
+    AS '<tt class="REPLACEABLE"><i>filename</i></tt>'
+    LANGUAGE C IMMUTABLE STRICT;</pre>
+<p>既然已经有了需要的操作符和支持过程，就可以最后创建这个操作符类了：</p>
+<pre class="PROGRAMLISTING">CREATE OPERATOR CLASS complex_abs_ops
+    DEFAULT FOR TYPE complex USING btree AS
+        OPERATOR        1       &lt; ,
+        OPERATOR        2       &lt;= ,
+        OPERATOR        3       = ,
+        OPERATOR        4       &gt;= ,
+        OPERATOR        5       &gt; ,
+        FUNCTION        1       complex_abs_cmp(complex, complex);</pre>
+<p>这样就完成了！现在可以在一个 <tt class="TYPE">complex</tt> 列上创建和使用 B-tree 索引了。</p>
+<p>可以把操作符记录写得更冗余一些，像</p>
+<pre class="PROGRAMLISTING">        OPERATOR        1       &lt; (complex, complex) ,</pre>
+<p>但是如果该操作符接受的数据类型是定义的操作符类处理的东西，那就没必要这么做。</p>
+<p>上面的例子假设你想把这个新操作符类作为 <tt class="TYPE">complex</tt> 数据类型的缺省 B-tree 操作符类。如果你不想这么做，只要去掉关键字 <tt class="LITERAL">DEFAULT</tt> 即可。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="XINDEX-OPCLASS-CROSSTYPE">33.14.5. 交叉数据类型的操作符类</a></h2>
+<p>到目前为止我们都隐含的假定一个操作符类只能处理一种数据类型。虽然每个索引字段都只能是单独一种数据类型，但是使用索引操作符来比较一个已索引字段和一个不同类型的值常常很有用处。目前，B-tree 和 GiST 索引方法支持这样做。</p>
+<p>B-trees 要求每个操作符的左操作数必须是已索引数据类型，但右操作数可以是不同的类型。同时必须存在一个匹配的支持函数。例如，内置的 <tt class="TYPE">bigint</tt>(<tt class="TYPE">int8</tt>) 类型的操作符类允许与 <tt class="TYPE">int4</tt> 和 <tt class="TYPE">int2</tt> 进行交叉比较。其定义可以这样写：</p>
+<pre class="PROGRAMLISTING">CREATE OPERATOR CLASS int8_ops
+DEFAULT FOR TYPE int8 USING btree AS
+  -- 标准 int8 比较
+  OPERATOR 1 &lt; ,
+  OPERATOR 2 &lt;= ,
+  OPERATOR 3 = ,
+  OPERATOR 4 &gt;= ,
+  OPERATOR 5 &gt; ,
+  FUNCTION 1 btint8cmp(int8, int8) ,
+
+  -- 与 int2 (smallint) 交叉比较
+  OPERATOR 1 &lt; (int8, int2) ,
+  OPERATOR 2 &lt;= (int8, int2) ,
+  OPERATOR 3 = (int8, int2) ,
+  OPERATOR 4 &gt;= (int8, int2) ,
+  OPERATOR 5 &gt; (int8, int2) ,
+  FUNCTION 1 btint82cmp(int8, int2) ,
+
+  -- 与 int4 (integer) 交叉比较
+  OPERATOR 1 &lt; (int8, int4) ,
+  OPERATOR 2 &lt;= (int8, int4) ,
+  OPERATOR 3 = (int8, int4) ,
+  OPERATOR 4 &gt;= (int8, int4) ,
+  OPERATOR 5 &gt; (int8, int4) ,
+  FUNCTION 1 btint84cmp(int8, int4) ;</pre>
+<p>需要注意的是，这里的定义"重载"了操作符策略和支持函数号。这仅对 B-tree 操作符类是允许的，只要每个数字的实例都有不同的右操作数类型。非交叉类型实例将是该操作符类的默认或主操作符。</p>
+<p>GiST 索引不允许重载策略或支持函数号，但通过为每个需要被支持的操作符明确指定策略号，仍然能够从支持多种右操作数数据类型中获益。<tt class="LITERAL">consistent</tt> 支持函数必须基于策略号确定具体需要做什么，并必须准备接受恰当数据类型的比较值。</p>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="XINDEX-OPCLASS-DEPENDENCIES">33.14.6. 操作符类的系统相关性</a></h2><a name="AEN38235"></a>
+<p>除了是否可以用于索引外，PostgreSQL 还有多种途径使用操作符类来推断操作符性质。因此，即使并不打算为你自定义的数据类型索引在任何字段上建立索引，你可能还是希望创建操作符类。</p>
+<p>特别是诸如 <tt class="LITERAL">ORDER BY</tt> 和 <tt class="LITERAL">DISTINCT</tt> 之类需要对值进行比较和排序的 SQL 特性。要在自定义的数据类型上实现这些特性，PostgreSQL 将会为该类型查找默认的 B-tree 操作符类。该操作符类中的"equals"成员为 <tt class="LITERAL">GROUP BY</tt> 和 <tt class="LITERAL">DISTINCT</tt> 定义了相等的概念，同时操作符类的排序顺序定义了默认的 <tt class="LITERAL">ORDER BY</tt> 排序。</p>
+<p>用户自定义类型数组的比较同样页依赖于默认 B-tree 操作符类的语意。</p>
+<p>如果对于某个数据类型不存在默认 B-tree 操作符类，那么系统将会自动寻找默认的 Hash 操作符类。但因为 Hash 操作符类仅仅提供相等比较，所以在实践中它仅能用于数组的相等性测试。</p>
+<p>如果某个数据类型不存在任何缺省操作符类，你就会在使用该 SQL 特性时得到一个类似"could not identify an ordering operator"的错误。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>PostgreSQL 7.4 以前，排序和分组操作隐含使用名为 <tt class="LITERAL">=</tt>, <tt class="LITERAL">&lt;</tt>, <tt class="LITERAL">&gt;</tt> 的操作符。新的依赖默认操作符类的行为避免了对任何特定操作符名的行为的假定。</p>
+</blockquote>
+</div>
+</div>
+<div class="SECT2"><h2 class="SECT2"><a name="XINDEX-OPCLASS-FEATURES">33.14.7. 操作符类的特殊特性</a></h2>
+<p>还有两种操作符类的特殊特性没有讨论，主要是因为它们对于缺省的 B-tree 索引方法并不非常有用。</p>
+<p>通常，把一个操作符声明为一个操作符类的成员意味着索引方法可以使用该操作符检索满足 <tt class="LITERAL">WHERE</tt> 条件的行集合。比如</p>
+<pre class="PROGRAMLISTING">SELECT * FROM table WHERE integer_column &lt; 4;</pre>
+<p>可以由一个建立在整数字段上的 B-tree 索引精确地满足。但是有时候会有这样的现像：索引是用作匹配数据行的并不精确的指向。比如，如果一个 GiST 索引只为对象存储周界的方块，那么它就无法精确地满足两个非方形对象(比如多边形)之间是否覆盖的 <tt class="LITERAL">WHERE</tt> 条件测试。但是可以使用这个索引找出那些周界方块和目标对象的周界方块重合的对象，然后只在索引找到的对象上做精确的重合测试。如果这种情形可以通过，那就说索引对操作符是"松散的"，并且在 <tt class="COMMAND">CREATE OPERATOR CLASS</tt> 命令里给 <tt class="LITERAL">OPERATOR</tt> 子句增加 <tt class="LITERAL">RECHECK</tt> 。如果索引保证返回所有要求的行加上一些附加的行，那么 <tt class="LITERAL">RECHECK</tt> 就合法，这些额外的行就可以通过执行最初的操作符调用消除。</p>
+<p>再考虑只在索引中存储复杂对象(比如多边形)的周界方块的情形。这种情况下在索引条目里存储整个多边形没有太多的数值(也可以只存储更简单的 <tt class="TYPE">box</tt> 类型对象)。这种情形由 <tt class="COMMAND">CREATE OPERATOR CLASS</tt> 里的 <tt class="LITERAL">STORAGE</tt> 选项存储。可以写类似这样的东西：</p>
+<pre class="PROGRAMLISTING">CREATE OPERATOR CLASS polygon_ops
+    DEFAULT FOR TYPE polygon USING gist AS
+        ...
+        STORAGE box;</pre>
+<p>目前，只有 GiST 和 GIN 索引方法支持与字段数据类型不同的 <tt class="LITERAL">STORAGE</tt> 类型。GiST <code class="FUNCTION">compress</code> 和 <code class="FUNCTION">decompress</code> 支持过程在使用 <tt class="LITERAL">STORAGE</tt> 的时候必须处理数据类型转换。对于 GIN 来说，<tt class="LITERAL">STORAGE</tt> 类型标识了"键"值的类型，它通常与索引字段的类型不同。比如，一个用于整数数组字段的操作符类可能正好有整数类型的键。GIN <code class="FUNCTION">extractValue</code> 和 <code class="FUNCTION">extractQuery</code> 支持过程负责从已索引的值抽取键字。</p>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="xoper-optimization.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="triggers.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">操作符优化信息</td><td width="34%" align="center" valign="top"><a href="extend.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">触发器</td></tr>
+</table>
+</div>
+</body></html>

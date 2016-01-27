@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>initdb</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="reference-server.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="reference-server.html#AEN60197">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="app-ipcclean.html">快进</a></td><td width="10%" align="right" valign="top"><a href="app-ipcclean.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="APP-INITDB"></a>initdb</h1>
+<div class="REFNAMEDIV"><a name="AEN60206"></a><h2>名称</h2>initdb&nbsp;--&nbsp;创建一个新数据库集群</div>
+<a name="AEN60210"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN60212"></a><h2>语法</h2>
+<p><tt class="COMMAND">initdb</tt> [<tt class="REPLACEABLE"><i>option</i></tt>...]  --pgdata  | -D <tt class="REPLACEABLE"><i>directory</i></tt></p>
+</div>
+<div class="REFSECT1"><a name="R1-APP-INITDB-1"></a><h2>描述</h2>
+<p><tt class="COMMAND">initdb</tt> 创建一个新的 PostgreSQL 数据库集群。一个数据库集群是由单个服务器实例管理的多个数据库的集合。</p>
+<p>创建数据库系统包括创建数据库数据的宿主目录，生成共享的系统表(不属于任何特定数据库的表)和创建 <tt class="LITERAL">template1</tt> 和 <tt class="LITERAL">postgres</tt> 数据库。当你以后再创建一个新数据库时，<tt class="LITERAL">template1</tt> 数据库里所有内容都会拷贝过来。因此，任何在 <tt class="LITERAL">template1</tt> 里面安装的东西都自动拷贝到之后创建的数据库中。<tt class="LITERAL">postgres</tt> 数据库是一个缺省数据库，用于给用户、工具、第三方应用提供缺省数据库。</p>
+<p>尽管 <tt class="COMMAND">initdb</tt> 会尝试创建相应的数据目录，但经常会没有权限做这件事。因为所要创建目录的父目录通常被 root 所拥有。要初始化这种设置，用 root 创建一个空数据目录，然后用 <tt class="COMMAND">chown</tt> 把该目录的所有权交给数据库用户帐号，然后 <tt class="COMMAND">su</tt> 成数据库用户，最后以数据库用户身份运行 <tt class="COMMAND">initdb</tt> 。</p>
+<p><tt class="COMMAND">initdb</tt> 必须以运行数据库服务器的用户身份运行，因为服务器需要访问 <tt class="COMMAND">initdb</tt> 创建的目录和文件。因为服务器通常是以非 root 身份运行的，因此一般也就不以 root 用户运行 <tt class="COMMAND">initdb</tt> ，事实上 <tt class="COMMAND">initdb</tt> 将拒绝你以 root 用户运行它。</p>
+<p><tt class="COMMAND">initdb</tt> 初始化该数据库集群的缺省区域和字符集编码。字符编码排序(<tt class="LITERAL">LC_COLLATE</tt>)和字符集类(<tt class="LITERAL">LC_CTYPE</tt> 也就是大写、小写、数字等)是对所有数据库估定的，不能改变。使用 <tt class="LITERAL">C</tt> 或 <tt class="LITERAL">POSIX</tt> 之外的字符编码排序还会有性能影响。因此在运行 <tt class="COMMAND">initdb</tt> 的时候就做出正确的选择是非常重要的。其它区域范畴可以在随后启动服务器的时候改变。所有服务器区域值(<tt class="LITERAL">lc_*</tt>)都可以用 <tt class="COMMAND">SHOW ALL</tt> 显示。更多细节可以在<a href="locale.html">节21.1</a>找到。</p>
+<p>字符集编码可以在数据库创建的时候独立设置。<tt class="COMMAND">initdb</tt> 决定 <tt class="LITERAL">template1</tt> 数据库的编码，而该编码将成为所有其它数据库的缺省。要修改缺省编码，可以使用 <tt class="OPTION">--encoding</tt> 选项。更多细节可以在<a href="multibyte.html">节21.2</a>找到。</p>
+</div>
+<div class="REFSECT1"><a name="AEN60256"></a><h2>选项</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-A <tt class="REPLACEABLE"><i>authmethod</i></tt></tt><br><tt class="OPTION">--auth=<tt class="REPLACEABLE"><i>authmethod</i></tt></tt></dt>
+<dd><p>这个选项声明本地用户在 <tt class="FILENAME">pg_hba.conf</tt> 里面使用的认证方法。除非你相信所有本地用户，否则不要使用 <tt class="LITERAL">trust</tt>(缺省)。</p></dd>
+<dt><tt class="OPTION">-D <tt class="REPLACEABLE"><i>directory</i></tt></tt><br><tt class="OPTION">--pgdata=<tt class="REPLACEABLE"><i>directory</i></tt></tt></dt>
+<dd><p>这个选项声明数据库集群应该存放在哪个目录。这是 <tt class="COMMAND">initdb</tt> 需要的唯一信息，但是你可以通过设置 <tt class="ENVAR">PGDATA</tt> 环境变量来避免键入，这样做可能方便一些，因为稍后数据库服务器(<tt class="COMMAND">postgres</tt>)可以通过同一个变量找到数据库目录。</p></dd>
+<dt><tt class="OPTION">-E <tt class="REPLACEABLE"><i>encoding</i></tt></tt><br><tt class="OPTION">--encoding=<tt class="REPLACEABLE"><i>encoding</i></tt></tt></dt>
+<dd><p>选择模板数据库的编码方式。这将是你以后创建的数据库的缺省编码方式，除非你创建数据库时覆盖了它。缺省是从区域设置中获得的，如果没有区域设置，就是 <tt class="LITERAL">SQL_ASCII</tt> 。PostgreSQL 服务器支持的字符集在<a href="multibyte.html#MULTIBYTE-CHARSET-SUPPORTED">节21.2.1</a>里描述。</p></dd>
+<dt><tt class="OPTION">--locale=<tt class="REPLACEABLE"><i>locale</i></tt></tt></dt>
+<dd><p>为数据库集群设置缺省的区域。如果没有声明这个选项，那么区域是从 <tt class="COMMAND">initdb</tt> 运行的环境中继承过来的。区域设置在<a href="locale.html">节21.1</a>里描述。</p></dd>
+<dt><tt class="OPTION">--lc-collate=<tt class="REPLACEABLE"><i>locale</i></tt></tt><br><tt class="OPTION">--lc-ctype=<tt class="REPLACEABLE"><i>locale</i></tt></tt><br><tt class="OPTION">--lc-messages=<tt class="REPLACEABLE"><i>locale</i></tt></tt><br><tt class="OPTION">--lc-monetary=<tt class="REPLACEABLE"><i>locale</i></tt></tt><br><tt class="OPTION">--lc-numeric=<tt class="REPLACEABLE"><i>locale</i></tt></tt><br><tt class="OPTION">--lc-time=<tt class="REPLACEABLE"><i>locale</i></tt></tt></dt>
+<dd><p>类似 <tt class="OPTION">--locale</tt> ，但是只设置特殊范畴的区域。</p></dd>
+<dt><tt class="OPTION">-U <tt class="REPLACEABLE"><i>username</i></tt></tt><br><tt class="OPTION">--username=<tt class="REPLACEABLE"><i>username</i></tt></tt></dt>
+<dd><p>选择数据库超级用户的用户名。缺省是运行 <tt class="COMMAND">initdb</tt> 的用户的有效用户。超级用户的名字是什么并不重要，但是可以选择习惯的名字 <span class="SYSTEMITEM">postgres</span> ，即使操作系统的用户名字不一样也没关系。</p></dd>
+<dt><tt class="OPTION">-W</tt><br><tt class="OPTION">--pwprompt</tt></dt>
+<dd><p>令 <tt class="COMMAND">initdb</tt> 提示输入数据库超级用户的口令。如果你不准备使用口令认证，这个东西并不重要。否则你将不能使用口令认证，直到你设置了口令。</p></dd>
+<dt><tt class="OPTION">--pwfile=<tt class="REPLACEABLE"><i>filename</i></tt></tt></dt>
+<dd><p>令 <tt class="COMMAND">initdb</tt> 从一个文件里读取数据库超级用户的口令。该文件的第一行将被当作口令使用。</p></dd>
+</dl>
+</div>
+<p>其它不常用的参数还有：</p>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="OPTION">-d</tt><br><tt class="OPTION">--debug</tt></dt>
+<dd><p>从初始化后端打印调试输出以及一些其它的一些普通用户不太感兴趣的信息。初始化后端是 <tt class="COMMAND">initdb</tt> 用于创建系统表的程序。这个选项生成大量非常枯燥的输出。</p></dd>
+<dt><tt class="OPTION">-L <tt class="REPLACEABLE"><i>directory</i></tt></tt></dt>
+<dd><p>告诉 <tt class="COMMAND">initdb</tt> 到哪里找初始化数据库所需要的输入文件。通常是不必要的。如果需要你明确声明的话，程序会提示你输入。</p></dd>
+<dt><tt class="OPTION">-n</tt><br><tt class="OPTION">--noclean</tt></dt>
+<dd><p>缺省时，当 <tt class="COMMAND">initdb</tt> 发现一些错误妨碍它完成创建数据库集群的工作时，它将在检测到不能结束工作之前将其创建的所有文件删除。这个选项禁止任何清理动作，因而对调试很有用。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN60377"></a><h2>环境变量</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="ENVAR">PGDATA</tt></dt>
+<dd><p>声明数据库集群存储的目录；可以用 <tt class="OPTION">-D</tt> 选项覆盖。</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN60386"></a><h2>又见</h2><a href="app-postgres.html"><span class="APPLICATION">postgres</span></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="reference-server.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="app-ipcclean.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">PostgreSQL 服务器应用程序</td><td width="34%" align="center" valign="top"><a href="reference-server.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><span class="APPLICATION">ipcclean</span></td></tr>
+</table>
+</div>
+</body></html>

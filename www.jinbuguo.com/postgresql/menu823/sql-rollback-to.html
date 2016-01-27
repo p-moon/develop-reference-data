@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ROLLBACK TO SAVEPOINT</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-rollback-prepared.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-rollback-prepared.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-savepoint.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-savepoint.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ROLLBACK-TO"></a>ROLLBACK TO SAVEPOINT</h1>
+<div class="REFNAMEDIV"><a name="AEN53447"></a><h2>名称</h2>ROLLBACK TO SAVEPOINT&nbsp;--&nbsp;回滚到一个保存点</div>
+<a name="AEN53450"></a><a name="AEN53452"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN53455"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ROLLBACK [ WORK | TRANSACTION ] TO [ SAVEPOINT ] <tt class="REPLACEABLE"><i>savepoint_name</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN53458"></a><h2>描述</h2>
+<p>回滚所有指定保存点建立之后执行的命令。保存点仍然有效，并且需要时可以再次回滚到该点。</p>
+<p><tt class="COMMAND">ROLLBACK TO SAVEPOINT</tt> 隐含地删除所有在该保存点之后建立的保存点。</p>
+</div>
+<div class="REFSECT1"><a name="AEN53463"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>savepoint_name</i></tt></dt>
+<dd><p>回滚截至的保存点</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN53471"></a><h2>注意</h2>
+<p>使用 <a href="sql-release-savepoint.html"><i>RELEASE SAVEPOINT</i></a> 删除一个保存点，而不会抛弃这个保存点建立之后执行的命令结果。</p>
+<p>声明一个还没有建立的保存点名字是一个错误。</p>
+<p>在保存点方面，游标有一些非事务性的行为。任何在保存点里打开的游标都会在回滚掉这个保存点之后关闭。如果一个前面打开了的游标在保存点里面，并且游标被一个 <tt class="COMMAND">FETCH</tt> 命令影响，而这个保存点稍后回滚了，那么这个游标的位置仍然在 <tt class="COMMAND">FETCH</tt> 让它指向的位置(也就是 <tt class="COMMAND">FETCH</tt> 不会被回滚)。关闭一个游标的行为也不会被回滚给撤消掉。如果一个游标的操作导致事务回滚，那么这个游标就会置于不可执行状态，所以，尽管一个事务可以用 <tt class="COMMAND">ROLLBACK TO SAVEPOINT</tt> 重新恢复，但是游标不能再使用了。</p>
+</div>
+<div class="REFSECT1"><a name="AEN53481"></a><h2>例子</h2>
+<p>撤销 <tt class="LITERAL">my_savepoint</tt> 建立之后执行的命令的影响：</p>
+<pre class="PROGRAMLISTING">ROLLBACK TO SAVEPOINT my_savepoint;</pre>
+<p>游标位置不受保存点回滚的影响：</p>
+<pre class="PROGRAMLISTING">BEGIN;
+
+DECLARE foo CURSOR FOR SELECT 1 UNION SELECT 2;
+
+SAVEPOINT foo;
+
+FETCH 1 FROM foo;
+ ?column? 
+----------
+        1
+
+ROLLBACK TO SAVEPOINT foo;
+
+FETCH 1 FROM foo;
+ ?column? 
+----------
+        2
+
+COMMIT;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN53488"></a><h2>兼容性</h2>
+<p>SQL 标准声明关键字 <tt class="LITERAL">SAVEPOINT</tt> 是必须的。PostgreSQL 和 Oracle 允许省略 <tt class="LITERAL">TRANSACTION</tt> 关键字。SQL 只允许 <tt class="LITERAL">WORK</tt> 作为 <tt class="LITERAL">ROLLBACK</tt> 后面的无意义关键字。还有，SQL 有一个可选的 <tt class="LITERAL">AND [ NO ] CHAIN</tt> 子句，目前 PostgreSQL 还不支持。否则，这个命令完全兼容 SQL 标准。</p>
+</div>
+<div class="REFSECT1"><a name="AEN53500"></a><h2>又见</h2><a href="sql-begin.html"><i>BEGIN</i></a>, <a href="sql-commit.html"><i>COMMIT</i></a>, <a href="sql-release-savepoint.html"><i>RELEASE SAVEPOINT</i></a>, <a href="sql-rollback.html"><i>ROLLBACK</i></a>, <a href="sql-savepoint.html"><i>SAVEPOINT</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-rollback-prepared.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-savepoint.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ROLLBACK PREPARED</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">SAVEPOINT</td></tr>
+</table>
+</div>
+</body></html>

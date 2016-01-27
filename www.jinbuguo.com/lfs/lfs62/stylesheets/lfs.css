@@ -1,0 +1,414 @@
+/* Global settings */
+@font-face {
+	font-family: "JinBuGuoWebMono";
+	src: url("/d/mono.eot");
+	src: url("/d/mono.eot#iefix") format("embedded-opentype"),
+	     url("/d/mono.ttf") format("truetype");
+}
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+
+body {
+  text-align: left;
+  background: #fff;
+  color: #333;
+  margin: 1em;
+  padding: 0;
+  font-size: 1em;
+  line-height: 1.2em
+}
+
+a:link { color: #22b; }
+a:visited { color: #7e4988; }
+a:hover, a:focus { color: #d30e08; }
+a:active { color: #6b77b1;}
+
+/* Headers */
+h1, h2, b, strong {
+  color: #000;
+  font-weight: bold;
+}
+
+h3, h4, h5, h6 {
+  color: #222;
+}
+
+h1 { font-size: 173%; text-align: center; line-height: 1.2em; }
+h2 { font-size: 144%; padding-top: 0.2em; margin-top: 0.3em; line-height: 1.2em; }
+h2.subtitle { text-align: center; line-height: 1.2em; }
+h3 { font-size: 120%; line-height: 1.2em; }
+h4 { font-size: 110%; line-height: 1.2em; }
+h5, h6 { font-size: 110%; font-style: italic; line-height: 1.2em; }
+
+/* Navigation */
+div.headertitles h4 {
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+div.headertitles h3 {
+  margin-top: 2px;
+  text-align: center;
+}
+
+div.navheader, div.navfooter {
+  background: #ecedef;
+  padding: 0.1em 1em;
+  border-bottom: 1px solid #dbddec;
+}
+
+div.navfooter {
+  border-bottom: 0;
+  border-top: 1px solid #dbddec;
+}
+
+div.navheader ul, div.navfooter ul {
+  padding: .2em .5em .5em 0;
+  margin-left: 0px;
+  margin-right: 2px;
+  position: relative;
+  background: #dbddec;
+}
+
+div.navheader ul li, div.navfooter ul li {
+  display: inline;
+  width: 40%;
+}
+
+div.navheader ul li.prev, div.navfooter ul li.prev {
+  position: absolute;
+  display: block;
+  left: 0;
+  text-align: left;
+  padding: 0.2em 1em;
+  margin-left: 6px;
+}
+
+div.navheader ul li.next, div.navfooter ul li.next {
+  position: absolute;
+  display: block;
+  text-align: right;
+  right: 5px;
+  padding: 0.2em 0.5em;
+  margin-right: 7px;
+}
+
+div.navheader ul li.prev p, div.navfooter ul li.prev p,
+div.navheader ul li.next p, div.navfooter ul li.next p {
+  padding: 0;
+  margin: 1px 0px;
+}
+
+div.navheader ul li.home, div.navheader ul li.up,
+div.navfooter ul li.home, div.navfooter ul li.up {
+  text-align: center;
+  padding: 0;
+  margin: 0px auto;
+  display: block;
+  color: #dbddec;
+}
+
+/* TOC & Index*/
+
+div.toc ul, div.index ul, div.navheader ul, div.navfooter ul {
+  list-style: none;
+}
+
+div.toc, div.dedication {
+  padding-left: 1em;
+}
+
+li.preface, li.appendix {
+  margin-left: 1em;
+}
+
+div.toc ul li h3, div.toc ul li h4 {
+  margin: .4em;
+}
+
+.item {
+    width: 17em;
+    float: left;
+}
+
+.secitem {
+    font-weight: normal;
+    width: 16em;
+    float: left;
+}
+
+/* Admonitions */
+div.note, div.tip {
+  background-color: #fffff6;
+  border: 2px solid #dbddec;
+  width: 90%;
+  margin: .5em auto;
+}
+
+div.important, div.warning, div.caution {
+  background-color: #fffff6;
+  border: medium solid #400;
+  width: 90%;
+  margin: 1.5em auto;
+  color: #600;
+  font-size: larger;
+}
+
+div.important h3, div.warning h3, div.caution h3 {
+  color: #900;
+}
+
+div.admonhead img {
+  padding: .3em;
+}
+
+div.admonhead h3 {
+  display: inline;
+  margin-left: 1.5em;
+}
+
+div.admonbody {
+  margin: .5em;
+}
+
+div.important em, div.warning em, div.caution em {
+  color: #000;
+  font-weight: bold;
+}
+
+div.important tt, div.warning tt, div.caution tt {
+  font-weight: bold;
+}
+
+div.important tt.literal, div.warning tt.literal, div.caution tt.literal {
+  font-weight: normal;
+}
+
+/* variablelist & segmentedlist */
+dl {
+  margin: 0;
+  padding: 0;
+}
+
+dt {
+  display: list-item;
+  font-weight: bold;
+  margin: .33em 0 0 1em;
+  padding: 0;
+}
+
+dd  {
+  margin: 0 0 1em 3em;
+  padding: 0;
+}
+
+table {
+  width: auto;
+  margin-left: 1em;
+}
+
+td {
+  vertical-align: top;
+}
+
+td span, td p {
+  margin: 0.3em;
+}
+
+span.term {
+  display: block;
+}
+
+div.variablelist dd {
+  margin-bottom: 1em;
+}
+
+div.variablelist dd p {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+div.materials dd {
+  margin-left: 0px;
+}
+
+div.package div.seg {
+  margin-bottom: 0em;
+  margin-top: 0em;
+  clear: left;
+}
+
+div.package span.segtitle, div.appendix span.segtitle {
+  float: left;
+}
+
+div.package span.seg, div.appendix span.seg {
+  display: block;
+  padding-left: 14em;
+}
+
+div.appendix div.segmentedlist {
+  padding-left: 1em;
+}
+
+div.appendix h2 {
+  font-size: 133%;
+  margin-top: 1em;
+  margin-bottom: 0.2em;
+}
+
+div.content div.seg {
+  margin-bottom: 1em;
+  margin-top: 1em;
+  clear: left;
+}
+
+div.content span.segtitle {
+  float: left;
+}
+
+div.content span.seg {
+  display: block;
+  padding-left: 12em;
+}
+
+/* itemizedlist */
+
+div.itemizedlist {
+  margin-left: 1em;
+}
+
+ul[compact="compact"] {
+  list-style: none;
+}
+
+ul[compact="compact"] li {
+  margin: 0em;
+  padding: 0em;
+}
+
+ul[compact="compact"] li p {
+  padding: 0.3em;
+  margin: 0em;
+}
+
+/*table */
+
+div.table {
+  text-align: center;
+}
+
+div.table table {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+div.table table th, div.table table td {
+  padding: 0.2em 2em 0.2em 2em;
+}
+
+/* Indented blocks */
+p, ul, dl, code, blockquote {
+  padding-left: 1em;
+}
+
+tt.systemitem {
+  font-style: italic;
+}
+
+pre.userinput {
+  color: #101310;
+  background-color: #e5e5e5;
+  border: 1px solid #050505;
+  padding: .5em 1em;
+  margin: 0 2em;
+  font-weight: bold;
+}
+
+.literal {
+  font-weight: normal;
+}
+
+pre.screen {
+  color: #000;
+  background-color: #e9e9e9;
+  border: 1px solid #050505;
+  padding: .5em 1em;
+  margin: 0 2em;
+}
+
+/* Sections */
+div.wrap h1 {
+  background: #f5f6f7;
+  padding: 1em 0 0.5em 0;
+  margin: 0px auto;
+}
+
+div.package {
+  background: #f5f6f7;
+  border-bottom: 0.2em solid #dbddec;
+  padding: 0.5em 0.5em 0.3em 0.5em;
+  margin: 0px auto;
+}
+
+div.installation {
+  padding: 0 0.5em 0.3em 0.5em;
+  margin: 0.5em 0 0.5em 0;
+}
+
+div.configuration {
+  background:   #fefefe;
+  border-top: 0.2em solid #dbddec;
+  padding: 0.5em;
+  margin: 0.5em 0 .5em 0;
+}
+
+div.content {
+  background: #f5f6f7;
+  border-top: 0.2em solid #dbddec;
+  padding: 0.5em 0.5em 1em 0.5em;
+  margin: 0.5em 0 .5em 0;
+}
+
+div.installation h2, div.content h2 {
+  padding-top: 0.3em;
+  margin: 0;
+}
+
+div.book, div.preface, div.part, div.chapter, div.sect1, div.appendix, div.index {
+  padding-bottom: 0.5em;
+}
+
+div.preface h1, div.part h1, div.chapter h1, div.sect1 h1, div.appendix h1, div.index h1 {
+  background: #f5f6f7;
+  border-bottom: .1em solid #dbddec;
+  margin: 0px auto;
+  padding: .5em;
+}
+
+div.book h1 {
+  background: #f5f6f7;
+  margin: 0px auto;
+  padding: 0.5em;
+}
+
+div.book h2.subtitle {
+  background: #dbddec;
+  margin: 0px auto;
+  padding: 0.2em;
+}
+div.authorgroup, div p.copyright, div.abstract {
+  background: #f5f6f7;
+  margin: 0px auto;
+  padding:  1em 0.5em;
+}
+
+hr {
+  background: #dbddec;
+  height: .3em;
+  border: 0px;
+  margin: 0px auto;
+  padding: 0;
+}

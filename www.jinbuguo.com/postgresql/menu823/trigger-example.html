@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>一个完整的例子</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="trigger-interface.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="triggers.html">快退</a></td><td width="60%" align="center" valign="bottom">章34. 触发器</td><td width="10%" align="right" valign="top"><a href="triggers.html">快进</a></td><td width="10%" align="right" valign="top"><a href="rules.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TRIGGER-EXAMPLE">34.4. 一个完整的例子</a></h1>
+<p>这里是一个用 C 写的非常简单的触发器例子。函数 <code class="FUNCTION">trigf</code> 报告 <tt class="STRUCTNAME">ttest</tt> 表的行数量，并且如果命令试图把 NULL 插入到字段 <tt class="STRUCTFIELD">x</tt> 里(也就是它做为一个非空约束但不退出事务)时略过操作。</p>
+<p>首先，表定义：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE ttest (
+    x integer
+);</pre>
+<p>这里是触发器函数的源代码：</p>
+<pre class="PROGRAMLISTING">#include "postgres.h"
+#include "executor/spi.h"       /* 你用 SPI 的时候要用的头文件 */
+#include "commands/trigger.h"   /* 用触发器时要用的头文件 */
+
+extern Datum trigf(PG_FUNCTION_ARGS);
+
+PG_FUNCTION_INFO_V1(trigf);
+
+Datum
+trigf(PG_FUNCTION_ARGS)
+{
+    TriggerData *trigdata = (TriggerData *) fcinfo-&gt;context;
+    TupleDesc   tupdesc;
+    HeapTuple   rettuple;
+    char       *when;
+    bool        checknull = false;
+    bool        isnull;
+    int         ret, i;
+
+    /* 确信自己是作为触发器调用的 */
+    if (!CALLED_AS_TRIGGER(fcinfo))
+        elog(ERROR, "trigf: not called by trigger manager");
+
+    /* 返回给执行者的行 */
+    if (TRIGGER_FIRED_BY_UPDATE(trigdata-&gt;tg_event))
+        rettuple = trigdata-&gt;tg_newtuple;
+    else
+        rettuple = trigdata-&gt;tg_trigtuple;
+
+    /* 检查 NULL 值 */
+    if (!TRIGGER_FIRED_BY_DELETE(trigdata-&gt;tg_event)
+        &#38;&#38; TRIGGER_FIRED_BEFORE(trigdata-&gt;tg_event))
+        checknull = true;
+
+    if (TRIGGER_FIRED_BEFORE(trigdata-&gt;tg_event))
+        when = "before";
+    else
+        when = "after ";
+
+    tupdesc = trigdata-&gt;tg_relation-&gt;rd_att;
+
+    /* 与 SPI 管理器连接 */
+    if ((ret = SPI_connect()) &lt; 0)
+        elog(INFO, "trigf (fired %s): SPI_connect returned %d", when, ret);
+
+    /* 获取表中的行数量 */
+    ret = SPI_exec("SELECT count(*) FROM ttest", 0);
+
+    if (ret &lt; 0)
+        elog(NOTICE, "trigf (fired %s): SPI_exec returned %d", when, ret);
+
+    /* count(*) 返回 int8 ，所以要小心转换 */
+    i = DatumGetInt64(SPI_getbinval(SPI_tuptable-&gt;vals[0],
+                                    SPI_tuptable-&gt;tupdesc,
+                                    1,
+                                    &amp;isnull));
+
+    elog (INFO, "trigf (fired %s): there are %d rows in ttest", when, i);
+
+    SPI_finish();
+
+    if (checknull)
+    {
+        SPI_getbinval(rettuple, tupdesc, 1, &amp;isnull);
+        if (isnull)
+            rettuple = NULL;
+    }
+
+    return PointerGetDatum(rettuple);
+}</pre>
+<p>编译完源代码后，声明函数并创建触发器：</p>
+<pre class="PROGRAMLISTING">CREATE FUNCTION trigf() RETURNS trigger
+    AS '<tt class="REPLACEABLE"><i>filename</i></tt>'
+    LANGUAGE C;
+
+CREATE TRIGGER tbefore BEFORE INSERT OR UPDATE OR DELETE ON ttest 
+    FOR EACH ROW EXECUTE PROCEDURE trigf();
+
+CREATE TRIGGER tafter AFTER INSERT OR UPDATE OR DELETE ON ttest 
+    FOR EACH ROW EXECUTE PROCEDURE trigf();</pre>
+<p>现在你可以测试触发器的操作：</p>
+<pre class="SCREEN">=&gt; INSERT INTO ttest VALUES (NULL);
+INFO:  trigf (fired before): there are 0 rows in ttest
+INSERT 0 0
+
+-- 插入被忽略，AFTER 触发器没有触发
+
+=&gt; SELECT * FROM ttest;
+ x
+---
+(0 rows)
+
+=&gt; INSERT INTO ttest VALUES (1);
+INFO:  trigf (fired before): there are 0 rows in ttest
+INFO:  trigf (fired after ): there are 1 rows in ttest
+                                       ^^^^^^^^
+                             还记得讲过的关于可视性的原则吗？
+INSERT 167793 1
+vac=&gt; SELECT * FROM ttest;
+ x
+---
+ 1
+(1 row)
+
+=&gt; INSERT INTO ttest SELECT x * 2 FROM ttest;
+INFO:  trigf (fired before): there are 1 rows in ttest
+INFO:  trigf (fired after ): there are 2 rows in ttest
+                                       ^^^^^^
+                             还记得讲过的关于可视性的原则吗？
+INSERT 167794 1
+=&gt; SELECT * FROM ttest;
+ x
+---
+ 1
+ 2
+(2 rows)
+
+=&gt; UPDATE ttest SET x = NULL WHERE x = 2;
+INFO:  trigf (fired before): there are 2 rows in ttest
+UPDATE 0
+=&gt; UPDATE ttest SET x = 4 WHERE x = 2;
+INFO:  trigf (fired before): there are 2 rows in ttest
+INFO:  trigf (fired after ): there are 2 rows in ttest
+UPDATE 1
+vac=&gt; SELECT * FROM ttest;
+ x
+---
+ 1
+ 4
+(2 rows)
+
+=&gt; DELETE FROM ttest;
+INFO:  trigf (fired before): there are 2 rows in ttest
+INFO:  trigf (fired before): there are 1 rows in ttest
+INFO:  trigf (fired after ): there are 0 rows in ttest
+INFO:  trigf (fired after ): there are 0 rows in ttest
+                                       ^^^^^^
+                             还记得讲过的关于可视性的原则吗？
+DELETE 2
+=&gt; SELECT * FROM ttest;
+ x
+---
+(0 rows)</pre>
+<p>在 <tt class="FILENAME">src/test/regress/regress.c</tt> 和 <tt class="FILENAME">contrib/spi</tt> 里还有更复杂的例子。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="trigger-interface.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="rules.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">用 C 写触发器</td><td width="34%" align="center" valign="top"><a href="triggers.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">规则系统</td></tr>
+</table>
+</div>
+</body></html>

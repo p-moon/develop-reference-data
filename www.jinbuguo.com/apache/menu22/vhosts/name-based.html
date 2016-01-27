@@ -1,0 +1,125 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>基于主机名的虚拟主机 － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body id="manual-page"><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">虚拟主机</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本页最后更新：2006年10月20日</div>
+<div id="page-content"><div id="preamble"><h1>基于主机名的虚拟主机</h1>
+
+
+    <p>本文档说明了如何使用基于域名的虚拟主机。</p>
+</div>
+	<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="namevip" id="namevip">基于域名的虚拟主机和基于IP的虚拟主机比较</a></h2>
+
+    <p>基于IP的虚拟主机使用连接的IP地址来决定相应的虚拟主机。这样，你就需要为每个虚拟主机分配一个独立的IP地址。而基于域名的虚拟主机是根据客户端提交的HTTP头中标识主机名的部分决定的。使用这种技术，很多虚拟主机可以共享同一个IP地址。</p>
+
+    <p>基于域名的虚拟主机相对比较简单，因为你只需要配置你的DNS服务器将每个主机名映射到正确的IP地址，然后配置Apache HTTP服务器，令其辨识不同的主机名就可以了。基于域名的服务器也可以缓解IP地址不足的问题。所以，如果没有特殊原因使你必须使用基于IP的虚拟主机，您最好还是使用基于域名的虚拟主机。下列情况下，你可能会想要使用基于IP的虚拟主机：</p>
+
+    <ul>
+        <li>一些古董级的客户端与基于域名的虚拟主机不兼容。为了与基于域名的虚拟主机兼容，客户端必须发送"Host"头。HTTP/1.1规范中对此做了要求。而所有现在常见的仅支持HTTP/1.0的旧版本浏览器都以附加的方式实现了这个要求。如果你又想支持这些老浏览器，又想使用基于域名的虚拟主机。我们提供了一个技术方案，你可以在本文末尾看到它。</li>
+
+        <li>SSL协议先天特性决定了基于域名的虚拟主机无法成为SSL安全服务器。</li>
+
+        <li>一些操作系统和网络设备实现的带宽管理技术无法在多个主机共享一个IP的情况下区别它们。</li>
+    </ul>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="using" id="using">使用基于域名的虚拟主机</a></h2>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="related">
+<tr><th>相关模块</th><th>相关指令</th></tr>
+<tr><td><ul><li><code class="module"><a href="../mod/core.html">core</a></code></li></ul></td><td><ul><li><code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code></li><li><code class="directive"><a href="../mod/core.html#namevirtualhost">NameVirtualHost</a></code></li><li><code class="directive"><a href="../mod/core.html#serveralias">ServerAlias</a></code></li><li><code class="directive"><a href="../mod/core.html#servername">ServerName</a></code></li><li><code class="directive"><a href="../mod/core.html#serverpath">ServerPath</a></code></li><li><code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code></li></ul></td></tr>
+</table>
+
+    <p>为了使用基于域名的虚拟主机，你必须指定服务器IP地址(和可能的端口)来使主机接受请求，这个可以用<code class="directive"><a href="../mod/core.html#namevirtualhost">NameVirtualHost</a></code>指令来进行配置。如果服务器上所有的IP地址都会用到，你可以用"<code>*</code>"作为<code class="directive"><a href="../mod/core.html#namevirtualhost">NameVirtualHost</a></code>的参数。如果你打算使用多端口(如运行SSL)你必须在参数中指定一个端口号，比如"<code>*:80</code>"。请注意，在<code class="directive"><a href="../mod/core.html#namevirtualhost">NameVirtualHost</a></code>指令中指定IP地址并不会使服务器自动侦听那个IP地址。请参阅<a href="../bind.html">设置Apache使用的地址和端口</a>一章获取更多详情。另外，这里设定的IP地址必须对应服务器上的一个网络接口。</p>
+
+    <p>下一步就是为每个虚拟主机建立<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>段。<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>的参数与<code class="directive"><a href="../mod/core.html#namevirtualhost">NameVirtualHost</a></code>的参数必须是一样的(比如说，一个IP地址或"<code>*</code>"代表的所有地址)。在每个<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>段中，至少要有一个<code class="directive"><a href="../mod/core.html#servername">ServerName</a></code>指令来指定伺服哪个主机和一个<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>指令来说明这个主机的内容位于文件系统的什么地方。</p>
+
+    <div class="note"><h3>取消中心主机(Mainhost)</h3>
+        <p>如果你想在现有的web服务器上增加虚拟主机，你必须也为现存的主机建造一个<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>定义块。这个虚拟主机中<code class="directive"><a href="../mod/core.html#servername">ServerName</a></code>和<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>所包含的内容应该与全局的<code class="directive"><a href="../mod/core.html#servername">ServerName</a></code>和<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>保持一致。还要把这个虚拟主机放在配置文件的最前面，来让它扮演默认主机的角色。</p>
+    </div>
+
+    <p>比如说，假设你正在为域名<code>www.domain.tld</code>提供服务，而你又想在同一个IP地址上增加一个名叫<code>www.otherdomain.tld</code>的虚拟主机，你只需在<code>httpd.conf</code>中加入以下内容：</p>
+
+    <div class="example"><p><code>
+        NameVirtualHost *:80<br />
+        <br />
+        &lt;VirtualHost *:80&gt;<br />
+        <span class="indent">
+            ServerName www.domain.tld<br />
+            ServerAlias domain.tld *.domain.tld<br />
+            DocumentRoot /www/domain<br />
+        </span>
+        &lt;/VirtualHost&gt;<br />
+        <br />
+        &lt;VirtualHost *:80&gt;<br />
+        <span class="indent">ServerName www.otherdomain.tld<br />
+            DocumentRoot /www/otherdomain<br />
+        </span>
+        &lt;/VirtualHost&gt;<br />
+    </code></p></div>
+
+    <p>当然，你可以用一个固定的IP地址来代替<code class="directive"><a href="../mod/core.html#namevirtualhost">NameVirtualHost</a></code>和<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>指令中的"<code>*</code>"号，以达到一些特定的目的。比如说，你可能会希望在一个IP地址上运行一个基于域名的虚拟主机，而在另外一个IP地址上运行一个基于IP的或是另外一套基于域名的虚拟主机。</p>
+
+    <p>很多服务器希望自己能通过不只一个域名被访问。我们可以把<code class="directive"><a href="../mod/core.html#serveralias">ServerAlias</a></code>指令放入<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>小节中来解决这个问题。比如说在上面的第一个<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>配置段中<code class="directive"><a href="../mod/core.html#serveralias">ServerAlias</a></code>指令中列出的名字就是用户可以用来访问同一个web站点的其它名字：</p>
+
+    <div class="example"><p><code>
+        ServerAlias domain.tld *.domain.tld
+    </code></p></div>
+
+    <p>这样，所有对域<code>domain.tld</code>的访问请求都将由虚拟主机<code>www.domain.tld</code>处理。通配符标记"<code>*</code>"和"<code>?</code>"可以用于域名的匹配。当然你不能仅仅搞个名字然后把它放到<code class="directive"><a href="../mod/core.html#servername">ServerName</a></code>或<code class="directive"><a href="../mod/core.html#serveralias">ServerAlias</a></code>里就算完了。你必须先在你的DNS服务器上进行配置，将这些名字和您服务器上的一个IP地址建立映射关系。</p>
+
+    <p>最后，你可以把其他一些指令放入<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>段中，以更好的配置一个虚拟主机。大部分指令都可以放入这些<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>段中以改变相应虚拟主机配置。如果您想了解一个特定的指令是否可以这样运用，请参见指令的<a href="../mod/directive-dict.html#Context">作用域</a>。<em>主服务器(main server)</em>范围内的配置指令(在所有<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>配置段之外的指令)仅在它们没有被虚拟主机的配置覆盖时才起作用。</p>
+
+    <p>这样，当一个请求到达的时候，服务器会首先检查它是否使用了一个能和<code class="directive"><a href="../mod/core.html#namevirtualhost">NameVirtualHost</a></code>相匹配的IP地址。如果能够匹配，它就会查找每个与这个IP地址相对应的<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>段，并尝试找出一个与请求的主机名相同的<code class="directive"><a href="../mod/core.html#servername">ServerName</a></code>或<code class="directive"><a href="../mod/core.html#serveralias">ServerAlias</a></code>配置项。如果找到了，它就会使用这个服务器。否则，将使用符合这个IP地址的<strong>第一个列出的虚拟主机</strong>。</p>
+
+    <p>综上所述，第一个列出的虚拟主机充当了<em>默认虚拟主机</em>的角色。当一个IP地址与<code class="directive"><a href="../mod/core.html#namevirtualhost">NameVirtualHost</a></code>指令中的配置相符的时候，<em>主服务器</em>中的<code class="directive"><a href="../mod/core.html#documentroot">DocumentRoot</a></code>将<strong>永远不会</strong>被用到。所以，如果你想创建一段特殊的配置用于处理不对应任何一个虚拟主机的请求的话，你只要简单的把这段配置放到<code class="directive"><a href="../mod/core.html#virtualhost">&lt;VirtualHost&gt;</a></code>段中，并把它放到配置文件的最前面就可以了。</p>
+
+</div><div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="section">
+<h2><a name="compat" id="compat">与旧版浏览器的兼容性</a></h2>
+
+    <p>前面提过，有些浏览器无法对基于域名的虚拟主机发送必要的数据，从而使其无法正常工作。这些浏览器将会收到由配置中符合那个IP地址的第一个列出的虚拟主机发出的页面(基于域名的<cite>主虚拟主机</cite>)。</p>
+
+    <div class="note"><h3>究竟什么算旧？</h3>
+    <p>请注意，当我们说到旧的时候，我们并不是真的说它们很古老。其实现实中您未必就能用上这些浏览器。现在几乎所有的浏览器都会发送基于域名的虚拟主机所必须的<code>Host</code>头了。</p>
+    </div>
+
+    <p>虽然有点麻烦。但您还是有可能会用到<code class="directive"><a href="../mod/core.html#serverpath">ServerPath</a></code>指令，以下是一个配置实例：</p>
+
+    <div class="example"><p><code>
+        NameVirtualHost 111.22.33.44<br />
+        <br />
+        &lt;VirtualHost 111.22.33.44&gt;<br />
+        <span class="indent">
+            ServerName www.domain.tld<br />
+            ServerPath /domain<br />
+            DocumentRoot /web/domain<br />
+        </span>
+        &lt;/VirtualHost&gt;<br />
+    </code></p></div>
+
+    <p>以上这些说明了什么呢？它说明一个具有"<code>/domain</code>"开头的任何URI都会为<code>www.domain.tld</code>这个虚拟主机所伺服。这意味着这个页面可以由<code>http://www.domain.tld/domain/</code>的形式为所有的浏览器所访问。能够发送"<code>Host:</code>"头的浏览器也能使用<code>http://www.domain.tld/</code>这种形式来访问它。</p>
+
+    <p>为了达到这样的目的。您先要在您的主虚拟主机的页面上放一个到<code>http://www.domain.tld/domain/</code>的链接。然后，确保在虚拟主机的页面中使用的全是相对链接(诸如："<code>file.html</code>"或"<code>../icons/image.gif</code>")或者是包含<code>/domain/</code>这个前缀(比如："<code>http://www.domain.tld/domain/misc/file.html</code>"或"<code>/domain/misc/file.html</code>")。</p>
+
+    <p>完成这些可能需要一些尝试，但遵照上述指导将会确保你的页面能够为所有的浏览器所正确显示，不论新旧。</p>
+
+</div></div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

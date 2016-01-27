@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>systemd.device 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>systemd.device 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+systemd.device(5)                          systemd-228                         systemd.device(5)
+
+<h3>名称</h3>
+    systemd.device - 设备单元配置
+
+<h3>概要</h3>
+    <i>device</i>.device
+
+<h3>描述</h3>
+    以".device"为后缀的单元文件，封装了一个位于 sysfs/<a href="udev.html">udev(7)</a> 中的设备。
+    此种单元没有专属的配置选项(不存在"[Device]"小节)，仅可使用 <a href="systemd.unit.html">systemd.unit(5)</a> 中的通用选项(位于"[Unit]"与"[Install]"小节)。
+
+    systemd 会自动动态的为所有带有"systemd"标记的设备创建 device 单元。可以利用这个特性定义设备与单元之间的依赖关系。
+    可以通过在 udev 的 .rules 文件中使用"TAG+="systemd""来添加"systemd"标记。详见 <a href="udev.html">udev(7)</a> 手册。
+    所有块设备与所有网络设备都默认带有"systemd"标记，此外，还有个别其他设备也默认带有"systemd"标记。
+
+    device 单元的名称由该设备在 /sys 与 /dev 中的路径决定。例如 /dev/sda5 对应的单元名称是 dev-sda5.device
+    有关将路径转化为单元名称的详细规则，参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册。
+
+<h3>自动依赖</h3>
+    许多单元依赖于特定的设备，并且可以自动获得对相应 device 单元的依赖。
+    例如，socket 单元可以自动获得对 BindToDevice= 指定的网络接口的 device 单元的依赖。
+    同样，swap 与 mount 单元可以自动对所需块设备的 device 单元的依赖。
+
+<h3>udev 规则库</h3>
+    对 device 单元的配置，虽然可以通过修改单元文件实现，但是最佳方案是直接配置 udev 规则库。
+    可配置的 udev 设备属性见下文。注意，下列属性仅可用于带有"systemd"标记的设备，
+    因为 systemd 仅为带有"systemd"标记的设备创建 device 单元。
+
+    SYSTEMD_WANTS=, SYSTEMD_USER_WANTS=
+        属性值是一个空格分隔的单元名称列表，表示该 device 单元依赖于列表中的单元(Wants=)。
+        前一个属性专用于 systemd 系统实例，后一个属性专用于 systemd 用户实例。
+        这两个属性可用于：在特定的设备可用时自动启动期望的单元。
+
+        注意，systemd 仅在设备首次激活时按照 Wants= 依赖启动列表中的单元。
+        如果将某单元添加到一个已激活的设备的 Wants= 依赖中，那么该单元不会被启动。
+        可以使用下面的 SYSTEMD_READY= 属性设置哪些 udev 事件可以触发 Wants= 依赖的执行。
+
+    SYSTEMD_ALIAS=
+        为该 device 单元添加一个别名。必须是一个由绝对路径转化而来的单元名称(见上文)。
+
+    SYSTEMD_READY=
+        设为 0 表示始终将该设备视为'已拔出'，即使它实际上依然存在于 udev 设备树中。
+        默认值 1 表示只要该设备存在于 udev 设备树中，就视为'已插入'。
+        该属性不会影响当设备从 udev 设备树中消失时所触发的动作。
+
+        该属性主要用于支持这样的设备：最初以'尚未初始化'的状态出现在设备树中(此时设备尚不可用)，
+        接着在完成初始化之后再生成一个"changed"事件(此时设备已可用)。
+        注意，当某设备的 SYSTEMD_READY=0 时，为其设置的 SYSTEMD_WANTS= 将会失效。
+
+    ID_MODEL_FROM_DATABASE=, ID_MODEL=
+        设置该 device 单元的描述字符串。
+
+<h3>参见</h3>
+    <a href="systemd.html">systemd(1)</a>, <a href="systemctl.html">systemctl(1)</a>, <a href="systemd.unit.html">systemd.unit(5)</a>, <a href="udev.html">udev(7)</a>, <a href="systemd.directives.html">systemd.directives(7)</a>
+
+
+systemd.device(5)                          systemd-228                         systemd.device(5)
+</pre>
+
+
+<hr />
+
+
+</body></html>

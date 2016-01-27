@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>继承</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="tutorial-transactions.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="tutorial-advanced.html">快退</a></td><td width="60%" align="center" valign="bottom">章3. 高级特性</td><td width="10%" align="right" valign="top"><a href="tutorial-advanced.html">快进</a></td><td width="10%" align="right" valign="top"><a href="tutorial-conclusion.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="TUTORIAL-INHERITANCE">3.5. 继承</a></h1><a name="AEN1011"></a>
+<p>继承是面向对象的数据库的概念。它开启了数据库设计新的有趣的可能性大门。</p>
+<p>让我们创建两个表：一个 <code class="CLASSNAME">cities</code> 表和一个 <code class="CLASSNAME">capitals</code> 表。自然，首府(capital)也是城市(cities)，因此在列出所有城市时你想要某种方法隐含地显示首府。如果你已经很高明了，那么你可能会创造类似下面这样的模式：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE capitals (
+  name       text,
+  population real,
+  altitude   int,    -- (单位是英尺)
+  state      char(2)
+);
+
+CREATE TABLE non_capitals (
+  name       text,
+  population real,
+  altitude   int     -- (单位是英尺)
+);
+
+CREATE VIEW cities AS
+  SELECT name, population, altitude FROM capitals
+    UNION
+  SELECT name, population, altitude FROM non_capitals;</pre>
+<p>如果只是查询，那么这个方法运转得很好，但是如果你需要更新某几行，那这个方法就很难看了。</p>
+<p>一种更好的方法是：</p>
+<pre class="PROGRAMLISTING">CREATE TABLE cities (
+  name       text,
+  population real,
+  altitude   int     -- (单位是英尺)
+);
+
+CREATE TABLE capitals (
+  state      char(2)
+) INHERITS (cities);</pre>
+<p>在这个例子里，<i class="FIRSTTERM">子表</i>(<code class="CLASSNAME">capitals</code>)<i class="FIRSTTERM">继承</i>其<i class="FIRSTTERM">父表</i>(<code class="CLASSNAME">cities</code>)的所有字段(<tt class="STRUCTFIELD">name</tt>, <tt class="STRUCTFIELD">population</tt>, <tt class="STRUCTFIELD">altitude</tt>)。字段 <tt class="STRUCTFIELD">name</tt> 的类型 <tt class="TYPE">text</tt> 是 PostgreSQL 用于变长字符串的固有类型。州首府有一个额外的字段 <tt class="STRUCTFIELD">state</tt> 显示其所处的州。在 PostgreSQL 里，一个表可以从零个或者更多其它表中继承过来。</p>
+<p>比如，下面的查询找出所有海拔超过 500 英尺的城市的名字，包括州首府：</p>
+<pre class="PROGRAMLISTING">SELECT name, altitude
+  FROM cities
+  WHERE altitude &gt; 500;</pre>
+<p>它返回：</p>
+<pre class="SCREEN">   name    | altitude
+-----------+----------
+ Las Vegas |     2174
+ Mariposa  |     1953
+ Madison   |      845
+(3 rows)</pre>
+<p>另一方面，下面的查询找出所有不是州首府并且位于海拔大于或等于 500 英尺的城市：</p>
+<pre class="PROGRAMLISTING">SELECT name, altitude
+    FROM ONLY cities
+    WHERE altitude &gt; 500;</pre>
+<pre class="SCREEN">   name    | altitude
+-----------+----------
+ Las Vegas |     2174
+ Mariposa  |     1953
+(2 rows)</pre>
+<p><tt class="LITERAL">cities</tt> 前面的 <tt class="LITERAL">ONLY</tt> 指示系统只对 <code class="CLASSNAME">cities</code> 表运行查询，而不包括继承级别中低于 <code class="CLASSNAME">cities</code> 的表。许多我们已经讨论过的命令 <tt class="COMMAND">SELECT</tt>, <tt class="COMMAND">UPDATE</tt>, <tt class="COMMAND">DELETE</tt> 都支持这个 <tt class="LITERAL">ONLY</tt> 表示法。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>尽管继承经常是有用的，但是它还没有集成唯一约束或者外键，因此制约了其实用性。参阅<a href="ddl-inherit.html">节5.8</a>以获取更多细节。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="tutorial-transactions.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="tutorial-conclusion.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">事务</td><td width="34%" align="center" valign="top"><a href="tutorial-advanced.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">结论</td></tr>
+</table>
+</div>
+</body></html>

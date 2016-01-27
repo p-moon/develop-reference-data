@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>pg_proc</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="catalog-pg-pltemplate.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="catalogs.html">快退</a></td><td width="60%" align="center" valign="bottom">章43. 系统表</td><td width="10%" align="right" valign="top"><a href="catalogs.html">快进</a></td><td width="10%" align="right" valign="top"><a href="catalog-pg-rewrite.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="CATALOG-PG-PROC">43.27. <tt class="STRUCTNAME">pg_proc</tt></a></h1><a name="AEN64303"></a>
+<p><tt class="STRUCTNAME">pg_proc</tt> 表存储关于函数(或过程)的信息。<a href="sql-createfunction.html"><i>CREATE FUNCTION</i></a> 和<a href="xfunc.html">节33.3</a>包含一些字段含义的更多信息。</p>
+<p>该表包含聚集函数和普通函数的数据。如果 <tt class="STRUCTFIELD">proisagg</tt> 为真，那么在 <tt class="STRUCTFIELD">pg_aggregate</tt> 里应该有一个匹配行。</p>
+<div class="TABLE"><a name="AEN64312"></a>
+<p><b>表43-27. <tt class="STRUCTNAME">pg_proc</tt> 字段</b></p>
+<table border="1" class="CALSTABLE"><col><col><col><col>
+<thead>
+<tr><th>名字</th><th>类型</th><th>引用</th><th>描述</th></tr>
+</thead>
+<tbody>
+<tr><td><tt class="STRUCTFIELD">proname</tt></td><td><tt class="TYPE">name</tt></td><td>&nbsp;</td><td>函数名字</td></tr>
+<tr><td><tt class="STRUCTFIELD">pronamespace</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-namespace.html"><tt class="STRUCTNAME">pg_namespace</tt></a>.oid</tt></td><td>包含该函数名字空间的 OID</td></tr>
+<tr><td><tt class="STRUCTFIELD">proowner</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-authid.html"><tt class="STRUCTNAME">pg_authid</tt></a>.oid</tt></td><td>函数的所有者</td></tr>
+<tr><td><tt class="STRUCTFIELD">prolang</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-language.html"><tt class="STRUCTNAME">pg_language</tt></a>.oid</tt></td><td>这个函数的实现语言或调用接口</td></tr>
+<tr><td><tt class="STRUCTFIELD">proisagg</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>函数是聚集函数</td></tr>
+<tr><td><tt class="STRUCTFIELD">prosecdef</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>函数是一个安全定义器(也就是一个"setuid"函数)</td></tr>
+<tr><td><tt class="STRUCTFIELD">proisstrict</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>如果任何调用参数是空，那么函数返回空。这时函数实际上连调用都不调用。不是"strict"的函数必须准备处理空输入。</td></tr>
+<tr><td><tt class="STRUCTFIELD">proretset</tt></td><td><tt class="TYPE">bool</tt></td><td>&nbsp;</td><td>函数返回一个集合(也就是说，指定数据类型的多个数值)</td></tr>
+<tr><td><tt class="STRUCTFIELD">provolatile</tt></td><td><tt class="TYPE">char</tt></td><td>&nbsp;</td><td>告诉该函数的结果是否只倚赖于它的输入参数，或者还会被外接因素影响。对于"不可变的"(immutable)函数它是 <tt class="LITERAL">i</tt> ，这样的函数对于相同的输入总是产生相同的结果。对于"稳定的"(stable)函数它是 <tt class="LITERAL">s</tt> ，(对于固定输入)其结果在一次扫描里不变。对于"易变"(volatile)函数它是 <tt class="LITERAL">v</tt> ，其结果可能在任何时候变化。<tt class="LITERAL">v</tt> 也用于那些有副作用的函数，因此调用它们无法得到优化。</td></tr>
+<tr><td><tt class="STRUCTFIELD">pronargs</tt></td><td><tt class="TYPE">int2</tt></td><td>&nbsp;</td><td>参数数目</td></tr>
+<tr><td><tt class="STRUCTFIELD">prorettype</tt></td><td><tt class="TYPE">oid</tt></td><td><tt class="LITERAL"><a href="catalog-pg-type.html"><tt class="STRUCTNAME">pg_type</tt></a>.oid</tt></td><td>返回值的数据类型</td></tr>
+<tr><td><tt class="STRUCTFIELD">proargtypes</tt></td><td><tt class="TYPE">oidvector</tt></td><td><tt class="LITERAL"><a href="catalog-pg-type.html"><tt class="STRUCTNAME">pg_type</tt></a>.oid</tt></td><td>一个存放函数参数的数据类型的数组。数组里只包括输入参数(包括 <tt class="LITERAL">INOUT</tt> 参数)，因此代表该函数的调用签名(接口)。</td></tr>
+<tr><td><tt class="STRUCTFIELD">proallargtypes</tt></td><td><tt class="TYPE">oid[]</tt></td><td><tt class="LITERAL"><a href="catalog-pg-type.html"><tt class="STRUCTNAME">pg_type</tt></a>.oid</tt></td><td>一个包含函数参数的数据类型的数组。数组里包括所有参数的类型(包括 <tt class="LITERAL">OUT</tt> 和 <tt class="LITERAL">INOUT</tt> 参数)；不过，如果所有参数都是 IN 参数，那么这个字段就会是空。请注意数组下标是以 1 为起点的，而因为历史原因，<tt class="STRUCTFIELD">proargtypes</tt> 的下标起点为 0 。</td></tr>
+<tr><td><tt class="STRUCTFIELD">proargmodes</tt></td><td><tt class="TYPE">char[]</tt></td><td>&nbsp;</td><td>一个保存函数参数模式的数组，编码如下：<tt class="LITERAL">i</tt> 表示 <tt class="LITERAL">IN</tt> 参数， <tt class="LITERAL">o</tt> 表示 <tt class="LITERAL">OUT</tt> 参数， <tt class="LITERAL">b</tt> 表示 <tt class="LITERAL">INOUT</tt> 参数。如果所有参数都是 <tt class="LITERAL">IN</tt> 参数，那么这个字段为空。请注意，下标对应的是 <tt class="STRUCTFIELD">proallargtypes</tt> 的位置，而不是 <tt class="STRUCTFIELD">proargtypes</tt></td></tr>
+<tr><td><tt class="STRUCTFIELD">proargnames</tt></td><td><tt class="TYPE">text[]</tt></td><td>&nbsp;</td><td>一个保存函数参数的名字的数组。没有名字的参数在数组里设置为空字符串。如果没有一个参数有名字，这个字段将是空。请注意，此数组的下标对应 <tt class="STRUCTFIELD">proallargtypes</tt> 而不是 <tt class="STRUCTFIELD">proargtypes</tt></td></tr>
+<tr><td><tt class="STRUCTFIELD">prosrc</tt></td><td><tt class="TYPE">text</tt></td><td>&nbsp;</td><td>这个字段告诉函数处理器如何调用该函数。它实际上对于解释语言来说就是函数的源程序，或者一个链接符号，一个文件名，或者是任何其它的东西，具体取决于语言/调用习惯的实现。</td></tr>
+<tr><td><tt class="STRUCTFIELD">probin</tt></td><td><tt class="TYPE">bytea</tt></td><td>&nbsp;</td><td>关于如何调用该函数的附加信息。同样，其含义也是和语言相关的。</td></tr>
+<tr><td><tt class="STRUCTFIELD">proacl</tt></td><td><tt class="TYPE">aclitem[]</tt></td><td>&nbsp;</td><td>访问权限；参阅 <a href="sql-grant.html"><i>GRANT</i></a> 和 <a href="sql-revoke.html"><i>REVOKE</i></a> 获取细节。</td></tr>
+</tbody>
+</table>
+</div>
+<p>对于内置和动态加载得编译函数，<tt class="STRUCTFIELD">prosrc</tt> 包含函数的 C 语言名字(链接符号)。对于所有其它语言类型，<tt class="STRUCTFIELD">prosrc</tt> 包含该函数的源文本。<tt class="STRUCTFIELD">probin</tt> 除了用于动态加载的 C 函数之外没有其它用途，这个时候它给出包含给函数的共享库的文件名。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="catalog-pg-pltemplate.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="catalog-pg-rewrite.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top"><tt class="STRUCTNAME">pg_pltemplate</tt></td><td width="34%" align="center" valign="top"><a href="catalogs.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top"><tt class="STRUCTNAME">pg_rewrite</tt></td></tr>
+</table>
+</div>
+</body></html>

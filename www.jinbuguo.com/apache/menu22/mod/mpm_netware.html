@@ -1,0 +1,56 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<link href="../style/css/manual-zip.css" rel="stylesheet" media="all" type="text/css" title="Main stylesheet" />
+<link href="../style/css/manual-zip-100pc.css" rel="alternate stylesheet" media="all" type="text/css" title="No Sidebar - Default font size" />
+<link href="../style/css/manual-print.css" rel="stylesheet" media="print" type="text/css" />
+<title>mpm_netware(MPM) － Apache 2.2 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+<body><div id="page-header">
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p><p class="apache">Apache HTTP Server 版本2.2</p><img alt="" src="../images/feather.gif" /></div>
+<div class="up"><a href="./index.html"><img title="&lt;-" alt="&lt;-" src="../images/left.gif" /></a></div>
+<div id="path"><a href="http://www.apache.org/">Apache</a> &gt; <a href="http://httpd.apache.org/">HTTP Server</a> &gt; <a href="http://httpd.apache.org/docs/">文档</a> &gt; <a href="../index.html">版本2.2</a> &gt; <a href="./index.html">模块</a></div>
+
+<div id="translation-info">　　 <a href="../translator_announcement.html#thanks">致谢</a> | 本篇译者：<a href="http://www.jinbuguo.com/">金步国</a>(<a href="http://www.jinbuguo.com/">作品集</a>) | 本篇译稿完成时间：2008年8月6日</div>
+<div id="page-content"><div id="preamble"><h1>Apache MPM netware</h1>
+
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="module">
+<tr><th><a href="module-dict.html#Description">说明</a></th><td>专门为Novell NetWare优化的线程化的多路处理模块(MPM)</td></tr>
+<tr><th><a href="module-dict.html#Status">状态</a></th><td>MPM</td></tr>
+<tr><th><a href="module-dict.html#ModuleIdentifier">模块名</a></th><td>mpm_netware_module</td></tr>
+<tr><th><a href="module-dict.html#SourceFile">源文件</a></th><td>mpm_netware.c</td></tr>
+</table>
+<h3>概述</h3>
+
+    <p>这是专门为Novell NetWare优化的线程化的多路处理模块(MPM)，也是NetWare平台上默认的MPM。</p>
+
+    <p>服务器主线程负责派生监听和处理客户端请求的工作线程。主线程会始终将服务器的空闲工作线程控制在指定的范围内，以随时准备应对客户端请求。这样客户端就不必在得到应答前等待新线程的派生。</p>
+
+    <p><code class="directive"><a href="../mod/mpm_common.html#startthreads">StartThreads</a></code>, <code class="directive"><a href="../mod/mpm_common.html#minsparethreads">MinSpareThreads</a></code>, <code class="directive"><a href="../mod/mpm_common.html#maxsparethreads">MaxSpareThreads</a></code>, <code class="directive"><a href="#maxthreads">MaxThreads</a></code> 控制着如何创建工作线程。一般来说，Apache的自适应能力很强，所以大多数网站没必要调整这些指令的默认值。内存较小的服务器可能需要减小<code class="directive"><a href="#maxthreads">MaxThreads</a></code>的值以避免内存耗尽。更多信息请参见<a href="../misc/perf-tuning.html">性能方面的提示</a>一文。</p>
+
+    <p><code class="directive"><a href="../mod/mpm_common.html#maxrequestsperchild">MaxRequestsPerChild</a></code>控制着每个线程在其生存期内允许伺服的最大请求数量。在NetWare平台上，我们强烈建议你将此值设为"0"，这样每个线程在其生存期内就不再限制允许伺服多少个请求了。</p>
+</div>
+<div class="top"><a href="#page-header"><img alt="top" src="../images/up.gif" /></a></div>
+<div class="directive-section"><h2><a name="MaxThreads" id="MaxThreads">MaxThreads</a> <a name="maxthreads" id="maxthreads">指令</a></h2>
+<table border="1" cellpadding="0" cellspacing="0" bordercolor="#AAAAAA" class="directive">
+<tr><th><a href="directive-dict.html#Description">说明</a></th><td>最大工作线程的数量</td></tr>
+<tr><th><a href="directive-dict.html#Syntax">语法</a></th><td><code>MaxThreads <var>number</var></code></td></tr>
+<tr><th><a href="directive-dict.html#Default">默认值</a></th><td><code>MaxThreads 2048</code></td></tr>
+<tr><th><a href="directive-dict.html#Context">作用域</a></th><td>server config</td></tr>
+<tr><th><a href="directive-dict.html#Status">状态</a></th><td>MPM</td></tr>
+<tr><th><a href="directive-dict.html#Module">模块</a></th><td>mpm_netware</td></tr>
+</table>
+    <p><code class="directive">MaxThreads</code>指定了最大允许的工作线程数量。默认值"2048"同样也是编译时的硬限制，因此你只能修改成更低的值。例如：</p>
+
+    <div class="example"><p><code>
+      MaxThreads 512
+    </code></p></div>
+
+</div>
+</div>
+<div id="footer">
+<p class="apache">本文允许自由的转载、引用、再分发，但必须保留译者署名并注明出处；详见：<a href="../translator_announcement.html#announcement">版权声明</a>。</p>
+<p class="menu"><a href="../mod/index.html">模块索引</a> | <a href="../mod/directives.html">指令索引</a> | <a href="../faq/index.html">常见问题</a> | <a href="../glossary.html">词汇表</a> | <a href="../sitemap.html">站点导航</a></p></div>
+</body></html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>ALTER TABLESPACE</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="REFENTRY">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="sql-altertable.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="sql-altertable.html">快退</a></td><td width="60%" align="center" valign="bottom"></td><td width="10%" align="right" valign="top"><a href="sql-altertrigger.html">快进</a></td><td width="10%" align="right" valign="top"><a href="sql-altertrigger.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<h1><a name="SQL-ALTERTABLESPACE"></a>ALTER TABLESPACE</h1>
+<div class="REFNAMEDIV"><a name="AEN45273"></a><h2>名称</h2>ALTER TABLESPACE&nbsp;--&nbsp;修改一个表空间的定义</div>
+<a name="AEN45276"></a>
+<div class="REFSYNOPSISDIV"><a name="AEN45278"></a><h2>语法</h2>
+<pre class="SYNOPSIS">ALTER TABLESPACE <tt class="REPLACEABLE"><i>name</i></tt> RENAME TO <tt class="REPLACEABLE"><i>newname</i></tt>
+ALTER TABLESPACE <tt class="REPLACEABLE"><i>name</i></tt> OWNER TO <tt class="REPLACEABLE"><i>newowner</i></tt></pre>
+</div>
+<div class="REFSECT1"><a name="AEN45284"></a><h2>描述</h2>
+<p><tt class="COMMAND">ALTER TABLESPACE</tt> 改变一个表空间的定义。</p>
+<p>要使用 <tt class="COMMAND">ALTER TABLESPACE</tt> ，你必须拥有该该表空间。要修改所有者，你还必须是新的所有角色的直接或间接成员。不过，超级用户自动获得这些权限。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45290"></a><h2>参数</h2>
+<div class="VARIABLELIST">
+<dl>
+<dt><tt class="REPLACEABLE"><i>name</i></tt></dt>
+<dd><p>一个现有的表空间</p></dd>
+<dt><tt class="REPLACEABLE"><i>newname</i></tt></dt>
+<dd><p>表空间的新名字。新名字不能以 <tt class="LITERAL">pg_</tt> 开头，因为这样的名字保留给系统表空间用了。</p></dd>
+<dt><tt class="REPLACEABLE"><i>newowner</i></tt></dt>
+<dd><p>表空间的新所有者</p></dd>
+</dl>
+</div>
+</div>
+<div class="REFSECT1"><a name="AEN45309"></a><h2>例子</h2>
+<p>把表空间 <tt class="LITERAL">index_space</tt> 重命名为 <tt class="LITERAL">fast_raid</tt> ：</p>
+<pre class="PROGRAMLISTING">ALTER TABLESPACE index_space RENAME TO fast_raid;</pre>
+<p>该变表空间 <tt class="LITERAL">index_space</tt> 的所有者：</p>
+<pre class="PROGRAMLISTING">ALTER TABLESPACE index_space OWNER TO mary;</pre>
+</div>
+<div class="REFSECT1"><a name="AEN45318"></a><h2>兼容性</h2>
+<p>SQL 标准里没有 <tt class="COMMAND">ALTER TABLESPACE</tt> 语句。</p>
+</div>
+<div class="REFSECT1"><a name="AEN45322"></a><h2>又见</h2><a href="sql-createtablespace.html"><i>CREATE TABLESPACE</i></a>, <a href="sql-droptablespace.html"><i>DROP TABLESPACE</i></a></div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="sql-altertable.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="sql-altertrigger.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">ALTER TABLE</td><td width="34%" align="center" valign="top"><a href="sql-commands.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">ALTER TRIGGER</td></tr>
+</table>
+</div>
+</body></html>

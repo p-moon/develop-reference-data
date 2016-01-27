@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>概述</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="managing-databases.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="managing-databases.html">快退</a></td><td width="60%" align="center" valign="bottom">章19. 管理数据库</td><td width="10%" align="right" valign="top"><a href="managing-databases.html">快进</a></td><td width="10%" align="right" valign="top"><a href="manage-ag-createdb.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="MANAGE-AG-OVERVIEW">19.1. 概述</a></h1><a name="AEN22766"></a>
+<p>数据库是一些 SQL 对象("数据库对象")的集合；通常每个数据库对象(表、函数等)属于并且只属于一个数据库。不过有几个系统表(比如 <tt class="LITERAL">pg_database</tt>)属于整个集群并且可以在集群之内的每个数据库里访问。更准确地说，一个数据库是一个模式的集合，而模式包含表、函数等等。因此完整的层次是这样的：服务器→数据库→模式→表(或者其它类型对象，比如函数)。</p>
+<p>在与数据库服务器连接的时候，应用应该在它的连接请求里指明它想连接的数据库名称。不允许在一次连接里访问多个数据库(不过没有限制一个应用可以建立的连接数量)。数据库是物理上相互隔离的，对它们的访问控制是在连接层次进行的。如果一个 PostgreSQL 服务器实例用于承载那些应该分隔并且相互之间并不知晓的用户和项目，那么我们建议把它们放在不同的数据库里。如果项目或者用户是相互关联的，并且可以相互使用对方的资源，那么应该把它们放在同一个数据库里，但可能在不同的模式中。模式只是一个纯粹的逻辑结构，谁能访问某个模式由权限系统控制。有关管理模式的更多信息在<a href="ddl-schemas.html">节5.7</a>里。</p>
+<p>数据库是使用 <tt class="COMMAND">CREATE DATABASE</tt> 命令创建的(参阅<a href="manage-ag-createdb.html">节19.2</a>)，用 <tt class="COMMAND">DROP DATABASE</tt> 命令删除(参阅<a href="manage-ag-dropdb.html">节19.5</a>)。要查看现有数据库的集合，可以检查系统表 <tt class="STRUCTNAME">pg_database</tt> ，比如</p>
+<pre class="SYNOPSIS">SELECT datname FROM pg_database;</pre>
+<p><a href="app-psql.html"><span class="APPLICATION">psql</span></a> 程序的 <tt class="LITERAL">\l</tt> 元命令和 <tt class="OPTION">-l</tt> 命令行选项也可以用来列出现存的数据库。</p>
+<div class="NOTE">
+<blockquote class="NOTE">
+<p><b>【注意】</b>SQL 标准把数据库称作"目录"(catalog)，不过这两个东西实际上没有什么区别。</p>
+</blockquote>
+</div>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="managing-databases.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="manage-ag-createdb.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">管理数据库</td><td width="34%" align="center" valign="top"><a href="managing-databases.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">创建一个数据库</td></tr>
+</table>
+</div>
+</body></html>

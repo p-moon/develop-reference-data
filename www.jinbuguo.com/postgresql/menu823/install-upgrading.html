@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="Content-Language" content="zh-CN"><link href="stylesheet.css" media="all" rel="stylesheet" type="text/css">
+<title>如果你是在升级</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head><body class="SECT1">
+<div>
+<table summary="Header navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><th colspan="5" align="center" valign="bottom">PostgreSQL 8.2.3 中文文档</th></tr>
+<tr><td width="10%" align="left" valign="top"><a href="install-getsource.html" accesskey="P">后退</a></td><td width="10%" align="left" valign="top"><a href="installation.html">快退</a></td><td width="60%" align="center" valign="bottom">章14. 安装指导</td><td width="10%" align="right" valign="top"><a href="installation.html">快进</a></td><td width="10%" align="right" valign="top"><a href="install-procedure.html" accesskey="N">前进</a></td></tr>
+</table>
+<hr align="LEFT" width="100%"></div>
+<div class="SECT1"><h1 class="SECT1"><a name="INSTALL-UPGRADING">14.4. 如果你是在升级</a></h1><a name="AEN17274"></a>
+<p>新版本 PostgreSQL 的内部数据存储格式可能会发生改变。因此，如果你正在升级一个版本号不像"8.2.x"这样的系统，你就必须按照这里说的方法备份和恢复你的数据。这些指导假设你现有的安装在 <tt class="FILENAME">/usr/local/pgsql</tt> 目录里面，并且数据区在 <tt class="FILENAME">/usr/local/pgsql/data</tt> 。根据你的情况修改这些路径。</p>
+<div class="PROCEDURE">
+<ol type="1">
+<li class="STEP"><p>确保你在备过程中和备份后没有更新。虽然即使有数据更新也不会影响备份的完整性，但是很明显更新的数据会被排除在备份之外。如果有必要，可以编辑 <tt class="FILENAME">/usr/local/pgsql/data/pg_hba.conf</tt> (或等效的)文件中的权限以禁止除你之外的所有人访问。</p></li>
+<li class="STEP"><p><a name="AEN17287"></a>要备份出你的数据库安装，敲入：</p>
+<pre class="SCREEN"><kbd class="USERINPUT">pg_dumpall &gt; <tt class="REPLACEABLE"><i>outputfile</i></tt></kbd></pre>
+<p>如果你需要保留 OID(比如说当你用到它们做外键时)，那么带 <tt class="OPTION">-o</tt> 选项运行 <span class="APPLICATION">pg_dumpall</span> 。</p>
+<p>要做一个备份，你可以使用当前正在运行版本的 <span class="APPLICATION">pg_dumpall</span> 命令。不过，最好使用来自 PostgreSQL 8.2.3 的 <span class="APPLICATION">pg_dumpall</span> ，因为这个版本包含对老版本的错误修补以及改进。虽然这个建议看起来好像很愚蠢，因为你还没有安装新版本，但如果你准备安装新版本，我们还是建议你遵循这个建议。这个时候你可以按照平常那样完成安装，然后再转换数据。这样将降低停业时间。</p></li>
+<li class="STEP"><p>如果你准备把新版本的数据库装在与旧数据库相同的位置，那么关闭旧的数据库服务器(至少在安装新文件之前如此)：</p>
+<pre class="SCREEN"><kbd class="USERINPUT">pg_ctl stop</kbd></pre>
+<p>在那些在引导的时候就启动 PostgreSQL 的系统上，可能已经有一个启动文件可以干这件事。例如，在一台 <span class="SYSTEMITEM">Red Hat Linux</span> 系统上我们可以使用：</p>
+<pre class="SCREEN"><kbd class="USERINPUT">/etc/rc.d/init.d/postgresql stop</kbd></pre></li>
+<li class="STEP"><p>如果你准备装在老版本的地盘上，那么把它们挪走也是一条好主意，以便你碰到麻烦后还能退回去。用这样的命令：</p>
+<pre class="SCREEN"><kbd class="USERINPUT">mv /usr/local/pgsql /usr/local/pgsql.old</kbd></pre></li>
+</ol>
+</div>
+<p>当你装完 PostgreSQL 8.2.3 之后，创建一个新的数据库目录，然后启动新服务器。要记住你必须用特殊的数据库用户登录后才能执行这些命令(如果你是升级的话这个帐户应该已经存在了)。</p>
+<pre class="PROGRAMLISTING"><kbd class="USERINPUT">/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data</kbd>
+<kbd class="USERINPUT">/usr/local/pgsql/bin/postgres -D /usr/local/pgsql/data</kbd></pre>
+<p>最后，使用<span class="emphasis"><i class="EMPHASIS">新的</i></span> <span class="APPLICATION">psql</span> 恢复你的数据：</p>
+<pre class="SCREEN"><kbd class="USERINPUT">/usr/local/pgsql/bin/psql -d postgres -f <tt class="REPLACEABLE"><i>outputfile</i></tt></kbd></pre>
+<p>更多内容在<a href="migration.html">节23.5</a>文档里，不管怎样，我们都建议你好好读一下。</p>
+</div>
+<div>
+<hr align="LEFT" width="100%">
+<table summary="Footer navigation table" width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr><td width="33%" align="left" valign="top"><a href="install-getsource.html" accesskey="P">后退</a></td><td width="34%" align="center" valign="top"><a href="index.html" accesskey="H">首页</a></td><td width="33%" align="right" valign="top"><a href="install-procedure.html" accesskey="N">前进</a></td></tr>
+<tr><td width="33%" align="left" valign="top">获取源码</td><td width="34%" align="center" valign="top"><a href="installation.html" accesskey="U">上一级</a></td><td width="33%" align="right" valign="top">安装过程</td></tr>
+</table>
+</div>
+</body></html>

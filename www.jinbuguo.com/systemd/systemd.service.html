@@ -1,0 +1,569 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<!--[if lt IE 9]><style type="text/css">@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.eot"); }</style><![endif]-->
+<style media="all" type="text/css">
+@font-face { font-family: "JinBuGuoWebMono"; src: url("/d/mono.ttf") format("truetype"); }
+* { font-family: "JinBuGuoWebMono", "Ubuntu Mono", "Consolas", "Menlo", monospace; }
+body { margin:10px; }
+h1,h2 { text-align:center; background:#ddd; }
+h2 { margin: 10px 5%; }
+h2#auth_name {  background:#fff; }
+dt { margin-top: 0.5em; }
+</style>
+<title>systemd.service 中文手册 [金步国]</title>
+<script>var _hmt=_hmt||[]; (function(){ var hm=document.createElement("script"); hm.src="//hm.baidu.com/hm.js?d286c55b63a3c54a1e43d10d4c203e75"; var s=document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm,s); })();</script>
+</head>
+
+<body>
+<h1>systemd.service 中文手册</h1><h2 id="auth_name">译者：<strong><a href="http://www.jinbuguo.com/">金步国</a></strong></h2>
+<hr />
+<h3>版权声明</h3>
+<p>本文译者是一位开源理念的坚定支持者，所以本文虽然不是软件，但是遵照开源的精神发布。</p>
+<ul>
+<li>无担保：本文译者不保证译文内容准确无误，亦不承担任何由于使用此文档所导致的损失。</li>
+<li>自由使用：任何人都可以自由的<u>阅读/链接/打印</u>此文档，无需任何附加条件。</li>
+<li>名誉权：任何人都可以自由的<u>转载/引用/再创作</u>此文档，但必须保留译者署名并注明出处。</li>
+</ul>
+<h3>其他作品</h3>
+<p>本文译者十分愿意与他人分享劳动成果，如果你对我的其他翻译作品或者技术文章有兴趣，可以在如下位置查看现有的作品集：</p>
+<ul>
+<li><a href="http://www.jinbuguo.com/">金步国作品集</a> [ <a href="http://www.jinbuguo.com/">http://www.jinbuguo.com/</a> ]</li>
+</ul>
+<h3>联系方式</h3>
+<p>由于译者水平有限，因此不能保证译文内容准确无误。如果你发现了译文中的错误(哪怕是错别字也好)，请来信指出，任何提高译文质量的建议我都将虚心接纳。</p>
+<ul>
+<li>Email(QQ)：70171448在QQ邮箱</li>
+</ul>
+<hr />
+
+
+
+<pre>
+systemd.service(5)                          systemd-228                         systemd.service(5)
+
+<h3>名称</h3>
+    systemd.service - 服务单元配置
+
+<h3>概要</h3>
+    <i>service</i>.service
+
+<h3>描述</h3>
+    以 .service 结尾的单元文件，用于封装一个被 systemd 监视与控制的进程。
+    本手册只列出专用于此种单元的选项，它们全部位于"[Service]"小节之中(通用于所有单元的选项参见 <a href="systemd.unit.html">systemd.unit(5)</a> 手册)。
+    其他可用的选项位于 <a href="systemd.exec.html">systemd.exec(5)</a> 手册(定义了命令的执行环境)，
+    以及 <a href="systemd.kill.html">systemd.kill(5)</a> 手册(定义了如何结束进程)，
+    以及 <a href="systemd.resource-control.html">systemd.resource-control(5)</a> 手册(定义了进程的资源控制)。
+
+    如果要求启动或停止的某个单元文件不存在，systemd 将会寻找同名的SysV初始化脚本(去掉 .service 后缀)，
+    并根据那个同名脚本动态的创建一个 service 单元。这主要用于与传统的SysV兼容(不能保证100%兼容)。
+    更多与SysV的兼容性可参见 <a href="http://www.freedesktop.org/wiki/Software/systemd/Incompatibilities">Incompatibilities with SysV</a> 文档。
+
+<h3>自动依赖</h3>
+    设置了 Type=dbus 的服务会自动添加 Requires=dbus.socket 与 After=dbus.socket 依赖
+
+    基于套接字激活的服务会自动添加对与其相关的 .socket 单元的 After= 依赖。
+
+    除非明确设置了 DefaultDependencies=false ，否则 service 单元都自动隐含如下依赖：
+        Requires=sysinit.target
+        After=sysinit.target
+        After=basic.target
+        Conflicts=shutdown.target
+        Before=shutdown.target
+    这样可以确保普通的服务单元：(1)在基础系统启动完毕之后才开始启动，(2)在关闭系统之前先被干净的停止。
+    只有那些需要在系统启动的早期就必须启动的服务，以及那些必须在关机动作的结尾才能停止的服务才需要设置 DefaultDependencies=false 。
+
+    <a href="systemd.exec.html">systemd.exec(5)</a> 与 <a href="systemd.resource-control.html">systemd.resource-control(5)</a> 中的某些资源限制选项也会自动隐含的添加一些其他的依赖关系。
+
+<h3>[Service]小节选项</h3>
+    每个服务单元文件都必须包含一个"[Service]"小节。由于此小节中的许多选项也同时适用于其他类型的单元，
+    所以本手册仅记录了专用于服务单元的选项。其他共享的选项参见 <a href="systemd.exec.html">systemd.exec(5)</a> 与 <a href="systemd.kill.html">systemd.kill(5)</a> 手册。
+
+    Type=
+        设置进程的启动类型，必须是下列值之一：simple, forking, oneshot, dbus, notify, idle
+
+        如果设为"simple"(设置了 ExecStart= 但未设置 BusName= 时的默认值)，那么表示 ExecStart= 所设定的进程就是该服务的主进程。
+        如果此进程需要为其他进程提供服务，那么必须在该进程启动之前先建立好通信渠道(例如套接字)，以加快后继单元的启动速度。
+
+        "dbus"(设置了 ExecStart= 与 BusName= 时的默认值)与"simple"类似，不同之处在于该进程需要在 D-Bus 上获得一个由 BusName= 指定的名称。
+        systemd 将会在启动后继单元之前，首先确保该进程已经成功的获取了指定的 D-Bus 名称。设置为此类型相当于隐含的依赖于 dbus.socket 单元。
+
+        "oneshot"(未设置 ExecStart= 时的默认值)与"simple"类似，不同之处在于该进程必须在 systemd 启动后继单元之前退出。
+        此种类型通常需要设置 RemainAfterExit= 选项。
+
+        如果设为"forking"，那么表示 ExecStart= 所设定的进程将会在启动过程中使用 fork() 系统调用。这是传统UNIX守护进程的经典做法。
+        也就是当所有的通信渠道都已建好、启动亦已成功之后，父进程将会退出，而子进程将作为该服务的主进程继续运行。
+        对于此种进程，建议同时设置 PIDFile= 选项，以帮助 systemd 准确定位该服务的主进程，进而加快后继单元的启动速度。
+
+        "notify"与"simple"类似，不同之处在于该进程将会在启动完成之后通过 <a href="http://www.freedesktop.org/software/systemd/man/sd_notify.html">sd_notify(3)</a> 之类的接口发送一个通知消息。
+        systemd 将会在启动后继单元之前，首先确保该进程已经成功的发送了这个消息。
+        如果设置为此类型，那么 NotifyAccess= 将只能设置为"all"或者"main"(默认)。
+        注意，目前 Type=notify 尚不能在 PrivateNetwork=yes 的情况下正常工作。
+
+        "idle"与"simple"类似，不同之处在于该进程将会被延迟到所有的操作都完成之后再执行。
+        这样可以避免控制台上的状态信息与 shell 脚本的输出混杂在一起。
+
+    RemainAfterExit=
+        可设为"yes"或"no"(默认值)，表示当该服务的所有进程全部退出之后，是否依然将此服务视为活动(active)状态。
+
+    GuessMainPID=
+        可设为"yes"(默认值)或"no"，表示在无法明确定位该服务的主进程的情况下，systemd 是否应该猜测主进程的PID(可能不正确)。
+        该选项仅在设置了 Type=forking 但未设置 PIDFile= 的情况下有意义。如果PID猜测错误，那么该服务的失败检测与自动重启功能将失效。
+
+    PIDFile=
+        守护进程的PID文件，必须是绝对路径。强烈建议在 Type=forking 的情况下明确设置此选项。
+        systemd 将会在此服务启动后从此文件中读取主守护进程的PID 。systemd 不会写入此文件，但会在此服务停止后删除它(若存在)。
+
+    BusName=
+        设置与此服务通信所使用的 D-Bus 名称。在 Type=dbus 的情况下必须明确设置此选项。
+
+    BusPolicy=
+        如果设置了此项，那么 systemd 将会创建一个自定义的<a href="https://github.com/gregkh/kdbus">kdbus</a>端点(endpoint)，并将其安装为该服务默认的总线节点(bus node)。
+        这个自定义的端点可以拥有它自己的策略规则。端点的名称就是其所服务的单元的名称。
+        端点的节点(node)将被绑定挂载到默认的总线节点的位置，这样该服务就只能通过它自己的端点访问总线。
+        注意，自定义端点的默认策略是'拒绝所有'，因此，你必须在 BusPolicy= 中明确的添加必要的允许策略。
+
+        这个选项的值由两部分组成：总线名+访问级别，中间以空格分隔。
+        访问级别必须是 see, talk, own 之一，并且 talk 隐含了 see ，而 own 隐含了 talk 与 see 。
+        如果对同一个总线名称多次指定了访问级别，那么将以拥有最大权限的那个为准。
+
+        例如：
+        BusPolicy=org.freedesktop.systemd1 talk
+        BusPolicy=org.foo.bar see
+
+        该选项仅在内核开启了<a href="https://github.com/gregkh/kdbus">kdbus</a>(即将并入官方内核)支持的情况下有意义。
+
+    ExecStart=
+        在启动该服务时需要执行的命令行(命令+参数)。有关命令行的更多细节可参见后文的"命令行"小节。
+
+        仅在设置了 Type=oneshot 的情况下，才可以设置任意个命令行(包括零个)，否则必须且只能设置一个命令行。
+        多个命令行既可以在同一个 ExecStart= 中设置，也可以通过设置多个 ExecStart= 来达到相同的效果。
+        如果设为一个空字符串，那么先前设置的所有命令行都将被清空。
+        如果不设置任何 ExecStart= 指令，那么必须确保设置了 RemainAfterExit=yes 指令。
+
+        命令行必须以一个绝对路径表示的可执行文件开始，并且其后的那些参数将依次作为"argv[1] argv[2] ..."传递给被执行的进程。
+        如果在绝对路径前加上可选的"@"前缀，那么其后的那些参数将依次作为"argv[0] argv[1] argv[2] ..."传递给被执行的进程。
+        如果在绝对路径前加上可选的"-"前缀，那么即使该进程以失败状态(例如非零的返回值或者出现异常)退出，也会被视为成功退出。
+        可以同时使用"-"与"@"前缀，且顺序任意。
+
+        如果设置了多个命令行，那么这些命令行将以其在单元文件中出现的顺序依次执行。
+        如果某个无"-"前缀的命令行执行失败，那么剩余的命令行将不会被执行，同时该单元将变为失败(failed)状态。
+
+        当未设置 Type=forking 时，这里设置的命令行所启动的进程将被视为该服务的主守护进程。
+
+    ExecStartPre=, ExecStartPost=
+        设置在执行 ExecStart= 之前/后执行的命令行。语法规则与 ExecStart= 完全相同。
+        如果设置了多个命令行，那么这些命令行将以其在单元文件中出现的顺序依次执行。
+
+        如果某个无"-"前缀的命令行执行失败，那么剩余的命令行将不会被执行，同时该单元将变为失败(failed)状态。
+
+        仅在所有无"-"前缀的 ExecStartPre= 命令全部执行成功的前提下，才会继续执行 ExecStart= 命令。
+
+        ExecStartPost= 命令仅在服务已经被成功启动之后才会运行，判断的标准基于 Type= 选项。
+        具体说来，对于 Type=simple 或 Type=idle 就是主进程已经成功启动；对于 Type=oneshot 来说就是主进程已经成功退出；
+        对于 Type=forking 来说就是初始进程已经成功退出；对于 Type=notify 来说就是已经发送了"READY=1"；
+        对于 Type=dbus 来说就是已经取得了 BusName= 中设置的总线名称。
+
+        注意，不可将 ExecStartPre= 用于需要长时间执行的进程。
+        因为所有由 ExecStartPre= 派生的子进程都会在启动 ExecStart= 服务进程之前被杀死。
+
+    ExecReload=
+        这是一个可选的指令，用于设置当该服务被要求重新载入配置时所执行的命令行。语法规则与 ExecStart= 完全相同。
+        另外，还有一个特殊的环境变量 $MAINPID 可以用于表示主进程的PID，例如可以这样使用：
+
+        /bin/kill -HUP $MAINPID
+
+        注意，像上例那样，通过向守护进程发送复位信号，强制其重新加载配置文件，并不是一个好习惯。
+        因为这是一个异步操作，所以不适用于需要按照特定顺序重新加载配置文件的服务。
+        我们强烈建议将 ExecReload= 设置为一个能够确保重新加载配置文件的操作同步完成的命令行。
+
+    ExecStop=
+        这是一个可选的指令，用于设置当该服务被要求停止时所执行的命令行。语法规则与 ExecStart= 完全相同。
+        执行完此处设置的命令行之后，该服务所有剩余的进程将会根据 KillMode= 的设置被杀死(参见 <a href="systemd.kill.html">systemd.kill(5)</a> 手册)。
+        如果未设置此选项，那么当此服务被停止时，该服务的所有进程都将会根据 KillMode= 的设置被立即全部杀死。
+        与 ExecReload= 一样，也有一个特殊的环境变量 $MAINPID 可以用于表示主进程的PID
+
+        一般来说，仅仅设置一个结束服务的命令，而不等待其完成，是不够的。
+        因为当此处设置的命令执行完之后，剩余的进程会被 SIGKILL 信号立即杀死，这可能会导致数据丢失。
+        因此，这里设置的命令必须是同步操作，而不能是异步操作。
+
+    ExecStopPost=
+        这是一个可选的指令，用于设置该服务停止之后所执行的命令行。语法规则与 ExecStart= 完全相同。
+        无论此服务是正常停止，还是异常退出，此处的设置都适用。
+
+    RestartSec=
+        设定在重启服务(Restart=)前暂停多长时间。默认值是100毫秒(100ms)。
+        如果未指定时间单位，那么将视为以秒为单位。例如设为"20"等价于设为"20s"。
+
+    TimeoutStartSec=
+        设定该服务允许的最大启动时长。如果守护进程未能在限定的时长内发出"启动完毕"的信号，那么该服务将被视为启动失败，并会被关闭。
+        如果未指定时间单位，那么将视为以秒为单位。例如设为"20"等价于设为"20s"。设为"0"则表示永不超时。
+        当 Type=oneshot 时，默认值为"0"，否则默认值等于 DefaultTimeoutStartSec= 的值(参见 <a href="systemd-system.conf.html">systemd-system.conf(5)</a> 手册)。
+
+    TimeoutStopSec=
+        设定该服务允许的最大停止时长。如果该服务未能在限定的时长内成功停止，那么将会被强制使用 SIGTERM 信号关闭，
+        如果依然未能在相同的时长内成功停止，那么将会被强制使用 SIGKILL 信号关闭(参见 <a href="systemd.kill.html">systemd.kill(5)</a> 手册中的 KillMode= 选项)。
+        如果未指定时间单位，那么将视为以秒为单位。例如设为"20"等价于设为"20s"。设为"0"则表示永不超时。
+        默认值等于 DefaultTimeoutStartSec= 的值(参见 <a href="systemd-system.conf.html">systemd-system.conf(5)</a> 手册)。
+
+    TimeoutSec=
+        一个同时设置 TimeoutStartSec= 与 TimeoutStopSec= 的快捷方式。
+
+    WatchdogSec=
+        设置该服务的看门狗(watchdog)的超时时长。看门狗将在服务成功启动之后被激活。
+        该服务在运行过程中必须周期性的以"WATCHDOG=1"("keep-alive ping")调用 <a href="http://www.freedesktop.org/software/systemd/man/sd_notify.html">sd_notify(3)</a> 函数。
+        如果在两次调用之间的时间间隔大于这里设定的值，那么该服务将被视为失败(failed)状态，并会被强制使用 SIGABRT 信号关闭。
+        通过将 Restart= 设为"on-failure"或"always"可以实现在失败状态下的自动重启该服务。
+        这里设置的值将会通过 WATCHDOG_USEC 环境变量传递给守护进程，这样就允许那些支持看门狗的服务自动启用"keep-alive ping"。
+        如果设置了此选项，那么必须将 NotifyAccess= 设为"main"(此种情况下的隐含默认值)或"all"。
+        如果未指定时间单位，那么将视为以秒为单位。例如设为"20"等价于设为"20s"。默认值"0"表示禁用看门狗功能。
+
+    Restart=
+        当服务进程正常退出、异常退出、被杀死、超时的时候，是否重新启动该服务。
+        "服务进程"是指 ExecStart=, ExecStartPre=, ExecStartPost=, ExecStop=, ExecStopPost=, ExecReload= 中设置的进程。
+        当进程是由于 systemd 的正常操作(例如 systemctl stop|restart)而被停止时，该服务不会被重新启动。
+        "超时"可以是看门狗的"keep-alive ping"超时，也可以是 systemctl start|reload|stop 操作超时。
+
+        该选项可以取下列值之一：no, on-success, on-failure, on-abnormal, on-watchdog, on-abort, always
+        "no"(默认值)表示不会被重启。"always"表示会被无条件的重启。
+        "on-success"表示仅在服务进程正常退出时重启，所谓"正常退出"是指：
+        退出码为"0"，或者进程收到 SIGHUP, SIGINT, SIGTERM, SIGPIPE 信号并且退出码符合 SuccessExitStatus= 的设置。
+        "on-failure"表示仅在服务进程异常退出时重启，所谓"异常退出"是指：
+        退出码不为"0"，或者进程被强制杀死(包括"core dump"以及收到 SIGHUP, SIGINT, SIGTERM, SIGPIPE 之外的其他信号)，
+        或者进程由于看门狗或者 systemd 的操作超时而被杀死。
+
+        对于 on-failure, on-abnormal, on-abort, on-watchdog 的分别适用于哪种异常退出，见下表：
+
+        +------------------+------------+-------------+----------+-------------+
+        |                  | on-failure | on-abnormal | on-abort | on-watchdog |
+        +------------------+------------+-------------+----------+-------------+
+        | 退出码不为"0"    |     *      |             |          |             |
+        +------------------+------------+-------------+----------+-------------+
+        | 进程被强制杀死   |     *      |      *      |    *     |             |
+        +------------------+------------+-------------+----------+-------------+
+        | systemd 操作超时 |     *      |      *      |          |             |
+        +------------------+------------+-------------+----------+-------------+
+        | 看门狗超时       |     *      |      *      |          |      *      |
+        +------------------+------------+-------------+----------+-------------+
+
+        注意如下两个例外情况：
+        (1) RestartPreventExitStatus= 中列出的退出码或者信号永远不会导致该服务被重启。
+        (2) RestartForceExitStatus= 中列出的退出码或者信号将会无条件的导致该服务被重启。
+
+        对于需要长期持续运行的守护进程，推荐设为"on-failure"以增强可用性。
+        对于自身可以自主选择何时退出的服务，推荐设为"on-abnormal"
+
+    SuccessExitStatus=
+        额外定义附加的进程"正常退出"状态。可以设为一系列以空格分隔的数字退出码或者信号名称，例如：
+        SuccessExitStatus=1 2 8 SIGKILL
+        表示当进程的退出码是 1, 2, 8 或被 SIGKILL 信号终止时，都可以视为"正常退出"。
+        注意，退出码"0"以及 SIGHUP, SIGINT, SIGTERM, SIGPIPE 信号是标准的"正常退出"，不需要在此特别定义。
+
+        注意，如果进程拥有自定义的信号处理器，并且在收到信号后通过调用 <a href="http://man7.org/linux/man-pages/man2/_exit.2.html">_exit(2)</a> 退出，那么有关信号的信息就会丢失。
+        在这种情况下，进程必须自己完成清理工作并使用相同的信号自杀。参见 <a href="http://www.cons.org/cracauer/sigint.html">Proper handling of SIGINT/SIGQUIT — How to be a proper program</a>
+
+        如果多次使用此选项，那么最终的结果将是多个列表的合集。如果将此项设为空，那么先前设置的列表将被清空。
+
+    RestartPreventExitStatus=
+        可以设为一系列以空格分隔的数字退出码或者信号名称，当进程的退出码或收到的信号与此处的设置匹配时，
+        该服务将无条件的禁止重新启动(无视 Restart= 的设置)。例如：
+        RestartPreventExitStatus=1 6 SIGABRT
+        表示退出码 1, 2, 8 与 SIGKILL 信号将不会导致该服务被重启。
+        默认值为空，表示完全遵守 Restart= 的设置。
+        如果多次使用此选项，那么最终的结果将是多个列表的合集。如果将此项设为空，那么先前设置的列表将被清空。
+
+    RestartForceExitStatus=
+        可以设为一系列以空格分隔的数字退出码或者信号名称，当进程的退出码或收到的信号与此处的设置匹配时，
+        该服务将无条件的被重新启动(无视 Restart= 的设置)。
+        默认值为空，表示完全遵守 Restart= 的设置。
+        如果多次使用此选项，那么最终的结果将是多个列表的合集。如果将此项设为空，那么先前设置的列表将被清空。
+
+    PermissionsStartOnly=
+        设为 true 表示所有与权限相关的执行选项(例如 User= 之类的选项，参见 <a href="systemd.exec.html">systemd.exec(5)</a> 手册)仅对 ExecStart= 中的程序有效，
+        而对 ExecStartPre=, ExecStartPost=, ExecReload=, ExecStop=, ExecStopPost= 中的程序无效。
+        默认值 false 表示所有与权限相关的执行选项对所有 Exec*= 系列选项中的程序都有效。
+
+    RootDirectoryStartOnly=
+        设为 true 表示根目录(参见 <a href="systemd.exec.html">systemd.exec(5)</a> 中的 RootDirectory= 选项)仅对 ExecStart= 中的程序有效，
+        而对 ExecStartPre=, ExecStartPost=, ExecReload=, ExecStop=, ExecStopPost= 中的程序无效。
+        默认值 false 表示根目录对所有 Exec*= 系列选项中的程序都有效。
+
+    NonBlocking=
+        是否为所有通过socket激活传递的文件描述符设置非阻塞标记(O_NONBLOCK)。默认值为 false 
+        设为 true 表示所有大于2的文件描述符(也就是 stdin, stdout, stderr 之外的文件描述符)都将被设置为非阻塞模式。
+        该选项仅在与 socket 单元(<a href="systemd.socket.html">systemd.socket(5)</a>)联用的时候才有意义。
+
+    NotifyAccess=
+        设置通过<a href="http://www.freedesktop.org/software/systemd/man/sd_notify.html">sd_notify(3)</a>访问服务状态通知socket的访问模式。
+        可以设为：none(默认值), main, all 之一。
+        "none"表示不更新任何守护进程的状态，忽略所有的状态更新消息。
+        "main"表示仅接受主进程的状态更新消息。
+        "all"表示接受该服务cgroup内的所有进程的状态更新消息。
+        当设置了 Type=notify 或 WatchdogSec= 的时候，此选项应该被设为"main"或"all"，如果未设置，那么隐含为"main"。
+
+    Sockets=
+        设置一个socket单元的名称，表示该服务在启动时应当从它继承socket文件描述符。通常并不需要明确设置此选项，
+        因为所有与该服务同名(不算后缀)的socket单元的socket文件描述符，都会被自动的传递给派生进程。
+
+        注意：(1)同一个socket文件描述符可以被传递给多个不同的进程(服务)。
+        (2)当socket上有流量进入时，被启动的可能是另一个不同于该服务的其他服务。
+        换句话说就是：socket单元中的 Service= 所指向的服务单元中的 Sockets= 设置未必要反向指回去。
+
+        如果多次使用此选项，那么最终的结果将是多个socket单元的合集。如果将此项设为空，那么先前设置的socket单元的列表将被清空。
+
+    StartLimitInterval=, StartLimitBurst=
+        限制该服务的启动频率。默认值是每10秒内不得超过5次(StartLimitInterval=10s StartLimitBurst=5)。
+        StartLimitInterval= 的默认值等于<a href="systemd-system.conf.html">systemd配置文件</a>中 DefaultStartLimitInterval= 的值，"0"表示取消启动频率限制。
+        StartLimitBurst= 的默认值等于<a href="systemd-system.conf.html">systemd配置文件</a>中 DefaultStartLimitBurst= 的值。
+        虽然这两个选项经常与 Restart= 一起使用，但是它们不只限制 Restart= 罗辑所导致的重启，而是限制所有类型的启动(包括手动启动)。
+        注意，当 Restart= 罗辑所导致的重启超出了启动频率限制之后，Restart= 罗辑将会被禁用(也就是不会在下一个时间段内再次尝试重启)，
+        然而，如果该单元随后又被手动重启，那么 Restart= 罗辑将被再次激活。
+        注意，"systemctl reset-failed ..."命令会清除该服务的重启次数计数器，这通常用于在手动启动之前清除启动限制。
+
+    StartLimitAction=
+        设置到达启动频率限制后触发什么动作。
+        可设为 none(默认值), reboot, reboot-force, reboot-immediate, poweroff, poweroff-force, poweroff-immediate 之一。
+        "none"表示除了禁止再次启动之外，不触发任何动作。
+        "reboot"表示触发常规的系统重启的动作，相当于执行"systemctl reboot"命令。
+        "reboot-force"表示触发系统的强制重启动作(强制杀死所有进程但不会造成文件系统不一致)，相当于执行"systemctl reboot -f"命令。
+        "reboot-immediate"表示立即调用内核的<a href="http://man7.org/linux/man-pages/man2/reboot.2.html">reboot(2)</a>函数，可能会造成文件系统的数据丢失。
+        poweroff, poweroff-force, poweroff-immediate 与对应的"reboot*"项含义类似，不同之处仅仅在于是关机而不是重启。
+
+    FailureAction=
+        设置当该服务进入失败(failed)状态时所触发的动作。取值范围与默认值都与 StartLimitAction= 完全相同。
+
+    RebootArgument=
+        设置<a href="http://man7.org/linux/man-pages/man2/reboot.2.html">reboot(2)</a>系统调用的可选参数，仅用于 StartLimitAction= 与 FailureAction= 的重启动作。
+        其作用与"systemctl reboot [arg]"命令中的可选参数[arg]完全相同。
+
+    FileDescriptorStoreMax=
+        允许在 systemd 中最多为该服务存储多少个使用<a href="http://www.freedesktop.org/software/systemd/man/sd_pid_notify_with_fds.html">sd_pid_notify_with_fds(3)</a>的"FDSTORE=1"消息的文件描述符，默认值为"0"(不存储)。
+        用于实现重启该服务而不会丢失其状态(前提是该服务将各种状态序列化之后保存在 /run 中，同时将文件描述符交给 systemd 暂存)。
+        所有被 systemd 暂存的文件描述符都将在该服务重启之后交还给该服务的主进程。
+        所有被 systemd 暂存的文件描述符都将在遇到如下两种情况时被自动关闭：
+        (1)收到 POLLHUP 或 POLLERR 信号；(2)该服务被彻底停止，并且没有任何剩余的任务队列
+
+    USBFunctionDescriptors=
+        设为一个包含 <a href="https://www.kernel.org/doc/Documentation/usb/functionfs.txt">USB FunctionFS</a> 描述符的文件路径，以实现 USB gadget 支持。
+        仅与配置了 ListenUSBFunction= 的 socket 单元一起使用。该文件的内容将被写入 ep0 文件。
+
+    USBFunctionStrings=
+        设为一个包含 <a href="https://www.kernel.org/doc/Documentation/usb/functionfs.txt">USB FunctionFS</a> 字符串的文件路径。
+        其行为与上面的 USBFunctionDescriptors= 类似。
+
+    参见 <a href="systemd.exec.html">systemd.exec(5)</a> 与 <a href="systemd.kill.html">systemd.kill(5)</a> 手册页，以获取更多其他选项。
+
+<h3>命令行</h3>
+    本小节讲解 ExecStart=, ExecStartPre=, ExecStartPost=, ExecReload=, ExecStop=, ExecStopPost= 选项的命令行解析规则。
+
+    仅在设置了 Type=oneshot 的前提下，才可以设置多个命令行，且必须用分号(;)将每个命令行隔开(分号自身用"\;"表示)。例如：
+        ExecStart=/bin/echo one ; /bin/echo "two two"
+
+    每个命令行的内部以空格分隔，每一项的边界都可以用单引号或者双引号进行界定。
+    第一项是要运行的命令，随后的各项则是命令的参数。
+    行尾的反斜杠(\)将被视作续行符，这和bash的续行语法类似。例如：
+        ExecStart=/bin/echo / &gt;/dev/null &amp; \; \
+        /bin/ls
+    的含义是向 /bin/echo 命令传递五个参数："/",  "&gt;/dev/null",  "&amp;",  ";",  "/bin/ls".
+
+    命令行的语法刻意保持了与shell的相似性，但并不相同。
+    特别的，重定向(&lt;, &lt;&lt;, &gt;, &gt;)、管道(|)、后台运行(&amp;)，以及其他下文未明确提及的符号都不被支持。
+
+    第一项，要运行的命令，必须使用绝对路径。可以在其中包含空格，但是不可以包含控制字符。
+
+    可以在随后的各项命令参数中使用 <a href="systemd.unit.html">systemd.unit(5)</a> 中描述的"%"系列特殊符号，但不可用于命令自身(第一项)。
+    此外，还可以使用C语言风格的转义序列(含义也相同)，但只能识别如下符号：\a  \b  \f  \n  \r  \t  \v  \\  \"  \'  \s  \<b>x</b><i>xx</i>  \<i>nnn</i>
+
+    此外，还支持两种不同的环境变量替换方式("${FOO}"与"$FOO")。下面的两个例子，将能清除的体现两者的差别：
+
+    例(1)：
+        Environment="ONE=one" 'TWO=two two'
+        ExecStart=/bin/echo $ONE $TWO ${TWO}
+    这将给 /bin/echo 依次传递如下四个参数: "one",  "two",  "two",  "two two"
+
+    例(2)：
+        Environment=ONE='one' "TWO='two two' too" THREE=
+        ExecStart=/bin/echo ${ONE} ${TWO} ${THREE}
+        ExecStart=/bin/echo $ONE $TWO $THREE
+    这将给第一个 /bin/echo 依次传递如下三个参数: "'one'",  "'two two' too",  ""
+    同时给第二个 /bin/echo 依次传递如下三个参数:  "one",  "two two",  "too"
+
+    具体说来就是：
+    "${FOO}"的内容将原封不动的转化为一个单独的命令行参数，无论其中是否包含空格与引号，也无论它是否为空。
+    "$FOO"的内容将将原封不动的插入命令行中，但对插入内容的解释却遵守一般的命令行解析规则。
+
+    此外，如果想要传递美元符号($)自身，则必须使用"$$"。而那些无法在替换时确定内容的变量将被当做空字符串。
+    注意，不可以在第一项(也就是命令的绝对路径)中使用变量替换。
+
+    这里使用的变量必须首先在 Environment= 或 EnvironmentFile= 中定义。
+    此外，在<a href="systemd.exec.html">systemd.exec(5)</a>手册的"派生进程中的环境变量"小节中列出的"静态变量"也可以使用。
+    例如，$USER 就是一个"静态变量"，但是，$TERM 则不是"静态变量"。
+
+    注意，这里的命令行并不直接支持shell命令，但是可以通过模仿下面这个变通的方法来实现：
+        ExecStart=/bin/sh -c 'dmesg | tac'
+
+<h3>例1. 简单服务</h3>
+    下面的单元文件创建了一个运行 /usr/sbin/foo-daemon 守护进程的服务。未设置的 Type= 等价于默认的 Type=simple
+    执行 /usr/sbin/foo-daemon 进程之后，systemd 即认为该单元已经启动成功。
+
+        [Unit]
+        Description=Foo
+
+        [Service]
+        ExecStart=/usr/sbin/foo-daemon
+
+        [Install]
+        WantedBy=multi-user.target
+
+    注意，/usr/sbin/foo-daemon 必须在启动后持续运行直到服务被停止。
+    如果该进程只是为了派生守护进程，那么应该使用 Type=forking 
+
+    因为没有设置 ExecStop= ，所以在停止服务时，systemd 将会直接向该服务启动的所有进程发送 SIGTERM 信号，
+    若超过指定时间依然存在未被杀死的进程，那么将会继续发送 SIGKILL 信号。详见 <a href="systemd.kill.html">systemd.kill(5)</a> 手册。
+
+    默认的 Type=simple 并不包含任何通知机制(例如通知"服务已完成初始化")。要想使用通知机制，应该将 Type= 设为其他非默认值。
+    例如：Type=notify 可用于能够理解 systemd 通知协议的服务；
+          Type=forking 可用于能将自身切换到后台的服务；
+          Type=dbus 可用于能够在完成初始化之后获得一个 D-Bus 名称的单元
+
+<h3>例2. 一次性服务</h3>
+    Type=oneshot 用于那些只需要执行一次性动作而不需要持久运行的单元，例如文件系统检查或者清理临时文件。
+    此类单元，将会在启动后一直等待指定的动作完成，然后再回到停止状态。下面是一个执行清理动作的单元：
+
+        [Unit]
+        Description=Cleanup old Foo data
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/sbin/foo-cleanup
+
+        [Install]
+        WantedBy=multi-user.target
+
+    注意，在 /usr/sbin/foo-cleanup 执行结束前，该服务一直处于'正在启动中'的状态，而一旦执行结束，
+    该服务又立即变为'停止'状态，也就是说，对于 Type=oneshot 类型的服务，不存在'活动'状态。
+    这意味着，如果再一次启动该服务，将会再一次执行该服务定义的动作。
+    注意，在时间顺序上晚于该服务的单元，将会一直等到该服务变成'停止'状态后，才会开始启动。
+
+    Type=oneshot 是唯一可以设置多个 ExecStart= 的服务类型。多个 ExecStart= 指令将按照它们出现的顺序依次执行，
+    一旦遇到错误，就会立即停止，不再继续执行，同时该服务也将进入'失败'状态。
+
+<h3>例3. 可停止的一次性服务</h3>
+    有时候，单元需要执行一个程序以完成某个设置(启动)，然后又需要再执行另一个程序以撤消先前的设置(停止)，
+    而在设置持续有效的时段中，该单元应该视为处于'活动'状态，但实际上并无任何程序在持续运行。
+    网络配置服务就是一个典型的例子。此外，只能启动一次(不可多次启动)的一次性服务，也是一个例子。
+
+    可以通过设置 RemainAfterExit=yes 来满足这种需求。
+    在这种情况下，systemd 将会在启动成功后将该单元视为处于'活动'状态(而不是'停止'状态)。
+    RemainAfterExit=yes 虽然可以用于所有 Type= 类型，但是主要用于 Type=oneshot 和 Type=simple 类型。
+    对于 Type=oneshot 类型，systemd 一直等到服务启动成功之后，才会将该服务置于'活动'状态。
+    所以，依赖于该服务的其他单元必须等待该服务启动成功之后，才能启动。
+    但是对于 Type=simple 类型，依赖于该服务的其他单元无需等待，将会和该服务同时并行启动。
+
+    下面的类似展示了一个简单的静态防火墙服务(simple-firewall.service)：
+
+        [Unit]
+        Description=Simple firewall
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/local/sbin/simple-firewall-start
+        ExecStop=/usr/local/sbin/simple-firewall-stop
+
+        [Install]
+        WantedBy=multi-user.target
+
+    因为服务启动成功后一直处于'活动'状态，所以再次执行"systemctl start simple-firewall.service"命令不会有任何效果。
+
+<h3>例4. 传统的服务</h3>
+    多数传统的守护进程(服务)在启动时会转入后台运行。systemd 通过 Type=forking 来支持这种工作方式。
+    对于 Type=forking 类型的服务，如果最初启动的进程尚未退出，那么该单元将依然处于'正在初始化中'状态。
+    当最初的进程成功退出，并且至少有一个进程仍然在运行(并且 RemainAfterExit=no)，该服务才被视为处于'活动'状态。
+
+    对于单进程的传统服务，当最初的进程成功退出后，将会只剩单独一个进程仍然在持续运行，
+    systemd 将会把这个唯一剩余的进程视为该服务的主进程。
+    仅在这种情况下，才将可以在 ExecReload=, ExecStop= ... 之类的选项中使用 $MAINPID 变量。
+
+    对于多进程的传统服务，当最初的进程成功退出后，将会剩余多个进程在持续运行，
+    因此，systemd 无法确定哪一个进程才是该服务的主进程。在这种情况下，不可以使用 $MAINPID 变量。
+    然而，如果主进程会创建传统的PID文件，那么应该将 PIDFile= 设为此PID文件的绝对路径，
+    以帮助 systemd 从该PID文件中读取主进程的PID，从而帮助确定该服务的主进程。
+    注意，守护进程必须在完成初始化之前写入PID文件，否则可能会导致 systemd 读取失败(读取时文件不存在)。
+
+    下面是一个单进程传统服务的示例：
+
+        [Unit]
+        Description=Some simple daemon
+
+        [Service]
+        Type=forking
+        ExecStart=/usr/sbin/my-simple-daemon -d
+
+        [Install]
+        WantedBy=multi-user.target
+
+    参见 <a href="systemd.kill.html">systemd.kill(5)</a> 以了解如何结束服务进程。
+
+<h3>例5. D-Bus 服务</h3>
+    对于需要在 D-Bus 系统总线上注册一个名字的服务，应该使用 Type=dbus 并且设置相应的 BusName= 值。
+    该服务不可以派生任何子进程。一旦从 D-Bus 系统总线成功获取所需的名字，该服务即被视为初始化成功。
+    下面是一个典型的 D-Bus 服务：
+
+        [Unit]
+        Description=Simple DBus service
+
+        [Service]
+        Type=dbus
+        BusName=org.example.simple-dbus-service
+        ExecStart=/usr/sbin/simple-dbus-service
+
+        [Install]
+        WantedBy=multi-user.target
+
+    对于用于 D-Bus 激活的服务来说，不可以包含"[Install]"小节，
+    而是应该在对应的 D-Bus service 文件中设置 SystemdService= 选项，
+    例如(/usr/share/dbus-1/system-services/org.example.simple-dbus-service.service)：
+
+        [D-BUS Service]
+        Name=org.example.simple-dbus-service
+        Exec=/usr/sbin/simple-dbus-service
+        User=root
+        SystemdService=simple-dbus-service.service
+
+    参见 <a href="systemd.kill.html">systemd.kill(5)</a> 手册以了解如何结束服务。
+
+<h3>例6. 能够通知初始化已完成的服务</h3>
+    Type=simple 类型的服务非常容易编写，但是无法将'初始化已完成'的消息及时通知给 systemd 是一个重大缺陷。
+    Type=notify 可以弥补该缺陷，它支持将'初始化已完成'的消息及时通知给 systemd 
+    下面是一个典型的例子：
+
+        [Unit]
+        Description=Simple notifying service
+
+        [Service]
+        Type=notify
+        ExecStart=/usr/sbin/simple-notifying-service
+
+        [Install]
+        WantedBy=multi-user.target
+
+    注意，该守护进程必须支持 systemd 通知协议，否则 systemd 将会认为该服务一直处于'正在启动中'，并在超时后将其杀死。
+    关于如何支持该通知协议，参见 <a href="http://www.freedesktop.org/software/systemd/man/sd_notify.html">sd_notify(3)</a> 手册页。
+
+    参见 <a href="systemd.kill.html">systemd.kill(5)</a> 手册以了解如何结束服务。
+
+<h3>参见</h3>
+    <a href="systemd.html">systemd(1)</a>, <a href="systemctl.html">systemctl(1)</a>, <a href="systemd.unit.html">systemd.unit(5)</a>, <a href="systemd.exec.html">systemd.exec(5)</a>, <a href="systemd.resource-control.html">systemd.resource-control(5)</a>, <a href="systemd.kill.html">systemd.kill(5)</a>, <a href="systemd.directives.html">systemd.directives(7)</a>
+
+
+systemd.service(5)                          systemd-228                         systemd.service(5)
+</pre>
+
+
+<hr />
+
+
+</body></html>
